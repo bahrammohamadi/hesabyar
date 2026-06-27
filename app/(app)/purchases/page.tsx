@@ -5,8 +5,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
+import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
+import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
 import { formatToman, toFaDigits, toEnDigits, tomanToRial, rialToToman, toJalali } from "@/lib/utils/format";
-import { Plus, Search, Trash2, Loader2, ShoppingCart } from "lucide-react";
+import { Plus, Trash2, Loader2, Package, UserPlus, X } from "lucide-react";
 
 interface PItem {
   variant_id: string;
@@ -16,7 +18,7 @@ interface PItem {
 }
 
 export default function PurchasesPage() {
-  const { orgId, branchId } = useOrg();
+  const { orgId } = useOrg();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
 
@@ -97,11 +99,11 @@ export default function PurchasesPage() {
       {open && (
         <PurchaseModal
           orgId={orgId}
-          branchId={branchId}
           onClose={() => {
             setOpen(false);
             qc.invalidateQueries({ queryKey: ["purchases-list"] });
             qc.invalidateQueries({ queryKey: ["products"] });
+            qc.invalidateQueries({ queryKey: ["all-variants"] });
           }}
         />
       )}
@@ -109,53 +111,17 @@ export default function PurchasesPage() {
   );
 }
 
-function PurchaseModal({
-  orgId,
-  branchId,
-  onClose,
-}: {
-  orgId: string | null;
-  branchId: string | null;
-  onClose: () => void;
-}) {
-  const [search, setSearch] = useState("");
+function PurchaseModal({ orgId, onClose }: { orgId: string | null; onClose: () => void }) {
+  const { branchId } = useOrg();
   const [items, setItems] = useState<PItem[]>([]);
-  const [supplierId, setSupplierId] = useState("");
+  const [supplier, setSupplier] = useState<SelectableContact | null>(null);
   const [paid, setPaid] = useState("");
   const [accountId, setAccountId] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { data: results } = useQuery({
-    queryKey: ["purchase-variant-search", orgId, search],
-    enabled: !!orgId && search.trim().length > 0,
-    queryFn: async () => {
-      const supabase = createClient();
-      const term = search.trim();
-      const { data } = await supabase
-        .from("product_variants")
-        .select("id, color, size, purchase_price, product:products!inner(name, base_purchase_price)")
-        .eq("is_active", true)
-        .ilike("products.name", `%${term}%`)
-        .limit(10);
-      return (data as any[]) ?? [];
-    },
-  });
-
-  const { data: suppliers } = useQuery({
-    queryKey: ["purchase-suppliers", orgId],
-    enabled: !!orgId,
-    queryFn: async () => {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from("contacts")
-        .select("id, name")
-        .in("type", ["supplier", "both"])
-        .eq("is_active", true)
-        .order("name");
-      return data ?? [];
-    },
-  });
+  const [productPickerOpen, setProductPickerOpen] = useState(false);
+  const [supplierPickerOpen, setSupplierPickerOpen] = useState(false);
 
   const { data: accounts } = useQuery({
     queryKey: ["purchase-accounts", orgId],
@@ -167,21 +133,19 @@ function PurchaseModal({
     },
   });
 
-  function addItem(v: any) {
-    const price = v.purchase_price ?? v.product?.base_purchase_price ?? 0;
+  function addItem(v: SelectableVariant) {
     setItems((prev) => {
-      if (prev.find((i) => i.variant_id === v.id)) return prev;
+      if (prev.find((i) => i.variant_id === v.variant_id)) return prev;
       return [
         ...prev,
         {
-          variant_id: v.id,
-          label: `${v.product?.name} ${[v.color, v.size].filter(Boolean).join(" / ")}`,
+          variant_id: v.variant_id,
+          label: `${v.product_name} ${[v.color, v.size].filter(Boolean).join(" / ")}`.trim(),
           qty: 1,
-          unit_price: price,
+          unit_price: v.purchase_price,
         },
       ];
     });
-    setSearch("");
   }
 
   const total = useMemo(() => items.reduce((s, i) => s + i.unit_price * i.qty, 0), [items]);
@@ -199,7 +163,7 @@ function PurchaseModal({
       const { error: e } = await supabase.rpc("create_purchase", {
         p_org: orgId,
         p_branch: branchId,
-        p_supplier: supplierId || null,
+        p_supplier: supplier?.id || null,
         p_items: items.map((i) => ({
           variant_id: i.variant_id,
           qty: i.qty,
@@ -221,140 +185,127 @@ function PurchaseModal({
   }
 
   return (
-    <Modal open onClose={onClose} title="خرید جدید" size="lg">
-      <div className="space-y-4">
-        <div className="relative">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input
-            className="input pr-10"
-            placeholder="جستجوی کالا..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          {search.trim() && results && results.length > 0 && (
-            <div className="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-64 overflow-y-auto">
-              {results.map((v) => (
-                <button
-                  key={v.id}
-                  onClick={() => addItem(v)}
-                  className="w-full text-right px-4 py-2.5 hover:bg-slate-50 text-sm"
-                >
-                  {v.product?.name}{" "}
-                  <span className="text-slate-400">
-                    {[v.color, v.size].filter(Boolean).join(" / ")}
-                  </span>
+    <>
+      <Modal open onClose={onClose} title="خرید جدید" size="lg">
+        <div className="space-y-4">
+          {/* تامین‌کننده */}
+          <div>
+            <label className="label">تامین‌کننده</label>
+            {supplier ? (
+              <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3.5 py-2.5">
+                <span className="font-medium text-sm text-slate-800">{supplier.name}</span>
+                <button onClick={() => setSupplier(null)} className="text-slate-400 hover:text-rose-500">
+                  <X size={18} />
                 </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setSupplierPickerOpen(true)}
+                className="w-full flex items-center gap-2 rounded-xl border border-dashed border-slate-300 px-3.5 py-2.5 text-sm text-slate-500 hover:border-brand-300 hover:text-brand-600"
+              >
+                <UserPlus size={18} /> انتخاب تامین‌کننده
+              </button>
+            )}
+          </div>
+
+          <button
+            onClick={() => setProductPickerOpen(true)}
+            className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-brand-200 bg-brand-50/40 px-4 py-3 text-sm font-medium text-brand-700 hover:bg-brand-50"
+          >
+            <Package size={18} /> افزودن کالا
+          </button>
+
+          {items.length === 0 ? (
+            <div className="text-center text-sm text-slate-400 py-6 border border-dashed border-slate-200 rounded-xl">
+              کالایی انتخاب نشده.
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {items.map((it, idx) => (
+                <div key={it.variant_id} className="rounded-xl border border-slate-100 p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium truncate">{it.label}</span>
+                    <button onClick={() => setItems((p) => p.filter((_, i) => i !== idx))} className="text-rose-400 p-1">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <input
+                      className="input w-20 text-sm"
+                      inputMode="numeric"
+                      value={String(it.qty)}
+                      onChange={(e) =>
+                        setItems((p) => p.map((x, i) => (i === idx ? { ...x, qty: Number(toEnDigits(e.target.value)) || 0 } : x)))
+                      }
+                      placeholder="تعداد"
+                    />
+                    <input
+                      className="input flex-1 text-sm"
+                      inputMode="numeric"
+                      value={String(rialToToman(it.unit_price))}
+                      onChange={(e) =>
+                        setItems((p) =>
+                          p.map((x, i) => (i === idx ? { ...x, unit_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x))
+                        )
+                      }
+                      placeholder="قیمت خرید"
+                    />
+                    <span className="text-sm w-28 text-left">{formatToman(it.unit_price * it.qty, false)}</span>
+                  </div>
+                </div>
               ))}
             </div>
           )}
-        </div>
 
-        {items.length === 0 ? (
-          <div className="text-center text-sm text-slate-400 py-8 border border-dashed border-slate-200 rounded-xl">
-            کالایی انتخاب نشده.
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-slate-100 pt-4">
+            <div>
+              <label className="label">مبلغ پرداختی (تومان)</label>
+              <input className="input" inputMode="numeric" value={paid} onChange={(e) => setPaid(e.target.value)} />
+            </div>
+            <div>
+              <label className="label">از حساب</label>
+              <select className="input" value={accountId} onChange={(e) => setAccountId(e.target.value)}>
+                <option value="">—</option>
+                {accounts?.map((a) => (
+                  <option key={a.id} value={a.id}>{a.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
-        ) : (
-          <div className="space-y-2">
-            {items.map((it, idx) => (
-              <div key={it.variant_id} className="rounded-xl border border-slate-100 p-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium truncate">{it.label}</span>
-                  <button
-                    onClick={() => setItems((p) => p.filter((_, i) => i !== idx))}
-                    className="text-rose-400 p-1"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-                <div className="flex items-center gap-2 mt-2">
-                  <input
-                    className="input w-20 text-sm"
-                    inputMode="numeric"
-                    value={String(it.qty)}
-                    onChange={(e) =>
-                      setItems((p) =>
-                        p.map((x, i) =>
-                          i === idx ? { ...x, qty: Number(toEnDigits(e.target.value)) || 0 } : x
-                        )
-                      )
-                    }
-                    placeholder="تعداد"
-                  />
-                  <input
-                    className="input flex-1 text-sm"
-                    inputMode="numeric"
-                    value={String(rialToToman(it.unit_price))}
-                    onChange={(e) =>
-                      setItems((p) =>
-                        p.map((x, i) =>
-                          i === idx
-                            ? { ...x, unit_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) }
-                            : x
-                        )
-                      )
-                    }
-                    placeholder="قیمت خرید"
-                  />
-                  <span className="text-sm w-28 text-left">
-                    {formatToman(it.unit_price * it.qty, false)}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-slate-100 pt-4">
-          <div>
-            <label className="label">تامین‌کننده</label>
-            <select className="input" value={supplierId} onChange={(e) => setSupplierId(e.target.value)}>
-              <option value="">—</option>
-              {suppliers?.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
+          <div className="rounded-xl bg-slate-50 p-4 flex justify-between font-bold text-slate-800">
+            <span>جمع کل خرید</span>
+            <span>{formatToman(total)}</span>
           </div>
-          <div>
-            <label className="label">مبلغ پرداختی (تومان)</label>
-            <input
-              className="input"
-              inputMode="numeric"
-              value={paid}
-              onChange={(e) => setPaid(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="label">از حساب</label>
-            <select className="input" value={accountId} onChange={(e) => setAccountId(e.target.value)}>
-              <option value="">—</option>
-              {accounts?.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
-                </option>
-              ))}
-            </select>
+
+          {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
+
+          <div className="flex gap-2">
+            <button onClick={handleSave} disabled={saving} className="btn-primary flex-1">
+              {saving && <Loader2 className="animate-spin" size={18} />}
+              ثبت خرید
+            </button>
+            <button onClick={onClose} className="btn-secondary">انصراف</button>
           </div>
         </div>
+      </Modal>
 
-        <div className="rounded-xl bg-slate-50 p-4 flex justify-between font-bold text-slate-800">
-          <span>جمع کل خرید</span>
-          <span>{formatToman(total)}</span>
-        </div>
-
-        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
-
-        <div className="flex gap-2">
-          <button onClick={handleSave} disabled={saving} className="btn-primary flex-1">
-            {saving && <Loader2 className="animate-spin" size={18} />}
-            ثبت خرید
-          </button>
-          <button onClick={onClose} className="btn-secondary">
-            انصراف
-          </button>
-        </div>
-      </div>
-    </Modal>
+      <ProductSelector
+        open={productPickerOpen}
+        onClose={() => setProductPickerOpen(false)}
+        onSelect={(v) => addItem(v)}
+        priceMode="purchase"
+      />
+      <ContactSelector
+        open={supplierPickerOpen}
+        onClose={() => setSupplierPickerOpen(false)}
+        onSelect={(c) => {
+          setSupplier(c);
+          setSupplierPickerOpen(false);
+        }}
+        filterType="supplier"
+        title="انتخاب تامین‌کننده"
+      />
+    </>
   );
 }

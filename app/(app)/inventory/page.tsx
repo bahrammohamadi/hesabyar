@@ -5,8 +5,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
+import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { toFaDigits, toEnDigits, toJalali } from "@/lib/utils/format";
-import { Search, Loader2, ArrowUpDown, AlertTriangle } from "lucide-react";
+import { Loader2, ArrowUpDown, AlertTriangle } from "lucide-react";
 
 const TYPE_LABEL: Record<string, string> = {
   in: "ورود",
@@ -166,27 +167,12 @@ function AdjustModal({
   branchId: string | null;
   onClose: () => void;
 }) {
-  const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<{ id: string; label: string; stock: number } | null>(null);
   const [newQty, setNewQty] = useState("");
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const { data: results } = useQuery({
-    queryKey: ["adjust-search", orgId, search],
-    enabled: !!orgId && search.trim().length > 0 && !selected,
-    queryFn: async () => {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from("product_variants")
-        .select("id, color, size, stock_qty, product:products!inner(name)")
-        .eq("is_active", true)
-        .ilike("products.name", `%${search.trim()}%`)
-        .limit(10);
-      return (data as any[]) ?? [];
-    },
-  });
+  const [pickerOpen, setPickerOpen] = useState(true);
 
   async function handleSave() {
     setError(null);
@@ -226,81 +212,68 @@ function AdjustModal({
   }
 
   return (
-    <Modal open onClose={onClose} title="تعدیل موجودی (شمارش انبار)">
-      <div className="space-y-4">
-        {!selected ? (
-          <div className="relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input
-              autoFocus
-              className="input pr-10"
-              placeholder="جستجوی کالا..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            {results && results.length > 0 && (
-              <div className="mt-1 border border-slate-200 rounded-xl overflow-hidden">
-                {results.map((v) => (
-                  <button
-                    key={v.id}
-                    onClick={() =>
-                      setSelected({
-                        id: v.id,
-                        label: `${v.product?.name} ${[v.color, v.size].filter(Boolean).join(" / ")}`,
-                        stock: v.stock_qty,
-                      })
-                    }
-                    className="w-full text-right px-4 py-2.5 hover:bg-slate-50 text-sm border-b border-slate-50 last:border-0"
-                  >
-                    {v.product?.name}{" "}
-                    <span className="text-slate-400">
-                      {[v.color, v.size].filter(Boolean).join(" / ")} — موجودی {toFaDigits(v.stock_qty)}
-                    </span>
-                  </button>
-                ))}
+    <>
+      <Modal open onClose={onClose} title="تعدیل موجودی (شمارش انبار)">
+        <div className="space-y-4">
+          {!selected ? (
+            <button
+              onClick={() => setPickerOpen(true)}
+              className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-brand-200 bg-brand-50/40 px-4 py-3 text-sm font-medium text-brand-700 hover:bg-brand-50"
+            >
+              <ArrowUpDown size={18} /> انتخاب کالا برای تعدیل
+            </button>
+          ) : (
+            <>
+              <div className="rounded-xl bg-slate-50 p-3">
+                <div className="font-medium text-slate-800">{selected.label}</div>
+                <div className="text-sm text-slate-500 mt-1">موجودی فعلی: {toFaDigits(selected.stock)}</div>
+                <button
+                  onClick={() => {
+                    setSelected(null);
+                    setPickerOpen(true);
+                  }}
+                  className="text-brand-600 text-xs mt-1"
+                >
+                  تغییر کالا
+                </button>
               </div>
-            )}
+              <div>
+                <label className="label">موجودی شمارش‌شده (واقعی)</label>
+                <input autoFocus className="input" inputMode="numeric" value={newQty} onChange={(e) => setNewQty(e.target.value)} />
+              </div>
+              <div>
+                <label className="label">توضیح</label>
+                <input className="input" value={note} onChange={(e) => setNote(e.target.value)} />
+              </div>
+            </>
+          )}
+
+          {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
+
+          <div className="flex gap-2">
+            <button onClick={handleSave} disabled={saving || !selected} className="btn-primary flex-1">
+              {saving && <Loader2 className="animate-spin" size={18} />}
+              ثبت تعدیل
+            </button>
+            <button onClick={onClose} className="btn-secondary">انصراف</button>
           </div>
-        ) : (
-          <>
-            <div className="rounded-xl bg-slate-50 p-3">
-              <div className="font-medium text-slate-800">{selected.label}</div>
-              <div className="text-sm text-slate-500 mt-1">
-                موجودی فعلی: {toFaDigits(selected.stock)}
-              </div>
-              <button onClick={() => setSelected(null)} className="text-brand-600 text-xs mt-1">
-                تغییر کالا
-              </button>
-            </div>
-            <div>
-              <label className="label">موجودی شمارش‌شده (واقعی)</label>
-              <input
-                autoFocus
-                className="input"
-                inputMode="numeric"
-                value={newQty}
-                onChange={(e) => setNewQty(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="label">توضیح</label>
-              <input className="input" value={note} onChange={(e) => setNote(e.target.value)} />
-            </div>
-          </>
-        )}
-
-        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
-
-        <div className="flex gap-2">
-          <button onClick={handleSave} disabled={saving || !selected} className="btn-primary flex-1">
-            {saving && <Loader2 className="animate-spin" size={18} />}
-            ثبت تعدیل
-          </button>
-          <button onClick={onClose} className="btn-secondary">
-            انصراف
-          </button>
         </div>
-      </div>
-    </Modal>
+      </Modal>
+
+      <ProductSelector
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onSelect={(v: SelectableVariant) => {
+          setSelected({
+            id: v.variant_id,
+            label: `${v.product_name} ${[v.color, v.size].filter(Boolean).join(" / ")}`.trim(),
+            stock: v.stock_qty,
+          });
+          setNewQty(String(v.stock_qty));
+          setPickerOpen(false);
+        }}
+        priceMode="sale"
+      />
+    </>
   );
 }
