@@ -31,7 +31,10 @@ export default function ContactsPage() {
         .select("*")
         .eq("is_active", true)
         .order("name");
-      if (search.trim()) q = q.ilike("name", `%${search.trim()}%`);
+      if (search.trim()) {
+        const t = search.trim();
+        q = q.or(`name.ilike.%${t}%,phone.ilike.%${t}%,code.ilike.%${t}%`);
+      }
       if (typeFilter) q = q.in("type", typeFilter === "both" ? ["both"] : [typeFilter, "both"]);
       const { data, error } = await q;
       if (error) throw error;
@@ -116,7 +119,8 @@ export default function ContactsPage() {
                   </div>
                   <div className="min-w-0">
                     <div className="font-medium text-slate-800 truncate">{c.name || "بدون نام"}</div>
-                    <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
+                    <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5 flex-wrap">
+                      {(c as any).code && <span className="font-mono text-brand-600">{(c as any).code}</span>}
                       <span className="badge bg-slate-100 text-slate-500">{TYPE_LABEL[c.type]}</span>
                       {c.phone && (
                         <span className="flex items-center gap-1" dir="ltr">

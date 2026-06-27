@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Wallet, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export default function SetupPage() {
   const router = useRouter();
@@ -31,9 +31,7 @@ export default function SetupPage() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-brand-50 to-slate-100">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-600 text-white mb-4">
-            <Wallet size={32} />
-          </div>
+          <img src="/mehrjameh-logo.jpg" alt="مهرجامه" className="w-24 h-24 object-contain mx-auto mb-2" />
           <h1 className="text-2xl font-bold text-slate-800">راه‌اندازی کسب‌وکار</h1>
           <p className="text-slate-500 mt-1 text-sm">برای شروع، نام کسب‌وکار خود را وارد کنید</p>
         </div>

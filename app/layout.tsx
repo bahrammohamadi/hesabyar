@@ -3,18 +3,18 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
-  title: "حساب‌یار | مدیریت مالی و فروش",
-  description: "نرم‌افزار مدیریت مالی و فروش برای کسب‌وکارهای کوچک",
+  title: "مهرجامه | مدیریت فروش و مالی",
+  description: "سیستم مدیریت فروش، انبار و مالی مهرجامه",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "حساب‌یار",
+    title: "مهرجامه",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1d60f2",
+  themeColor: "#136451",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,

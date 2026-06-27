@@ -3,14 +3,14 @@ import { NextResponse } from "next/server";
 /** فایل مانیفست PWA (داینامیک تا آیکون‌ها قابل تنظیم باشند) */
 export async function GET() {
   const manifest = {
-    name: "حساب‌یار — مدیریت مالی و فروش",
-    short_name: "حساب‌یار",
-    description: "نرم‌افزار مدیریت مالی و فروش برای کسب‌وکارهای کوچک",
+    name: "مهرجامه — مدیریت فروش و مالی",
+    short_name: "مهرجامه",
+    description: "سیستم مدیریت فروش، انبار و مالی مهرجامه",
     start_url: "/dashboard",
     display: "standalone",
     orientation: "portrait",
     background_color: "#f5f7fb",
-    theme_color: "#1d60f2",
+    theme_color: "#136451",
     dir: "rtl",
     lang: "fa",
     icons: [

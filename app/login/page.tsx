@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { Wallet, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,11 +35,9 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-brand-50 to-slate-100">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-600 text-white mb-4">
-            <Wallet size={32} />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-800">حساب‌یار</h1>
-          <p className="text-slate-500 mt-1 text-sm">مدیریت مالی و فروش کسب‌وکار شما</p>
+          <img src="/mehrjameh-logo.jpg" alt="مهرجامه" className="w-28 h-28 object-contain mx-auto mb-2" />
+          <h1 className="text-2xl font-bold text-slate-800">مهرجامه</h1>
+          <p className="text-slate-500 mt-1 text-sm">سیستم مدیریت فروش و مالی</p>
         </div>
 
         <form onSubmit={handleLogin} className="card p-6 space-y-4">
