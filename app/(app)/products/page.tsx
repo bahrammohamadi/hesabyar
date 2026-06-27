@@ -103,8 +103,10 @@ export default function ProductsPage() {
                     <div className="min-w-0">
                       <div className="font-semibold text-slate-800 truncate">{p.name}</div>
                       <div className="text-xs text-slate-400 mt-0.5 flex flex-wrap gap-x-2">
+                        {p.code && <span className="font-mono text-brand-600">{p.code}</span>}
                         {p.brand?.name && <span>برند: {p.brand.name}</span>}
                         {p.category?.name && <span>دسته: {p.category.name}</span>}
+                        {p.season && <span>فصل: {p.season}</span>}
                       </div>
                     </div>
                   </div>
@@ -174,6 +176,10 @@ function ProductModal({
   const { data: brands } = useBrands(orgId);
 
   const [name, setName] = useState(editing?.name ?? "");
+  const [code, setCode] = useState(editing?.code ?? "");
+  const [season, setSeason] = useState(editing?.season ?? "");
+  const [material, setMaterial] = useState(editing?.material ?? "");
+  const [description, setDescription] = useState(editing?.description ?? "");
   const [categoryId, setCategoryId] = useState(editing?.category_id ?? "");
   const [brandId, setBrandId] = useState(editing?.brand_id ?? "");
   const [lowStock, setLowStock] = useState(String(editing?.low_stock_threshold ?? 3));
@@ -213,28 +219,24 @@ function ProductModal({
     try {
       let productId = editing?.id;
 
+      const baseFields = {
+        name: name.trim(),
+        code: code.trim() || null,
+        season: season.trim() || null,
+        material: material.trim() || null,
+        description: description.trim() || null,
+        category_id: categoryId || null,
+        brand_id: brandId || null,
+        low_stock_threshold: Number(toEnDigits(lowStock)) || 0,
+      };
+
       if (editing) {
-        const { error: e } = await supabase
-          .from("products")
-          .update({
-            name: name.trim(),
-            category_id: categoryId || null,
-            brand_id: brandId || null,
-            low_stock_threshold: Number(toEnDigits(lowStock)) || 0,
-          })
-          .eq("id", editing.id);
+        const { error: e } = await supabase.from("products").update(baseFields).eq("id", editing.id);
         if (e) throw e;
       } else {
         const { data, error: e } = await supabase
           .from("products")
-          .insert({
-            org_id: orgId,
-            branch_id: branchId,
-            name: name.trim(),
-            category_id: categoryId || null,
-            brand_id: brandId || null,
-            low_stock_threshold: Number(toEnDigits(lowStock)) || 0,
-          })
+          .insert({ org_id: orgId, branch_id: branchId, ...baseFields })
           .select("id")
           .single();
         if (e) throw e;
@@ -303,14 +305,49 @@ function ProductModal({
       size="lg"
     >
       <div className="space-y-4">
-        <div>
-          <label className="label">نام کالا *</label>
-          <input
-            className="input"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="مثلاً: مانتو لینن"
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="label">نام کالا *</label>
+            <input
+              className="input"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="مثلاً: مانتو لینن"
+            />
+          </div>
+          <div>
+            <label className="label">کد کالا</label>
+            <input
+              className="input text-left"
+              dir="ltr"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="خالی = تولید خودکار"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="label">فصل</label>
+            <select className="input" value={season} onChange={(e) => setSeason(e.target.value)}>
+              <option value="">—</option>
+              <option value="بهار">بهار</option>
+              <option value="تابستان">تابستان</option>
+              <option value="پاییز">پاییز</option>
+              <option value="زمستان">زمستان</option>
+              <option value="چهارفصل">چهارفصل</option>
+            </select>
+          </div>
+          <div>
+            <label className="label">جنس</label>
+            <input
+              className="input"
+              value={material}
+              onChange={(e) => setMaterial(e.target.value)}
+              placeholder="مثلاً: لینن، نخ، مخمل"
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -346,14 +383,20 @@ function ProductModal({
           </div>
         </div>
 
-        <div>
-          <label className="label">حد کم‌موجودی (هشدار)</label>
-          <input
-            className="input"
-            value={lowStock}
-            onChange={(e) => setLowStock(e.target.value)}
-            inputMode="numeric"
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="label">حد کم‌موجودی (هشدار)</label>
+            <input
+              className="input"
+              value={lowStock}
+              onChange={(e) => setLowStock(e.target.value)}
+              inputMode="numeric"
+            />
+          </div>
+          <div>
+            <label className="label">توضیحات</label>
+            <input className="input" value={description} onChange={(e) => setDescription(e.target.value)} />
+          </div>
         </div>
 
         <div className="border-t border-slate-100 pt-4">

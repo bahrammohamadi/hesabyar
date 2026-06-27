@@ -6,6 +6,10 @@ import { createClient } from "@/lib/supabase/client";
 export interface ProductWithVariants {
   id: string;
   name: string;
+  code: string | null;
+  season: string | null;
+  material: string | null;
+  description: string | null;
   category_id: string | null;
   brand_id: string | null;
   base_purchase_price: number;
@@ -36,8 +40,8 @@ export function useProducts(orgId: string | null, search = "") {
       let query = supabase
         .from("products")
         .select(
-          `id, name, category_id, brand_id, base_purchase_price, base_sale_price,
-           low_stock_threshold, is_active,
+          `id, name, code, season, material, description, category_id, brand_id,
+           base_purchase_price, base_sale_price, low_stock_threshold, is_active,
            category:categories(name), brand:brands(name),
            product_variants(id, color, size, sku, barcode, purchase_price, sale_price, stock_qty, is_active)`
         )

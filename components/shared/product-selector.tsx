@@ -1,0 +1,295 @@
+"use client";
+
+import { useState, useMemo, useEffect, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { createClient } from "@/lib/supabase/client";
+import { useOrg } from "@/lib/hooks/useOrg";
+import { Modal } from "@/components/shared/ui";
+import { formatToman, toFaDigits } from "@/lib/utils/format";
+import { Search, Package, Barcode, X, Filter } from "lucide-react";
+
+export interface SelectableVariant {
+  variant_id: string;
+  product_name: string;
+  product_code: string | null;
+  color: string | null;
+  size: string | null;
+  sku: string | null;
+  barcode: string | null;
+  sale_price: number;
+  purchase_price: number;
+  stock_qty: number;
+  category_id: string | null;
+  brand_id: string | null;
+}
+
+interface RawVariant {
+  id: string;
+  color: string | null;
+  size: string | null;
+  sku: string | null;
+  barcode: string | null;
+  sale_price: number | null;
+  purchase_price: number | null;
+  stock_qty: number;
+  product: {
+    name: string;
+    code: string | null;
+    category_id: string | null;
+    brand_id: string | null;
+    base_sale_price: number;
+    base_purchase_price: number;
+  } | null;
+}
+
+/**
+ * انتخابگر حرفه‌ای کالا — مودال با جستجوی لحظه‌ای، فیلتر دسته/برند/رنگ/سایز/قیمت.
+ * در فروش، خرید، انبار و حواله استفاده می‌شود.
+ */
+export function ProductSelector({
+  open,
+  onClose,
+  onSelect,
+  priceMode = "sale",
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSelect: (v: SelectableVariant) => void;
+  priceMode?: "sale" | "purchase";
+}) {
+  const { orgId } = useOrg();
+  const [term, setTerm] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [brandId, setBrandId] = useState("");
+  const [color, setColor] = useState("");
+  const [size, setSize] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (open) setTimeout(() => inputRef.current?.focus(), 100);
+  }, [open]);
+
+  // همه‌ی تنوع‌ها (یک‌بار بارگذاری، فیلتر در سمت کلاینت برای سرعت لحظه‌ای)
+  const { data: variants, isLoading } = useQuery({
+    queryKey: ["all-variants", orgId],
+    enabled: !!orgId && open,
+    queryFn: async (): Promise<SelectableVariant[]> => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("product_variants")
+        .select(
+          `id, color, size, sku, barcode, sale_price, purchase_price, stock_qty,
+           product:products!inner(name, code, category_id, brand_id, base_sale_price, base_purchase_price)`
+        )
+        .eq("is_active", true)
+        .limit(5000);
+      if (error) throw error;
+      return ((data as unknown as RawVariant[]) ?? []).map((v) => ({
+        variant_id: v.id,
+        product_name: v.product?.name ?? "",
+        product_code: v.product?.code ?? null,
+        color: v.color,
+        size: v.size,
+        sku: v.sku,
+        barcode: v.barcode,
+        sale_price: v.sale_price ?? v.product?.base_sale_price ?? 0,
+        purchase_price: v.purchase_price ?? v.product?.base_purchase_price ?? 0,
+        stock_qty: v.stock_qty,
+        category_id: v.product?.category_id ?? null,
+        brand_id: v.product?.brand_id ?? null,
+      }));
+    },
+  });
+
+  const { data: categories } = useQuery({
+    queryKey: ["sel-categories", orgId],
+    enabled: !!orgId && open,
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data } = await supabase.from("categories").select("id, name").eq("is_active", true).order("name");
+      return data ?? [];
+    },
+  });
+
+  const { data: brands } = useQuery({
+    queryKey: ["sel-brands", orgId],
+    enabled: !!orgId && open,
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data } = await supabase.from("brands").select("id, name").eq("is_active", true).order("name");
+      return data ?? [];
+    },
+  });
+
+  // رنگ‌ها و سایزهای موجود (برای فیلتر)
+  const { colors, sizes } = useMemo(() => {
+    const c = new Set<string>();
+    const s = new Set<string>();
+    variants?.forEach((v) => {
+      if (v.color) c.add(v.color);
+      if (v.size) s.add(v.size);
+    });
+    return { colors: Array.from(c).sort(), sizes: Array.from(s).sort() };
+  }, [variants]);
+
+  // فیلتر لحظه‌ای
+  const filtered = useMemo(() => {
+    if (!variants) return [];
+    const t = term.trim().toLowerCase();
+    const max = maxPrice ? Number(maxPrice.replace(/[^\d]/g, "")) * 10 : Infinity;
+    return variants
+      .filter((v) => {
+        if (t) {
+          const hay = `${v.product_name} ${v.product_code ?? ""} ${v.sku ?? ""} ${v.barcode ?? ""} ${v.color ?? ""} ${v.size ?? ""}`.toLowerCase();
+          if (!hay.includes(t)) return false;
+        }
+        if (categoryId && v.category_id !== categoryId) return false;
+        if (brandId && v.brand_id !== brandId) return false;
+        if (color && v.color !== color) return false;
+        if (size && v.size !== size) return false;
+        const price = priceMode === "sale" ? v.sale_price : v.purchase_price;
+        if (price > max) return false;
+        return true;
+      })
+      .slice(0, 200);
+  }, [variants, term, categoryId, brandId, color, size, maxPrice, priceMode]);
+
+  const activeFilters = [categoryId, brandId, color, size, maxPrice].filter(Boolean).length;
+
+  function reset() {
+    setCategoryId("");
+    setBrandId("");
+    setColor("");
+    setSize("");
+    setMaxPrice("");
+  }
+
+  return (
+    <Modal open={open} onClose={onClose} title="انتخاب کالا" size="lg">
+      <div className="space-y-3">
+        {/* جستجو */}
+        <div className="relative">
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <input
+            ref={inputRef}
+            className="input pr-10"
+            placeholder="جستجو: نام، کد کالا یا بارکد..."
+            value={term}
+            onChange={(e) => setTerm(e.target.value)}
+          />
+          {term && (
+            <button onClick={() => setTerm("")} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+              <X size={16} />
+            </button>
+          )}
+        </div>
+
+        {/* دکمه فیلتر */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => setShowFilters((s) => !s)}
+            className="flex items-center gap-1.5 text-sm text-slate-600"
+          >
+            <Filter size={16} />
+            فیلترها
+            {activeFilters > 0 && (
+              <span className="badge bg-brand-100 text-brand-700">{toFaDigits(activeFilters)}</span>
+            )}
+          </button>
+          {activeFilters > 0 && (
+            <button onClick={reset} className="text-xs text-rose-500">
+              پاک‌کردن فیلترها
+            </button>
+          )}
+        </div>
+
+        {/* فیلترها */}
+        {showFilters && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 rounded-xl bg-slate-50">
+            <select className="input text-sm" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+              <option value="">همه دسته‌ها</option>
+              {categories?.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+            <select className="input text-sm" value={brandId} onChange={(e) => setBrandId(e.target.value)}>
+              <option value="">همه برندها</option>
+              {brands?.map((b) => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+            <select className="input text-sm" value={color} onChange={(e) => setColor(e.target.value)}>
+              <option value="">همه رنگ‌ها</option>
+              {colors.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+            <select className="input text-sm" value={size} onChange={(e) => setSize(e.target.value)}>
+              <option value="">همه سایزها</option>
+              {sizes.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+            <input
+              className="input text-sm col-span-2 sm:col-span-1"
+              placeholder="حداکثر قیمت (تومان)"
+              inputMode="numeric"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value)}
+            />
+          </div>
+        )}
+
+        {/* نتایج */}
+        <div className="text-xs text-slate-400">
+          {isLoading ? "در حال بارگذاری..." : `${toFaDigits(filtered.length)} کالا`}
+        </div>
+
+        <div className="max-h-[50vh] overflow-y-auto -mx-1 px-1 space-y-1.5">
+          {filtered.length === 0 && !isLoading ? (
+            <div className="text-center text-sm text-slate-400 py-10">کالایی یافت نشد.</div>
+          ) : (
+            filtered.map((v) => {
+              const price = priceMode === "sale" ? v.sale_price : v.purchase_price;
+              const out = v.stock_qty <= 0;
+              return (
+                <button
+                  key={v.variant_id}
+                  onClick={() => {
+                    onSelect(v);
+                  }}
+                  className="w-full text-right rounded-xl border border-slate-100 hover:border-brand-300 hover:bg-brand-50/40 p-3 transition flex items-center gap-3"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
+                    <Package size={18} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium text-sm text-slate-800 truncate">{v.product_name}</div>
+                    <div className="text-xs text-slate-400 flex flex-wrap gap-x-2 mt-0.5">
+                      {v.product_code && (
+                        <span className="flex items-center gap-1">
+                          <Barcode size={11} /> {v.product_code}
+                        </span>
+                      )}
+                      {(v.color || v.size) && (
+                        <span>{[v.color, v.size].filter(Boolean).join(" / ")}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-left shrink-0">
+                    <div className="text-sm font-medium text-slate-700">{formatToman(price, false)}</div>
+                    <div className={`text-xs ${out ? "text-rose-500" : "text-emerald-600"}`}>
+                      موجودی {toFaDigits(v.stock_qty)}
+                    </div>
+                  </div>
+                </button>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </Modal>
+  );
+}
