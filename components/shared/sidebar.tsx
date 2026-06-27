@@ -53,10 +53,11 @@ export function Sidebar({
       >
         <div className="flex items-center justify-between p-4 border-b border-slate-100">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-brand-600 text-white flex items-center justify-center">
-              <Wallet size={20} />
+            <img src="/mehrjameh-logo.jpg" alt="مهرجامه" className="w-9 h-9 rounded-xl object-contain bg-white" />
+            <div className="leading-tight">
+              <div className="font-bold text-slate-800">مهرجامه</div>
+              <div className="text-[10px] text-slate-400">سیستم مدیریت فروش</div>
             </div>
-            <span className="font-bold text-slate-800">حساب‌یار</span>
           </div>
           <button onClick={onClose} className="lg:hidden text-slate-400">
             <X size={20} />
@@ -88,7 +89,7 @@ export function Sidebar({
         </nav>
 
         <div className="p-4 border-t border-slate-100 text-xs text-slate-400 text-center">
-          نسخه ۱.۰ — حساب‌یار
+          مهرجامه — نسخه ۱.۰
         </div>
       </aside>
     </>
