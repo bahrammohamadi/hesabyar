@@ -85,7 +85,7 @@ export default function DashboardPage() {
       const supabase = createClient();
       const { data } = await supabase
         .from("sales")
-        .select("id, invoice_no, date, total, customer:contacts(name)")
+        .select("id, invoice_no, date, total, customer_id, customer:contacts(name)")
         .eq("status", "confirmed")
         .order("date", { ascending: false })
         .limit(5);
@@ -369,7 +369,7 @@ export default function DashboardPage() {
                     <div>
                       <div className="font-medium text-brand-600">{sale.invoice_no}</div>
                       <div className="text-xs text-slate-400">
-                        {sale.customer?.name ?? "مشتری نقدی"} • {toJalali(sale.date)}
+                        {sale.customer_id ? <Link href={`/contacts/${sale.customer_id}`} className="hover:underline">{sale.customer?.name ?? "مشتری"}</Link> : <span className="text-slate-400">مشتری نقدی</span>} • {toJalali(sale.date)}
                       </div>
                     </div>
                     <span className="font-medium text-slate-700">{formatToman(sale.total, false)}</span>

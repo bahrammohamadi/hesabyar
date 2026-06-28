@@ -14,6 +14,7 @@ import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
 import { formatToman, toFaDigits, toEnDigits, formatNumber } from "@/lib/utils/format";
 import { tomanToRial, rialToToman } from "@/lib/utils/format";
 import { Plus, Search, Package, Pencil, Trash2, Loader2 } from "lucide-react";
+import Link from "next/link";
 
 interface VariantForm {
   id?: string;
@@ -101,7 +102,7 @@ export default function ProductsPage() {
                       <Package size={20} />
                     </div>
                     <div className="min-w-0">
-                      <div className="font-semibold text-slate-800 truncate">{p.name}</div>
+                      <Link href={`/products/${p.id}`} className="font-semibold text-slate-800 truncate hover:text-brand-600 block">{p.name}</Link>
                       <div className="text-xs text-slate-400 mt-0.5 flex flex-wrap gap-x-2">
                         {p.code && <span className="font-mono text-brand-600">{p.code}</span>}
                         {p.brand?.name && <span>برند: {p.brand.name}</span>}
