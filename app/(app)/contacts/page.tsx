@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";

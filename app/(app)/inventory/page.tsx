@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
@@ -34,6 +35,15 @@ export default function InventoryPage() {
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [stockInOpen, setStockInOpen] = useState(false);
   const [stockOutOpen, setStockOutOpen] = useState(false);
+
+  // URL params support - auto-open modals based on URL
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const type = searchParams.get("type");
+    if (type === "in") setStockInOpen(true);
+    else if (type === "out") setStockOutOpen(true);
+    else if (type === "adjust") setAdjustOpen(true);
+  }, [searchParams]);
 
   // کالاهای کم‌موجود
   const { data: lowStock } = useQuery({
