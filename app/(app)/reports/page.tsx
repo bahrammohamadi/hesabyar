@@ -435,15 +435,10 @@ function ContactsReport({ orgId }: { orgId: string }) {
   );
 }
 
+
+
 // --- سود و زیان ---
 function ProfitReport({ orgId }: { orgId: string }) {
-  const [startDate, setStartDate] = useState(() => {
-    const d = new Date();
-    d.setMonth(d.getMonth() - 1);
-    return d.toISOString().split("T")[0];
-  });
-  const [endDate, setEndDate] = useState(() => new Date().toISOString().split("T")[0]);
-
   const { data: topProducts, isLoading } = useQuery({
     queryKey: ["report-top-selling", orgId],
     queryFn: async () => {
@@ -474,22 +469,11 @@ function ProfitReport({ orgId }: { orgId: string }) {
     },
   });
 
-  const { data: salesByCategory } = useQuery({
-    queryKey: ["report-sales-category", orgId],
-    queryFn: async () => {
-      const supabase = createClient();
-      const { data, error } = await supabase.from("sales_by_category").select("*").limit(20);
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
-
   return (
     <div className="space-y-6">
-      {/* فروش بر اساس رنگ */}
       <div className="card p-4 sm:p-6">
         <h3 className="font-semibold text-slate-800 mb-4">فروش بر اساس رنگ</h3>
-        {!salesByColor?.length ? (
+        {(!salesByColor || !salesByColor.length) ? (
           <EmptyState icon={Package} message="داده‌ای موجود نیست" />
         ) : (
           <div className="h-64" dir="ltr">
@@ -506,10 +490,9 @@ function ProfitReport({ orgId }: { orgId: string }) {
         )}
       </div>
 
-      {/* فروش بر اساس سایز */}
       <div className="card p-4 sm:p-6">
         <h3 className="font-semibold text-slate-800 mb-4">فروش بر اساس سایز</h3>
-        {!salesBySize?.length ? (
+        {!salesBySize || !salesBySize.length ? (
           <EmptyState icon={Package} message="داده‌ای موجود نیست" />
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -524,7 +507,6 @@ function ProfitReport({ orgId }: { orgId: string }) {
         )}
       </div>
 
-      {/* پرفروش‌ترین‌ها با سود */}
       <div className="card p-4 sm:p-6">
         <h3 className="font-semibold text-slate-800 mb-4">پرفروش‌ترین محصولات</h3>
         {isLoading ? (
@@ -556,24 +538,6 @@ function ProfitReport({ orgId }: { orgId: string }) {
           </div>
         )}
       </div>
-
-      {/* فروش بر اساس دسته‌بندی */}
-      {salesByCategory?.length > 0 && (
-        <div className="card p-4 sm:p-6">
-          <h3 className="font-semibold text-slate-800 mb-4">فروش بر اساس دسته‌بندی</h3>
-          <div className="space-y-2">
-            {salesByCategory.slice(0, 8).map((c: any, i: number) => (
-              <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                <span className="text-sm font-medium">{c.category_name || "بدون دسته"}</span>
-                <div className="flex items-center gap-4">
-                  <span className="text-sm text-slate-500">{toFaDigits(c.total_qty)} عدد</span>
-                  <span className="text-sm font-bold text-brand-600">{formatToman(c.total_amount)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
