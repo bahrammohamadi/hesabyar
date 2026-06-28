@@ -8,6 +8,7 @@ import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { toFaDigits, toEnDigits, toJalali, formatToman } from "@/lib/utils/format";
 import { Loader2, ArrowUpDown, AlertTriangle, ArrowDownToLine, ArrowUpFromLine, Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
 
 const TYPE_LABEL: Record<string, string> = {
   in: "ورود",
@@ -104,7 +105,7 @@ export default function InventoryPage() {
           <div className="flex flex-wrap gap-2">
             {lowStock.map((v) => (
               <span key={v.variant_id} className="text-xs bg-white border border-amber-200 rounded-lg px-2.5 py-1.5 text-slate-600 flex items-center gap-2">
-                <span className="font-medium">{v.product_name}</span>
+                <Link href={`/products/${v.variant_id}`} className="font-medium text-brand-600 hover:underline">{v.product_name}</Link>
                 {v.color || v.size ? (
                   <span className="text-slate-400">({[v.color, v.size].filter(Boolean).join(" / ")})</span>
                 ) : null}
@@ -137,7 +138,7 @@ export default function InventoryPage() {
               {movements.map((m) => (
                 <tr key={m.id} className="hover:bg-slate-50">
                   <td>
-                    <span className="font-medium text-slate-800">{m.variant?.product?.name}</span>
+                    <Link href={`/products/${m.variant_id}`} className="font-medium text-brand-600 hover:underline">{m.variant?.product?.name}</Link>
                     <span className="text-slate-400 text-xs block">
                       {[m.variant?.color, m.variant?.size].filter(Boolean).join(" / ")}
                     </span>

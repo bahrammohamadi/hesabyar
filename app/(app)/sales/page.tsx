@@ -24,7 +24,7 @@ export default function SalesPage() {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("sales")
-        .select("id, invoice_no, date, total, paid_credit, status, customer:contacts(name)")
+        .select("id, invoice_no, date, total, paid_credit, status, customer_id, customer:contacts(name)")
         .order("date", { ascending: false })
         .limit(50);
       if (error) throw error;
@@ -35,6 +35,7 @@ export default function SalesPage() {
         total: number;
         paid_credit: number;
         status: string;
+        customer_id: string | null;
         customer: { name: string } | null;
       }[];
     },
@@ -88,7 +89,7 @@ export default function SalesPage() {
                     </Link>
                   </td>
                   <td className="text-slate-500">{toJalali(s.date)}</td>
-                  <td>{s.customer?.name ?? "مشتری نقدی"}</td>
+                  <td>{s.customer_id ? <Link href={`/contacts/${s.customer_id}`} className="text-brand-600 hover:underline">{s.customer?.name ?? "مشتری"}</Link> : <span className="text-slate-400">مشتری نقدی</span>}</td>
                   <td className="font-medium">{formatToman(s.total)}</td>
                   <td>
                     {s.paid_credit > 0 ? (

@@ -9,6 +9,7 @@ import { ProductSelector, type SelectableVariant } from "@/components/shared/pro
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
 import { formatToman, toFaDigits, toEnDigits, tomanToRial, rialToToman, toJalali } from "@/lib/utils/format";
 import { Plus, Trash2, Loader2, Package, UserPlus, X } from "lucide-react";
+import Link from "next/link";
 
 interface PItem {
   variant_id: string;
@@ -29,7 +30,7 @@ export default function PurchasesPage() {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("purchases")
-        .select("id, invoice_no, date, total, paid, supplier:contacts(name)")
+        .select("id, invoice_no, date, total, paid, supplier_id, supplier:contacts(name)")
         .order("date", { ascending: false })
         .limit(50);
       if (error) throw error;
@@ -39,6 +40,7 @@ export default function PurchasesPage() {
         date: string;
         total: number;
         paid: number;
+        supplier_id: string | null;
         supplier: { name: string } | null;
       }[];
     },
@@ -86,7 +88,7 @@ export default function PurchasesPage() {
                 <tr key={p.id} className="hover:bg-slate-50">
                   <td className="font-medium text-brand-600">{p.invoice_no}</td>
                   <td className="text-slate-500">{toJalali(p.date)}</td>
-                  <td>{p.supplier?.name ?? "—"}</td>
+                  <td>{p.supplier_id ? <Link href={`/contacts/${p.supplier_id}`} className="text-emerald-600 hover:underline">{p.supplier?.name ?? "—"}</Link> : <span className="text-slate-400">—</span>}</td>
                   <td className="font-medium">{formatToman(p.total)}</td>
                   <td>{formatToman(p.paid)}</td>
                 </tr>
