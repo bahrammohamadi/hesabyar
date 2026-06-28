@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
@@ -437,6 +438,15 @@ function ContactsReport({ orgId }: { orgId: string }) {
 export default function ReportsPage() {
   const { orgId, loading: orgLoading } = useOrg();
   const [activeTab, setActiveTab] = useState<TabId>("sales");
+
+  // URL params support
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab && ["sales", "products", "financial", "contacts"].includes(tab)) {
+      setActiveTab(tab as TabId);
+    }
+  }, [searchParams]);
 
   if (orgLoading) return <Spinner label="در حال بارگذاری..." />;
   if (!orgId) return <EmptyState icon={Calendar} message="لطفاً ابتدا وارد شوید" />;
