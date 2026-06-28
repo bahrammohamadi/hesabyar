@@ -3,15 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
-import { LayoutDashboard, Receipt, Package, Wallet, Users, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Receipt, Package, Wallet, Menu } from "lucide-react";
 
 const ITEMS = [
   { href: "/dashboard", label: "داشبورد", icon: LayoutDashboard },
   { href: "/products", label: "کالا", icon: Package },
   { href: "/sales", label: "فروش", icon: Receipt, primary: true },
   { href: "/finance", label: "مالی", icon: Wallet },
-  { href: "/contacts", label: "اشخاص", icon: Users },
-  { href: "/reports", label: "گزارش", icon: BarChart3 },
+  { href: "/settings", label: "منو", icon: Menu },
 ];
 
 /** ناوبری پایین مخصوص موبایل (Bottom Navigation) */
@@ -20,7 +19,7 @@ export function BottomNav() {
 
   return (
     <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-slate-200 pb-[env(safe-area-inset-bottom)]">
-      <div className="grid grid-cols-6 h-16">
+      <div className="grid grid-cols-5 h-16">
         {ITEMS.map((item) => {
           const active = pathname === item.href || pathname.startsWith(item.href + "/");
           const Icon = item.icon;
