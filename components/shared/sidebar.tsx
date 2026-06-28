@@ -12,6 +12,7 @@ import {
   Users,
   Wallet,
   Settings,
+  BarChart3,
   X,
 } from "lucide-react";
 
@@ -23,6 +24,7 @@ const NAV = [
   { href: "/purchases", label: "خرید", icon: ShoppingCart },
   { href: "/contacts", label: "اشخاص", icon: Users },
   { href: "/finance", label: "مالی", icon: Wallet },
+  { href: "/reports", label: "گزارش‌ها", icon: BarChart3 },
   { href: "/settings", label: "تنظیمات", icon: Settings },
 ];
 
