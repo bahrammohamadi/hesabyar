@@ -3,22 +3,21 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
-import { LayoutDashboard, Receipt, Package, Wallet, Menu } from "lucide-react";
+import { LayoutDashboard, Receipt, Package, ShoppingCart, Users } from "lucide-react";
 
 const ITEMS = [
   { href: "/dashboard", label: "داشبورد", icon: LayoutDashboard },
-  { href: "/products", label: "کالا", icon: Package },
   { href: "/sales", label: "فروش", icon: Receipt, primary: true },
-  { href: "/finance", label: "مالی", icon: Wallet },
-  { href: "/settings", label: "منو", icon: Menu },
+  { href: "/purchases", label: "خرید", icon: ShoppingCart },
+  { href: "/products", label: "کالا", icon: Package },
+  { href: "/contacts", label: "اشخاص", icon: Users },
 ];
 
-/** ناوبری پایین مخصوص موبایل (Bottom Navigation) */
 export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-slate-200 pb-[env(safe-area-inset-bottom)]">
+    <nav className="sm:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-slate-200 pb-[env(safe-area-inset-bottom)]">
       <div className="grid grid-cols-5 h-16">
         {ITEMS.map((item) => {
           const active = pathname === item.href || pathname.startsWith(item.href + "/");
@@ -45,7 +44,7 @@ export function BottomNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 transition-colors",
+                "flex flex-col items-center justify-center gap-0.5 transition-colors min-h-16",
                 active ? "text-brand-600" : "text-slate-400"
               )}
             >

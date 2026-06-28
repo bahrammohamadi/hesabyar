@@ -97,12 +97,14 @@ export function Modal({
   title,
   children,
   size = "md",
+  mobileFullscreen = false,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   children: ReactNode;
   size?: "md" | "lg";
+  mobileFullscreen?: boolean;
 }) {
   if (!open) return null;
   return (
@@ -111,6 +113,7 @@ export function Modal({
       <div
         className={cn(
           "relative bg-white w-full rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[92vh] overflow-y-auto",
+          mobileFullscreen ? "h-[92vh] sm:h-auto" : "",
           size === "lg" ? "sm:max-w-2xl" : "sm:max-w-md"
         )}
       >

@@ -129,7 +129,7 @@ export default function DashboardPage() {
       {/* دکمه‌های دسترسی سریع */}
       <div className="mb-6">
         <h2 className="text-sm font-medium text-slate-500 mb-3">دسترسی سریع</h2>
-        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
           <button
             onClick={() => setQuickSaleOpen(true)}
             className="card p-3 flex flex-col items-center gap-2 hover:bg-brand-50 transition group cursor-pointer"
@@ -181,11 +181,29 @@ export default function DashboardPage() {
             </div>
             <span className="text-xs font-medium text-slate-700 group-hover:text-cyan-700">افزودن شخص</span>
           </Link>
-          <Link href="/reports" className="card p-3 flex flex-col items-center gap-2 hover:bg-indigo-50 transition group no-underline">
+          <Link href="/reports?tab=sales" className="card p-3 flex flex-col items-center gap-2 hover:bg-indigo-50 transition group no-underline">
             <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
               <BarChart3 size={20} />
             </div>
-            <span className="text-xs font-medium text-slate-700 group-hover:text-indigo-700">گزارش‌ها</span>
+            <span className="text-xs font-medium text-slate-700 group-hover:text-indigo-700">گزارش فروش</span>
+          </Link>
+          <Link href="/reports?tab=financial" className="card p-3 flex flex-col items-center gap-2 hover:bg-violet-50 transition group no-underline">
+            <div className="w-10 h-10 rounded-xl bg-violet-600 text-white flex items-center justify-center">
+              <Wallet size={20} />
+            </div>
+            <span className="text-xs font-medium text-slate-700 group-hover:text-violet-700">سود و زیان</span>
+          </Link>
+          <Link href="/finance" className="card p-3 flex flex-col items-center gap-2 hover:bg-amber-50 transition group no-underline">
+            <div className="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center">
+              <ArrowDownCircle size={20} />
+            </div>
+            <span className="text-xs font-medium text-slate-700 group-hover:text-amber-700">گردش نقدی</span>
+          </Link>
+          <Link href="/reports?tab=products" className="card p-3 flex flex-col items-center gap-2 hover:bg-blue-50 transition group no-underline">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center">
+              <Package size={20} />
+            </div>
+            <span className="text-xs font-medium text-slate-700 group-hover:text-blue-700">موجودی کالا</span>
           </Link>
         </div>
       </div>

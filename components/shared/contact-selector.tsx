@@ -112,7 +112,7 @@ export function ContactSelector({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={creating ? "مشتری جدید" : title} size="md">
+    <Modal open={open} onClose={onClose} title={creating ? "مشتری جدید" : title} size="md" mobileFullscreen>
       {creating ? (
         <div className="space-y-4">
           <div>
