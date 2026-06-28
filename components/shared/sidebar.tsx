@@ -22,6 +22,14 @@ const NAV = [
 
   // ===== فروش =====
   { href: "/sales", label: "فروش", icon: ShoppingBag, highlight: true },
+  {
+    label: "سفارش‌ها",
+    icon: FileText,
+    children: [
+      { href: "/sales/orders", label: "سفارش‌های فروش", icon: ClipboardList },
+      { href: "/sales/returns", label: "مرجوعی فروش", icon: ArrowLeftRight },
+    ],
+  },
 
   // ===== کالا و انبار =====
   {
@@ -70,6 +78,7 @@ const NAV = [
       { href: "/finance?type=expense", label: "ثبت هزینه", icon: Coins },
       { href: "/finance?type=income", label: "ثبت درآمد", icon: Banknote },
       { href: "/finance?type=transfer", label: "انتقال وجه", icon: ArrowRightLeft },
+      { href: "/checks", label: "چک‌ها", icon: CreditCard },
       { href: "/settings", label: "مدیریت حساب‌ها", icon: Landmark },
       { href: "/reports?tab=financial", label: "گزارش مالی", icon: BarChart2 },
     ],

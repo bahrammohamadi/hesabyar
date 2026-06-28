@@ -32,13 +32,14 @@ import {
   Download,
 } from "lucide-react";
 
-type TabId = "sales" | "products" | "financial" | "contacts";
+type TabId = "sales" | "products" | "financial" | "contacts" | "profit";
 
 const TABS: { id: TabId; label: string; icon: typeof TrendingUp }[] = [
   { id: "sales", label: "فروش", icon: TrendingUp },
   { id: "products", label: "محصولات", icon: Package },
   { id: "financial", label: "مالی", icon: Wallet },
   { id: "contacts", label: "اشخاص", icon: Users },
+  { id: "profit", label: "سود و زیان", icon: TrendingUp },
 ];
 
 const COLORS = ["#1d60f2", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
@@ -434,6 +435,149 @@ function ContactsReport({ orgId }: { orgId: string }) {
   );
 }
 
+// --- سود و زیان ---
+function ProfitReport({ orgId }: { orgId: string }) {
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 1);
+    return d.toISOString().split("T")[0];
+  });
+  const [endDate, setEndDate] = useState(() => new Date().toISOString().split("T")[0]);
+
+  const { data: topProducts, isLoading } = useQuery({
+    queryKey: ["report-top-selling", orgId],
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase.from("top_selling_products").select("*").eq("org_id", orgId).limit(10);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const { data: salesByColor } = useQuery({
+    queryKey: ["report-sales-color", orgId],
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase.from("sales_by_color").select("*").limit(20);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const { data: salesBySize } = useQuery({
+    queryKey: ["report-sales-size", orgId],
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase.from("sales_by_size").select("*").limit(20);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const { data: salesByCategory } = useQuery({
+    queryKey: ["report-sales-category", orgId],
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase.from("sales_by_category").select("*").limit(20);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  return (
+    <div className="space-y-6">
+      {/* فروش بر اساس رنگ */}
+      <div className="card p-4 sm:p-6">
+        <h3 className="font-semibold text-slate-800 mb-4">فروش بر اساس رنگ</h3>
+        {!salesByColor?.length ? (
+          <EmptyState icon={Package} message="داده‌ای موجود نیست" />
+        ) : (
+          <div className="h-64" dir="ltr">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={salesByColor}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="color" tick={{ fontSize: 11 }} stroke="#94a3b8" />
+                <YAxis tick={{ fontSize: 11 }} stroke="#94a3b8" />
+                <Tooltip formatter={(v: number) => [toFaDigits(v) + " عدد", "تعداد فروش"]} contentStyle={{ fontFamily: "Vazirmatn", fontSize: 12, direction: "rtl" }} />
+                <Bar dataKey="total_sold_qty" fill="#10b981" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
+
+      {/* فروش بر اساس سایز */}
+      <div className="card p-4 sm:p-6">
+        <h3 className="font-semibold text-slate-800 mb-4">فروش بر اساس سایز</h3>
+        {!salesBySize?.length ? (
+          <EmptyState icon={Package} message="داده‌ای موجود نیست" />
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {salesBySize.map((s: any) => (
+              <div key={s.size} className="p-4 bg-slate-50 rounded-xl text-center">
+                <div className="text-lg font-bold text-brand-600">{s.size || "-"}</div>
+                <div className="text-2xl font-bold text-slate-800">{toFaDigits(s.total_sold_qty)}</div>
+                <div className="text-xs text-slate-500">فروش</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* پرفروش‌ترین‌ها با سود */}
+      <div className="card p-4 sm:p-6">
+        <h3 className="font-semibold text-slate-800 mb-4">پرفروش‌ترین محصولات</h3>
+        {isLoading ? (
+          <Spinner />
+        ) : !topProducts?.length ? (
+          <EmptyState icon={TrendingUp} message="داده‌ای موجود نیست" />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-100">
+                  <th className="text-right py-2 px-3 font-medium text-slate-500">محصول</th>
+                  <th className="text-right py-2 px-3 font-medium text-slate-500">تعداد</th>
+                  <th className="text-right py-2 px-3 font-medium text-slate-500">فروش</th>
+                  <th className="text-right py-2 px-3 font-medium text-slate-500">سود</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topProducts.map((p: any) => (
+                  <tr key={p.product_id} className="border-b border-slate-50 hover:bg-slate-50">
+                    <td className="py-2 px-3 font-medium">{p.product_name}</td>
+                    <td className="py-2 px-3">{toFaDigits(p.total_sold_qty)}</td>
+                    <td className="py-2 px-3 text-brand-600">{formatToman(p.total_sales_amount)}</td>
+                    <td className="py-2 px-3 text-emerald-600">{formatToman(p.total_profit)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* فروش بر اساس دسته‌بندی */}
+      {salesByCategory?.length > 0 && (
+        <div className="card p-4 sm:p-6">
+          <h3 className="font-semibold text-slate-800 mb-4">فروش بر اساس دسته‌بندی</h3>
+          <div className="space-y-2">
+            {salesByCategory.slice(0, 8).map((c: any, i: number) => (
+              <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                <span className="text-sm font-medium">{c.category_name || "بدون دسته"}</span>
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-slate-500">{toFaDigits(c.total_qty)} عدد</span>
+                  <span className="text-sm font-bold text-brand-600">{formatToman(c.total_amount)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // --- صفحه اصلی ---
 export default function ReportsPage() {
   const { orgId, loading: orgLoading } = useOrg();
@@ -443,7 +587,7 @@ export default function ReportsPage() {
   const searchParams = useSearchParams();
   useEffect(() => {
     const tab = searchParams.get("tab");
-    if (tab && ["sales", "products", "financial", "contacts"].includes(tab)) {
+    if (tab && ["sales", "products", "financial", "contacts", "profit"].includes(tab)) {
       setActiveTab(tab as TabId);
     }
   }, [searchParams]);
@@ -490,6 +634,7 @@ export default function ReportsPage() {
       {activeTab === "products" && <ProductsReport orgId={orgId} />}
       {activeTab === "financial" && <FinancialReport orgId={orgId} />}
       {activeTab === "contacts" && <ContactsReport orgId={orgId} />}
+      {activeTab === "profit" && <ProfitReport orgId={orgId} />}
     </div>
   );
 }
