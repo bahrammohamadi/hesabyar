@@ -184,7 +184,7 @@ export function ProductSelector({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="انتخاب کالا" size="lg">
+    <Modal open={open} onClose={onClose} title="انتخاب کالا" size="lg" mobileFullscreen>
       <div className="space-y-3">
         {/* جستجو */}
         <div className="relative">
@@ -217,7 +217,7 @@ export function ProductSelector({
               )}
             </button>
             <select
-              className="input text-sm py-1.5 pr-2"
+              className="input text-sm py-3 pr-2 min-h-12"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
             >

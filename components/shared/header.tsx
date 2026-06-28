@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { fullJalali } from "@/lib/utils/format";
-import { Menu, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 
-export function Header({ onMenu }: { onMenu: () => void }) {
+export function Header() {
   const router = useRouter();
 
   async function handleLogout() {
@@ -19,13 +19,6 @@ export function Header({ onMenu }: { onMenu: () => void }) {
     <header className="sticky top-0 z-20 bg-white/80 backdrop-blur border-b border-slate-200">
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
-          <button
-            onClick={onMenu}
-            className="lg:hidden text-slate-600 p-1"
-            aria-label="منو"
-          >
-            <Menu size={22} />
-          </button>
           <div className="text-sm text-slate-500 hidden sm:block">
             {fullJalali()}
           </div>
