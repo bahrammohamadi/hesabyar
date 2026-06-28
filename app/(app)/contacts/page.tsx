@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
 import { formatToman } from "@/lib/utils/format";
-import { Plus, Search, User, Pencil, Phone, Loader2 } from "lucide-react";
+import { Plus, Search, User, Pencil, Trash2, Phone, Loader2 } from "lucide-react";
 import type { Contact, ContactType } from "@/types/db";
 
 const TYPE_LABEL: Record<ContactType, string> = {
@@ -60,6 +60,28 @@ export default function ContactsPage() {
     },
   });
 
+  const handleDelete = useCallback(async (id: string) => {
+    if (!confirm("آیا از حذف این شخص مطمئن هستید؟")) return;
+    const supabase = createClient();
+    await supabase.from("contacts").update({ is_active: false }).eq("id", id);
+    qc.invalidateQueries({ queryKey: ["contacts"] });
+    qc.invalidateQueries({ queryKey: ["contact-balances"] });
+  }, [qc]);
+
+  const filtered = useMemo(() => {
+    let result = contacts ?? [];
+    const t = search.trim().toLowerCase();
+    if (t) {
+      result = result.filter((c) =>
+        `${c.name} ${c.phone ?? ""} ${(c as any).code ?? ""}`.toLowerCase().includes(t)
+      );
+    }
+    if (typeFilter) {
+      result = result.filter((c) => c.type === typeFilter || c.type === "both");
+    }
+    return result;
+  }, [contacts, search, typeFilter]);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Contact | null>(null);
 
@@ -109,7 +131,7 @@ export default function ContactsPage() {
         <EmptyState title="هنوز شخصی ثبت نشده" description="مشتری یا تامین‌کننده اضافه کنید." />
       ) : (
         <div className="space-y-2">
-          {contacts.map((c) => {
+          {filtered.map((c) => {
             const bal = balances?.[c.id] ?? 0;
             return (
               <div key={c.id} className="card p-4 flex items-center justify-between gap-3">
@@ -151,6 +173,12 @@ export default function ContactsPage() {
                     className="text-slate-400 hover:text-brand-600 p-1"
                   >
                     <Pencil size={17} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(c.id)}
+                    className="text-slate-400 hover:text-rose-600 p-1"
+                  >
+                    <Trash2 size={17} />
                   </button>
                 </div>
               </div>
