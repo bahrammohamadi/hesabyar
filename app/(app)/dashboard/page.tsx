@@ -15,6 +15,16 @@ import {
   Receipt,
   ArrowDownCircle,
   ArrowUpCircle,
+  Plus,
+  ShoppingCart,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  ArrowLeftRight,
+  ReceiptText,
+  Landmark,
+  Users,
+  BarChart3,
+  ArrowRight,
 } from "lucide-react";
 import {
   AreaChart,
@@ -26,6 +36,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { toJalali } from "@/lib/utils/format";
+import Link from "next/link";
 
 export default function DashboardPage() {
   const { orgId, loading: orgLoading } = useOrg();
@@ -68,6 +79,67 @@ export default function DashboardPage() {
   return (
     <div>
       <PageHeader title="داشبورد مدیریتی" subtitle="نمای کلی کسب‌وکار شما" />
+
+      {/* دکمه‌های دسترسی سریع */}
+      <div className="mb-6">
+        <h2 className="text-sm font-medium text-slate-500 mb-3">دسترسی سریع</h2>
+        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+          <Link href="/sales/new" className="card p-3 flex flex-col items-center gap-2 hover:bg-brand-50 transition group">
+            <div className="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center">
+              <Receipt size={20} />
+            </div>
+            <span className="text-xs font-medium text-slate-700 group-hover:text-brand-700">فروش جدید</span>
+          </Link>
+          <Link href="/purchases/new" className="card p-3 flex flex-col items-center gap-2 hover:bg-emerald-50 transition group">
+            <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center">
+              <ShoppingCart size={20} />
+            </div>
+            <span className="text-xs font-medium text-slate-700 group-hover:text-emerald-700">خرید جدید</span>
+          </Link>
+          <Link href="/inventory/in" className="card p-3 flex flex-col items-center gap-2 hover:bg-blue-50 transition group">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center">
+              <ArrowDownToLine size={20} />
+            </div>
+            <span className="text-xs font-medium text-slate-700 group-hover:text-blue-700">ورود انبار</span>
+          </Link>
+          <Link href="/inventory/out" className="card p-3 flex flex-col items-center gap-2 hover:bg-purple-50 transition group">
+            <div className="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center">
+              <ArrowUpFromLine size={20} />
+            </div>
+            <span className="text-xs font-medium text-slate-700 group-hover:text-purple-700">خروج انبار</span>
+          </Link>
+          <Link href="/finance?type=expense" className="card p-3 flex flex-col items-center gap-2 hover:bg-rose-50 transition group">
+            <div className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center">
+              <ArrowUpCircle size={20} />
+            </div>
+            <span className="text-xs font-medium text-slate-700 group-hover:text-rose-700">ثبت هزینه</span>
+          </Link>
+          <Link href="/finance?type=income" className="card p-3 flex flex-col items-center gap-2 hover:bg-amber-50 transition group">
+            <div className="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center">
+              <ArrowDownCircle size={20} />
+            </div>
+            <span className="text-xs font-medium text-slate-700 group-hover:text-amber-700">ثبت دریافتی</span>
+          </Link>
+          <Link href="/products/new" className="card p-3 flex flex-col items-center gap-2 hover:bg-slate-100 transition group">
+            <div className="w-10 h-10 rounded-xl bg-slate-600 text-white flex items-center justify-center">
+              <Plus size={20} />
+            </div>
+            <span className="text-xs font-medium text-slate-700 group-hover:text-slate-900">افزودن کالا</span>
+          </Link>
+          <Link href="/contacts/new" className="card p-3 flex flex-col items-center gap-2 hover:bg-cyan-50 transition group">
+            <div className="w-10 h-10 rounded-xl bg-cyan-600 text-white flex items-center justify-center">
+              <Users size={20} />
+            </div>
+            <span className="text-xs font-medium text-slate-700 group-hover:text-cyan-700">افزودن شخص</span>
+          </Link>
+          <Link href="/reports" className="card p-3 flex flex-col items-center gap-2 hover:bg-indigo-50 transition group">
+            <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
+              <BarChart3 size={20} />
+            </div>
+            <span className="text-xs font-medium text-slate-700 group-hover:text-indigo-700">گزارش‌ها</span>
+          </Link>
+        </div>
+      </div>
 
       {/* کارت‌های آماری */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

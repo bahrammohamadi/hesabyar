@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { Modal } from "@/components/shared/ui";
 import { formatToman, toFaDigits } from "@/lib/utils/format";
-import { Search, Package, Barcode, X, Filter } from "lucide-react";
+import { Search, Package, Barcode, X, Filter, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
 export interface SelectableVariant {
   variant_id: string;
@@ -65,6 +65,8 @@ export function ProductSelector({
   const [size, setSize] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [sortBy, setSortBy] = useState<"stock_high" | "stock_low" | "price_low" | "price_high" | "name_asc" | "newest">("stock_high");
+  const [onlyInStock, setOnlyInStock] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -134,27 +136,42 @@ export function ProductSelector({
     return { colors: Array.from(c).sort(), sizes: Array.from(s).sort() };
   }, [variants]);
 
-  // فیلتر لحظه‌ای
+  // فیلتر و مرتب‌سازی لحظه‌ای
   const filtered = useMemo(() => {
     if (!variants) return [];
     const t = term.trim().toLowerCase();
     const max = maxPrice ? Number(maxPrice.replace(/[^\d]/g, "")) * 10 : Infinity;
-    return variants
-      .filter((v) => {
-        if (t) {
-          const hay = `${v.product_name} ${v.product_code ?? ""} ${v.sku ?? ""} ${v.barcode ?? ""} ${v.color ?? ""} ${v.size ?? ""}`.toLowerCase();
-          if (!hay.includes(t)) return false;
-        }
-        if (categoryId && v.category_id !== categoryId) return false;
-        if (brandId && v.brand_id !== brandId) return false;
-        if (color && v.color !== color) return false;
-        if (size && v.size !== size) return false;
-        const price = priceMode === "sale" ? v.sale_price : v.purchase_price;
-        if (price > max) return false;
-        return true;
-      })
-      .slice(0, 200);
-  }, [variants, term, categoryId, brandId, color, size, maxPrice, priceMode]);
+
+    let result = variants.filter((v) => {
+      if (t) {
+        const hay = `${v.product_name} ${v.product_code ?? ""} ${v.sku ?? ""} ${v.barcode ?? ""} ${v.color ?? ""} ${v.size ?? ""}`.toLowerCase();
+        if (!hay.includes(t)) return false;
+      }
+      if (categoryId && v.category_id !== categoryId) return false;
+      if (brandId && v.brand_id !== brandId) return false;
+      if (color && v.color !== color) return false;
+      if (size && v.size !== size) return false;
+      const price = priceMode === "sale" ? v.sale_price : v.purchase_price;
+      if (price > max) return false;
+      if (onlyInStock && v.stock_qty <= 0) return false;
+      return true;
+    });
+
+    // مرتب‌سازی
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case "stock_high": return b.stock_qty - a.stock_qty;
+        case "stock_low": return a.stock_qty - b.stock_qty;
+        case "price_low": return (priceMode === "sale" ? a.sale_price : a.purchase_price) - (priceMode === "sale" ? b.sale_price : b.purchase_price);
+        case "price_high": return (priceMode === "sale" ? b.sale_price : b.purchase_price) - (priceMode === "sale" ? a.sale_price : a.purchase_price);
+        case "name_asc": return a.product_name.localeCompare(b.product_name, "fa");
+        case "newest": return 0; // ترتیب پیش‌فرض
+        default: return 0;
+      }
+    });
+
+    return result.slice(0, 200);
+  }, [variants, term, categoryId, brandId, color, size, maxPrice, priceMode, sortBy, onlyInStock]);
 
   const activeFilters = [categoryId, brandId, color, size, maxPrice].filter(Boolean).length;
 
@@ -186,21 +203,44 @@ export function ProductSelector({
           )}
         </div>
 
-        {/* دکمه فیلتر */}
+        {/* دکمه فیلتر و مرتب‌سازی */}
         <div className="flex items-center justify-between">
-          <button
-            onClick={() => setShowFilters((s) => !s)}
-            className="flex items-center gap-1.5 text-sm text-slate-600"
-          >
-            <Filter size={16} />
-            فیلترها
-            {activeFilters > 0 && (
-              <span className="badge bg-brand-100 text-brand-700">{toFaDigits(activeFilters)}</span>
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowFilters((s) => !s)}
+              className="flex items-center gap-1.5 text-sm text-slate-600"
+            >
+              <Filter size={16} />
+              فیلترها
+              {activeFilters > 0 && (
+                <span className="badge bg-brand-100 text-brand-700">{toFaDigits(activeFilters)}</span>
+              )}
+            </button>
+            <select
+              className="input text-sm py-1.5 pr-2"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+            >
+              <option value="stock_high">موجودی زیاد</option>
+              <option value="stock_low">موجودی کم</option>
+              <option value="price_low">قیمت کم</option>
+              <option value="price_high">قیمت زیاد</option>
+              <option value="name_asc">نام الفبا</option>
+              <option value="newest">جدیدترین</option>
+            </select>
+            <label className="flex items-center gap-1.5 text-sm text-slate-600 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={onlyInStock}
+                onChange={(e) => setOnlyInStock(e.target.checked)}
+                className="rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+              />
+              فقط موجود
+            </label>
+          </div>
           {activeFilters > 0 && (
             <button onClick={reset} className="text-xs text-rose-500">
-              پاک‌کردن فیلترها
+              پاک‌کردن
             </button>
           )}
         </div>
