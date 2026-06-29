@@ -19,93 +19,67 @@ import {
 
 const NAV = [
   { href: "/dashboard", label: "داشبورد", icon: LayoutDashboard },
-
-  // ===== فروش =====
   { href: "/sales", label: "فروش", icon: ShoppingBag, highlight: true },
-  {
-    label: "سفارش‌ها",
-    icon: FileText,
-    children: [
-      { href: "/sales/orders", label: "سفارش‌های فروش", icon: ClipboardList },
-      { href: "/sales/returns", label: "مرجوعی فروش", icon: ArrowLeftRight },
-    ],
-  },
-
-  // ===== کالا و انبار =====
+  { href: "/purchases", label: "خرید", icon: ShoppingBasket },
   {
     label: "کالا و انبار",
     icon: Package,
     children: [
-      { href: "/products", label: "لیست کالاها", icon: PackageSearch },
-      { href: "/products/new", label: "افزودن کالای جدید", icon: PlusIcon },
-      { href: "/settings", label: "دسته‌بندی کالا", icon: Layers },
-      { href: "/settings", label: "برندها", icon: Tags },
+      { href: "/products", label: "کالاها", icon: PackageSearch },
+      { href: "/products?action=new", label: "کالای جدید", icon: PlusIcon },
+      { href: "/inventory", label: "گردش انبار", icon: ClipboardList },
+      { href: "/inventory?type=adjust", label: "تعدیل موجودی", icon: ArrowLeftRight },
       { href: "/inventory?type=in", label: "ورود کالا", icon: ArrowDownToLine },
       { href: "/inventory?type=out", label: "خروج کالا", icon: ArrowUpFromLine },
-      { href: "/inventory?type=adjust", label: "تعدیل موجودی", icon: ArrowLeftRight },
-      { href: "/inventory", label: "گردش انبار", icon: ClipboardList },
-      { href: "/reports?tab=products", label: "گزارش موجودی", icon: BarChart2 },
     ],
   },
-
-  // ===== خرید =====
-  { href: "/purchases", label: "خرید", icon: ShoppingBasket },
-
-  // ===== اشخاص =====
   {
     label: "اشخاص",
     icon: Users,
     children: [
-      { href: "/contacts?type=customer", label: "مشتریان", icon: ShoppingBag },
-      { href: "/contacts/new?type=customer", label: "مشتری جدید", icon: UserPlus },
-      { href: "/contacts?type=supplier", label: "تامین‌کنندگان", icon: Truck },
-      { href: "/contacts/new?type=supplier", label: "تامین‌کننده جدید", icon: UserPlus },
-      { href: "/contacts?filter=debtors", label: "بدهکاران", icon: ArrowDownCircle },
-      { href: "/contacts?filter=creditors", label: "بستانکاران", icon: ArrowUpCircle },
       { href: "/contacts", label: "همه اشخاص", icon: Scale },
-      { href: "/reports?tab=contacts", label: "گزارش اشخاص", icon: PieChart },
+      { href: "/contacts?type=customer", label: "مشتریان", icon: ShoppingBag },
+      { href: "/contacts?type=supplier", label: "تأمین‌کنندگان", icon: Truck },
+      { href: "/contacts?action=new&type=customer", label: "مشتری جدید", icon: UserPlus },
+      { href: "/contacts?filter=debtors", label: "بدهکاران", icon: ArrowDownCircle },
     ],
   },
-
-  // ===== مالی =====
   {
     label: "مالی",
     icon: Wallet,
     children: [
       { href: "/finance", label: "تراکنش‌ها", icon: ReceiptText },
-      { href: "/finance?type=receipt", label: "دریافت از مشتری", icon: ArrowDownCircle },
-      { href: "/finance?type=payment", label: "پرداخت به تامین‌کننده", icon: ArrowUpCircle },
-      { href: "/finance?type=expense", label: "ثبت هزینه", icon: Coins },
-      { href: "/finance?type=income", label: "ثبت درآمد", icon: Banknote },
-      { href: "/finance?type=transfer", label: "انتقال وجه", icon: ArrowRightLeft },
+      { href: "/finance?type=receipt", label: "دریافت", icon: ArrowDownCircle },
+      { href: "/finance?type=payment", label: "پرداخت", icon: ArrowUpCircle },
+      { href: "/finance?type=expense", label: "هزینه", icon: Coins },
       { href: "/checks", label: "چک‌ها", icon: CreditCard },
-      { href: "/settings", label: "مدیریت حساب‌ها", icon: Landmark },
-      { href: "/reports?tab=financial", label: "گزارش مالی", icon: BarChart2 },
     ],
   },
-
-  // ===== گزارش‌ها =====
+  {
+    label: "فروش پیشرفته",
+    icon: FileText,
+    children: [
+      { href: "/sales/orders", label: "سفارش فروش", icon: ClipboardList },
+      { href: "/sales/returns", label: "مرجوعی فروش", icon: ArrowLeftRight },
+    ],
+  },
   {
     label: "گزارش‌ها",
     icon: BarChart3,
     children: [
-      { href: "/reports?tab=sales", label: "گزارش فروش", icon: TrendingUp },
-      { href: "/reports?tab=products", label: "گزارش محصولات", icon: Package },
-      { href: "/reports?tab=financial", label: "گزارش مالی", icon: Wallet },
-      { href: "/reports?tab=contacts", label: "گزارش اشخاص", icon: Users },
-      { href: "/inventory", label: "گزارش انبار", icon: Boxes },
+      { href: "/reports?tab=sales", label: "فروش", icon: TrendingUp },
+      { href: "/reports?tab=products", label: "کالا", icon: Package },
+      { href: "/reports?tab=financial", label: "مالی", icon: Wallet },
+      { href: "/reports?tab=contacts", label: "اشخاص", icon: Users },
     ],
   },
-
-  // ===== تنظیمات =====
   {
     label: "تنظیمات",
     icon: Settings,
     children: [
-      { href: "/settings", label: "دسته‌بندی و برند", icon: Layers },
-      { href: "/settings", label: "حساب‌های بانکی", icon: Landmark },
-      { href: "/settings", label: "دسته هزینه‌ها", icon: PercentCircle },
-      { href: "/settings", label: "فروشگاه و برند", icon: Building },
+      { href: "/settings", label: "تنظیمات پایه", icon: Layers },
+      { href: "/settings#users", label: "کاربران و دسترسی‌ها", icon: UserCheck },
+      { href: "/settings", label: "حساب‌ها و دسته‌ها", icon: Landmark },
     ],
   },
 ];

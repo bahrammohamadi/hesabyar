@@ -1,18 +1,23 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { Spinner, Modal, EmptyState } from "@/components/shared/ui";
+import { EntityLink } from "@/components/shared/entity-link";
+import { EntityActionMenu } from "@/components/shared/entity-action-menu";
+import { PhoneLink } from "@/components/shared/phone-link";
 import { formatToman, toFaDigits, toJalali, toEnDigits, tomanToRial } from "@/lib/utils/format";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowRight, User, Pencil, Loader2,
-  Phone, MapPin, ArrowDownCircle, ArrowUpCircle,
+  MapPin, ArrowDownCircle, ArrowUpCircle,
   ShoppingBag, Truck, DollarSign, X, Plus
 } from "lucide-react";
 import type { ContactType } from "@/types/db";
+import { getActionParam } from "@/lib/entities/action-router";
 
 const TYPE_LABELS: Record<ContactType, string> = { customer: "مشتری", supplier: "تامین‌کننده", both: "هر دو" };
 
@@ -20,9 +25,11 @@ export default function ContactDetailPage({ params }: { params: Promise<{ id: st
   const { id } = use(params);
   const qc = useQueryClient();
   const [tab, setTab] = useState<"info"|"sales"|"purchases"|"tx">("info");
+  const searchParams = useSearchParams();
   const [editOpen, setEditOpen] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
   const [recvOpen, setRecvOpen] = useState(false);
+  const [interactionOpen, setInteractionOpen] = useState(false);
 
   // اطلاعات شخص
   const { data: contact, isLoading } = useQuery({
@@ -78,6 +85,20 @@ export default function ContactDetailPage({ params }: { params: Promise<{ id: st
     },
   });
 
+
+  useEffect(() => {
+    if (!contact) return;
+    const action = getActionParam(searchParams);
+    if (action === "edit") setEditOpen(true);
+    if (action === "interaction") setInteractionOpen(true);
+    if (action === "receipt") setRecvOpen(true);
+    if (action === "pay") setPayOpen(true);
+    if (action === "payment") {
+      if (contact.type === "supplier") setPayOpen(true);
+      else setRecvOpen(true);
+    }
+  }, [contact, searchParams]);
+
   if (isLoading) return <Spinner label="در حال بارگذاری..." />;
   if (!contact) return <EmptyState title="شخص یافت نشد" />;
 
@@ -103,6 +124,7 @@ export default function ContactDetailPage({ params }: { params: Promise<{ id: st
               <ArrowUpCircle size={16} /> پرداخت
             </button>
           )}
+          <EntityActionMenu type="contact" id={id} label={contact.name} phone={contact.phone} />
           <button onClick={() => setEditOpen(true)} className="btn-primary flex items-center gap-2 text-sm">
             <Pencil size={16} /> ویرایش
           </button>
@@ -125,7 +147,7 @@ export default function ContactDetailPage({ params }: { params: Promise<{ id: st
             </div>
             {(contact.phone || contact.address) && (
               <div className="flex flex-wrap gap-3 mt-2 text-sm text-slate-500">
-                {contact.phone && <span dir="ltr" className="flex items-center gap-1"><Phone size={13}/> {contact.phone}</span>}
+                {contact.phone && <PhoneLink phone={contact.phone} />}
                 {contact.address && <span className="flex items-center gap-1"><MapPin size={13}/> {contact.address}</span>}
               </div>
             )}
@@ -158,8 +180,9 @@ export default function ContactDetailPage({ params }: { params: Promise<{ id: st
       {tab === "tx" && <ContactTx txs={txs ?? []} />}
 
       {editOpen && <ContactEditModal contact={contact} onClose={() => setEditOpen(false)} onSaved={() => { setEditOpen(false); qc.invalidateQueries({ queryKey: ["contact-detail", id] }); qc.invalidateQueries({ queryKey: ["contacts"] }); }} />}
-      {payOpen && <TxModal orgId={contact.org_id} contactId={id} type="payment" label="پرداخت" onClose={() => { setPayOpen(false); qc.invalidateQueries({ queryKey: ["contact-txs", id] }); qc.invalidateQueries({ queryKey: ["contact-balance", id] }); qc.invalidateQueries({ queryKey: ["transactions"] }); qc.invalidateQueries({ queryKey: ["account-balances"] }); }} />}
-      {recvOpen && <TxModal orgId={contact.org_id} contactId={id} type="receipt" label="دریافت" onClose={() => { setRecvOpen(false); qc.invalidateQueries({ queryKey: ["contact-txs", id] }); qc.invalidateQueries({ queryKey: ["contact-balance", id] }); qc.invalidateQueries({ queryKey: ["transactions"] }); qc.invalidateQueries({ queryKey: ["account-balances"] }); }} />}
+      {payOpen && <TxModal orgId={contact.org_id} contactId={id} type="payment" label="پرداخت" onClose={() => { setPayOpen(false); qc.invalidateQueries({ queryKey: ["contact-txs", id] }); qc.invalidateQueries({ queryKey: ["contact-balance", id] }); qc.invalidateQueries({ queryKey: ["transactions"] }); qc.invalidateQueries({ queryKey: ["account-balances"] }); qc.invalidateQueries({ queryKey: ["entity", "contact"] }); }} />}
+      {recvOpen && <TxModal orgId={contact.org_id} contactId={id} type="receipt" label="دریافت" onClose={() => { setRecvOpen(false); qc.invalidateQueries({ queryKey: ["contact-txs", id] }); qc.invalidateQueries({ queryKey: ["contact-balance", id] }); qc.invalidateQueries({ queryKey: ["transactions"] }); qc.invalidateQueries({ queryKey: ["account-balances"] }); qc.invalidateQueries({ queryKey: ["entity", "contact"] }); }} />}
+      {interactionOpen && <InteractionModal orgId={contact.org_id} contactId={id} onClose={() => { setInteractionOpen(false); qc.invalidateQueries({ queryKey: ["entity", "contact"] }); }} />}
     </div>
   );
 }
@@ -179,7 +202,7 @@ function ContactInfo({ contact, sales, purchases, totalSales, totalPurchases }: 
           {[
             { label: "نام", value: contact.name },
             { label: "نوع", value: TYPE_LABELS[contact.type as ContactType] },
-            { label: "تماس", value: contact.phone ?? "—" },
+            { label: "تماس", value: contact.phone ? <PhoneLink phone={contact.phone} /> : "—" },
             { label: "کد", value: (contact as any).code ?? "—" },
           ].map((item, i) => (
             <div key={i} className="p-3 bg-slate-50 rounded-xl"><div className="text-xs text-slate-400 mb-1">{item.label}</div><div className="font-medium">{item.value}</div></div>
@@ -209,7 +232,7 @@ function ContactSales({ sales }: { sales: any[] }) {
             <thead><tr><th>فاکتور</th><th>تاریخ</th><th>مبلغ</th><th>نقد/کارت</th><th>نسیه</th></tr></thead>
             <tbody>{sales.map((s: any) => (
               <tr key={s.id} className="hover:bg-slate-50">
-                <td><Link href={`/sales/${s.id}`} className="text-brand-600 font-medium hover:underline">{s.invoice_no}</Link></td>
+                <td><EntityLink type="sale" id={s.id}>{s.invoice_no}</EntityLink></td>
                 <td className="text-slate-500 text-sm">{toJalali(s.date)}</td>
                 <td className="font-medium">{formatToman(s.total, false)}</td>
                 <td className="text-slate-600">{formatToman((s.paid_cash??0)+(s.paid_card??0), false)}</td>
@@ -320,6 +343,55 @@ function ContactEditModal({ contact, onClose, onSaved }: { contact: any; onClose
         <div><label className="label">توضیحات</label><textarea className="input" rows={2} value={desc} onChange={e=>setDesc(e.target.value)} /></div>
         {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
         <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving&&<Loader2 className="animate-spin" size={18}/>} ذخیره</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
+      </div>
+    </Modal>
+  );
+}
+
+// مودال ثبت تعامل CRM
+function InteractionModal({ orgId, contactId, onClose }: { orgId: string; contactId: string; onClose: () => void }) {
+  const [type, setType] = useState("note");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function save() {
+    if (!title.trim() && !description.trim()) { setError("عنوان یا توضیح را وارد کنید."); return; }
+    setSaving(true);
+    const supabase = createClient();
+    try {
+      const { error: e } = await supabase.from("contact_interactions").insert({
+        org_id: orgId,
+        contact_id: contactId,
+        type,
+        title: title.trim() || null,
+        description: description.trim() || null,
+      });
+      if (e) throw e;
+      onClose();
+    } catch (err) {
+      setError("خطا: " + (err as Error).message);
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal open onClose={onClose} title="ثبت تعامل CRM" size="md">
+      <div className="space-y-4">
+        <div>
+          <label className="label">نوع تعامل</label>
+          <select className="input" value={type} onChange={(e) => setType(e.target.value)}>
+            <option value="note">یادداشت</option>
+            <option value="call">تماس</option>
+            <option value="followup">پیگیری</option>
+            <option value="meeting">جلسه</option>
+          </select>
+        </div>
+        <div><label className="label">عنوان</label><input className="input" value={title} onChange={(e) => setTitle(e.target.value)} /></div>
+        <div><label className="label">توضیح</label><textarea className="input" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} /></div>
+        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
+        <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving&&<Loader2 className="animate-spin" size={18}/>} ثبت تعامل</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
       </div>
     </Modal>
   );

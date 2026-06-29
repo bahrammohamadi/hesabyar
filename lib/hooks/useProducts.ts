@@ -48,13 +48,23 @@ export function useProducts(orgId: string | null, search = "") {
         .eq("is_active", true)
         .order("created_at", { ascending: false });
 
-      if (search.trim()) {
-        query = query.ilike("name", `%${search.trim()}%`);
-      }
-
       const { data, error } = await query;
       if (error) throw error;
-      return (data as unknown as ProductWithVariants[]) ?? [];
+      const rows = (data as unknown as ProductWithVariants[]) ?? [];
+      const term = search.trim().toLowerCase();
+      if (!term) return rows;
+      return rows.filter((product) => {
+        const haystack = [
+          product.name,
+          product.code,
+          product.season,
+          product.material,
+          product.category?.name,
+          product.brand?.name,
+          ...product.product_variants.flatMap((variant) => [variant.sku, variant.barcode, variant.color, variant.size]),
+        ].filter(Boolean).join(" ").toLowerCase();
+        return haystack.includes(term);
+      });
     },
   });
 }

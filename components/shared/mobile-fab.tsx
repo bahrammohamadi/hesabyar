@@ -8,8 +8,8 @@ import { Plus, Receipt, ShoppingCart, UserPlus, PackagePlus, X, Zap } from "luci
 const ACTIONS = [
   { href: "/sales", label: "فاکتور جدید", icon: Receipt, tone: "bg-brand-600" },
   { href: "/purchases", label: "خرید جدید", icon: ShoppingCart, tone: "bg-emerald-600" },
-  { href: "/contacts/new?type=customer", label: "مشتری جدید", icon: UserPlus, tone: "bg-cyan-600" },
-  { href: "/products/new", label: "کالای جدید", icon: PackagePlus, tone: "bg-violet-600" },
+  { href: "/contacts?action=new&type=customer", label: "مشتری جدید", icon: UserPlus, tone: "bg-cyan-600" },
+  { href: "/products?action=new", label: "کالای جدید", icon: PackagePlus, tone: "bg-violet-600" },
 ];
 
 export function MobileFab() {

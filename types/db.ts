@@ -168,6 +168,7 @@ export interface DashboardSummary {
 // آیتم سبد فروش (سمت کلاینت)
 export interface CartItem {
   variant_id: string;
+  product_id?: string | null;
   product_name: string;
   variant_label: string;
   qty: number;

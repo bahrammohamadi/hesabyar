@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, StatCard, Spinner, Modal, EmptyState } from "@/components/shared/ui";
+import { EntityLink } from "@/components/shared/entity-link";
+import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { formatToman, toFaDigits, toEnDigits, tomanToRial, toJalali } from "@/lib/utils/format";
 import { Plus, Wallet, Landmark, ArrowDownCircle, ArrowUpCircle, Loader2 } from "lucide-react";
 import type { TxType } from "@/types/db";
@@ -19,8 +22,14 @@ const TX_LABEL: Record<string, string> = {
 
 export default function FinancePage() {
   const { orgId, branchId } = useOrg();
+  const searchParams = useSearchParams();
   const qc = useQueryClient();
   const [modalType, setModalType] = useState<TxType | null>(null);
+
+  useEffect(() => {
+    const type = searchParams.get("type") as TxType | null;
+    if (type && ["receipt", "payment", "expense", "income", "transfer"].includes(type)) setModalType(type);
+  }, [searchParams]);
 
   const { data: accounts } = useQuery({
     queryKey: ["account-balances", orgId],
@@ -42,7 +51,7 @@ export default function FinancePage() {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("transactions")
-        .select("id, type, amount, date, method, note, contact:contacts(name)")
+        .select("id, type, amount, date, method, note, contact_id, contact:contacts(name)")
         .order("date", { ascending: false })
         .limit(50);
       if (error) throw error;
@@ -53,6 +62,7 @@ export default function FinancePage() {
         date: string;
         method: string;
         note: string | null;
+        contact_id: string | null;
         contact: { name: string } | null;
       }[];
     },
@@ -115,7 +125,16 @@ export default function FinancePage() {
                       </span>
                     </td>
                     <td className="font-medium">{formatToman(t.amount)}</td>
-                    <td>{t.contact?.name ?? "—"}</td>
+                    <td>
+                      {t.contact_id ? (
+                        <div className="flex items-center gap-2">
+                          <EntityLink type="contact" id={t.contact_id}>{t.contact?.name ?? "طرف حساب"}</EntityLink>
+                          <EntityActionMenu type="contact" id={t.contact_id} label={t.contact?.name ?? "طرف حساب"} />
+                        </div>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
+                    </td>
                     <td className="text-slate-500">{toJalali(t.date)}</td>
                     <td className="text-slate-400">{t.note ?? "—"}</td>
                   </tr>

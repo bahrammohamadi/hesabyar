@@ -7,6 +7,9 @@ import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, StatCard, Spinner, Modal } from "@/components/shared/ui";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
+import { EntityLink } from "@/components/shared/entity-link";
+import { EntityActionMenu } from "@/components/shared/entity-action-menu";
+import { PhoneLink } from "@/components/shared/phone-link";
 import { formatToman, formatNumber, toFaDigits, rialToToman, tomanToRial, toEnDigits } from "@/lib/utils/format";
 import type { DashboardSummary, CartItem } from "@/types/db";
 import {
@@ -100,10 +103,22 @@ export default function DashboardPage() {
     queryFn: async () => {
       const supabase = createClient();
       const { data } = await supabase
-        .from("low_stock_variants")
-        .select("variant_id, product_name, color, size, stock_qty")
-        .limit(5);
-      return data ?? [];
+        .from("product_variants")
+        .select("id, color, size, stock_qty, product:products!inner(id, name, low_stock_threshold)")
+        .eq("is_active", true)
+        .limit(5000);
+      return ((data as any[]) ?? [])
+        .map((v) => ({
+          variant_id: v.id,
+          product_id: v.product?.id ?? null,
+          product_name: v.product?.name ?? "",
+          color: v.color,
+          size: v.size,
+          stock_qty: v.stock_qty,
+          low_stock_threshold: v.product?.low_stock_threshold ?? 0,
+        }))
+        .filter((v) => v.stock_qty <= v.low_stock_threshold)
+        .slice(0, 5);
     },
   });
 
@@ -129,7 +144,7 @@ export default function DashboardPage() {
       {/* دکمه‌های دسترسی سریع */}
       <div className="mb-6">
         <h2 className="text-sm font-medium text-slate-500 mb-3">دسترسی سریع</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <button
             onClick={() => setQuickSaleOpen(true)}
             className="card p-3 flex flex-col items-center gap-2 hover:bg-brand-50 transition group cursor-pointer"
@@ -143,67 +158,31 @@ export default function DashboardPage() {
             <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center">
               <ShoppingCart size={20} />
             </div>
-            <span className="text-xs font-medium text-slate-700 group-hover:text-emerald-700">خرید جدید</span>
+            <span className="text-xs font-medium text-slate-700 group-hover:text-emerald-700">خرید</span>
           </Link>
-          <Link href="/inventory" className="card p-3 flex flex-col items-center gap-2 hover:bg-blue-50 transition group no-underline">
+          <Link href="/inventory?type=adjust" className="card p-3 flex flex-col items-center gap-2 hover:bg-blue-50 transition group no-underline">
             <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center">
               <ArrowDownToLine size={20} />
             </div>
             <span className="text-xs font-medium text-slate-700 group-hover:text-blue-700">تعدیل انبار</span>
           </Link>
-          <button
-            onClick={() => setQuickExpenseOpen(true)}
-            className="card p-3 flex flex-col items-center gap-2 hover:bg-rose-50 transition group cursor-pointer"
-          >
-            <div className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center">
-              <ArrowUpCircle size={20} />
-            </div>
-            <span className="text-xs font-medium text-slate-700 group-hover:text-rose-700">ثبت هزینه</span>
-          </button>
-          <button
-            onClick={() => setQuickReceiptOpen(true)}
-            className="card p-3 flex flex-col items-center gap-2 hover:bg-amber-50 transition group cursor-pointer"
-          >
-            <div className="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center">
-              <ArrowDownCircle size={20} />
-            </div>
-            <span className="text-xs font-medium text-slate-700 group-hover:text-amber-700">ثبت دریافتی</span>
-          </button>
-          <Link href="/products" className="card p-3 flex flex-col items-center gap-2 hover:bg-slate-100 transition group no-underline">
+          <Link href="/products?action=new" className="card p-3 flex flex-col items-center gap-2 hover:bg-slate-100 transition group no-underline">
             <div className="w-10 h-10 rounded-xl bg-slate-600 text-white flex items-center justify-center">
-              <Plus size={20} />
+              <Package size={20} />
             </div>
-            <span className="text-xs font-medium text-slate-700 group-hover:text-slate-900">افزودن کالا</span>
+            <span className="text-xs font-medium text-slate-700 group-hover:text-slate-900">کالای جدید</span>
           </Link>
-          <Link href="/contacts" className="card p-3 flex flex-col items-center gap-2 hover:bg-cyan-50 transition group no-underline">
+          <Link href="/contacts?action=new&type=customer" className="card p-3 flex flex-col items-center gap-2 hover:bg-cyan-50 transition group no-underline">
             <div className="w-10 h-10 rounded-xl bg-cyan-600 text-white flex items-center justify-center">
               <Users size={20} />
             </div>
-            <span className="text-xs font-medium text-slate-700 group-hover:text-cyan-700">افزودن شخص</span>
+            <span className="text-xs font-medium text-slate-700 group-hover:text-cyan-700">مشتری جدید</span>
           </Link>
           <Link href="/reports?tab=sales" className="card p-3 flex flex-col items-center gap-2 hover:bg-indigo-50 transition group no-underline">
             <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
               <BarChart3 size={20} />
             </div>
-            <span className="text-xs font-medium text-slate-700 group-hover:text-indigo-700">گزارش فروش</span>
-          </Link>
-          <Link href="/reports?tab=financial" className="card p-3 flex flex-col items-center gap-2 hover:bg-violet-50 transition group no-underline">
-            <div className="w-10 h-10 rounded-xl bg-violet-600 text-white flex items-center justify-center">
-              <Wallet size={20} />
-            </div>
-            <span className="text-xs font-medium text-slate-700 group-hover:text-violet-700">سود و زیان</span>
-          </Link>
-          <Link href="/finance" className="card p-3 flex flex-col items-center gap-2 hover:bg-amber-50 transition group no-underline">
-            <div className="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center">
-              <ArrowDownCircle size={20} />
-            </div>
-            <span className="text-xs font-medium text-slate-700 group-hover:text-amber-700">گردش نقدی</span>
-          </Link>
-          <Link href="/reports?tab=products" className="card p-3 flex flex-col items-center gap-2 hover:bg-blue-50 transition group no-underline">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center">
-              <Package size={20} />
-            </div>
-            <span className="text-xs font-medium text-slate-700 group-hover:text-blue-700">موجودی کالا</span>
+            <span className="text-xs font-medium text-slate-700 group-hover:text-indigo-700">گزارش‌ها</span>
           </Link>
         </div>
       </div>
@@ -349,7 +328,7 @@ export default function DashboardPage() {
                 {lowStockItems.map((v: any) => (
                   <div key={v.variant_id} className="flex items-center justify-between text-sm">
                     <span className="text-slate-700 truncate flex-1">
-                      {v.product_name}
+                      <EntityLink type="product" id={v.product_id}>{v.product_name}</EntityLink>
                       {v.color || v.size ? (
                         <span className="text-slate-400 text-xs mr-1">
                           ({[v.color, v.size].filter(Boolean).join(" / ")})
@@ -379,19 +358,23 @@ export default function DashboardPage() {
               </div>
               <div className="space-y-2">
                 {recentSales.map((sale: any) => (
-                  <Link
+                  <div
                     key={sale.id}
-                    href={`/sales/${sale.id}`}
-                    className="flex items-center justify-between text-sm hover:bg-slate-50 -mx-2 px-2 py-1.5 rounded-lg transition-colors block no-underline"
+                    className="flex items-center justify-between text-sm hover:bg-slate-50 -mx-2 px-2 py-1.5 rounded-lg transition-colors"
                   >
                     <div>
-                      <div className="font-medium text-brand-600">{sale.invoice_no}</div>
+                      <EntityLink type="sale" id={sale.id} className="font-medium">{sale.invoice_no}</EntityLink>
                       <div className="text-xs text-slate-400">
-                        {sale.customer_id ? <Link href={`/contacts/${sale.customer_id}`} className="hover:underline">{sale.customer?.name ?? "مشتری"}</Link> : <span className="text-slate-400">مشتری نقدی</span>} • {toJalali(sale.date)}
+                        {sale.customer_id ? (
+                          <span className="inline-flex items-center gap-1">
+                            <EntityLink type="contact" id={sale.customer_id}>{sale.customer?.name ?? "مشتری"}</EntityLink>
+                            <EntityActionMenu type="contact" id={sale.customer_id} label={sale.customer?.name ?? "مشتری"} />
+                          </span>
+                        ) : <span className="text-slate-400">مشتری نقدی</span>} • {toJalali(sale.date)}
                       </div>
                     </div>
                     <span className="font-medium text-slate-700">{formatToman(sale.total, false)}</span>
-                  </Link>
+                  </div>
                 ))}
               </div>
             </div>
@@ -436,6 +419,7 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [customer, setCustomer] = useState<SelectableContact | null>(null);
   const [discount, setDiscount] = useState("0");
+  const [discountType, setDiscountType] = useState<"fixed" | "percent">("fixed");
   const [paidCash, setPaidCash] = useState("");
   const [paidCard, setPaidCard] = useState("");
   const [accountId, setAccountId] = useState("");
@@ -461,6 +445,7 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
       if (existing) return prev.map((c) => c.variant_id === v.variant_id ? { ...c, qty: c.qty + 1 } : c);
       return [...prev, {
         variant_id: v.variant_id,
+        product_id: v.product_id,
         product_name: v.product_name,
         variant_label: [v.color, v.size].filter(Boolean).join(" / "),
         qty: 1,
@@ -482,7 +467,8 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
   }
 
   const subtotal = cart.reduce((s, c) => s + c.unit_price * c.qty - c.discount, 0);
-  const discountRial = tomanToRial(Number(toEnDigits(discount)) || 0);
+  const discountInput = Number(toEnDigits(discount)) || 0;
+  const discountRial = discountType === "percent" ? Math.round((subtotal * discountInput) / 100) : tomanToRial(discountInput);
   const total = Math.max(0, subtotal - discountRial);
   const paidCashRial = tomanToRial(Number(toEnDigits(paidCash)) || 0);
   const paidCardRial = tomanToRial(Number(toEnDigits(paidCard)) || 0);
@@ -502,6 +488,8 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
         p_customer: customer?.id || null,
         p_items: cart.map((c) => ({ variant_id: c.variant_id, qty: c.qty, unit_price: c.unit_price, discount: c.discount, cost_price: c.cost_price })),
         p_discount: discountRial,
+        p_discount_type: discountType,
+        p_discount_value: discountType === "percent" ? discountInput : discountRial,
         p_tax: 0,
         p_paid_cash: paidCashRial,
         p_paid_card: paidCardRial,
@@ -545,7 +533,7 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
               <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3.5 py-2.5">
                 <div>
                   <div className="font-medium text-sm text-slate-800">{customer.name}</div>
-                  {customer.phone && <div className="text-xs text-slate-400" dir="ltr">{customer.phone}</div>}
+                  {customer.phone && <PhoneLink phone={customer.phone} className="text-xs" />}
                 </div>
                 <button onClick={() => setCustomer(null)} className="text-slate-400 hover:text-rose-500"><X size={18} /></button>
               </div>
@@ -566,7 +554,10 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
                 <div key={c.variant_id} className="rounded-xl border border-slate-100 p-3">
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="font-medium text-sm text-slate-800 truncate">{c.product_name}</div>
+                      <div className="flex items-center gap-2">
+                        <EntityLink type="product" id={c.product_id} className="truncate text-sm">{c.product_name}</EntityLink>
+                        <EntityActionMenu type="product" id={c.product_id} label={c.product_name} />
+                      </div>
                       <div className="text-xs text-slate-400">{c.variant_label || "ساده"}</div>
                     </div>
                     <button onClick={() => updateQty(c.variant_id, 0)} className="text-rose-400 hover:text-rose-600 p-1 shrink-0"><Trash2 size={16} /></button>
@@ -593,8 +584,15 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
               </select>
             </div>
             <div>
-              <label className="label">تخفیف (تومان)</label>
-              <input className="input" inputMode="numeric" value={discount} onChange={(e) => setDiscount(e.target.value)} />
+              <label className="label">تخفیف</label>
+              <div className="flex gap-2">
+                <input className="input" inputMode="numeric" value={discount} onChange={(e) => setDiscount(e.target.value)} />
+                <select className="input w-28" value={discountType} onChange={(e) => setDiscountType(e.target.value as "fixed" | "percent") }>
+                  <option value="fixed">تومان</option>
+                  <option value="percent">٪</option>
+                </select>
+              </div>
+              {discountRial > 0 && <div className="text-xs text-slate-400 mt-1">معادل تخفیف: {formatToman(discountRial)}</div>}
             </div>
             <div>
               <label className="label">نقدی (تومان)</label>

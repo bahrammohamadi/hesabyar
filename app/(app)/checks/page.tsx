@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatToman, toJalali } from "@/lib/utils/format";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
+import { EntityLink } from "@/components/shared/entity-link";
+import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { Plus, Trash2, CreditCard, CheckCircle, XCircle, Clock } from "lucide-react";
 
 const sb = createClient();
@@ -178,7 +180,16 @@ export default function ChecksPage() {
                       <span className={`badge ${statusInfo.color}`}>{statusInfo.label}</span>
                       <span className="badge bg-slate-100 text-slate-600">{check.type === "received" ? "دریافتی" : "صادره"}</span>
                     </div>
-                    <div className="text-sm text-slate-600 mb-1">{check.contact?.name || <span className="text-slate-400">بدون طرف حساب</span>}</div>
+                    <div className="text-sm text-slate-600 mb-1">
+                      {check.contact_id ? (
+                        <span className="inline-flex items-center gap-2">
+                          <EntityLink type="contact" id={check.contact_id}>{check.contact?.name ?? "طرف حساب"}</EntityLink>
+                          <EntityActionMenu type="contact" id={check.contact_id} label={check.contact?.name ?? "طرف حساب"} />
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">بدون طرف حساب</span>
+                      )}
+                    </div>
                     <div className="text-xs text-slate-400">
                       {check.bank_name && `بانک: ${check.bank_name}`}
                       {check.bank_name && check.account_no && " • "}

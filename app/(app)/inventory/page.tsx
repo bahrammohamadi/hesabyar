@@ -7,9 +7,10 @@ import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
+import { EntityLink } from "@/components/shared/entity-link";
+import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { toFaDigits, toEnDigits, toJalali, formatToman } from "@/lib/utils/format";
 import { Loader2, ArrowUpDown, AlertTriangle, ArrowDownToLine, ArrowUpFromLine, Plus, Trash2 } from "lucide-react";
-import Link from "next/link";
 
 const TYPE_LABEL: Record<string, string> = {
   in: "ورود",
@@ -38,6 +39,7 @@ export default function InventoryPage() {
 
   // URL params support - auto-open modals based on URL
   const searchParams = useSearchParams();
+  const actionProductId = searchParams.get("product");
   useEffect(() => {
     const type = searchParams.get("type");
     if (type === "in") setStockInOpen(true);
@@ -52,18 +54,31 @@ export default function InventoryPage() {
     queryFn: async () => {
       const supabase = createClient();
       const { data, error } = await supabase
-        .from("low_stock_variants")
-        .select("variant_id, product_name, color, size, stock_qty, low_stock_threshold")
-        .limit(50);
+        .from("product_variants")
+        .select("id, color, size, stock_qty, product:products!inner(id, name, low_stock_threshold)")
+        .eq("is_active", true)
+        .limit(5000);
       if (error) throw error;
-      return data as {
-        variant_id: string;
-        product_name: string;
-        color: string | null;
-        size: string | null;
-        stock_qty: number;
-        low_stock_threshold: number;
-      }[];
+      return ((data as any[]) ?? [])
+        .map((v) => ({
+          variant_id: v.id as string,
+          product_id: v.product?.id as string | null,
+          product_name: v.product?.name as string,
+          color: v.color as string | null,
+          size: v.size as string | null,
+          stock_qty: v.stock_qty as number,
+          low_stock_threshold: v.product?.low_stock_threshold as number,
+        }))
+        .filter((v) => v.stock_qty <= v.low_stock_threshold)
+        .slice(0, 50) as {
+          variant_id: string;
+          product_id: string | null;
+          product_name: string;
+          color: string | null;
+          size: string | null;
+          stock_qty: number;
+          low_stock_threshold: number;
+        }[];
     },
   });
 
@@ -75,7 +90,7 @@ export default function InventoryPage() {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("stock_movements")
-        .select("id, type, reason, qty, note, created_at, variant:product_variants(color, size, product:products(name))")
+        .select("id, variant_id, type, reason, qty, note, created_at, variant:product_variants(color, size, product:products(id, name))")
         .order("created_at", { ascending: false })
         .limit(60);
       if (error) throw error;
@@ -115,7 +130,8 @@ export default function InventoryPage() {
           <div className="flex flex-wrap gap-2">
             {lowStock.map((v) => (
               <span key={v.variant_id} className="text-xs bg-white border border-amber-200 rounded-lg px-2.5 py-1.5 text-slate-600 flex items-center gap-2">
-                <Link href={`/products/${v.variant_id}`} className="font-medium text-brand-600 hover:underline">{v.product_name}</Link>
+                <EntityLink type="product" id={v.product_id}>{v.product_name}</EntityLink>
+                <EntityActionMenu type="product" id={v.product_id} label={v.product_name} />
                 {v.color || v.size ? (
                   <span className="text-slate-400">({[v.color, v.size].filter(Boolean).join(" / ")})</span>
                 ) : null}
@@ -148,7 +164,7 @@ export default function InventoryPage() {
               {movements.map((m) => (
                 <tr key={m.id} className="hover:bg-slate-50">
                   <td>
-                    <Link href={`/products/${m.variant_id}`} className="font-medium text-brand-600 hover:underline">{m.variant?.product?.name}</Link>
+                    <EntityLink type="product" id={m.variant?.product?.id}>{m.variant?.product?.name}</EntityLink>
                     <span className="text-slate-400 text-xs block">
                       {[m.variant?.color, m.variant?.size].filter(Boolean).join(" / ")}
                     </span>
@@ -176,6 +192,7 @@ export default function InventoryPage() {
         <AdjustModal
           orgId={orgId}
           branchId={branchId}
+          initialProductId={actionProductId}
           onClose={() => {
             setAdjustOpen(false);
             qc.invalidateQueries({ queryKey: ["stock-movements"] });
@@ -375,10 +392,12 @@ function StockInOutModal({
 function AdjustModal({
   orgId,
   branchId,
+  initialProductId,
   onClose,
 }: {
   orgId: string | null;
   branchId: string | null;
+  initialProductId?: string | null;
   onClose: () => void;
 }) {
   const [selected, setSelected] = useState<{ id: string; label: string; stock: number } | null>(null);
@@ -386,7 +405,36 @@ function AdjustModal({
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pickerOpen, setPickerOpen] = useState(true);
+  const [pickerOpen, setPickerOpen] = useState(!initialProductId);
+
+  useEffect(() => {
+    if (!initialProductId) return;
+    let active = true;
+    const supabase = createClient();
+    (async () => {
+      const { data, error } = await supabase
+        .from("product_variants")
+        .select("id, color, size, stock_qty, product:products!inner(name)")
+        .eq("product_id", initialProductId)
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (!active) return;
+      const variant = (data as any[])?.[0];
+      if (error || !variant) {
+        setPickerOpen(true);
+        return;
+      }
+      setSelected({
+        id: variant.id,
+        label: `${variant.product?.name ?? "کالا"} ${[variant.color, variant.size].filter(Boolean).join(" / ")}`.trim(),
+        stock: variant.stock_qty ?? 0,
+      });
+      setNewQty(String(variant.stock_qty ?? 0));
+      setPickerOpen(false);
+    })();
+    return () => { active = false; };
+  }, [initialProductId]);
 
   async function handleSave() {
     setError(null);

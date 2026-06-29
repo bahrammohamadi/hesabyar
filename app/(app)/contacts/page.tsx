@@ -6,8 +6,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
+import { EntityLink } from "@/components/shared/entity-link";
+import { EntityActionMenu } from "@/components/shared/entity-action-menu";
+import { PhoneLink } from "@/components/shared/phone-link";
 import { formatToman } from "@/lib/utils/format";
-import { Plus, Search, User, Pencil, Trash2, Phone, Loader2 } from "lucide-react";
+import { Plus, Search, User, Pencil, Trash2, Loader2 } from "lucide-react";
 import type { Contact, ContactType } from "@/types/db";
 
 const TYPE_LABEL: Record<ContactType, string> = {
@@ -18,8 +21,11 @@ const TYPE_LABEL: Record<ContactType, string> = {
 
 export default function ContactsPage() {
   const { orgId, branchId } = useOrg();
+  const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<"" | ContactType>("");
+  const [balanceFilter, setBalanceFilter] = useState<"" | "debtors" | "creditors">("");
+  const [sortBy, setSortBy] = useState<"name_asc" | "name_desc" | "balance_high" | "balance_low" | "newest">("name_asc");
   const qc = useQueryClient();
 
   const { data: contacts, isLoading } = useQuery({
@@ -80,11 +86,43 @@ export default function ContactsPage() {
     if (typeFilter) {
       result = result.filter((c) => c.type === typeFilter || c.type === "both");
     }
+    if (balanceFilter) {
+      result = result.filter((c) => {
+        const bal = balances?.[c.id] ?? 0;
+        return balanceFilter === "debtors" ? bal > 0 : bal < 0;
+      });
+    }
+    result = [...result].sort((a, b) => {
+      const balA = balances?.[a.id] ?? 0;
+      const balB = balances?.[b.id] ?? 0;
+      if (sortBy === "name_desc") return (b.name || "").localeCompare(a.name || "", "fa");
+      if (sortBy === "balance_high") return Math.abs(balB) - Math.abs(balA);
+      if (sortBy === "balance_low") return Math.abs(balA) - Math.abs(balB);
+      if (sortBy === "newest") return new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime();
+      return (a.name || "").localeCompare(b.name || "", "fa");
+    });
     return result;
-  }, [contacts, search, typeFilter]);
+  }, [contacts, search, typeFilter, balanceFilter, balances, sortBy]);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Contact | null>(null);
+  const [initialType, setInitialType] = useState<ContactType>("customer");
+
+  useEffect(() => {
+    const type = searchParams.get("type") as ContactType | null;
+    const filter = searchParams.get("filter");
+    const action = searchParams.get("action");
+    if (type === "customer" || type === "supplier" || type === "both") {
+      setTypeFilter(type);
+      setInitialType(type);
+    }
+    if (filter === "debtors" || filter === "creditors") setBalanceFilter(filter);
+    else setBalanceFilter("");
+    if (action === "new") {
+      setEditing(null);
+      setModalOpen(true);
+    }
+  }, [searchParams]);
 
   return (
     <div>
@@ -95,6 +133,7 @@ export default function ContactsPage() {
           <button
             onClick={() => {
               setEditing(null);
+              setInitialType(typeFilter || "customer");
               setModalOpen(true);
             }}
             className="btn-primary"
@@ -116,13 +155,24 @@ export default function ContactsPage() {
           />
         </div>
         <select
-          className="input w-36"
+          className="input w-32 sm:w-36"
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value as ContactType | "")}
         >
           <option value="">همه</option>
           <option value="customer">مشتری</option>
           <option value="supplier">تامین‌کننده</option>
+        </select>
+        <select
+          className="input w-36 sm:w-44"
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+        >
+          <option value="name_asc">نام A-Z</option>
+          <option value="name_desc">نام Z-A</option>
+          <option value="balance_high">مانده بیشتر</option>
+          <option value="balance_low">مانده کمتر</option>
+          <option value="newest">جدیدترین</option>
         </select>
       </div>
 
@@ -141,15 +191,13 @@ export default function ContactsPage() {
                     <User size={18} />
                   </div>
                   <div className="min-w-0">
-                    <div className="font-medium text-slate-800 truncate">{c.name || "بدون نام"}</div>
+                    <EntityLink type="contact" id={c.id} className="block truncate" fallbackClassName="block truncate font-medium text-slate-800">
+                      {c.name || "بدون نام"}
+                    </EntityLink>
                     <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5 flex-wrap">
                       {(c as any).code && <span className="font-mono text-brand-600">{(c as any).code}</span>}
                       <span className="badge bg-slate-100 text-slate-500">{TYPE_LABEL[c.type]}</span>
-                      {c.phone && (
-                        <span className="flex items-center gap-1" dir="ltr">
-                          <Phone size={12} /> {c.phone}
-                        </span>
-                      )}
+                      {c.phone && <PhoneLink phone={c.phone} className="text-xs" />}
                     </div>
                   </div>
                 </div>
@@ -166,6 +214,7 @@ export default function ContactsPage() {
                       </span>
                     )}
                   </div>
+                  <EntityActionMenu type="contact" id={c.id} label={c.name} phone={c.phone} />
                   <button
                     onClick={() => {
                       setEditing(c);
@@ -193,6 +242,7 @@ export default function ContactsPage() {
           orgId={orgId}
           branchId={branchId}
           editing={editing}
+          initialType={initialType}
           onClose={() => {
             setModalOpen(false);
             qc.invalidateQueries({ queryKey: ["contacts"] });
@@ -207,15 +257,17 @@ function ContactModal({
   orgId,
   branchId,
   editing,
+  initialType = "customer",
   onClose,
 }: {
   orgId: string | null;
   branchId: string | null;
   editing: Contact | null;
+  initialType?: ContactType;
   onClose: () => void;
 }) {
   const [name, setName] = useState(editing?.name ?? "");
-  const [type, setType] = useState<ContactType>(editing?.type ?? "customer");
+  const [type, setType] = useState<ContactType>(editing?.type ?? initialType);
   const [phone, setPhone] = useState(editing?.phone ?? "");
   const [address, setAddress] = useState(editing?.address ?? "");
   const [description, setDescription] = useState(editing?.description ?? "");

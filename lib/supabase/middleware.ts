@@ -44,8 +44,11 @@ export async function updateSession(request: NextRequest) {
     path === "/manifest.webmanifest" ||
     path.startsWith("/icons");
 
-  // کاربر وارد نشده و در صفحه محافظت‌شده است
+  // کاربر وارد نشده و در صفحه/API محافظت‌شده است
   if (!user && !isPublic) {
+    if (path.startsWith("/api/")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);

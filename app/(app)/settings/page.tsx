@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, Modal, Spinner } from "@/components/shared/ui";
-import { Plus, Loader2, Tag, Landmark, FolderTree, Trash2, Pencil, Check, X } from "lucide-react";
+import { Plus, Loader2, Tag, Landmark, FolderTree, Trash2, Pencil, Check, X, Users, Shield } from "lucide-react";
 
 export default function SettingsPage() {
   const { orgId, branchId } = useOrg();
@@ -39,6 +39,9 @@ export default function SettingsPage() {
           icon={<Tag size={18} />}
         />
         <AccountsManager orgId={orgId} branchId={branchId} />
+      </div>
+      <div id="users" className="mt-4 scroll-mt-24">
+        <UsersAccessManager />
       </div>
     </div>
   );
@@ -349,6 +352,217 @@ function AccountModal({
         <button onClick={save} disabled={saving || !name.trim()} className="btn-primary w-full">
           {saving && <Loader2 className="animate-spin" size={18} />} ذخیره
         </button>
+      </div>
+    </Modal>
+  );
+}
+
+// ==============================================================
+// مدیریت کاربران و دسترسی‌ها
+// ==============================================================
+const PERMISSION_GROUPS = [
+  { key: "sales", label: "فروش", permissions: ["sales.view", "sales.create"] },
+  { key: "purchases", label: "خرید", permissions: ["purchases.view", "purchases.create"] },
+  { key: "inventory", label: "انبار", permissions: ["inventory.view", "inventory.adjust"] },
+  { key: "contacts", label: "مشتری", permissions: ["contacts.view", "contacts.edit", "contacts.call", "crm.create"] },
+  { key: "products", label: "کالا", permissions: ["products.view", "products.edit", "products.update_price"] },
+  { key: "finance", label: "مالی", permissions: ["finance.view", "finance.create"] },
+  { key: "reports", label: "گزارش", permissions: ["reports.view"] },
+  { key: "settings", label: "تنظیمات", permissions: ["settings.manage"] },
+];
+
+const ROLE_LABELS: Record<string, string> = {
+  owner: "مدیر کل",
+  manager: "مدیر",
+  cashier: "فروشنده",
+  inventory: "انباردار",
+  accountant: "حسابدار",
+};
+
+type ManagedUser = {
+  id: string;
+  user_id: string;
+  email: string;
+  name: string;
+  role: string;
+  is_active: boolean;
+  permissions: string[] | null;
+};
+
+function defaultPermissions(role: string) {
+  if (role === "owner") return ["*"];
+  if (role === "manager") return PERMISSION_GROUPS.flatMap((g) => g.permissions);
+  if (role === "cashier") return ["contacts.view", "contacts.call", "sales.view", "sales.create", "products.view", "finance.create"];
+  if (role === "inventory") return ["products.view", "products.edit", "inventory.view", "inventory.adjust"];
+  if (role === "accountant") return ["contacts.view", "sales.view", "purchases.view", "finance.view", "finance.create", "reports.view"];
+  return [];
+}
+
+function UsersAccessManager() {
+  const qc = useQueryClient();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [savingId, setSavingId] = useState<string | null>(null);
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["admin-users"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/users");
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "خطا در دریافت کاربران");
+      return json.users as ManagedUser[];
+    },
+  });
+
+  async function updateUser(user: ManagedUser, patch: Partial<ManagedUser>) {
+    setSavingId(user.id);
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          membership_id: user.id,
+          user_id: user.user_id,
+          role: patch.role,
+          is_active: patch.is_active,
+          permissions: patch.permissions,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "خطا در ذخیره دسترسی");
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+    } catch (e) {
+      alert((e as Error).message);
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  return (
+    <div className="card p-5">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2 font-semibold text-slate-800">
+          <Users size={18} /> کاربران و دسترسی‌ها
+        </div>
+        <button onClick={() => setModalOpen(true)} className="btn-primary text-sm">
+          <Plus size={16} /> ساخت کاربر
+        </button>
+      </div>
+
+      {isLoading ? <Spinner /> : error ? (
+        <div className="rounded-xl bg-rose-50 text-rose-700 text-sm p-4">{(error as Error).message}</div>
+      ) : (
+        <div className="space-y-3">
+          {data?.map((u) => {
+            const perms = u.permissions && u.permissions.length ? u.permissions : defaultPermissions(u.role);
+            return (
+              <div key={u.id} className="rounded-2xl border border-slate-100 p-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
+                  <div>
+                    <div className="font-medium text-slate-800">{u.name || u.email}</div>
+                    <div className="text-xs text-slate-400" dir="ltr">{u.email}</div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <select className="input w-36" value={u.role} onChange={(e) => updateUser(u, { role: e.target.value, permissions: defaultPermissions(e.target.value) })}>
+                      {Object.entries(ROLE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                    </select>
+                    <button onClick={() => updateUser(u, { is_active: !u.is_active })} className={u.is_active ? "btn-secondary text-rose-600" : "btn-secondary text-emerald-600"}>
+                      {u.is_active ? "غیرفعال" : "فعال"}
+                    </button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {PERMISSION_GROUPS.map((group) => {
+                    const checked = group.permissions.every((permission) => perms.includes(permission) || perms.includes("*"));
+                    return (
+                      <label key={group.key} className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-sm cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          disabled={savingId === u.id || u.role === "owner"}
+                          onChange={(e) => {
+                            const next = new Set(perms.filter((p) => p !== "*"));
+                            group.permissions.forEach((permission) => e.target.checked ? next.add(permission) : next.delete(permission));
+                            updateUser(u, { permissions: Array.from(next) });
+                          }}
+                        />
+                        <Shield size={14} className="text-slate-400" />
+                        {group.label}
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {modalOpen && <CreateUserModal onClose={() => { setModalOpen(false); qc.invalidateQueries({ queryKey: ["admin-users"] }); }} />}
+    </div>
+  );
+}
+
+function CreateUserModal({ onClose }: { onClose: () => void }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("cashier");
+  const [permissions, setPermissions] = useState<string[]>(defaultPermissions("cashier"));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function save() {
+    setError(null);
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password, role, permissions }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "خطا در ساخت کاربر");
+      onClose();
+    } catch (e) {
+      setError((e as Error).message);
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal open onClose={onClose} title="ساخت کاربر جدید" size="lg">
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div><label className="label">نام</label><input className="input" value={name} onChange={(e) => setName(e.target.value)} /></div>
+          <div><label className="label">ایمیل *</label><input className="input text-left" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+          <div><label className="label">رمز عبور *</label><input className="input text-left" dir="ltr" type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
+          <div><label className="label">نقش</label><select className="input" value={role} onChange={(e) => { setRole(e.target.value); setPermissions(defaultPermissions(e.target.value)); }}>{Object.entries(ROLE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+        </div>
+        <div>
+          <div className="text-sm font-medium text-slate-700 mb-2">دسترسی‌ها</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {PERMISSION_GROUPS.map((group) => {
+              const checked = group.permissions.every((permission) => permissions.includes(permission) || permissions.includes("*"));
+              return (
+                <label key={group.key} className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    disabled={role === "owner"}
+                    onChange={(e) => {
+                      const next = new Set(permissions.filter((p) => p !== "*"));
+                      group.permissions.forEach((permission) => e.target.checked ? next.add(permission) : next.delete(permission));
+                      setPermissions(Array.from(next));
+                    }}
+                  />
+                  {group.label}
+                </label>
+              );
+            })}
+          </div>
+        </div>
+        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
+        <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving && <Loader2 className="animate-spin" size={18} />} ساخت کاربر</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
       </div>
     </Modal>
   );

@@ -7,12 +7,14 @@ import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
+import { EntityLink } from "@/components/shared/entity-link";
+import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { formatToman, toFaDigits, toEnDigits, tomanToRial, rialToToman, toJalali } from "@/lib/utils/format";
 import { Plus, Trash2, Loader2, Package, UserPlus, X } from "lucide-react";
-import Link from "next/link";
 
 interface PItem {
   variant_id: string;
+  product_id?: string | null;
   label: string;
   qty: number;
   unit_price: number; // ریال
@@ -86,9 +88,18 @@ export default function PurchasesPage() {
             <tbody>
               {purchases.map((p) => (
                 <tr key={p.id} className="hover:bg-slate-50">
-                  <td className="font-medium text-brand-600">{p.invoice_no}</td>
+                  <td><EntityLink type="purchase" id={p.id}>{p.invoice_no}</EntityLink></td>
                   <td className="text-slate-500">{toJalali(p.date)}</td>
-                  <td>{p.supplier_id ? <Link href={`/contacts/${p.supplier_id}`} className="text-emerald-600 hover:underline">{p.supplier?.name ?? "—"}</Link> : <span className="text-slate-400">—</span>}</td>
+                  <td>
+                    {p.supplier_id ? (
+                      <div className="flex items-center gap-2">
+                        <EntityLink type="contact" id={p.supplier_id}>{p.supplier?.name ?? "تامین‌کننده"}</EntityLink>
+                        <EntityActionMenu type="contact" id={p.supplier_id} label={p.supplier?.name ?? "تامین‌کننده"} />
+                      </div>
+                    ) : (
+                      <span className="text-slate-400">—</span>
+                    )}
+                  </td>
                   <td className="font-medium">{formatToman(p.total)}</td>
                   <td>{formatToman(p.paid)}</td>
                 </tr>
@@ -142,6 +153,7 @@ function PurchaseModal({ orgId, onClose }: { orgId: string | null; onClose: () =
         ...prev,
         {
           variant_id: v.variant_id,
+          product_id: v.product_id,
           label: `${v.product_name} ${[v.color, v.size].filter(Boolean).join(" / ")}`.trim(),
           qty: 1,
           unit_price: v.purchase_price,
@@ -226,7 +238,10 @@ function PurchaseModal({ orgId, onClose }: { orgId: string | null; onClose: () =
               {items.map((it, idx) => (
                 <div key={it.variant_id} className="rounded-xl border border-slate-100 p-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium truncate">{it.label}</span>
+                    <span className="inline-flex min-w-0 items-center gap-2 text-sm font-medium">
+                      <EntityLink type="product" id={it.product_id} className="truncate">{it.label}</EntityLink>
+                      <EntityActionMenu type="product" id={it.product_id} label={it.label} />
+                    </span>
                     <button onClick={() => setItems((p) => p.filter((_, i) => i !== idx))} className="text-rose-400 p-1">
                       <Trash2 size={16} />
                     </button>

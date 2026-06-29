@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatToman, toJalali, toFaDigits } from "@/lib/utils/format";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
+import { EntityLink } from "@/components/shared/entity-link";
+import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { Plus, Trash2, RotateCcw, Search } from "lucide-react";
 
 const sb = createClient();
@@ -147,7 +149,14 @@ export default function SalesReturnsPage() {
                     <span className="font-bold text-slate-800">{ret.return_no || "بدون شماره"}</span>
                     <span className="badge bg-purple-100 text-purple-800">مرجوعی</span>
                   </div>
-                  <div className="text-sm text-slate-600 mb-1">{ret.customer?.name || "بدون مشتری"}</div>
+                  <div className="text-sm text-slate-600 mb-1">
+                    {ret.customer_id ? (
+                      <span className="inline-flex items-center gap-2">
+                        <EntityLink type="contact" id={ret.customer_id}>{ret.customer?.name ?? "مشتری"}</EntityLink>
+                        <EntityActionMenu type="contact" id={ret.customer_id} label={ret.customer?.name ?? "مشتری"} />
+                      </span>
+                    ) : "بدون مشتری"}
+                  </div>
                   <div className="text-xs text-slate-400">{toJalali(ret.date)}</div>
                   {ret.reason && <div className="text-xs text-slate-500 mt-1">دلیل: {ret.reason}</div>}
                 </div>

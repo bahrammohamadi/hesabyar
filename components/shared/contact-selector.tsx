@@ -5,7 +5,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { Modal } from "@/components/shared/ui";
-import { Search, User, X, UserPlus, Loader2, Phone } from "lucide-react";
+import { Search, User, X, UserPlus, Loader2 } from "lucide-react";
+import { PhoneLink } from "@/components/shared/phone-link";
 import type { ContactType } from "@/types/db";
 
 export interface SelectableContact {
@@ -169,23 +170,25 @@ export function ContactSelector({
 
           <div className="max-h-[45vh] overflow-y-auto space-y-1.5">
             {filtered.map((c) => (
-              <button
+              <div
                 key={c.id}
-                onClick={() => onSelect(c)}
-                className="w-full text-right rounded-xl border border-slate-100 hover:border-brand-300 hover:bg-brand-50/40 p-3 transition flex items-center gap-3"
+                className="w-full rounded-xl border border-slate-100 hover:border-brand-300 hover:bg-brand-50/40 p-3 transition flex items-center gap-3"
               >
-                <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
-                  <User size={17} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="font-medium text-sm text-slate-800 truncate">{c.name || "بدون نام"}</div>
-                  {c.phone && (
-                    <div className="text-xs text-slate-400 flex items-center gap-1 mt-0.5" dir="ltr">
-                      <Phone size={11} /> {c.phone}
-                    </div>
-                  )}
-                </div>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => onSelect(c)}
+                  className="min-w-0 flex-1 text-right flex items-center gap-3"
+                >
+                  <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
+                    <User size={17} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium text-sm text-slate-800 truncate">{c.name || "بدون نام"}</div>
+                    {c.phone && <div className="text-xs text-slate-400 mt-0.5">برای انتخاب روی نام بزنید</div>}
+                  </div>
+                </button>
+                {c.phone && <PhoneLink phone={c.phone} className="shrink-0 text-xs" />}
+              </div>
             ))}
             {filtered.length === 0 && !isLoading && (
               <div className="text-center text-sm text-slate-400 py-8">موردی یافت نشد.</div>
