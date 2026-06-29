@@ -4,6 +4,13 @@
 -- هدف: اصلاح viewهای گزارش که variant_id را اشتباه به products.id وصل می‌کردند
 -- =============================================================
 
+-- حذف viewهای قبلی لازم است چون CREATE OR REPLACE اجازه تغییر نام/ترتیب ستون‌های موجود را نمی‌دهد.
+drop view if exists public.top_selling_products;
+drop view if exists public.sales_by_category;
+drop view if exists public.sales_by_color;
+drop view if exists public.sales_by_size;
+drop view if exists public.low_selling_products;
+
 -- پرفروش‌ترین محصولات
 create or replace view public.top_selling_products as
 select
