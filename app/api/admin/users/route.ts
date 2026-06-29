@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { roleHasPermission } from "@/lib/permissions";
 
@@ -10,11 +11,45 @@ const ALLOWED_ROLES = ["owner", "manager", "cashier", "inventory", "accountant"]
 
 type Role = typeof ALLOWED_ROLES[number];
 
+const passwordSchema = z
+  .string()
+  .min(8, "رمز عبور باید حداقل ۸ کاراکتر باشد")
+  .regex(/[A-Za-z]/, "رمز عبور باید شامل حروف باشد")
+  .regex(/[0-9]/, "رمز عبور باید شامل عدد باشد");
+
+const createUserSchema = z.object({
+  email: z.string().trim().toLowerCase().email("ایمیل نامعتبر است"),
+  password: passwordSchema,
+  name: z.string().trim().max(120).optional().default(""),
+  role: z.enum(ALLOWED_ROLES).default("cashier"),
+  permissions: z.array(z.string()).optional().default([]),
+});
+
+const updateUserSchema = z.object({
+  membership_id: z.string().optional().default(""),
+  user_id: z.string().optional().default(""),
+  role: z.enum(ALLOWED_ROLES).optional(),
+  is_active: z.boolean().optional(),
+  permissions: z.array(z.string()).optional(),
+});
+
 function service() {
   if (!SERVICE_KEY) throw new Error("SUPABASE_SERVICE_ROLE_KEY تنظیم نشده است");
   return createServiceClient(SUPABASE_URL, SERVICE_KEY, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
+}
+
+// Log full error on the server, return a generic, safe message to the client.
+function handleError(error: unknown, status = 500) {
+  console.error("[admin/users]", error);
+  if (error instanceof z.ZodError) {
+    return NextResponse.json(
+      { error: error.errors[0]?.message ?? "ورودی نامعتبر است" },
+      { status: 400 },
+    );
+  }
+  return NextResponse.json({ error: "خطای داخلی سرور رخ داد" }, { status });
 }
 
 async function requireAdmin() {
@@ -63,7 +98,7 @@ export async function GET() {
 
     return NextResponse.json({ users });
   } catch (error) {
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+    return handleError(error);
   }
 }
 
@@ -71,19 +106,9 @@ export async function POST(request: Request) {
   try {
     const auth = await requireAdmin();
     if (auth.error) return auth.error;
-    const body = await request.json();
-    const email = String(body.email ?? "").trim().toLowerCase();
-    const password = String(body.password ?? "");
-    const name = String(body.name ?? "").trim();
-    const role = String(body.role ?? "cashier") as Role;
-    const permissions = Array.isArray(body.permissions) ? body.permissions.map(String) : [];
 
-    if (!email || !password || password.length < 6) {
-      return NextResponse.json({ error: "ایمیل و رمز حداقل ۶ کاراکتر الزامی است" }, { status: 400 });
-    }
-    if (!ALLOWED_ROLES.includes(role)) {
-      return NextResponse.json({ error: "نقش نامعتبر است" }, { status: 400 });
-    }
+    const body = await request.json();
+    const { email, password, name, role, permissions } = createUserSchema.parse(body);
 
     const svc = service();
     const { data: created, error: createError } = await svc.auth.admin.createUser({
@@ -104,11 +129,18 @@ export async function POST(request: Request) {
       is_active: true,
       created_by: auth.user.id,
     });
-    if (memError) throw memError;
+
+    // Roll back the orphaned Auth user if the membership insert fails.
+    if (memError) {
+      await svc.auth.admin.deleteUser(userId).catch((cleanupError) => {
+        console.error("[admin/users] failed to roll back orphan user", userId, cleanupError);
+      });
+      throw memError;
+    }
 
     return NextResponse.json({ ok: true, user_id: userId });
   } catch (error) {
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+    return handleError(error);
   }
 }
 
@@ -116,20 +148,15 @@ export async function PATCH(request: Request) {
   try {
     const auth = await requireAdmin();
     if (auth.error) return auth.error;
+
     const body = await request.json();
-    const membershipId = String(body.membership_id ?? "");
-    const userId = String(body.user_id ?? "");
-    const role = body.role ? String(body.role) as Role : null;
-    const isActive = typeof body.is_active === "boolean" ? body.is_active : null;
-    const permissions = Array.isArray(body.permissions) ? body.permissions.map(String) : null;
+    const { membership_id: membershipId, user_id: userId, role, is_active: isActive, permissions } =
+      updateUserSchema.parse(body);
 
     const svc = service();
     const update: Record<string, unknown> = {};
-    if (role) {
-      if (!ALLOWED_ROLES.includes(role)) return NextResponse.json({ error: "نقش نامعتبر است" }, { status: 400 });
-      update.role = role;
-    }
-    if (isActive !== null) update.is_active = isActive;
+    if (role) update.role = role;
+    if (typeof isActive === "boolean") update.is_active = isActive;
 
     if (Object.keys(update).length > 0) {
       const { error } = await svc
@@ -149,6 +176,6 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+    return handleError(error);
   }
 }
