@@ -66,15 +66,15 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
           @page { size: A4; margin: 10mm; }
           /* خنثی‌کردن transform/overflow والدین تا ناحیه چاپ بریده نشود */
           html, body { height: auto !important; overflow: visible !important; background: #fff !important; }
-          body * { visibility: hidden !important; }
+          /* خنثی‌کردن transform والدین که باعث clip شدن position:fixed می‌شوند */
+          body * { visibility: hidden !important; transform: none !important; filter: none !important; }
           #invoice, #invoice * { visibility: visible !important; }
-          /* هر والد بین body و #invoice را از حالت transform/overflow/position خارج کن */
+          /* position:fixed نسبت به صفحه چاپ، مصون از overflow والدین */
           #invoice {
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
+            position: fixed !important;
+            inset: 0 !important;
             width: 100% !important;
+            height: auto !important;
             margin: 0 !important;
             padding: 20px !important;
             box-shadow: none !important;
