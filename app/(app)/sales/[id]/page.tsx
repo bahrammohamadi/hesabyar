@@ -60,13 +60,27 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
 
   return (
     <>
-      {/* CSS for print - using regular style tag */}
+      {/* CSS for print - robust for App Router nested layout */}
       <style>{`
         @media print {
           @page { size: A4; margin: 10mm; }
-          body > * { visibility: hidden !important; }
+          /* خنثی‌کردن transform/overflow والدین تا ناحیه چاپ بریده نشود */
+          html, body { height: auto !important; overflow: visible !important; background: #fff !important; }
+          /* خنثی‌کردن transform والدین که باعث clip شدن position:fixed می‌شوند */
+          body * { visibility: hidden !important; transform: none !important; filter: none !important; }
           #invoice, #invoice * { visibility: visible !important; }
-          #invoice { position: absolute; top: 0; left: 0; right: 0; margin: 0; padding: 20px; box-shadow: none !important; border: none !important; background: white !important; }
+          /* position:fixed نسبت به صفحه چاپ، مصون از overflow والدین */
+          #invoice {
+            position: fixed !important;
+            inset: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            margin: 0 !important;
+            padding: 20px !important;
+            box-shadow: none !important;
+            border: none !important;
+            background: #fff !important;
+          }
           .no-print { display: none !important; }
           .print-only { display: block !important; }
         }
