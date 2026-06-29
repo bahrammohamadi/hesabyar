@@ -7,8 +7,8 @@ import { LayoutDashboard, Receipt, Package, ShoppingCart, Users } from "lucide-r
 
 const ITEMS = [
   { href: "/dashboard", label: "داشبورد", icon: LayoutDashboard },
-  { href: "/sales", label: "فروش", icon: Receipt, primary: true },
   { href: "/purchases", label: "خرید", icon: ShoppingCart },
+  { href: "/sales", label: "فروش", icon: Receipt, primary: true },
   { href: "/products", label: "کالا", icon: Package },
   { href: "/contacts", label: "اشخاص", icon: Users },
 ];

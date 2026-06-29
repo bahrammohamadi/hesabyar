@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import {
@@ -11,10 +12,11 @@ import {
   type ProductWithVariants,
 } from "@/lib/hooks/useProducts";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
+import { EntityLink } from "@/components/shared/entity-link";
+import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { formatToman, toFaDigits, toEnDigits, formatNumber } from "@/lib/utils/format";
 import { tomanToRial, rialToToman } from "@/lib/utils/format";
 import { Plus, Search, Package, Pencil, Trash2, Loader2 } from "lucide-react";
-import Link from "next/link";
 
 interface VariantForm {
   id?: string;
@@ -39,8 +41,23 @@ const emptyVariant = (): VariantForm => ({
 
 export default function ProductsPage() {
   const { orgId, branchId } = useOrg();
+  const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"newest" | "name_asc" | "name_desc" | "stock_high" | "stock_low" | "price_high" | "price_low">("newest");
   const { data: products, isLoading } = useProducts(orgId, search);
+  const sortedProducts = [...(products ?? [])].sort((a, b) => {
+    const stockA = a.product_variants.reduce((sum, variant) => sum + variant.stock_qty, 0);
+    const stockB = b.product_variants.reduce((sum, variant) => sum + variant.stock_qty, 0);
+    const priceA = a.base_sale_price ?? 0;
+    const priceB = b.base_sale_price ?? 0;
+    if (sortBy === "name_asc") return a.name.localeCompare(b.name, "fa");
+    if (sortBy === "name_desc") return b.name.localeCompare(a.name, "fa");
+    if (sortBy === "stock_high") return stockB - stockA;
+    if (sortBy === "stock_low") return stockA - stockB;
+    if (sortBy === "price_high") return priceB - priceA;
+    if (sortBy === "price_low") return priceA - priceB;
+    return 0;
+  });
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<ProductWithVariants | null>(null);
 
@@ -53,6 +70,10 @@ export default function ProductsPage() {
     setEditing(p);
     setModalOpen(true);
   }
+
+  useEffect(() => {
+    if (searchParams.get("action") === "new") openNew();
+  }, [searchParams]);
 
   return (
     <div>
@@ -67,14 +88,25 @@ export default function ProductsPage() {
         }
       />
 
-      <div className="relative mb-4">
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-        <input
-          className="input pr-10"
-          placeholder="جستجوی نام کالا..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="flex flex-col sm:flex-row gap-2 mb-4">
+        <div className="relative flex-1">
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <input
+            className="input pr-10"
+            placeholder="جستجوی نام، کد، بارکد یا SKU..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <select className="input sm:w-48" value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)}>
+          <option value="newest">جدیدترین</option>
+          <option value="name_asc">نام A-Z</option>
+          <option value="name_desc">نام Z-A</option>
+          <option value="stock_high">موجودی بیشتر</option>
+          <option value="stock_low">موجودی کمتر</option>
+          <option value="price_high">قیمت بیشتر</option>
+          <option value="price_low">قیمت کمتر</option>
+        </select>
       </div>
 
       {isLoading ? (
@@ -91,7 +123,7 @@ export default function ProductsPage() {
         />
       ) : (
         <div className="space-y-3">
-          {products.map((p) => {
+          {sortedProducts.map((p) => {
             const totalStock = p.product_variants.reduce((s, v) => s + v.stock_qty, 0);
             const low = totalStock <= p.low_stock_threshold;
             return (
@@ -102,7 +134,7 @@ export default function ProductsPage() {
                       <Package size={20} />
                     </div>
                     <div className="min-w-0">
-                      <Link href={`/products/${p.id}`} className="font-semibold text-slate-800 truncate hover:text-brand-600 block">{p.name}</Link>
+                      <EntityLink type="product" id={p.id} className="block truncate font-semibold">{p.name}</EntityLink>
                       <div className="text-xs text-slate-400 mt-0.5 flex flex-wrap gap-x-2">
                         {p.code && <span className="font-mono text-brand-600">{p.code}</span>}
                         {p.brand?.name && <span>برند: {p.brand.name}</span>}
@@ -119,6 +151,7 @@ export default function ProductsPage() {
                     >
                       موجودی: {toFaDigits(totalStock)}
                     </span>
+                    <EntityActionMenu type="product" id={p.id} label={p.name} />
                     <button
                       onClick={() => openEdit(p)}
                       className="text-slate-400 hover:text-brand-600 p-1"

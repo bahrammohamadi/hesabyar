@@ -6,6 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, Spinner, EmptyState } from "@/components/shared/ui";
+import { EntityLink } from "@/components/shared/entity-link";
+import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { formatToman, formatNumber, toFaDigits } from "@/lib/utils/format";
 import { toJalali } from "@/lib/utils/format";
 import {
@@ -43,6 +45,29 @@ const TABS: { id: TabId; label: string; icon: typeof TrendingUp }[] = [
 ];
 
 const COLORS = ["#1d60f2", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
+
+function csvEscape(value: unknown) {
+  const text = value == null ? "" : String(value);
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
+  if (!rows.length) {
+    alert("داده‌ای برای خروجی وجود ندارد.");
+    return;
+  }
+  const headers = Object.keys(rows[0]);
+  const csv = "﻿" + [headers.map(csvEscape).join(","), ...rows.map((row) => headers.map((h) => csvEscape(row[h])).join(","))].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
 
 // --- فروش ---
 function SalesReport({ orgId }: { orgId: string }) {
@@ -152,17 +177,19 @@ function ProductsReport({ orgId }: { orgId: string }) {
         .select(`
           qty,
           line_total,
-          variant:product_variants(product:products(name))
+          variant:product_variants(product:products(id, name))
         `)
         .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
       if (error) throw error;
 
-      const totals: Record<string, { name: string; revenue: number; qty: number }> = {};
+      const totals: Record<string, { id: string | null; name: string; revenue: number; qty: number }> = {};
       (data ?? []).forEach((item: any) => {
-        const name = item.product?.name ?? "نامعلوم";
-        if (!totals[name]) totals[name] = { name, revenue: 0, qty: 0 };
-        totals[name].revenue += (item.line_total ?? 0);
-        totals[name].qty += item.qty ?? 0;
+        const id = item.variant?.product?.id ?? null;
+        const name = item.variant?.product?.name ?? "نامعلوم";
+        const key = id ?? name;
+        if (!totals[key]) totals[key] = { id, name, revenue: 0, qty: 0 };
+        totals[key].revenue += (item.line_total ?? 0);
+        totals[key].qty += item.qty ?? 0;
       });
 
       return Object.values(totals)
@@ -177,7 +204,7 @@ function ProductsReport({ orgId }: { orgId: string }) {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("product_variants")
-        .select(`stock_qty, variant:product_variants(product:products(name))`)
+        .select("id, stock_qty, product:products!inner(id, name)")
         .lte("stock_qty", 5)
         .eq("is_active", true)
         .order("stock_qty")
@@ -223,7 +250,7 @@ function ProductsReport({ orgId }: { orgId: string }) {
           <div className="space-y-2">
             {lowStock.map((v: any, i: number) => (
               <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                <span className="text-sm font-medium">{v.product?.name ?? "نامعلوم"}</span>
+                <span className="text-sm font-medium"><EntityLink type="product" id={v.product?.id}>{v.product?.name ?? "نامعلوم"}</EntityLink></span>
                 <span className="text-sm font-bold text-rose-600">{toFaDigits(v.stock_qty)} عدد</span>
               </div>
             ))}
@@ -250,7 +277,7 @@ function FinancialReport({ orgId }: { orgId: string }) {
     queryKey: ["report-accounts", orgId],
     queryFn: async () => {
       const supabase = createClient();
-      const { data, error } = await supabase.from("accounts").select("name, type, balance").eq("org_id", orgId);
+      const { data, error } = await supabase.from("account_balances").select("name, type, balance").eq("org_id", orgId);
       if (error) throw error;
       return data ?? [];
     },
@@ -415,7 +442,12 @@ function ContactsReport({ orgId }: { orgId: string }) {
               <tbody>
                 {contactBalances.slice(0, 10).map((c: any) => (
                   <tr key={c.contact_id} className="border-b border-slate-50 hover:bg-slate-50">
-                    <td className="py-2 px-3 font-medium">{c.name}</td>
+                    <td className="py-2 px-3 font-medium">
+                      <div className="flex items-center gap-2">
+                        <EntityLink type="contact" id={c.contact_id}>{c.name}</EntityLink>
+                        <EntityActionMenu type="contact" id={c.contact_id} label={c.name} />
+                      </div>
+                    </td>
                     <td className="py-2 px-3">
                       <span className={`badge ${c.type === "customer" ? "bg-blue-100 text-blue-700" : c.type === "supplier" ? "bg-emerald-100 text-emerald-700" : "bg-violet-100 text-violet-700"}`}>
                         {c.type === "customer" ? "مشتری" : c.type === "supplier" ? "تأمین‌کننده" : "هر دو"}
@@ -443,7 +475,7 @@ function ProfitReport({ orgId }: { orgId: string }) {
     queryKey: ["report-top-selling", orgId],
     queryFn: async () => {
       const supabase = createClient();
-      const { data, error } = await supabase.from("top_selling_products").select("*").eq("org_id", orgId).limit(10);
+      const { data, error } = await supabase.from("top_selling_products").select("*").limit(10);
       if (error) throw error;
       return data ?? [];
     },
@@ -527,7 +559,12 @@ function ProfitReport({ orgId }: { orgId: string }) {
               <tbody>
                 {topProducts.map((p: any) => (
                   <tr key={p.product_id} className="border-b border-slate-50 hover:bg-slate-50">
-                    <td className="py-2 px-3 font-medium">{p.product_name}</td>
+                    <td className="py-2 px-3 font-medium">
+                      <div className="flex items-center gap-2">
+                        <EntityLink type="product" id={p.product_id}>{p.product_name}</EntityLink>
+                        <EntityActionMenu type="product" id={p.product_id} label={p.product_name} />
+                      </div>
+                    </td>
                     <td className="py-2 px-3">{toFaDigits(p.total_sold_qty)}</td>
                     <td className="py-2 px-3 text-brand-600">{formatToman(p.total_sales_amount)}</td>
                     <td className="py-2 px-3 text-emerald-600">{formatToman(p.total_profit)}</td>
@@ -547,6 +584,41 @@ export default function ReportsPage() {
   const { orgId, loading: orgLoading } = useOrg();
   const [activeTab, setActiveTab] = useState<TabId>("sales");
 
+  async function exportExcel() {
+    if (!orgId) return;
+    const supabase = createClient();
+    let rows: Record<string, unknown>[] = [];
+    if (activeTab === "sales") {
+      const { data, error } = await supabase
+        .from("sales")
+        .select("invoice_no,date,total,discount,tax,status,customer:contacts(name,phone)")
+        .order("date", { ascending: false });
+      if (error) { alert(error.message); return; }
+      rows = (data ?? []).map((s: any) => ({ invoice_no: s.invoice_no, date: s.date, customer: s.customer?.name ?? "مشتری نقدی", phone: s.customer?.phone ?? "", total: s.total, discount: s.discount, tax: s.tax, status: s.status }));
+    } else if (activeTab === "products") {
+      const { data, error } = await supabase
+        .from("product_variants")
+        .select("sku,barcode,color,size,stock_qty,purchase_price,sale_price,product:products!inner(name,code)")
+        .eq("is_active", true)
+        .order("stock_qty");
+      if (error) { alert(error.message); return; }
+      rows = (data ?? []).map((v: any) => ({ product: v.product?.name, code: v.product?.code, sku: v.sku, barcode: v.barcode, color: v.color, size: v.size, stock_qty: v.stock_qty, purchase_price: v.purchase_price, sale_price: v.sale_price }));
+    } else if (activeTab === "financial") {
+      const { data, error } = await supabase.from("transactions").select("type,amount,date,method,note,contact:contacts(name),account:accounts(name)").order("date", { ascending: false });
+      if (error) { alert(error.message); return; }
+      rows = (data ?? []).map((t: any) => ({ type: t.type, amount: t.amount, date: t.date, method: t.method, contact: t.contact?.name ?? "", account: t.account?.name ?? "", note: t.note ?? "" }));
+    } else if (activeTab === "contacts") {
+      const { data, error } = await supabase.from("contact_balances").select("contact_id,name,type,balance").eq("org_id", orgId);
+      if (error) { alert(error.message); return; }
+      rows = data ?? [];
+    } else {
+      const { data, error } = await supabase.from("top_selling_products").select("*").limit(200);
+      if (error) { alert(error.message); return; }
+      rows = data ?? [];
+    }
+    downloadCsv(`hesabyar-${activeTab}-${new Date().toISOString().slice(0,10)}.csv`, rows);
+  }
+
   // URL params support
   const searchParams = useSearchParams();
   useEffect(() => {
@@ -565,10 +637,16 @@ export default function ReportsPage() {
         title="گزارش‌ها"
         subtitle="تحلیل عملکرد کسب‌وکار"
         action={
-          <button className="btn btn-secondary flex items-center gap-2 text-sm">
-            <Download size={16} />
-            خروجی PDF
-          </button>
+          <div className="flex gap-2">
+            <button onClick={exportExcel} className="btn-secondary flex items-center gap-2 text-sm">
+              <Download size={16} />
+              Excel
+            </button>
+            <button onClick={() => window.print()} className="btn-secondary flex items-center gap-2 text-sm">
+              <Download size={16} />
+              PDF
+            </button>
+          </div>
         }
       />
 

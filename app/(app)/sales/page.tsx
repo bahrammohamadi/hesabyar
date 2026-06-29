@@ -7,6 +7,9 @@ import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, Spinner, Modal } from "@/components/shared/ui";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
+import { EntityLink } from "@/components/shared/entity-link";
+import { EntityActionMenu } from "@/components/shared/entity-action-menu";
+import { PhoneLink } from "@/components/shared/phone-link";
 import { formatToman, toFaDigits, toEnDigits, rialToToman, tomanToRial, toJalali } from "@/lib/utils/format";
 import { Plus, Trash2, Receipt, Loader2, ShoppingCart, Package, UserPlus, X } from "lucide-react";
 import type { CartItem } from "@/types/db";
@@ -84,12 +87,19 @@ export default function SalesPage() {
               {sales.map((s) => (
                 <tr key={s.id} className="hover:bg-slate-50">
                   <td>
-                    <Link href={`/sales/${s.id}`} className="text-brand-600 font-medium">
-                      {s.invoice_no}
-                    </Link>
+                    <EntityLink type="sale" id={s.id}>{s.invoice_no}</EntityLink>
                   </td>
                   <td className="text-slate-500">{toJalali(s.date)}</td>
-                  <td>{s.customer_id ? <Link href={`/contacts/${s.customer_id}`} className="text-brand-600 hover:underline">{s.customer?.name ?? "مشتری"}</Link> : <span className="text-slate-400">مشتری نقدی</span>}</td>
+                  <td>
+                    {s.customer_id ? (
+                      <div className="flex items-center gap-2">
+                        <EntityLink type="contact" id={s.customer_id}>{s.customer?.name ?? "مشتری"}</EntityLink>
+                        <EntityActionMenu type="contact" id={s.customer_id} label={s.customer?.name ?? "مشتری"} />
+                      </div>
+                    ) : (
+                      <span className="text-slate-400">مشتری نقدی</span>
+                    )}
+                  </td>
                   <td className="font-medium">{formatToman(s.total)}</td>
                   <td>
                     {s.paid_credit > 0 ? (
@@ -127,6 +137,7 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
   const [cart, setCart] = useState<CartItem[]>([]);
   const [customer, setCustomer] = useState<SelectableContact | null>(null);
   const [discount, setDiscount] = useState("0");
+  const [discountType, setDiscountType] = useState<"fixed" | "percent">("fixed");
   const [paidCash, setPaidCash] = useState("");
   const [paidCard, setPaidCard] = useState("");
   const [accountId, setAccountId] = useState("");
@@ -161,6 +172,7 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
         ...prev,
         {
           variant_id: v.variant_id,
+          product_id: v.product_id,
           product_name: v.product_name,
           variant_label: [v.color, v.size].filter(Boolean).join(" / "),
           qty: 1,
@@ -188,7 +200,8 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
   }
 
   const subtotal = useMemo(() => cart.reduce((s, c) => s + c.unit_price * c.qty - c.discount, 0), [cart]);
-  const discountRial = tomanToRial(Number(toEnDigits(discount)) || 0);
+  const discountInput = Number(toEnDigits(discount)) || 0;
+  const discountRial = discountType === "percent" ? Math.round((subtotal * discountInput) / 100) : tomanToRial(discountInput);
   const total = Math.max(0, subtotal - discountRial);
   const paidCashRial = tomanToRial(Number(toEnDigits(paidCash)) || 0);
   const paidCardRial = tomanToRial(Number(toEnDigits(paidCard)) || 0);
@@ -220,6 +233,8 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
           cost_price: c.cost_price,
         })),
         p_discount: discountRial,
+        p_discount_type: discountType,
+        p_discount_value: discountType === "percent" ? discountInput : discountRial,
         p_tax: 0,
         p_paid_cash: paidCashRial,
         p_paid_card: paidCardRial,
@@ -268,9 +283,7 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
               <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3.5 py-2.5">
                 <div>
                   <div className="font-medium text-sm text-slate-800">{customer.name}</div>
-                  {customer.phone && (
-                    <div className="text-xs text-slate-400" dir="ltr">{customer.phone}</div>
-                  )}
+                  {customer.phone && <PhoneLink phone={customer.phone} className="text-xs" />}
                 </div>
                 <button onClick={() => setCustomer(null)} className="text-slate-400 hover:text-rose-500">
                   <X size={18} />
@@ -307,7 +320,10 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
                 <div key={c.variant_id} className="rounded-xl border border-slate-100 p-3">
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="font-medium text-sm text-slate-800 truncate">{c.product_name}</div>
+                      <div className="flex items-center gap-2">
+                        <EntityLink type="product" id={c.product_id} className="truncate text-sm">{c.product_name}</EntityLink>
+                        <EntityActionMenu type="product" id={c.product_id} label={c.product_name} />
+                      </div>
                       <div className="text-xs text-slate-400">{c.variant_label || "ساده"}</div>
                     </div>
                     <button
@@ -355,8 +371,15 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
               </select>
             </div>
             <div>
-              <label className="label">تخفیف (تومان)</label>
-              <input className="input" inputMode="numeric" value={discount} onChange={(e) => setDiscount(e.target.value)} />
+              <label className="label">تخفیف</label>
+              <div className="flex gap-2">
+                <input className="input" inputMode="numeric" value={discount} onChange={(e) => setDiscount(e.target.value)} />
+                <select className="input w-28" value={discountType} onChange={(e) => setDiscountType(e.target.value as "fixed" | "percent") }>
+                  <option value="fixed">تومان</option>
+                  <option value="percent">٪</option>
+                </select>
+              </div>
+              {discountRial > 0 && <div className="text-xs text-slate-400 mt-1">معادل تخفیف: {formatToman(discountRial)}</div>}
             </div>
             <div>
               <label className="label">دریافت نقدی (تومان)</label>

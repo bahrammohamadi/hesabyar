@@ -69,3 +69,29 @@ body {
     @apply inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium;
   }
 }
+
+@media print {
+  body {
+    background: #fff !important;
+  }
+  header,
+  aside,
+  nav,
+  .no-print,
+  [data-no-print="true"] {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+  .card {
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+}

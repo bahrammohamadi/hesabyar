@@ -5,8 +5,9 @@ import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { formatToman, toFaDigits, toJalali } from "@/lib/utils/format";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
+import { EntityLink } from "@/components/shared/entity-link";
+import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { Plus, Search, Edit, Trash2, FileText, ClipboardList } from "lucide-react";
-import Link from "next/link";
 
 const sb = createClient();
 
@@ -231,7 +232,16 @@ export default function SalesOrdersPage() {
                       <span className="font-bold text-slate-800">{order.order_no || "بدون شماره"}</span>
                       <span className={`badge ${statusInfo.color}`}>{statusInfo.label}</span>
                     </div>
-                    <div className="text-sm text-slate-600 mb-1">{order.customer?.name || <span className="text-slate-400">بدون مشتری</span>}</div>
+                    <div className="text-sm text-slate-600 mb-1">
+                      {order.customer_id ? (
+                        <span className="inline-flex items-center gap-2">
+                          <EntityLink type="contact" id={order.customer_id}>{order.customer?.name ?? "مشتری"}</EntityLink>
+                          <EntityActionMenu type="contact" id={order.customer_id} label={order.customer?.name ?? "مشتری"} />
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">بدون مشتری</span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-4 text-xs text-slate-400">
                       <span>{toJalali(order.date)}</span>
                       {order.expiry_date && <span>انقضا: {toJalali(order.expiry_date)}</span>}
@@ -289,7 +299,7 @@ export default function SalesOrdersPage() {
                           <div className="text-sm"><div className="font-medium">{item.name}</div><div className="text-xs text-slate-400">{v.color && `رنگ: ${v.color}`} {v.size && `سایز: ${v.size}`}</div></div>
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium">{formatToman(v.sale_price)}</span>
-                            <button type="button" onClick={() => { setItems([...items.filter(i => i.variant_id !== v.id), { ...v, product_name: item.name, qty: 1, price: v.sale_price }]); setShowProductSearch(false); setProductSearch(""); }} className="btn-primary py-1 px-2 text-xs"><Plus size={12} /></button>
+                            <button type="button" onClick={() => { setItems([...items.filter(i => i.variant_id !== v.id), { ...v, product_id: item.id, product_name: item.name, qty: 1, price: v.sale_price }]); setShowProductSearch(false); setProductSearch(""); }} className="btn-primary py-1 px-2 text-xs"><Plus size={12} /></button>
                           </div>
                         </div>
                       ))
@@ -300,7 +310,13 @@ export default function SalesOrdersPage() {
               <div className="space-y-2">
                 {items.filter(i => i.qty > 0).map((item, idx) => (
                   <div key={idx} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                    <div className="flex-1"><div className="text-sm font-medium">{item.product_name}</div><div className="text-xs text-slate-400">{item.color && `رنگ: ${item.color}`} {item.size && `سایز: ${item.size}`}</div></div>
+                    <div className="flex-1">
+                      <div className="inline-flex items-center gap-2 text-sm font-medium">
+                        <EntityLink type="product" id={item.product_id}>{item.product_name}</EntityLink>
+                        <EntityActionMenu type="product" id={item.product_id} label={item.product_name} />
+                      </div>
+                      <div className="text-xs text-slate-400">{item.color && `رنگ: ${item.color}`} {item.size && `سایز: ${item.size}`}</div>
+                    </div>
                     <div className="flex items-center gap-2">
                       <input type="number" min="1" value={item.qty} onChange={e => { const newItems = [...items]; newItems[idx].qty = parseInt(e.target.value) || 1; setItems(newItems); }} className="input w-16 text-center" />
                       <span className="text-sm">{formatToman(item.price * item.qty)}</span>

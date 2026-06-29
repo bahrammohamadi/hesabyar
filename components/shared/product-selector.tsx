@@ -10,6 +10,7 @@ import { Search, Package, Barcode, X, Filter, ArrowUpDown, ArrowUp, ArrowDown } 
 
 export interface SelectableVariant {
   variant_id: string;
+  product_id: string | null;
   product_name: string;
   product_code: string | null;
   color: string | null;
@@ -33,6 +34,7 @@ interface RawVariant {
   purchase_price: number | null;
   stock_qty: number;
   product: {
+    id: string;
     name: string;
     code: string | null;
     category_id: string | null;
@@ -83,13 +85,14 @@ export function ProductSelector({
         .from("product_variants")
         .select(
           `id, color, size, sku, barcode, sale_price, purchase_price, stock_qty,
-           product:products!inner(name, code, category_id, brand_id, base_sale_price, base_purchase_price)`
+           product:products!inner(id, name, code, category_id, brand_id, base_sale_price, base_purchase_price)`
         )
         .eq("is_active", true)
         .limit(5000);
       if (error) throw error;
       return ((data as unknown as RawVariant[]) ?? []).map((v) => ({
         variant_id: v.id,
+        product_id: v.product?.id ?? null,
         product_name: v.product?.name ?? "",
         product_code: v.product?.code ?? null,
         color: v.color,

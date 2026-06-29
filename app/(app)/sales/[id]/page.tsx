@@ -1,15 +1,20 @@
 "use client";
 
 import { use, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
-import { Spinner, EmptyState } from "@/components/shared/ui";
-import { formatToman, toFaDigits, toJalali } from "@/lib/utils/format";
-import { Printer, ArrowRight } from "lucide-react";
+import { Spinner, EmptyState, Modal } from "@/components/shared/ui";
+import { EntityLink } from "@/components/shared/entity-link";
+import { EntityActionMenu } from "@/components/shared/entity-action-menu";
+import { PhoneLink } from "@/components/shared/phone-link";
+import { formatToman, toFaDigits, toJalali, toEnDigits, tomanToRial } from "@/lib/utils/format";
+import { Printer, ArrowRight, Plus, Loader2, CreditCard } from "lucide-react";
 import Link from "next/link";
 
 export default function SaleDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const qc = useQueryClient();
+  const [paymentOpen, setPaymentOpen] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["sale-detail", id],
@@ -20,12 +25,16 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
         .select(
           `*, customer:contacts(name, phone, address, code),
            sale_items(id, qty, unit_price, discount, line_total,
-             variant:product_variants(color, size, sku, product:products(name, code)))`
+             variant:product_variants(color, size, sku, product:products(id, name, code)))`
         )
         .eq("id", id)
         .single();
       if (error) throw error;
-      return sale as any;
+      const [{ data: summary }, { data: payments }] = await Promise.all([
+        supabase.from("sales_payment_summary").select("paid_total, balance, last_payment_at, payment_count").eq("sale_id", id).maybeSingle(),
+        supabase.from("transactions").select("id, amount, date, method, note, account:accounts(name)").eq("sale_id", id).order("date", { ascending: false }),
+      ]);
+      return { ...(sale as any), payment_summary: summary, payments: payments ?? [] };
     },
   });
 
@@ -45,7 +54,9 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
   const payMethods: string[] = [];
   if (data.paid_cash > 0) payMethods.push("نقدی");
   if (data.paid_card > 0) payMethods.push("کارتی");
-  if (data.paid_credit > 0) payMethods.push("نسیه");
+  if ((data.payment_summary?.balance ?? data.paid_credit) > 0) payMethods.push("نسیه");
+  const paidTotal = data.payment_summary?.paid_total ?? ((data.paid_cash ?? 0) + (data.paid_card ?? 0));
+  const balance = data.payment_summary?.balance ?? Math.max(0, (data.total ?? 0) - paidTotal);
 
   return (
     <>
@@ -68,9 +79,16 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
           <Link href="/sales" className="flex items-center gap-1 text-slate-500 text-sm hover:text-brand-600">
             <ArrowRight size={18} /> بازگشت به لیست
           </Link>
-          <button onClick={() => window.print()} className="btn-primary flex items-center gap-2">
-            <Printer size={18} /> چاپ / ذخیره PDF
-          </button>
+          <div className="flex items-center gap-2">
+            {balance > 0 && (
+              <button onClick={() => setPaymentOpen(true)} className="btn-secondary flex items-center gap-2">
+                <Plus size={16} /> ثبت پرداخت
+              </button>
+            )}
+            <button onClick={() => window.print()} className="btn-primary flex items-center gap-2">
+              <Printer size={18} /> چاپ / ذخیره PDF
+            </button>
+          </div>
         </div>
 
         {/* Invoice */}
@@ -100,13 +118,20 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
           <div className="mb-4 p-3 bg-slate-50 rounded-xl text-sm flex flex-wrap gap-4">
             <div>
               <span className="text-slate-500">مشتری: </span>
-              <span className="font-medium">{data.customer?.name ?? "مشتری نقدی"}</span>
+              {data.customer_id ? (
+                <span className="inline-flex items-center gap-2">
+                  <EntityLink type="contact" id={data.customer_id}>{data.customer?.name ?? "مشتری"}</EntityLink>
+                  <span className="no-print"><EntityActionMenu type="contact" id={data.customer_id} label={data.customer?.name ?? "مشتری"} phone={data.customer?.phone} /></span>
+                </span>
+              ) : (
+                <span className="font-medium">مشتری نقدی</span>
+              )}
             </div>
             {data.customer?.code && (
               <div><span className="text-slate-500">کد: </span><span className="font-mono">{data.customer.code}</span></div>
             )}
             {data.customer?.phone && (
-              <div dir="ltr"><span className="text-slate-500">تلفن: </span>{data.customer.phone}</div>
+              <div><span className="text-slate-500">تلفن: </span><PhoneLink phone={data.customer.phone} /></div>
             )}
           </div>
 
@@ -129,7 +154,10 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
                     <tr key={it.id} className="border-t border-slate-100 hover:bg-slate-25">
                       <td className="px-3 py-2.5 text-center text-slate-400">{toFaDigits(idx + 1)}</td>
                       <td className="px-3 py-2.5">
-                        <div className="font-medium">{it.variant?.product?.name ?? "—"}</div>
+                        <div className="flex items-center gap-2">
+                          <EntityLink type="product" id={it.variant?.product?.id}>{it.variant?.product?.name ?? "—"}</EntityLink>
+                          <span className="no-print"><EntityActionMenu type="product" id={it.variant?.product?.id} label={it.variant?.product?.name} /></span>
+                        </div>
                         {(it.variant?.color || it.variant?.size) && (
                           <div className="text-xs text-slate-400">
                             {[it.variant?.color, it.variant?.size].filter(Boolean).join(" / ")}
@@ -170,22 +198,14 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
                 <span>مبلغ نهایی</span>
                 <span>{formatToman(data.total ?? 0, false)}</span>
               </div>
-              {data.paid_cash > 0 && (
-                <div className="flex justify-between text-slate-500 text-sm">
-                  <span>نقدی</span>
-                  <span>{formatToman(data.paid_cash, false)}</span>
-                </div>
-              )}
-              {data.paid_card > 0 && (
-                <div className="flex justify-between text-slate-500 text-sm">
-                  <span>کارتی</span>
-                  <span>{formatToman(data.paid_card, false)}</span>
-                </div>
-              )}
-              {data.paid_credit > 0 && (
+              <div className="flex justify-between text-emerald-600 text-sm">
+                <span>پرداخت‌شده</span>
+                <span>{formatToman(paidTotal, false)}</span>
+              </div>
+              {balance > 0 && (
                 <div className="flex justify-between text-rose-600 font-medium">
-                  <span>نسیه</span>
-                  <span>{formatToman(data.paid_credit, false)}</span>
+                  <span>مانده</span>
+                  <span>{formatToman(balance, false)}</span>
                 </div>
               )}
             </div>
@@ -196,6 +216,19 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
             <div className="text-xs text-slate-500 mb-2">
               روش پرداخت: {payMethods.join("، ") || "—"}
             </div>
+            {data.payments?.length > 0 && (
+              <div className="no-print mt-3 rounded-xl bg-slate-50 p-3">
+                <div className="mb-2 flex items-center gap-1 text-xs font-medium text-slate-600"><CreditCard size={13} /> پرداخت‌های ثبت‌شده</div>
+                <div className="space-y-1">
+                  {data.payments.map((p: any) => (
+                    <div key={p.id} className="flex justify-between text-xs text-slate-500">
+                      <span>{p.note ?? p.method ?? "پرداخت"}</span>
+                      <span>{formatToman(p.amount, false)} • {toJalali(p.date)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {data.note && <div className="text-xs text-slate-400">توضیح: {data.note}</div>}
           </div>
 
@@ -209,6 +242,71 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
           <Link href="/sales" className="btn-secondary">بازگشت</Link>
         </div>
       </div>
+
+      {paymentOpen && (
+        <SalePaymentModal
+          saleId={id}
+          balance={balance}
+          onClose={() => {
+            setPaymentOpen(false);
+            qc.invalidateQueries({ queryKey: ["sale-detail", id] });
+            qc.invalidateQueries({ queryKey: ["entity", "contact"] });
+          }}
+        />
+      )}
     </>
+  );
+}
+
+function SalePaymentModal({ saleId, balance, onClose }: { saleId: string; balance: number; onClose: () => void }) {
+  const [amount, setAmount] = useState(String(Math.round(balance / 10)));
+  const [method, setMethod] = useState("cash");
+  const [accountId, setAccountId] = useState("");
+  const [note, setNote] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const { data: accounts } = useQuery({
+    queryKey: ["payment-accounts"],
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data } = await supabase.from("accounts").select("id,name,type").eq("is_active", true).order("name");
+      return data ?? [];
+    },
+  });
+
+  async function save() {
+    const amountRial = tomanToRial(Number(toEnDigits(amount)) || 0);
+    if (amountRial <= 0) { setError("مبلغ پرداخت را وارد کنید."); return; }
+    setSaving(true);
+    const supabase = createClient();
+    try {
+      const { error: e } = await supabase.rpc("record_sale_payment", {
+        p_sale: saleId,
+        p_amount: amountRial,
+        p_account: accountId || null,
+        p_method: method,
+        p_note: note.trim() || null,
+      });
+      if (e) throw e;
+      onClose();
+    } catch (err) {
+      setError("خطا: " + (err as Error).message);
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal open onClose={onClose} title="ثبت پرداخت فاکتور فروش" size="md">
+      <div className="space-y-4">
+        <div className="rounded-xl bg-rose-50 p-3 text-sm text-rose-700">مانده فعلی: <b>{formatToman(balance)}</b></div>
+        <div><label className="label">مبلغ پرداخت (تومان)</label><input className="input" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} /></div>
+        <div><label className="label">روش پرداخت</label><select className="input" value={method} onChange={(e) => setMethod(e.target.value)}><option value="cash">نقد</option><option value="card">کارت</option><option value="transfer">انتقال</option><option value="cheque">چک</option></select></div>
+        <div><label className="label">حساب</label><select className="input" value={accountId} onChange={(e) => setAccountId(e.target.value)}><option value="">انتخاب...</option>{accounts?.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
+        <div><label className="label">توضیح</label><input className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
+        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
+        <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving && <Loader2 className="animate-spin" size={18} />} ثبت پرداخت</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
+      </div>
+    </Modal>
   );
 }

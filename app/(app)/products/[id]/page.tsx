@@ -1,24 +1,30 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { Spinner, Modal, EmptyState } from "@/components/shared/ui";
+import { EntityLink } from "@/components/shared/entity-link";
+import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { formatToman, toFaDigits, toJalali, toEnDigits, rialToToman, tomanToRial } from "@/lib/utils/format";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowRight, Package, Pencil, Loader2, Tag,
   ArrowDownCircle, ArrowUpCircle, ShoppingBag, Truck, ArrowLeftRight,
   X, Plus
 } from "lucide-react";
+import { getActionParam } from "@/lib/entities/action-router";
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const qc = useQueryClient();
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<"info" | "movements" | "sales" | "purchases">("info");
   const [editOpen, setEditOpen] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
+  const [priceOpen, setPriceOpen] = useState(false);
 
   // اطلاعات محصول
   const { data: product, isLoading } = useQuery({
@@ -60,7 +66,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       const supabase = createClient();
       const { data } = await supabase
         .from("sale_items")
-        .select("qty, unit_price, line_total, cost_price, created_at, variant_id, sale: sales(id, invoice_no, date, customer:contacts(name))")
+        .select("qty, unit_price, line_total, cost_price, created_at, variant_id, sale: sales(id, invoice_no, date, customer_id, customer:contacts(id, name))")
         .limit(100);
       if (!data) return [];
       // فقط اقلامی که متعلق به این محصول هستند
@@ -77,13 +83,24 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       const supabase = createClient();
       const { data } = await supabase
         .from("purchase_items")
-        .select("qty, unit_price, line_total, created_at, variant_id, purchase: purchases(id, invoice_no, date, supplier:contacts(name))")
+        .select("qty, unit_price, line_total, created_at, variant_id, purchase: purchases(id, invoice_no, date, supplier_id, supplier:contacts(id, name))")
         .limit(100);
       if (!data) return [];
       const variantIds = product?.product_variants?.map((v: any) => v.id) ?? [];
       return data.filter((it: any) => variantIds.includes(it.variant_id));
     },
   });
+
+
+  useEffect(() => {
+    const action = getActionParam(searchParams);
+    const tab = searchParams.get("tab");
+    if (tab === "movements") setActiveTab("movements");
+    if (action === "edit") setEditOpen(true);
+    if (action === "price") setPriceOpen(true);
+    if (action === "adjust-stock") setAdjustOpen(true);
+    if (action === "movements" || action === "stock-history") setActiveTab("movements");
+  }, [searchParams]);
 
   if (isLoading) return <Spinner label="در حال بارگذاری..." />;
   if (!product) return <EmptyState title="کالا یافت نشد" />;
@@ -102,6 +119,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           <ArrowRight size={18} /> بازگشت
         </Link>
         <div className="flex gap-2">
+          <EntityActionMenu type="product" id={product.id} label={product.name} />
           <button onClick={() => setEditOpen(true)} className="btn-secondary flex items-center gap-2 text-sm">
             <Pencil size={16} /> ویرایش
           </button>
@@ -175,8 +193,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       {activeTab === "sales" && <SalesList items={saleItems ?? []} />}
       {activeTab === "purchases" && <PurchasesList items={purchaseItems ?? []} />}
 
-      {editOpen && <ProductEditModal product={product} onClose={() => setEditOpen(false)} onSaved={() => { setEditOpen(false); qc.invalidateQueries({ queryKey: ["product-detail", id] }); qc.invalidateQueries({ queryKey: ["products"] }); }} />}
-      {adjustOpen && <AdjustModal product={product} variants={variants} onClose={() => setAdjustOpen(false)} onSaved={() => { setAdjustOpen(false); qc.invalidateQueries({ queryKey: ["product-detail", id] }); qc.invalidateQueries({ queryKey: ["products"] }); }} />}
+      {editOpen && <ProductEditModal product={product} onClose={() => setEditOpen(false)} onSaved={() => { setEditOpen(false); qc.invalidateQueries({ queryKey: ["product-detail", id] }); qc.invalidateQueries({ queryKey: ["products"] }); qc.invalidateQueries({ queryKey: ["entity", "product"] }); }} />}
+      {priceOpen && <PriceChangeModal product={product} variants={variants} onClose={() => setPriceOpen(false)} onSaved={() => { setPriceOpen(false); qc.invalidateQueries({ queryKey: ["product-detail", id] }); qc.invalidateQueries({ queryKey: ["products"] }); qc.invalidateQueries({ queryKey: ["entity", "product"] }); }} />}
+      {adjustOpen && <AdjustModal product={product} variants={variants} onClose={() => setAdjustOpen(false)} onSaved={() => { setAdjustOpen(false); qc.invalidateQueries({ queryKey: ["product-detail", id] }); qc.invalidateQueries({ queryKey: ["products"] }); qc.invalidateQueries({ queryKey: ["entity", "product"] }); }} />}
     </div>
   );
 }
@@ -291,8 +310,8 @@ function SalesList({ items }: { items: any[] }) {
             <tbody>
               {items.map((it: any, idx: number) => (
                 <tr key={idx} className="hover:bg-slate-50">
-                  <td>{it.sale ? <Link href={`/sales/${it.sale.id}`} className="text-brand-600 font-medium hover:underline">{it.sale.invoice_no}</Link> : "—"}</td>
-                  <td className="text-slate-500">{it.sale?.customer?.name ?? "—"}</td>
+                  <td>{it.sale ? <EntityLink type="sale" id={it.sale.id}>{it.sale.invoice_no}</EntityLink> : "—"}</td>
+                  <td>{it.sale?.customer_id ? <EntityLink type="contact" id={it.sale.customer_id}>{it.sale?.customer?.name ?? "مشتری"}</EntityLink> : <span className="text-slate-400">—</span>}</td>
                   <td className="font-medium">{toFaDigits(it.qty)}</td>
                   <td className="text-brand-600">{formatToman(it.unit_price, false)}</td>
                   <td className="font-medium">{formatToman(it.line_total, false)}</td>
@@ -325,8 +344,8 @@ function PurchasesList({ items }: { items: any[] }) {
             <tbody>
               {items.map((it: any, idx: number) => (
                 <tr key={idx} className="hover:bg-slate-50">
-                  <td className="font-medium text-emerald-600">{it.purchase?.invoice_no ?? "—"}</td>
-                  <td className="text-slate-500">{it.purchase?.supplier?.name ?? "—"}</td>
+                  <td>{it.purchase?.id ? <EntityLink type="purchase" id={it.purchase.id}>{it.purchase?.invoice_no ?? "خرید"}</EntityLink> : <span className="text-slate-400">—</span>}</td>
+                  <td>{it.purchase?.supplier_id ? <EntityLink type="contact" id={it.purchase.supplier_id}>{it.purchase?.supplier?.name ?? "تامین‌کننده"}</EntityLink> : <span className="text-slate-400">—</span>}</td>
                   <td className="font-medium">{toFaDigits(it.qty)}</td>
                   <td className="text-slate-600">{formatToman(it.unit_price, false)}</td>
                   <td className="font-medium">{formatToman(it.line_total, false)}</td>
@@ -338,6 +357,57 @@ function PurchasesList({ items }: { items: any[] }) {
         )}
       </div>
     </div>
+  );
+}
+
+// مودال تغییر قیمت
+function PriceChangeModal({ product, variants, onClose, onSaved }: { product: any; variants: any[]; onClose: () => void; onSaved: () => void }) {
+  const [purchasePrice, setPurchasePrice] = useState(String(rialToToman(product.base_purchase_price ?? variants[0]?.purchase_price ?? 0)));
+  const [salePrice, setSalePrice] = useState(String(rialToToman(product.base_sale_price ?? variants[0]?.sale_price ?? 0)));
+  const [applyToVariants, setApplyToVariants] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function save() {
+    const purchaseRial = tomanToRial(Number(toEnDigits(purchasePrice)) || 0);
+    const saleRial = tomanToRial(Number(toEnDigits(salePrice)) || 0);
+    setSaving(true);
+    const supabase = createClient();
+    try {
+      const { error: priceError } = await supabase.rpc("change_product_price", {
+        p_product: product.id,
+        p_purchase_price: purchaseRial,
+        p_sale_price: saleRial,
+        p_apply_variants: applyToVariants,
+        p_reason: "تغییر قیمت از جزئیات کالا",
+      });
+      if (priceError) throw priceError;
+      onSaved();
+    } catch (err) {
+      setError("خطا: " + (err as Error).message);
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal open onClose={onClose} title="تغییر قیمت کالا" size="md">
+      <div className="space-y-4">
+        <div className="rounded-xl bg-slate-50 p-3">
+          <div className="font-medium text-slate-800">{product.name}</div>
+          <div className="text-xs text-slate-400 mt-1">{toFaDigits(variants.length)} تنوع فعال/ثبت‌شده</div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div><label className="label">قیمت خرید (تومان)</label><input className="input" inputMode="numeric" value={purchasePrice} onChange={(e) => setPurchasePrice(e.target.value)} /></div>
+          <div><label className="label">قیمت فروش (تومان)</label><input className="input" inputMode="numeric" value={salePrice} onChange={(e) => setSalePrice(e.target.value)} /></div>
+        </div>
+        <label className="flex items-center gap-2 text-sm text-slate-600">
+          <input type="checkbox" checked={applyToVariants} onChange={(e) => setApplyToVariants(e.target.checked)} />
+          اعمال قیمت روی همه تنوع‌های فعال کالا
+        </label>
+        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
+        <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving&&<Loader2 className="animate-spin" size={18}/>} ذخیره قیمت</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
+      </div>
+    </Modal>
   );
 }
 
@@ -395,8 +465,8 @@ function AdjustModal({ product, variants, onClose, onSaved }: { product: any; va
       for (const v of variants) {
         const diff = (Number(toEnDigits(vals[v.id])) || 0) - (v.stock_qty ?? 0);
         if (diff !== 0) {
-          await supabase.from("stock_movements").insert({ org_id: orgId, branch_id: branchId, variant_id: v.id, type: diff > 0 ? "adjust" : "adjust", reason: "count", qty: diff, note: note.trim() || "تعدیل" });
-          await supabase.from("product_variants").update({ stock_qty: Number(toEnDigits(vals[v.id])) || 0 }).eq("id", v.id);
+          const { error: movementError } = await supabase.from("stock_movements").insert({ org_id: orgId, branch_id: branchId, variant_id: v.id, type: "adjust", reason: "count", qty: diff, note: note.trim() || "تعدیل" });
+          if (movementError) throw movementError;
         }
       }
       onSaved();
