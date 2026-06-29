@@ -1,7 +1,17 @@
 import dayjs from "dayjs";
 import jalaliday from "jalaliday";
 
-dayjs.extend(jalaliday);
+// jalaliday باید دقیقاً یک‌بار و ایمن extend شود. در production build اگر
+// این کار دوباره یا ناهماهنگ انجام شود، calendar("jalali") می‌تواند خطا بدهد.
+const globalForDayjs = globalThis as typeof globalThis & { __jalalidayExtended__?: boolean };
+if (!globalForDayjs.__jalalidayExtended__) {
+  try {
+    dayjs.extend(jalaliday);
+  } catch {
+    // در صورت شکست extend، توابع تاریخ به fallback میلادی برمی‌گردند.
+  }
+  globalForDayjs.__jalalidayExtended__ = true;
+}
 
 const FA_DIGITS = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
 
@@ -43,17 +53,36 @@ export function formatNumber(n: number | null | undefined): string {
   return toFaDigits((n ?? 0).toLocaleString("en-US"));
 }
 
+/** تبدیل ایمن یک تاریخ به dayjs شمسی. در صورت خطا null برمی‌گرداند. */
+function toJalaliDayjs(date: dayjs.ConfigType) {
+  try {
+    const base = dayjs(date);
+    if (!base.isValid()) return null;
+    // calendar فقط وقتی وجود دارد که plugin درست extend شده باشد.
+    const cal = (base as unknown as { calendar?: (c: string) => dayjs.Dayjs }).calendar;
+    if (typeof cal !== "function") return null;
+    return base.calendar("jalali");
+  } catch {
+    return null;
+  }
+}
+
 /** تاریخ شمسی از یک تاریخ میلادی/ISO */
 export function toJalali(date: string | Date | null | undefined, withTime = false): string {
   if (!date) return "-";
-  const d = dayjs(date).calendar("jalali");
   const fmt = withTime ? "YYYY/MM/DD HH:mm" : "YYYY/MM/DD";
-  return toFaDigits(d.format(fmt));
+  const j = toJalaliDayjs(date);
+  if (j) return toFaDigits(j.format(fmt));
+  // fallback میلادی در صورت عدم دسترسی به تقویم شمسی
+  const g = dayjs(date);
+  return g.isValid() ? toFaDigits(g.format(fmt)) : "-";
 }
 
 /** تاریخ شمسی امروز به صورت رشته */
 export function todayJalali(): string {
-  return toFaDigits(dayjs().calendar("jalali").format("YYYY/MM/DD"));
+  const j = toJalaliDayjs(new Date());
+  if (j) return toFaDigits(j.format("YYYY/MM/DD"));
+  return toFaDigits(dayjs().format("YYYY/MM/DD"));
 }
 
 /** نام روز و تاریخ کامل شمسی (برای هدر) */
@@ -63,10 +92,19 @@ export function fullJalali(date?: string | Date): string {
     "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
     "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند",
   ];
-  const d = dayjs(date ?? new Date()).calendar("jalali");
-  const dayName = days[dayjs(date ?? new Date()).day()];
-  const day = toFaDigits(d.format("D"));
-  const month = months[d.month()];
-  const year = toFaDigits(d.format("YYYY"));
-  return `${dayName} ${day} ${month} ${year}`;
+  const source = dayjs(date ?? new Date());
+  if (!source.isValid()) return "";
+
+  const j = toJalaliDayjs(source);
+  if (!j) {
+    // fallback: حداقل تاریخ میلادی را بده تا برنامه crash نکند.
+    return toFaDigits(source.format("YYYY/MM/DD"));
+  }
+
+  const dayName = days[source.day()] ?? "";
+  const day = toFaDigits(j.format("D"));
+  const monthIndex = j.month();
+  const month = months[monthIndex] ?? "";
+  const year = toFaDigits(j.format("YYYY"));
+  return `${dayName} ${day} ${month} ${year}`.trim();
 }
