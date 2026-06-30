@@ -5,7 +5,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, Modal, Spinner } from "@/components/shared/ui";
-import { Plus, Loader2, Tag, Landmark, FolderTree, Trash2, Pencil, Check, X, Users, Shield } from "lucide-react";
+import { Plus, Loader2, Tag, Landmark, FolderTree, Trash2, Pencil, Check, X, Users, Shield, Palette } from "lucide-react";
+import { applyTheme, DEFAULT_THEME, THEMES, THEME_STORAGE_KEY, type ThemeId } from "@/lib/theme";
 
 export function SettingsContent({ section = "all" }: { section?: "all" | "catalog" | "accounts" | "users" }) {
   const { orgId, branchId } = useOrg();
@@ -17,10 +18,13 @@ export function SettingsContent({ section = "all" }: { section?: "all" | "catalo
         subtitle="مدیریت دسته‌بندی‌ها، برندها، حساب‌ها و دسته هزینه‌ها"
       />
       {(section === "all" || section === "catalog") && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="space-y-4">
+          <ThemeSettings />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <ManageableList orgId={orgId} branchId={branchId} table="categories" title="دسته‌بندی کالا" icon={<FolderTree size={18} />} />
           <ManageableList orgId={orgId} branchId={branchId} table="brands" title="برندها" icon={<Tag size={18} />} />
           <ManageableList orgId={orgId} branchId={branchId} table="expense_categories" title="دسته‌بندی هزینه" icon={<Tag size={18} />} />
+          </div>
         </div>
       )}
       {(section === "all" || section === "accounts") && (
@@ -33,6 +37,45 @@ export function SettingsContent({ section = "all" }: { section?: "all" | "catalo
           <UsersAccessManager />
         </div>
       )}
+    </div>
+  );
+}
+
+
+function ThemeSettings() {
+  const [selected, setSelected] = useState<ThemeId>(() => {
+    if (typeof window === "undefined") return DEFAULT_THEME;
+    return (window.localStorage.getItem(THEME_STORAGE_KEY) as ThemeId | null) ?? DEFAULT_THEME;
+  });
+
+  function choose(themeId: ThemeId) {
+    setSelected(themeId);
+    window.localStorage.setItem(THEME_STORAGE_KEY, themeId);
+    applyTheme(themeId);
+    window.dispatchEvent(new CustomEvent("hesabyar-theme-change", { detail: themeId }));
+  }
+
+  return (
+    <div className="card p-5">
+      <div className="flex items-center gap-2 mb-4 font-semibold text-slate-800">
+        <Palette size={18} /> تم رنگی نرم‌افزار
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">
+        {THEMES.map((theme) => (
+          <button
+            key={theme.id}
+            type="button"
+            onClick={() => choose(theme.id)}
+            className={`text-right rounded-2xl border p-4 transition hover:shadow-sm ${selected === theme.id ? "border-brand-500 bg-brand-50" : "border-slate-200 bg-white hover:border-brand-200"}`}
+          >
+            <div className="flex gap-1 mb-3">
+              {theme.swatches.map((color) => <span key={color} className="w-7 h-7 rounded-full border border-white shadow-sm" style={{ backgroundColor: color }} />)}
+            </div>
+            <div className="font-bold text-sm text-slate-800">{theme.name}</div>
+            <div className="text-xs text-slate-500 mt-1 leading-5">{theme.description}</div>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

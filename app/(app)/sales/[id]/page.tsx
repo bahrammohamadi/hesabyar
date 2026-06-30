@@ -202,7 +202,7 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
         <div id="invoice-print" className="card bg-white p-5 sm:p-8">
           <div className="flex items-start justify-between gap-4 border-b-2 border-brand-600 pb-4 mb-5">
             <div className="flex items-center gap-3">
-              <img src="/mehrjameh-logo.jpg" alt="مهرجامه" className="w-14 h-14 object-contain rounded-xl" />
+              <img src="/logo.png" alt="حسابیار" className="w-14 h-14 object-contain rounded-xl" />
               <div>
                 <h1 className="text-xl font-bold text-brand-700">مهرجامه</h1>
                 <p className="text-xs text-slate-500 mt-1">فاکتور فروش</p>
