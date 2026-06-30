@@ -21,7 +21,14 @@ import {
 const NAV = [
   { href: "/dashboard", label: "داشبورد", icon: LayoutDashboard },
   { href: "/sales", label: "فروش", icon: ShoppingBag, highlight: true },
-  { href: "/purchases", label: "خرید", icon: ShoppingBasket },
+  {
+    label: "خرید",
+    icon: ShoppingBasket,
+    children: [
+      { href: "/purchases", label: "فاکتورهای خرید", icon: ShoppingBasket },
+      { href: "/purchases/returns", label: "مرجوعی خرید", icon: ArrowLeftRight },
+    ],
+  },
   {
     label: "کالا و انبار",
     icon: Package,
