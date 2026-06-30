@@ -15,7 +15,7 @@ import {
   FileText, Percent, ShoppingBasket, Boxes, PercentCircle,
   Building, UserCheck, AlertCircle, PieChart, Activity,
   Briefcase, BookOpen, ShoppingBagIcon, Tags, Barcode,
-  ArrowRightLeft, History, PiggyBank, Banknote, Coins, Gift,
+  ArrowRightLeft, History, PiggyBank, Banknote, Coins, Gift, MessageCircle,
 } from "lucide-react";
 
 const NAV = [
@@ -78,6 +78,17 @@ const NAV = [
       { href: "/crm/loyalty", label: "امتیاز و وفاداری", icon: Gift },
     ],
   },
+
+  {
+    label: "باشگاه مشتریان",
+    icon: Gift,
+    children: [
+      { href: "/loyalty", label: "نمای کلی باشگاه", icon: Gift },
+      { href: "/loyalty/points", label: "امتیاز مشتریان", icon: Percent },
+      { href: "/loyalty/wallet", label: "کیف پول و اعتبار", icon: PiggyBank },
+      { href: "/loyalty/campaigns", label: "کمپین‌ها", icon: MessageCircle },
+    ],
+  },
   {
     label: "گزارش‌ها",
     icon: BarChart3,
@@ -118,6 +129,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
     if (href.startsWith("/inventory")) return href.includes("adjust") || href.endsWith("/in") || href.endsWith("/out") ? "inventory.adjust" : "inventory.view";
     if (href.startsWith("/contacts")) return href.includes("new-") ? "contacts.edit" : "contacts.view";
     if (href.startsWith("/crm")) return "contacts.view";
+    if (href.startsWith("/loyalty")) return "contacts.view";
     if (href.startsWith("/finance")) return href === "/finance" ? "finance.view" : "finance.create";
     if (href.startsWith("/checks")) return "finance.view";
     if (href.startsWith("/reports") || href.startsWith("/activity")) return "reports.view";
