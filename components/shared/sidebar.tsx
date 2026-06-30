@@ -37,6 +37,7 @@ const NAV = [
       { href: "/products?action=new", label: "کالای جدید", icon: PlusIcon },
       { href: "/settings/price-lists", label: "لیست قیمت‌ها", icon: Tags },
       { href: "/inventory/movements", label: "گردش انبار", icon: ClipboardList },
+      { href: "/inventory/stock-card", label: "کاردکس کالا", icon: History },
       { href: "/inventory/adjust", label: "تعدیل موجودی", icon: ArrowLeftRight },
       { href: "/inventory/in", label: "ورود کالا", icon: ArrowDownToLine },
       { href: "/inventory/out", label: "خروج کالا", icon: ArrowUpFromLine },
