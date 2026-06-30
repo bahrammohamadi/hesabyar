@@ -142,6 +142,7 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
   const [paidCash, setPaidCash] = useState("");
   const [paidCard, setPaidCard] = useState("");
   const [accountId, setAccountId] = useState("");
+  const [priceListId, setPriceListId] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
@@ -163,6 +164,35 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
     },
   });
 
+  const { data: priceLists } = useQuery({
+    queryKey: ["sale-price-lists", orgId],
+    enabled: !!orgId,
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data } = await supabase.from("price_lists").select("id,name,discount_percent,type").eq("is_active", true).order("created_at", { ascending: false });
+      return data ?? [];
+    },
+  });
+
+  const selectedPriceList = priceLists?.find((list: any) => list.id === priceListId) ?? null;
+
+  const { data: priceListItems } = useQuery({
+    queryKey: ["sale-price-list-items", priceListId],
+    enabled: !!priceListId,
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data } = await supabase.from("price_list_items").select("variant_id,price").eq("price_list_id", priceListId);
+      return data ?? [];
+    },
+  });
+
+  function priceForVariant(v: SelectableVariant) {
+    const explicit = priceListItems?.find((item: any) => item.variant_id === v.variant_id)?.price;
+    if (typeof explicit === "number") return explicit;
+    const percent = Number(selectedPriceList?.discount_percent ?? 0);
+    return Math.max(0, Math.round(v.sale_price * (100 - percent) / 100));
+  }
+
   function addToCart(v: SelectableVariant) {
     setCart((prev) => {
       const existing = prev.find((c) => c.variant_id === v.variant_id);
@@ -177,7 +207,7 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
           product_name: v.product_name,
           variant_label: [v.color, v.size].filter(Boolean).join(" / "),
           qty: 1,
-          unit_price: v.sale_price,
+          unit_price: priceForVariant(v),
           discount: 0,
           cost_price: v.purchase_price,
           stock_qty: v.stock_qty,
@@ -300,6 +330,14 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
                 انتخاب مشتری (یا مشتری نقدی)
               </button>
             )}
+          </div>
+
+          <div>
+            <label className="label">لیست قیمت</label>
+            <select className="input" value={priceListId} onChange={(e) => setPriceListId(e.target.value)}>
+              <option value="">قیمت عادی کالا</option>
+              {priceLists?.map((list: any) => <option key={list.id} value={list.id}>{list.name} {list.discount_percent ? `(${list.discount_percent}٪)` : ""}</option>)}
+            </select>
           </div>
 
           {/* دکمه افزودن کالا */}
