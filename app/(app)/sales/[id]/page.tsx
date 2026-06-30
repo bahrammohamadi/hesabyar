@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, CreditCard, Download, FileSpreadsheet, Loader2, Plus, Printer } from "lucide-react";
@@ -46,8 +46,8 @@ function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
   URL.revokeObjectURL(url);
 }
 
-export default function SaleInvoicePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function SaleInvoicePage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const qc = useQueryClient();
   const [paymentOpen, setPaymentOpen] = useState(false);
 
