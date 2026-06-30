@@ -160,7 +160,7 @@ export default function DashboardPage() {
             </div>
             <span className="text-xs font-medium text-slate-700 group-hover:text-emerald-700">خرید</span>
           </Link>
-          <Link href="/inventory?type=adjust" className="card p-3 flex flex-col items-center gap-2 hover:bg-blue-50 transition group no-underline">
+          <Link href="/inventory/adjust" className="card p-3 flex flex-col items-center gap-2 hover:bg-blue-50 transition group no-underline">
             <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center">
               <ArrowDownToLine size={20} />
             </div>
@@ -229,7 +229,7 @@ export default function DashboardPage() {
           <div className="mt-2 text-lg sm:text-xl font-bold text-slate-800">{formatToman(s?.inventory_value)}</div>
           <div className="mt-1 text-xs text-slate-400">موجودی کل</div>
         </Link>
-        <Link href="/inventory" className={`card p-4 sm:p-5 hover:shadow-md transition group block no-underline ${(s?.low_stock_count ?? 0) > 0 ? "border-amber-200 bg-amber-50/30" : ""}`}>
+        <Link href="/inventory/movements" className={`card p-4 sm:p-5 hover:shadow-md transition group block no-underline ${(s?.low_stock_count ?? 0) > 0 ? "border-amber-200 bg-amber-50/30" : ""}`}>
           <div className="flex items-center justify-between">
             <span className="text-sm text-slate-500">کالاهای کم‌موجود</span>
             <span className={`${(s?.low_stock_count ?? 0) > 0 ? "text-amber-500" : "text-slate-400 group-hover:text-amber-600"} transition-colors`}>
@@ -320,7 +320,7 @@ export default function DashboardPage() {
                   <AlertTriangle size={16} />
                   کالاهای کم‌موجود
                 </h3>
-                <Link href="/inventory" className="text-xs text-amber-600 hover:text-amber-700">
+                <Link href="/inventory/movements" className="text-xs text-amber-600 hover:text-amber-700">
                   مشاهده همه →
                 </Link>
               </div>

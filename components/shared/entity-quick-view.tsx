@@ -196,7 +196,7 @@ function ProductQuickView({ id, open }: { id?: string | null; open: boolean }) {
         <QuickAction href={`/products/${product.id}?action=edit`}>
           <Edit size={16} /> ویرایش
         </QuickAction>
-        <QuickAction href={`/inventory?type=adjust&product=${product.id}`} tone="primary">
+        <QuickAction href={`/inventory/adjust?product=${product.id}`} tone="primary">
           <ArrowDownCircle size={16} /> تعدیل موجودی
         </QuickAction>
         <QuickAction href={`/products/${product.id}?tab=movements`}>
