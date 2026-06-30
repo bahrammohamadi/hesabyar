@@ -7,6 +7,7 @@ import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { Plus, Trash2, RotateCcw, Search } from "lucide-react";
+import { logActivity } from "@/lib/utils/activity-log";
 
 const sb = createClient();
 
@@ -92,6 +93,9 @@ export default function SalesReturnsPage() {
           });
         }
       }
+      if (inserted) {
+        await logActivity({ orgId: mems[0].org_id, action: "create", entityType: "sales_return", entityId: inserted.id, newData: { original_sale_id: selectedSale, total: totalReturn, items_count: returnItems.filter(i => i.return_qty > 0).length } });
+      }
       setShowForm(false);
       resetForm();
       fetchReturns();
@@ -104,7 +108,11 @@ export default function SalesReturnsPage() {
 
   const deleteReturn = async (id: string) => {
     if (!confirm("آیا از حذف این مرجوعی مطمئن هستید؟")) return;
+    const ret = returns.find((r) => r.id === id);
+    const { data: user } = await sb.auth.getUser();
+    const { data: mems } = user.user ? await sb.from("memberships").select("org_id").eq("user_id", user.user.id).eq("is_active", true).limit(1) : { data: null } as any;
     await sb.from("sales_returns").delete().eq("id", id);
+    await logActivity({ orgId: mems?.[0]?.org_id ?? null, action: "delete", entityType: "sales_return", entityId: id, oldData: { return_no: ret?.return_no, total: ret?.total } });
     fetchReturns();
   };
 
