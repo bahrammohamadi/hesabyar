@@ -87,6 +87,7 @@ const NAV = [
       { href: "/loyalty/points", label: "امتیاز مشتریان", icon: Percent },
       { href: "/loyalty/wallet", label: "کیف پول و اعتبار", icon: PiggyBank },
       { href: "/loyalty/campaigns", label: "کمپین‌ها", icon: MessageCircle },
+      { href: "/loyalty/settings", label: "تنظیمات باشگاه", icon: Settings },
     ],
   },
   {
