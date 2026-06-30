@@ -12,6 +12,7 @@ import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { PhoneLink } from "@/components/shared/phone-link";
 import { formatToman, formatNumber, toFaDigits, rialToToman, tomanToRial, toEnDigits } from "@/lib/utils/format";
 import type { DashboardSummary, CartItem } from "@/types/db";
+import { logActivity } from "@/lib/utils/activity-log";
 import {
   TrendingUp,
   Wallet,
@@ -498,6 +499,7 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
         p_note: null,
       });
       if (e) throw e;
+      await logActivity({ orgId, action: "create", entityType: "sale", entityId: data as string, newData: { total, customer_id: customer?.id ?? null, items_count: cart.length, source: "dashboard" } });
       setDone(data as string);
     } catch (e) {
       setError("خطا: " + (e as Error).message);

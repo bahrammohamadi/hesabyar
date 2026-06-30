@@ -11,6 +11,7 @@ import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { EntityLink } from "@/components/shared/entity-link";
 import { toEnDigits, toFaDigits, toJalali } from "@/lib/utils/format";
 import { Loader2, Package, Plus } from "lucide-react";
+import { logActivity } from "@/lib/utils/activity-log";
 
 type InventoryMode = "movements" | "in" | "out" | "adjust";
 
@@ -101,7 +102,7 @@ export function InventoryOperationPage({ mode }: { mode: InventoryMode }) {
     setSaving(true);
     const supabase = createClient();
     try {
-      const { error } = await supabase.from("stock_movements").insert({
+      const { data: inserted, error } = await supabase.from("stock_movements").insert({
         org_id: orgId,
         branch_id: branchId,
         variant_id: selected.variant_id,
@@ -109,8 +110,9 @@ export function InventoryOperationPage({ mode }: { mode: InventoryMode }) {
         reason: mode === "adjust" ? "count" : "manual",
         qty: movementQty,
         note: note.trim() || MODE_LABEL[mode],
-      });
+      }).select("id").single();
       if (error) throw error;
+      await logActivity({ orgId, action: mode === "adjust" ? "stock_adjust" : mode === "in" ? "stock_in" : "stock_out", entityType: "stock_movement", entityId: inserted?.id ?? null, newData: { product_id: selected.product_id, variant_id: selected.variant_id, qty: movementQty, note } });
       setSelected(null); setQty(""); setNote("");
       qc.invalidateQueries({ queryKey: ["inventory-operation-movements"] });
       qc.invalidateQueries({ queryKey: ["all-variants"] });
