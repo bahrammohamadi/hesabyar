@@ -423,6 +423,7 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
   const [discountType, setDiscountType] = useState<"fixed" | "percent">("fixed");
   const [paidCash, setPaidCash] = useState("");
   const [paidCard, setPaidCard] = useState("");
+  const [paidWallet, setPaidWallet] = useState("");
   const [accountId, setAccountId] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -437,6 +438,16 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
       const supabase = createClient();
       const { data } = await supabase.from("accounts").select("id, name, type").eq("is_active", true).order("name");
       return data ?? [];
+    },
+  });
+
+  const { data: walletCredit } = useQuery({
+    queryKey: ["customer-wallet", customer?.id],
+    enabled: !!customer?.id,
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data } = await supabase.from("contacts").select("meta").eq("id", customer!.id).maybeSingle();
+      return Number((data?.meta as any)?.wallet_credit ?? 0) || 0;
     },
   });
 
@@ -473,7 +484,9 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
   const total = Math.max(0, subtotal - discountRial);
   const paidCashRial = tomanToRial(Number(toEnDigits(paidCash)) || 0);
   const paidCardRial = tomanToRial(Number(toEnDigits(paidCard)) || 0);
-  const credit = Math.max(0, total - paidCashRial - paidCardRial);
+  const requestedWalletRial = tomanToRial(Number(toEnDigits(paidWallet)) || 0);
+  const paidWalletRial = Math.min(requestedWalletRial, walletCredit ?? 0, Math.max(0, total - paidCashRial - paidCardRial));
+  const credit = Math.max(0, total - paidCashRial - paidCardRial - paidWalletRial);
 
   async function handleSubmit() {
     setError(null);
@@ -499,6 +512,15 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
         p_note: null,
       });
       if (e) throw e;
+      if (paidWalletRial > 0 && customer?.id) {
+        const { error: walletError } = await supabase.rpc("spend_customer_wallet", {
+          p_contact: customer.id,
+          p_sale: data as string,
+          p_amount: paidWalletRial,
+          p_note: "پرداخت از اعتبار کیف پول در فاکتور فروش",
+        });
+        if (walletError) throw walletError;
+      }
       await logActivity({ orgId, action: "create", entityType: "sale", entityId: data as string, newData: { total, customer_id: customer?.id ?? null, items_count: cart.length, source: "dashboard" } });
       setDone(data as string);
     } catch (e) {
@@ -604,11 +626,19 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
               <label className="label">کارتی (تومان)</label>
               <input className="input" inputMode="numeric" value={paidCard} onChange={(e) => setPaidCard(e.target.value)} />
             </div>
+            {customer && (
+              <div>
+                <label className="label">اعتبار مشتری (تومان)</label>
+                <input className="input" inputMode="numeric" value={paidWallet} onChange={(e) => setPaidWallet(e.target.value)} />
+                <div className="text-xs text-slate-400 mt-1">اعتبار موجود: {formatToman(walletCredit ?? 0)}</div>
+              </div>
+            )}
           </div>
           <div className="rounded-xl bg-slate-50 p-4 space-y-1.5 text-sm">
             <div className="flex justify-between text-slate-500"><span>جمع کل</span><span>{formatToman(subtotal)}</span></div>
             {discountRial > 0 && <div className="flex justify-between text-slate-500"><span>تخفیف</span><span>{formatToman(discountRial)}</span></div>}
             <div className="flex justify-between font-bold text-slate-800 text-base border-t border-slate-200 pt-1.5"><span>مبلغ قابل پرداخت</span><span>{formatToman(total)}</span></div>
+            {paidWalletRial > 0 && <div className="flex justify-between text-emerald-600 font-medium"><span>پرداخت از اعتبار</span><span>{formatToman(paidWalletRial)}</span></div>}
             {credit > 0 && <div className="flex justify-between text-rose-600 font-medium"><span>نسیه</span><span>{formatToman(credit)}</span></div>}
           </div>
           {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
