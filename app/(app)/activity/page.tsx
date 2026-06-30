@@ -29,6 +29,7 @@ const ACTION_LABEL: Record<string, string> = {
   stock_adjust: "تعدیل موجودی",
   stock_in: "ورود موجودی",
   stock_out: "خروج موجودی",
+  stock_waste: "ضایعات",
 };
 
 const ENTITY_LABEL: Record<string, string> = {

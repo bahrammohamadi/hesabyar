@@ -13,13 +13,14 @@ import { toEnDigits, toFaDigits, toJalali } from "@/lib/utils/format";
 import { Loader2, Package, Plus } from "lucide-react";
 import { logActivity } from "@/lib/utils/activity-log";
 
-type InventoryMode = "movements" | "in" | "out" | "adjust";
+type InventoryMode = "movements" | "in" | "out" | "adjust" | "waste";
 
 const MODE_LABEL: Record<InventoryMode, string> = {
   movements: "گردش انبار",
   in: "ورود کالا",
   out: "خروج کالا",
   adjust: "تعدیل موجودی",
+  waste: "ضایعات / خروج غیرعادی",
 };
 
 export function InventoryOperationPage({ mode }: { mode: InventoryMode }) {
@@ -85,6 +86,7 @@ export function InventoryOperationPage({ mode }: { mode: InventoryMode }) {
         .limit(100);
       if (mode === "in") q = q.eq("type", "in");
       if (mode === "out") q = q.eq("type", "out");
+      if (mode === "waste") q = q.eq("type", "out").ilike("note", "%ضایعات%");
       if (mode === "adjust") q = q.eq("reason", "count");
       const { data, error } = await q;
       if (error) throw error;
@@ -97,7 +99,7 @@ export function InventoryOperationPage({ mode }: { mode: InventoryMode }) {
     setError(null);
     const inputQty = Number(toEnDigits(qty));
     if (Number.isNaN(inputQty) || inputQty < 0) { setError("تعداد را درست وارد کنید."); return; }
-    const movementQty = mode === "adjust" ? inputQty - selected.stock_qty : mode === "out" ? -inputQty : inputQty;
+    const movementQty = mode === "adjust" ? inputQty - selected.stock_qty : (mode === "out" || mode === "waste") ? -inputQty : inputQty;
     if (movementQty === 0) { setError("تغییری برای ثبت وجود ندارد."); return; }
     setSaving(true);
     const supabase = createClient();
@@ -106,13 +108,13 @@ export function InventoryOperationPage({ mode }: { mode: InventoryMode }) {
         org_id: orgId,
         branch_id: branchId,
         variant_id: selected.variant_id,
-        type: mode === "adjust" ? "adjust" : mode,
+        type: mode === "adjust" ? "adjust" : mode === "waste" ? "out" : mode,
         reason: mode === "adjust" ? "count" : "manual",
         qty: movementQty,
-        note: note.trim() || MODE_LABEL[mode],
+        note: mode === "waste" ? `ضایعات - ${note.trim() || "خروج غیرعادی"}` : (note.trim() || MODE_LABEL[mode]),
       }).select("id").single();
       if (error) throw error;
-      await logActivity({ orgId, action: mode === "adjust" ? "stock_adjust" : mode === "in" ? "stock_in" : "stock_out", entityType: "stock_movement", entityId: inserted?.id ?? null, newData: { product_id: selected.product_id, variant_id: selected.variant_id, qty: movementQty, note } });
+      await logActivity({ orgId, action: mode === "adjust" ? "stock_adjust" : mode === "in" ? "stock_in" : mode === "waste" ? "stock_waste" : "stock_out", entityType: "stock_movement", entityId: inserted?.id ?? null, newData: { product_id: selected.product_id, variant_id: selected.variant_id, qty: movementQty, note: mode === "waste" ? `ضایعات - ${note.trim() || "خروج غیرعادی"}` : note } });
       setSelected(null); setQty(""); setNote("");
       qc.invalidateQueries({ queryKey: ["inventory-operation-movements"] });
       qc.invalidateQueries({ queryKey: ["all-variants"] });
