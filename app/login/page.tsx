@@ -35,7 +35,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-brand-50 to-slate-100">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <img src="/mehrjameh-logo.jpg" alt="مهرجامه" className="w-28 h-28 object-contain mx-auto mb-2" />
+          <img src="/logo.png" alt="حسابیار" className="w-28 h-28 object-contain mx-auto mb-2" />
           <h1 className="text-2xl font-bold text-slate-800">مهرجامه</h1>
           <p className="text-slate-500 mt-1 text-sm">سیستم مدیریت فروش و مالی</p>
         </div>

@@ -114,8 +114,8 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         <div className="flex items-center justify-between p-4 border-b border-slate-100">
           <div className="flex items-center gap-2">
             <img 
-              src="/mehrjameh-logo.jpg" 
-              alt="مهرجامه" 
+              src="/logo.png" 
+              alt="حسابیار" 
               className="w-9 h-9 rounded-xl object-contain bg-white border border-slate-100"
               onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.3'; }}
             />
