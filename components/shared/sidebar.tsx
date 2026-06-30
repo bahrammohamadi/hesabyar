@@ -15,7 +15,7 @@ import {
   FileText, Percent, ShoppingBasket, Boxes, PercentCircle,
   Building, UserCheck, AlertCircle, PieChart, Activity,
   Briefcase, BookOpen, ShoppingBagIcon, Tags, Barcode,
-  ArrowRightLeft, History, PiggyBank, Banknote, Coins, Gift, MessageCircle,
+  ArrowRightLeft, History, PiggyBank, Banknote, Coins, Gift, MessageCircle, Calendar,
 } from "lucide-react";
 
 const NAV = [
@@ -38,6 +38,7 @@ const NAV = [
       { href: "/settings/price-lists", label: "لیست قیمت‌ها", icon: Tags },
       { href: "/inventory/movements", label: "گردش انبار", icon: ClipboardList },
       { href: "/inventory/stock-card", label: "کاردکس کالا", icon: History },
+      { href: "/inventory/as-of", label: "موجودی به تاریخ", icon: Calendar },
       { href: "/inventory/adjust", label: "تعدیل موجودی", icon: ArrowLeftRight },
       { href: "/inventory/in", label: "ورود کالا", icon: ArrowDownToLine },
       { href: "/inventory/out", label: "خروج کالا", icon: ArrowUpFromLine },
