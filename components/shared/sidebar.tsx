@@ -108,6 +108,7 @@ const NAV = [
       { href: "/reports/products", label: "کالا", icon: Package },
       { href: "/reports/financial", label: "مالی", icon: Wallet },
       { href: "/reports/contacts", label: "اشخاص", icon: Users },
+      { href: "/reports/sellers", label: "عملکرد فروشنده", icon: UserCheck },
       { href: "/activity", label: "فعالیت کاربران", icon: Activity },
     ],
   },
