@@ -11,6 +11,7 @@ import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { formatToman, toFaDigits, toEnDigits, tomanToRial, rialToToman, toJalali } from "@/lib/utils/format";
 import { Plus, Trash2, Loader2, Package, UserPlus, X } from "lucide-react";
+import { logActivity } from "@/lib/utils/activity-log";
 
 interface PItem {
   variant_id: string;
@@ -174,7 +175,7 @@ function PurchaseModal({ orgId, onClose }: { orgId: string | null; onClose: () =
     setSaving(true);
     const supabase = createClient();
     try {
-      const { error: e } = await supabase.rpc("create_purchase", {
+      const { data: purchaseId, error: e } = await supabase.rpc("create_purchase", {
         p_org: orgId,
         p_branch: branchId,
         p_supplier: supplier?.id || null,
@@ -191,6 +192,7 @@ function PurchaseModal({ orgId, onClose }: { orgId: string | null; onClose: () =
         p_note: null,
       });
       if (e) throw e;
+      await logActivity({ orgId, action: "create", entityType: "purchase", entityId: purchaseId as string, newData: { total, supplier_id: supplier?.id ?? null, items_count: items.length } });
       onClose();
     } catch (e) {
       setError("خطا: " + (e as Error).message);

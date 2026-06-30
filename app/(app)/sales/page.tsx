@@ -13,6 +13,7 @@ import { PhoneLink } from "@/components/shared/phone-link";
 import { formatToman, toFaDigits, toEnDigits, rialToToman, tomanToRial, toJalali } from "@/lib/utils/format";
 import { Plus, Trash2, Receipt, Loader2, ShoppingCart, Package, UserPlus, X } from "lucide-react";
 import type { CartItem } from "@/types/db";
+import { logActivity } from "@/lib/utils/activity-log";
 import Link from "next/link";
 
 export default function SalesPage() {
@@ -243,6 +244,7 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
         p_note: null,
       });
       if (e) throw e;
+      await logActivity({ orgId, action: "create", entityType: "sale", entityId: data as string, newData: { total, customer_id: customer?.id ?? null, items_count: cart.length } });
       setDone(data as string);
     } catch (e) {
       setError("خطا در ثبت فروش: " + (e as Error).message);

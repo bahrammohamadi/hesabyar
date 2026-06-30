@@ -10,6 +10,7 @@ import { EntityLink } from "@/components/shared/entity-link";
 import { formatToman, toEnDigits, toJalali, tomanToRial } from "@/lib/utils/format";
 import { Loader2, Plus } from "lucide-react";
 import type { TxType } from "@/types/db";
+import { logActivity } from "@/lib/utils/activity-log";
 
 type FinanceMode = "receipt" | "payment" | "expense" | "income" | "transfer" | "all";
 
@@ -114,8 +115,9 @@ export function FinanceOperationPage({ mode }: { mode: FinanceMode }) {
         note: note.trim() || null,
       };
       if (mode === "transfer") payload.to_account_id = toAccountId || null;
-      const { error } = await supabase.from("transactions").insert(payload);
+      const { data: inserted, error } = await supabase.from("transactions").insert(payload).select("id").single();
       if (error) throw error;
+      await logActivity({ orgId, action: "create", entityType: "transaction", entityId: inserted?.id ?? null, newData: { type: mode, amount: amountRial, contact_id: contactId || null } });
       setAmount(""); setContactId(""); setExpenseCatId(""); setNote(""); setToAccountId("");
       qc.invalidateQueries({ queryKey: ["finance-operation-transactions"] });
       qc.invalidateQueries({ queryKey: ["account-balances"] });

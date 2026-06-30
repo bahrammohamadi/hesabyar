@@ -16,6 +16,7 @@ import {
   X, Plus
 } from "lucide-react";
 import { getActionParam } from "@/lib/entities/action-router";
+import { logActivity } from "@/lib/utils/activity-log";
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -382,6 +383,7 @@ function PriceChangeModal({ product, variants, onClose, onSaved }: { product: an
         p_reason: "تغییر قیمت از جزئیات کالا",
       });
       if (priceError) throw priceError;
+      await logActivity({ orgId: product.org_id, action: "price_change", entityType: "product", entityId: product.id, newData: { purchase_price: purchaseRial, sale_price: saleRial, apply_variants: applyToVariants } });
       onSaved();
     } catch (err) {
       setError("خطا: " + (err as Error).message);
@@ -467,6 +469,7 @@ function AdjustModal({ product, variants, onClose, onSaved }: { product: any; va
         if (diff !== 0) {
           const { error: movementError } = await supabase.from("stock_movements").insert({ org_id: orgId, branch_id: branchId, variant_id: v.id, type: "adjust", reason: "count", qty: diff, note: note.trim() || "تعدیل" });
           if (movementError) throw movementError;
+          await logActivity({ orgId, action: "stock_adjust", entityType: "product", entityId: product.id, newData: { variant_id: v.id, qty: diff, note: note.trim() || "تعدیل" } });
         }
       }
       onSaved();
