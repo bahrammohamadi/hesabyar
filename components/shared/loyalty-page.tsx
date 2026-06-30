@@ -12,13 +12,14 @@ import { PhoneLink } from "@/components/shared/phone-link";
 import { formatToman, toEnDigits, toFaDigits, toJalali, tomanToRial } from "@/lib/utils/format";
 import { logActivity } from "@/lib/utils/activity-log";
 
-type LoyaltyMode = "overview" | "points" | "wallet" | "campaigns";
+type LoyaltyMode = "overview" | "points" | "wallet" | "campaigns" | "settings";
 
 const MODE: Record<LoyaltyMode, { title: string; subtitle: string }> = {
   overview: { title: "باشگاه مشتریان", subtitle: "امتیاز، اعتبار، مشتریان VIP و کمپین‌های وفاداری" },
   points: { title: "امتیاز مشتریان", subtitle: "امتیاز بر اساس مجموع خرید مشتری" },
   wallet: { title: "کیف پول و اعتبار مشتری", subtitle: "مدیریت اعتبار قابل استفاده مشتریان" },
   campaigns: { title: "کمپین‌های مشتریان", subtitle: "لیست‌های آماده برای پیامک، واتساپ و پیگیری" },
+  settings: { title: "تنظیمات باشگاه مشتریان", subtitle: "تعریف بازه و قوانین VIP، وفادار، غیرفعال و امتیازدهی" },
 };
 
 type LoyaltyRow = {
@@ -31,11 +32,27 @@ type LoyaltyRow = {
   segment: "VIP" | "وفادار" | "عادی" | "غیرفعال";
 };
 
-function calcSegment(total: number, count: number, lastDate: string | null): LoyaltyRow["segment"] {
+type LoyaltySettings = {
+  period_days: number;
+  vip_amount: number;
+  loyal_invoice_count: number;
+  inactive_days: number;
+  point_per_rial: number;
+};
+
+const DEFAULT_LOYALTY_SETTINGS: LoyaltySettings = {
+  period_days: 365,
+  vip_amount: 50_000_000,
+  loyal_invoice_count: 3,
+  inactive_days: 90,
+  point_per_rial: 1_000_000,
+};
+
+function calcSegment(total: number, count: number, lastDate: string | null, settings: LoyaltySettings): LoyaltyRow["segment"] {
   const daysSince = lastDate ? Math.floor((Date.now() - new Date(lastDate).getTime()) / 86400000) : null;
-  if (total >= 50_000_000) return "VIP";
-  if (count >= 3) return "وفادار";
-  if (daysSince !== null && daysSince > 90) return "غیرفعال";
+  if (total >= settings.vip_amount) return "VIP";
+  if (count >= settings.loyal_invoice_count) return "وفادار";
+  if (daysSince !== null && daysSince > settings.inactive_days) return "غیرفعال";
   return "عادی";
 }
 
@@ -50,20 +67,25 @@ export function LoyaltyPage({ mode }: { mode: LoyaltyMode }) {
     enabled: !!orgId,
     queryFn: async () => {
       const supabase = createClient();
-      const [{ data: contacts, error: contactsError }, { data: sales, error: salesError }] = await Promise.all([
+      const [{ data: contacts, error: contactsError }, { data: sales, error: salesError }, { data: settingRow, error: settingsError }] = await Promise.all([
         supabase.from("contacts").select("id,name,phone,type,meta,created_at").eq("is_active", true).order("created_at", { ascending: false }).limit(1000),
         supabase.from("sales").select("id,customer_id,total,date").eq("status", "confirmed").order("date", { ascending: false }).limit(5000),
+        supabase.from("settings").select("value").eq("key", "loyalty_settings").maybeSingle(),
       ]);
       if (contactsError) throw contactsError;
       if (salesError) throw salesError;
-      return { contacts: contacts ?? [], sales: sales ?? [] };
+      if (settingsError) throw settingsError;
+      return { contacts: contacts ?? [], sales: sales ?? [], settings: { ...DEFAULT_LOYALTY_SETTINGS, ...((settingRow?.value as Partial<LoyaltySettings>) ?? {}) } as LoyaltySettings };
     },
   });
 
   const rows = useMemo<LoyaltyRow[]>(() => {
     const salesByContact = new Map<string, { total: number; count: number; lastDate: string | null }>();
+    const settings = data?.settings ?? DEFAULT_LOYALTY_SETTINGS;
+    const periodStart = Date.now() - settings.period_days * 86400000;
     (data?.sales ?? []).forEach((sale: any) => {
       if (!sale.customer_id) return;
+      if (settings.period_days > 0 && new Date(sale.date).getTime() < periodStart) return;
       const current = salesByContact.get(sale.customer_id) ?? { total: 0, count: 0, lastDate: null };
       current.total += sale.total ?? 0;
       current.count += 1;
@@ -80,9 +102,9 @@ export function LoyaltyPage({ mode }: { mode: LoyaltyMode }) {
           total: stat.total,
           count: stat.count,
           lastDate: stat.lastDate,
-          points: Math.floor(stat.total / 1_000_000),
+          points: Math.floor(stat.total / settings.point_per_rial),
           walletCredit,
-          segment: calcSegment(stat.total, stat.count, stat.lastDate),
+          segment: calcSegment(stat.total, stat.count, stat.lastDate, settings),
         };
       })
       .filter((row) => {
@@ -92,6 +114,8 @@ export function LoyaltyPage({ mode }: { mode: LoyaltyMode }) {
       })
       .sort((a, b) => (mode === "wallet" ? b.walletCredit - a.walletCredit : b.points - a.points));
   }, [data, search, mode]);
+
+  if (mode === "settings") return <LoyaltySettingsPage settings={data?.settings ?? DEFAULT_LOYALTY_SETTINGS} orgId={orgId} />;
 
   if (isLoading) return <Spinner label="در حال بارگذاری باشگاه مشتریان..." />;
   if (error) return <div className="rounded-xl bg-rose-50 text-rose-700 p-4 text-sm">{(error as Error).message}</div>;
@@ -140,6 +164,55 @@ export function LoyaltyPage({ mode }: { mode: LoyaltyMode }) {
       ) : rows.length === 0 ? <EmptyState icon={Gift} title="مشتری یافت نشد" /> : <CustomerRows rows={rows} onWallet={setWalletContact} />}
 
       {walletContact && <WalletModal row={walletContact} onClose={() => { setWalletContact(null); qc.invalidateQueries({ queryKey: ["loyalty-page"] }); }} />}
+    </div>
+  );
+}
+
+
+function LoyaltySettingsPage({ settings, orgId }: { settings: LoyaltySettings; orgId: string | null }) {
+  const qc = useQueryClient();
+  const [periodDays, setPeriodDays] = useState(String(settings.period_days));
+  const [vipAmount, setVipAmount] = useState(String(Math.round(settings.vip_amount / 10)));
+  const [loyalCount, setLoyalCount] = useState(String(settings.loyal_invoice_count));
+  const [inactiveDays, setInactiveDays] = useState(String(settings.inactive_days));
+  const [pointPerToman, setPointPerToman] = useState(String(Math.round(settings.point_per_rial / 10)));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function save() {
+    if (!orgId) return;
+    setSaving(true); setError(null);
+    const value: LoyaltySettings = {
+      period_days: Number(toEnDigits(periodDays)) || 365,
+      vip_amount: tomanToRial(Number(toEnDigits(vipAmount)) || 0),
+      loyal_invoice_count: Number(toEnDigits(loyalCount)) || 1,
+      inactive_days: Number(toEnDigits(inactiveDays)) || 90,
+      point_per_rial: tomanToRial(Number(toEnDigits(pointPerToman)) || 100000),
+    };
+    const supabase = createClient();
+    try {
+      const { error } = await supabase.from("settings").upsert({ org_id: orgId, key: "loyalty_settings", value }, { onConflict: "org_id,key" });
+      if (error) throw error;
+      qc.invalidateQueries({ queryKey: ["loyalty-page"] });
+      await logActivity({ orgId, action: "update", entityType: "loyalty_settings", newData: value as any });
+    } catch (e) { setError((e as Error).message); }
+    finally { setSaving(false); }
+  }
+
+  return (
+    <div>
+      <PageHeader title={MODE.settings.title} subtitle={MODE.settings.subtitle} />
+      <div className="card p-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div><label className="label">بازه محاسبه خریدها (روز)</label><input className="input" inputMode="numeric" value={periodDays} onChange={(e) => setPeriodDays(e.target.value)} /><p className="text-xs text-slate-400 mt-1">مثلاً 365 یعنی خریدهای یک سال اخیر</p></div>
+          <div><label className="label">حداقل خرید VIP (تومان)</label><input className="input" inputMode="numeric" value={vipAmount} onChange={(e) => setVipAmount(e.target.value)} /></div>
+          <div><label className="label">حداقل تعداد فاکتور برای وفادار</label><input className="input" inputMode="numeric" value={loyalCount} onChange={(e) => setLoyalCount(e.target.value)} /></div>
+          <div><label className="label">غیرفعال بعد از چند روز بدون خرید</label><input className="input" inputMode="numeric" value={inactiveDays} onChange={(e) => setInactiveDays(e.target.value)} /></div>
+          <div><label className="label">هر چند تومان = یک امتیاز</label><input className="input" inputMode="numeric" value={pointPerToman} onChange={(e) => setPointPerToman(e.target.value)} /></div>
+        </div>
+        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm p-3 mt-4">{error}</div>}
+        <button onClick={save} disabled={saving} className="btn-primary mt-5">ذخیره قوانین باشگاه</button>
+      </div>
     </div>
   );
 }
