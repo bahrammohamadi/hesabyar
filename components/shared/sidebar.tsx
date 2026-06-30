@@ -41,6 +41,7 @@ const NAV = [
       { href: "/inventory/adjust", label: "تعدیل موجودی", icon: ArrowLeftRight },
       { href: "/inventory/in", label: "ورود کالا", icon: ArrowDownToLine },
       { href: "/inventory/out", label: "خروج کالا", icon: ArrowUpFromLine },
+      { href: "/inventory/waste", label: "ضایعات", icon: AlertCircle },
     ],
   },
   {
