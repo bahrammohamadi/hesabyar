@@ -80,7 +80,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
     enabled: !!id,
     queryFn: async () => {
       const supabase = createClient();
-      const { data } = await supabase.from("transactions").select("id,type,amount,date,method,note,account:accounts(name)").eq("contact_id", id).order("date", { ascending: false }).limit(50);
+      const { data } = await supabase.from("transactions").select("id,type,amount,date,method,note,account:accounts!transactions_account_id_fkey(name)").eq("contact_id", id).order("date", { ascending: false }).limit(50);
       return data ?? [];
     },
   });

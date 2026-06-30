@@ -84,7 +84,7 @@ export function FinanceOperationPage({ mode }: { mode: FinanceMode }) {
       const supabase = createClient();
       let q = supabase
         .from("transactions")
-        .select("id,type,amount,date,method,note,contact_id,contact:contacts(name),account:accounts(name),to_account:accounts!transactions_to_account_id_fkey(name)")
+        .select("id,type,amount,date,method,note,contact_id,contact:contacts(name),account:accounts!transactions_account_id_fkey(name),to_account:accounts!transactions_to_account_id_fkey(name)")
         .order("date", { ascending: false })
         .limit(100);
       if (mode !== "all") q = q.eq("type", mode);

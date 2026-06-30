@@ -604,7 +604,7 @@ export function ReportsPageContent({ forcedTab }: { forcedTab?: TabId }) {
       if (error) { alert(error.message); return; }
       rows = (data ?? []).map((v: any) => ({ product: v.product?.name, code: v.product?.code, sku: v.sku, barcode: v.barcode, color: v.color, size: v.size, stock_qty: v.stock_qty, purchase_price: v.purchase_price, sale_price: v.sale_price }));
     } else if (activeTab === "financial") {
-      const { data, error } = await supabase.from("transactions").select("type,amount,date,method,note,contact:contacts(name),account:accounts(name)").order("date", { ascending: false });
+      const { data, error } = await supabase.from("transactions").select("type,amount,date,method,note,contact:contacts(name),account:accounts!transactions_account_id_fkey(name)").order("date", { ascending: false });
       if (error) { alert(error.message); return; }
       rows = (data ?? []).map((t: any) => ({ type: t.type, amount: t.amount, date: t.date, method: t.method, contact: t.contact?.name ?? "", account: t.account?.name ?? "", note: t.note ?? "" }));
     } else if (activeTab === "contacts") {
