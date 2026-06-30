@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
+import { usePermission } from "@/lib/hooks/usePermission";
 import {
   LayoutDashboard, Package, Warehouse, ShoppingCart, Receipt, Users,
   Wallet, Settings, BarChart3, X, ChevronDown,
@@ -89,10 +90,35 @@ const NAV = [
 
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
+  const { can } = usePermission();
   const [expanded, setExpanded] = useState<Record<number, boolean>>({});
 
   function toggle(i: number) {
     setExpanded(prev => ({ ...prev, [i]: !prev[i] }));
+  }
+
+
+  function permissionForHref(href?: string) {
+    if (!href) return null;
+    if (href.startsWith("/sales")) return "sales.view";
+    if (href.startsWith("/purchases")) return "purchases.view";
+    if (href.startsWith("/products")) return href.includes("action=new") ? "products.edit" : "products.view";
+    if (href.startsWith("/inventory")) return href.includes("adjust") || href.endsWith("/in") || href.endsWith("/out") ? "inventory.adjust" : "inventory.view";
+    if (href.startsWith("/contacts")) return href.includes("new-") ? "contacts.edit" : "contacts.view";
+    if (href.startsWith("/finance")) return href === "/finance" ? "finance.view" : "finance.create";
+    if (href.startsWith("/checks")) return "finance.view";
+    if (href.startsWith("/reports") || href.startsWith("/activity")) return "reports.view";
+    if (href.startsWith("/settings")) return "settings.manage";
+    return null;
+  }
+
+  function itemAllowed(item: any) {
+    if (item.children) return item.children.some((child: any) => can(permissionForHref(child.href)));
+    return can(permissionForHref(item.href));
+  }
+
+  function visibleChildren(item: any) {
+    return (item.children ?? []).filter((child: any) => can(permissionForHref(child.href)));
   }
 
   function isActive(href: string) {
@@ -131,10 +157,11 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
-          {NAV.map((item, i) => {
+          {NAV.filter(itemAllowed).map((item, i) => {
             const Icon = item.icon;
             const active = isActive(item.href ?? "");
-            const hasChildren = !!item.children;
+            const children = visibleChildren(item);
+            const hasChildren = children.length > 0;
 
             // Special style for highlighted items (like Sales)
             const isHighlight = (item as any).highlight;
@@ -175,9 +202,9 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                   />
                 </button>
 
-                {isExpanded && item.children && (
+                {isExpanded && hasChildren && (
                   <div className="mr-2 mt-1 space-y-0.5 pr-3 border-r-2 border-slate-100">
-                    {item.children.map((child) => {
+                    {children.map((child: any) => {
                       const childActive = isActive(child.href);
                       const ChildIcon = child.icon;
                       return (

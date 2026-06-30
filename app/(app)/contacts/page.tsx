@@ -268,9 +268,17 @@ function ContactModal({
   initialType?: ContactType;
   onClose: () => void;
 }) {
-  const [name, setName] = useState(editing?.name ?? "");
+  const meta = (editing?.meta ?? {}) as Record<string, string>;
+  const [firstName, setFirstName] = useState(meta.first_name ?? "");
+  const [lastName, setLastName] = useState(meta.last_name ?? "");
+  const [name, setName] = useState(editing?.name ?? [meta.first_name, meta.last_name].filter(Boolean).join(" "));
   const [type, setType] = useState<ContactType>(editing?.type ?? initialType);
   const [phone, setPhone] = useState(editing?.phone ?? "");
+  const [email, setEmail] = useState(meta.email ?? "");
+  const [birthDate, setBirthDate] = useState(meta.birth_date ?? "");
+  const [nationalCode, setNationalCode] = useState(meta.national_code ?? "");
+  const [jobTitle, setJobTitle] = useState(meta.job_title ?? "");
+  const [gender, setGender] = useState(meta.gender ?? "");
   const [address, setAddress] = useState(editing?.address ?? "");
   const [description, setDescription] = useState(editing?.description ?? "");
   const [saving, setSaving] = useState(false);
@@ -278,19 +286,30 @@ function ContactModal({
 
   async function handleSave() {
     setError(null);
-    if (!name.trim()) {
-      setError("نام الزامی است.");
+    const displayName = name.trim() || [firstName.trim(), lastName.trim()].filter(Boolean).join(" ");
+    if (!displayName) {
+      setError("نام یا نام خانوادگی الزامی است.");
       return;
     }
     if (!orgId) return;
     setSaving(true);
     const supabase = createClient();
     const payload = {
-      name: name.trim(),
+      name: displayName,
       type,
       phone: phone.trim() || null,
       address: address.trim() || null,
       description: description.trim() || null,
+      meta: {
+        ...(editing?.meta as Record<string, unknown> | undefined),
+        first_name: firstName.trim() || null,
+        last_name: lastName.trim() || null,
+        email: email.trim() || null,
+        birth_date: birthDate || null,
+        national_code: nationalCode.trim() || null,
+        job_title: jobTitle.trim() || null,
+        gender: gender || null,
+      },
     };
     try {
       if (editing) {
@@ -312,8 +331,12 @@ function ContactModal({
   return (
     <Modal open onClose={onClose} title={editing ? "ویرایش شخص" : "شخص جدید"}>
       <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div><label className="label">نام</label><input className="input" value={firstName} onChange={(e) => { setFirstName(e.target.value); setName([e.target.value, lastName].filter(Boolean).join(" ")); }} /></div>
+          <div><label className="label">نام خانوادگی</label><input className="input" value={lastName} onChange={(e) => { setLastName(e.target.value); setName([firstName, e.target.value].filter(Boolean).join(" ")); }} /></div>
+        </div>
         <div>
-          <label className="label">نام *</label>
+          <label className="label">نام نمایشی *</label>
           <input className="input" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div>
@@ -328,14 +351,13 @@ function ContactModal({
             <option value="both">هر دو</option>
           </select>
         </div>
-        <div>
-          <label className="label">شماره تماس</label>
-          <input
-            className="input text-left"
-            dir="ltr"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div><label className="label">شماره تماس</label><input className="input text-left" dir="ltr" value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
+          <div><label className="label">ایمیل</label><input className="input text-left" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+          <div><label className="label">تاریخ تولد</label><input className="input" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} /></div>
+          <div><label className="label">کد ملی</label><input className="input text-left" dir="ltr" value={nationalCode} onChange={(e) => setNationalCode(e.target.value)} /></div>
+          <div><label className="label">شغل / عنوان</label><input className="input" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} /></div>
+          <div><label className="label">جنسیت</label><select className="input" value={gender} onChange={(e) => setGender(e.target.value)}><option value="">—</option><option value="female">خانم</option><option value="male">آقا</option><option value="other">سایر</option></select></div>
         </div>
         <div>
           <label className="label">آدرس</label>
