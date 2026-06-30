@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Activity, Boxes, CreditCard, Edit, Eye, History, MoreVertical, PackageSearch, Phone, Plus, ShoppingCart, Zap } from "lucide-react";
+import { Activity, Boxes, CreditCard, Edit, Eye, History, MessageCircle, MoreVertical, PackageSearch, Phone, Plus, Send, ShoppingCart, Zap } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { EntityAction, EntityType } from "@/lib/entities/types";
 import { getDefaultEntityActions } from "@/lib/entities/actions";
@@ -17,6 +17,8 @@ function ActionIcon({ id }: { id: string }) {
   if (id === "quick-view") return <Zap size={16} />;
   if (id === "view") return <Eye size={16} />;
   if (id === "call") return <Phone size={16} />;
+  if (id === "sms") return <Send size={16} />;
+  if (id === "whatsapp") return <MessageCircle size={16} />;
   if (id === "new-sale") return <ShoppingCart size={16} />;
   if (id === "new-purchase") return <Plus size={16} />;
   if (id === "payment") return <CreditCard size={16} />;

@@ -33,7 +33,11 @@ export function getDefaultEntityActions({
   if (type === "contact" && id) {
     actions.push({ id: "edit", label: "ویرایش شخص", href: `/contacts/${id}?action=edit`, requiredPermission: "contacts.edit" });
     const tel = cleanPhone(phone);
-    if (tel) actions.push({ id: "call", label: "تماس", href: `tel:${tel}`, external: true, tone: "success", requiredPermission: "contacts.call" });
+    if (tel) {
+      actions.push({ id: "call", label: "تماس", href: `tel:${tel}`, external: true, tone: "success", requiredPermission: "contacts.call" });
+      actions.push({ id: "sms", label: "پیامک", href: `sms:${tel}`, external: true, requiredPermission: "contacts.call" });
+      actions.push({ id: "whatsapp", label: "واتساپ", href: `https://wa.me/${tel.replace(/^0/, "98").replace(/^\+/, "")}`, external: true, tone: "success", requiredPermission: "contacts.call" });
+    }
     actions.push({ id: "interaction", label: "ثبت تعامل", href: `/contacts/${id}?action=interaction`, requiredPermission: "crm.create" });
     actions.push({ id: "new-sale", label: "فروش جدید", href: `/sales?contact=${id}`, requiredPermission: "sales.create" });
     actions.push({ id: "payment", label: "ثبت دریافت/پرداخت", href: `/contacts/${id}?action=payment`, requiredPermission: "finance.create" });
