@@ -8,6 +8,7 @@ import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { Plus, Search, Edit, Trash2, FileText, ClipboardList } from "lucide-react";
+import { logActivity } from "@/lib/utils/activity-log";
 
 const sb = createClient();
 
@@ -124,6 +125,7 @@ export default function SalesOrdersPage() {
             created_by: user.user.id,
           });
         }
+        await logActivity({ orgId: mems[0].org_id, action: "update", entityType: "sales_order", entityId: selectedOrder.id, newData: { total, customer_id: customerId || null, items_count: orderItems.length } });
       } else {
         const { data: nextNo } = await sb.rpc("next_order_no", { p_org: mems[0].org_id, p_prefix: "SO" });
         const { data: inserted } = await sb.from("sales_orders").insert({
@@ -144,6 +146,7 @@ export default function SalesOrdersPage() {
               created_by: user.user.id,
             });
           }
+          await logActivity({ orgId: mems[0].org_id, action: "create", entityType: "sales_order", entityId: inserted.id, newData: { total, customer_id: customerId || null, items_count: orderItems.length } });
         }
       }
       setShowForm(false);
@@ -158,12 +161,19 @@ export default function SalesOrdersPage() {
 
   const updateOrderStatus = async (orderId: string, status: string) => {
     await sb.from("sales_orders").update({ status }).eq("id", orderId);
+    const { data: user } = await sb.auth.getUser();
+    const { data: mems } = user.user ? await sb.from("memberships").select("org_id").eq("user_id", user.user.id).eq("is_active", true).limit(1) : { data: null } as any;
+    await logActivity({ orgId: mems?.[0]?.org_id ?? null, action: "update", entityType: "sales_order", entityId: orderId, newData: { status } });
     fetchOrders();
   };
 
   const deleteOrder = async (orderId: string) => {
     if (!confirm("آیا از حذف این سفارش مطمئن هستید؟")) return;
+    const order = orders.find((o) => o.id === orderId);
+    const { data: user } = await sb.auth.getUser();
+    const { data: mems } = user.user ? await sb.from("memberships").select("org_id").eq("user_id", user.user.id).eq("is_active", true).limit(1) : { data: null } as any;
     await sb.from("sales_orders").delete().eq("id", orderId);
+    await logActivity({ orgId: mems?.[0]?.org_id ?? null, action: "delete", entityType: "sales_order", entityId: orderId, oldData: { order_no: order?.order_no, total: order?.total } });
     fetchOrders();
   };
 

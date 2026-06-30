@@ -7,6 +7,7 @@ import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { Plus, Trash2, CreditCard, CheckCircle, XCircle, Clock } from "lucide-react";
+import { logActivity } from "@/lib/utils/activity-log";
 
 const sb = createClient();
 
@@ -77,14 +78,16 @@ export default function ChecksPage() {
     if (!mems?.length) { setSaving(false); return; }
 
     try {
-      await sb.from("checks").insert({
+      const { data: inserted, error: insertError } = await sb.from("checks").insert({
         org_id: mems[0].org_id, branch_id: mems[0].branch_id,
         type: formData.type, check_no: formData.check_no, bank_name: formData.bank_name || null,
         account_no: formData.account_no || null, amount: parseInt(formData.amount),
         issue_date: formData.issue_date || new Date().toISOString(), due_date: formData.due_date,
         contact_id: formData.contact_id || null, note: formData.note || null,
         status: "pending", created_by: user.user.id,
-      });
+      }).select("id").single();
+      if (insertError) throw insertError;
+      await logActivity({ orgId: mems[0].org_id, action: "create", entityType: "check", entityId: inserted?.id ?? null, newData: { type: formData.type, check_no: formData.check_no, amount: parseInt(formData.amount), contact_id: formData.contact_id || null } });
       setShowForm(false);
       setFormData({ type: "received", check_no: "", bank_name: "", account_no: "", amount: "", issue_date: new Date().toISOString().split("T")[0], due_date: "", contact_id: "", note: "" });
       fetchChecks();
@@ -109,12 +112,17 @@ export default function ChecksPage() {
       });
     }
     await sb.from("checks").update({ status, cashed_date: status === "cashed" ? new Date().toISOString() : null }).eq("id", id);
+    await logActivity({ orgId: mems[0].org_id, action: status === "cashed" ? "payment" : "update", entityType: "check", entityId: id, newData: { status, amount: check?.amount ?? null, check_no: check?.check_no ?? null } });
     fetchChecks();
   };
 
   const deleteCheck = async (id: string) => {
     if (!confirm("آیا از حذف این چک مطمئن هستید؟")) return;
+    const check = checks.find((c) => c.id === id);
+    const { data: user } = await sb.auth.getUser();
+    const { data: mems } = user.user ? await sb.from("memberships").select("org_id").eq("user_id", user.user.id).eq("is_active", true).limit(1) : { data: null } as any;
     await sb.from("checks").delete().eq("id", id);
+    await logActivity({ orgId: mems?.[0]?.org_id ?? null, action: "delete", entityType: "check", entityId: id, oldData: { check_no: check?.check_no, amount: check?.amount } });
     fetchChecks();
   };
 
