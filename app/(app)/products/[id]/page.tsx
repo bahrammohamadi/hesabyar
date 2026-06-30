@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
@@ -18,8 +18,8 @@ import {
 import { getActionParam } from "@/lib/entities/action-router";
 import { logActivity } from "@/lib/utils/activity-log";
 
-export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function ProductDetailPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const qc = useQueryClient();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<"info" | "movements" | "sales" | "purchases">("info");

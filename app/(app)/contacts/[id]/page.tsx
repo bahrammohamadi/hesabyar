@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
@@ -21,8 +21,8 @@ import { getActionParam } from "@/lib/entities/action-router";
 
 const TYPE_LABELS: Record<ContactType, string> = { customer: "مشتری", supplier: "تامین‌کننده", both: "هر دو" };
 
-export default function ContactDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function ContactDetailPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const qc = useQueryClient();
   const [tab, setTab] = useState<"info"|"sales"|"purchases"|"tx">("info");
   const searchParams = useSearchParams();
