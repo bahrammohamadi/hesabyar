@@ -141,6 +141,7 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
   const [discountType, setDiscountType] = useState<"fixed" | "percent">("fixed");
   const [paidCash, setPaidCash] = useState("");
   const [paidCard, setPaidCard] = useState("");
+  const [paidWallet, setPaidWallet] = useState("");
   const [accountId, setAccountId] = useState("");
   const [priceListId, setPriceListId] = useState("");
   const [saving, setSaving] = useState(false);
@@ -193,6 +194,16 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
     return Math.max(0, Math.round(v.sale_price * (100 - percent) / 100));
   }
 
+  const { data: walletCredit } = useQuery({
+    queryKey: ["customer-wallet", customer?.id],
+    enabled: !!customer?.id,
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data } = await supabase.from("contacts").select("meta").eq("id", customer!.id).maybeSingle();
+      return Number((data?.meta as any)?.wallet_credit ?? 0) || 0;
+    },
+  });
+
   function addToCart(v: SelectableVariant) {
     setCart((prev) => {
       const existing = prev.find((c) => c.variant_id === v.variant_id);
@@ -236,7 +247,9 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
   const total = Math.max(0, subtotal - discountRial);
   const paidCashRial = tomanToRial(Number(toEnDigits(paidCash)) || 0);
   const paidCardRial = tomanToRial(Number(toEnDigits(paidCard)) || 0);
-  const credit = Math.max(0, total - paidCashRial - paidCardRial);
+  const requestedWalletRial = tomanToRial(Number(toEnDigits(paidWallet)) || 0);
+  const paidWalletRial = Math.min(requestedWalletRial, walletCredit ?? 0, Math.max(0, total - paidCashRial - paidCardRial));
+  const credit = Math.max(0, total - paidCashRial - paidCardRial - paidWalletRial);
 
   async function handleSubmit() {
     setError(null);
@@ -274,6 +287,15 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
         p_note: null,
       });
       if (e) throw e;
+      if (paidWalletRial > 0 && customer?.id) {
+        const { error: walletError } = await supabase.rpc("spend_customer_wallet", {
+          p_contact: customer.id,
+          p_sale: data as string,
+          p_amount: paidWalletRial,
+          p_note: "پرداخت از اعتبار کیف پول در فاکتور فروش",
+        });
+        if (walletError) throw walletError;
+      }
       await logActivity({ orgId, action: "create", entityType: "sale", entityId: data as string, newData: { total, customer_id: customer?.id ?? null, items_count: cart.length } });
       setDone(data as string);
     } catch (e) {
@@ -429,6 +451,13 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
               <label className="label">دریافت کارتی (تومان)</label>
               <input className="input" inputMode="numeric" value={paidCard} onChange={(e) => setPaidCard(e.target.value)} />
             </div>
+            {customer && (
+              <div>
+                <label className="label">پرداخت از اعتبار مشتری (تومان)</label>
+                <input className="input" inputMode="numeric" value={paidWallet} onChange={(e) => setPaidWallet(e.target.value)} />
+                <div className="text-xs text-slate-400 mt-1">اعتبار موجود: {formatToman(walletCredit ?? 0)}</div>
+              </div>
+            )}
           </div>
 
           {/* جمع */}
@@ -445,6 +474,9 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
               <span>مبلغ قابل پرداخت</span>
               <span>{formatToman(total)}</span>
             </div>
+            {paidWalletRial > 0 && (
+              <div className="flex justify-between text-emerald-600 font-medium"><span>پرداخت از اعتبار</span><span>{formatToman(paidWalletRial)}</span></div>
+            )}
             {credit > 0 && (
               <div className="flex justify-between text-rose-600 font-medium">
                 <span>باقیمانده (نسیه)</span>
