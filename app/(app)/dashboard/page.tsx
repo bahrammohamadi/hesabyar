@@ -178,7 +178,7 @@ export default function DashboardPage() {
             </div>
             <span className="text-xs font-medium text-slate-700 group-hover:text-cyan-700">مشتری جدید</span>
           </Link>
-          <Link href="/reports?tab=sales" className="card p-3 flex flex-col items-center gap-2 hover:bg-indigo-50 transition group no-underline">
+          <Link href="/reports/sales" className="card p-3 flex flex-col items-center gap-2 hover:bg-indigo-50 transition group no-underline">
             <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
               <BarChart3 size={20} />
             </div>

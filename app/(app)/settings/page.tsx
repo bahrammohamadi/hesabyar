@@ -7,7 +7,7 @@ import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, Modal, Spinner } from "@/components/shared/ui";
 import { Plus, Loader2, Tag, Landmark, FolderTree, Trash2, Pencil, Check, X, Users, Shield } from "lucide-react";
 
-export default function SettingsPage() {
+export function SettingsContent({ section = "all" }: { section?: "all" | "catalog" | "accounts" | "users" }) {
   const { orgId, branchId } = useOrg();
 
   return (
@@ -16,33 +16,23 @@ export default function SettingsPage() {
         title="تنظیمات"
         subtitle="مدیریت دسته‌بندی‌ها، برندها، حساب‌ها و دسته هزینه‌ها"
       />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ManageableList
-          orgId={orgId}
-          branchId={branchId}
-          table="categories"
-          title="دسته‌بندی کالا"
-          icon={<FolderTree size={18} />}
-        />
-        <ManageableList
-          orgId={orgId}
-          branchId={branchId}
-          table="brands"
-          title="برندها"
-          icon={<Tag size={18} />}
-        />
-        <ManageableList
-          orgId={orgId}
-          branchId={branchId}
-          table="expense_categories"
-          title="دسته‌بندی هزینه"
-          icon={<Tag size={18} />}
-        />
-        <AccountsManager orgId={orgId} branchId={branchId} />
-      </div>
-      <div id="users" className="mt-4 scroll-mt-24">
-        <UsersAccessManager />
-      </div>
+      {(section === "all" || section === "catalog") && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <ManageableList orgId={orgId} branchId={branchId} table="categories" title="دسته‌بندی کالا" icon={<FolderTree size={18} />} />
+          <ManageableList orgId={orgId} branchId={branchId} table="brands" title="برندها" icon={<Tag size={18} />} />
+          <ManageableList orgId={orgId} branchId={branchId} table="expense_categories" title="دسته‌بندی هزینه" icon={<Tag size={18} />} />
+        </div>
+      )}
+      {(section === "all" || section === "accounts") && (
+        <div className={section === "all" ? "mt-4" : ""}>
+          <AccountsManager orgId={orgId} branchId={branchId} />
+        </div>
+      )}
+      {(section === "all" || section === "users") && (
+        <div id="users" className="mt-4 scroll-mt-24">
+          <UsersAccessManager />
+        </div>
+      )}
     </div>
   );
 }
@@ -566,4 +556,9 @@ function CreateUserModal({ onClose }: { onClose: () => void }) {
       </div>
     </Modal>
   );
+}
+
+
+export default function SettingsPage() {
+  return <SettingsContent />;
 }
