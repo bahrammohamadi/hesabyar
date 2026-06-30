@@ -580,9 +580,9 @@ function ProfitReport({ orgId }: { orgId: string }) {
 }
 
 // --- صفحه اصلی ---
-export default function ReportsPage() {
+export function ReportsPageContent({ forcedTab }: { forcedTab?: TabId }) {
   const { orgId, loading: orgLoading } = useOrg();
-  const [activeTab, setActiveTab] = useState<TabId>("sales");
+  const [activeTab, setActiveTab] = useState<TabId>(forcedTab ?? "sales");
 
   async function exportExcel() {
     if (!orgId) return;
@@ -622,11 +622,15 @@ export default function ReportsPage() {
   // URL params support
   const searchParams = useSearchParams();
   useEffect(() => {
+    if (forcedTab) {
+      setActiveTab(forcedTab);
+      return;
+    }
     const tab = searchParams.get("tab");
     if (tab && ["sales", "products", "financial", "contacts", "profit"].includes(tab)) {
       setActiveTab(tab as TabId);
     }
-  }, [searchParams]);
+  }, [searchParams, forcedTab]);
 
   if (orgLoading) return <Spinner label="در حال بارگذاری..." />;
   if (!orgId) return <EmptyState icon={Calendar} message="لطفاً ابتدا وارد شوید" />;
@@ -679,4 +683,8 @@ export default function ReportsPage() {
       {activeTab === "profit" && <ProfitReport orgId={orgId} />}
     </div>
   );
+}
+
+export default function ReportsPage() {
+  return <ReportsPageContent />;
 }

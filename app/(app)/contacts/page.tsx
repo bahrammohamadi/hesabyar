@@ -19,7 +19,7 @@ const TYPE_LABEL: Record<ContactType, string> = {
   both: "هر دو",
 };
 
-export default function ContactsPage() {
+export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: { forcedType?: ContactType; forcedFilter?: "debtors" | "creditors"; forcedAction?: "new" }) {
   const { orgId, branchId } = useOrg();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
@@ -109,12 +109,14 @@ export default function ContactsPage() {
   const [initialType, setInitialType] = useState<ContactType>("customer");
 
   useEffect(() => {
-    const type = searchParams.get("type") as ContactType | null;
-    const filter = searchParams.get("filter");
-    const action = searchParams.get("action");
+    const type = forcedType ?? (searchParams.get("type") as ContactType | null);
+    const filter = forcedFilter ?? searchParams.get("filter");
+    const action = forcedAction ?? searchParams.get("action");
     if (type === "customer" || type === "supplier" || type === "both") {
       setTypeFilter(type);
       setInitialType(type);
+    } else if (!forcedType) {
+      setTypeFilter("");
     }
     if (filter === "debtors" || filter === "creditors") setBalanceFilter(filter);
     else setBalanceFilter("");
@@ -122,7 +124,7 @@ export default function ContactsPage() {
       setEditing(null);
       setModalOpen(true);
     }
-  }, [searchParams]);
+  }, [searchParams, forcedType, forcedFilter, forcedAction]);
 
   return (
     <div>
@@ -363,4 +365,9 @@ function ContactModal({
       </div>
     </Modal>
   );
+}
+
+
+export default function ContactsPage() {
+  return <ContactsPageContent />;
 }

@@ -38,10 +38,10 @@ const NAV = [
     icon: Users,
     children: [
       { href: "/contacts", label: "همه اشخاص", icon: Scale },
-      { href: "/contacts?type=customer", label: "مشتریان", icon: ShoppingBag },
-      { href: "/contacts?type=supplier", label: "تأمین‌کنندگان", icon: Truck },
-      { href: "/contacts?action=new&type=customer", label: "مشتری جدید", icon: UserPlus },
-      { href: "/contacts?filter=debtors", label: "بدهکاران", icon: ArrowDownCircle },
+      { href: "/contacts/customers", label: "مشتریان", icon: ShoppingBag },
+      { href: "/contacts/suppliers", label: "تأمین‌کنندگان", icon: Truck },
+      { href: "/contacts/new-customer", label: "مشتری جدید", icon: UserPlus },
+      { href: "/contacts/debtors", label: "بدهکاران", icon: ArrowDownCircle },
     ],
   },
   {
@@ -69,19 +69,19 @@ const NAV = [
     label: "گزارش‌ها",
     icon: BarChart3,
     children: [
-      { href: "/reports?tab=sales", label: "فروش", icon: TrendingUp },
-      { href: "/reports?tab=products", label: "کالا", icon: Package },
-      { href: "/reports?tab=financial", label: "مالی", icon: Wallet },
-      { href: "/reports?tab=contacts", label: "اشخاص", icon: Users },
+      { href: "/reports/sales", label: "فروش", icon: TrendingUp },
+      { href: "/reports/products", label: "کالا", icon: Package },
+      { href: "/reports/financial", label: "مالی", icon: Wallet },
+      { href: "/reports/contacts", label: "اشخاص", icon: Users },
     ],
   },
   {
     label: "تنظیمات",
     icon: Settings,
     children: [
-      { href: "/settings", label: "تنظیمات پایه", icon: Layers },
-      { href: "/settings#users", label: "کاربران و دسترسی‌ها", icon: UserCheck },
-      { href: "/settings", label: "حساب‌ها و دسته‌ها", icon: Landmark },
+      { href: "/settings/catalog", label: "تنظیمات پایه", icon: Layers },
+      { href: "/settings/users", label: "کاربران و دسترسی‌ها", icon: UserCheck },
+      { href: "/settings/accounts", label: "حساب‌ها و دسته‌ها", icon: Landmark },
     ],
   },
 ];
