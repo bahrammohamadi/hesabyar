@@ -214,6 +214,7 @@ function ProductModal({
   const [season, setSeason] = useState(editing?.season ?? "");
   const [material, setMaterial] = useState(editing?.material ?? "");
   const [description, setDescription] = useState(editing?.description ?? "");
+  const [imageUrl, setImageUrl] = useState(editing?.image_url ?? "");
   const [categoryId, setCategoryId] = useState(editing?.category_id ?? "");
   const [brandId, setBrandId] = useState(editing?.brand_id ?? "");
   const [lowStock, setLowStock] = useState(String(editing?.low_stock_threshold ?? 3));
@@ -259,6 +260,7 @@ function ProductModal({
         season: season.trim() || null,
         material: material.trim() || null,
         description: description.trim() || null,
+        image_url: imageUrl.trim() || null,
         category_id: categoryId || null,
         brand_id: brandId || null,
         low_stock_threshold: Number(toEnDigits(lowStock)) || 0,
@@ -361,7 +363,7 @@ function ProductModal({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="label">فصل</label>
             <select className="input" value={season} onChange={(e) => setSeason(e.target.value)}>

@@ -188,6 +188,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
 }
 
 function ContactInfo({ contact, sales, purchases, totalSales, totalPurchases }: any) {
+  const meta = (contact.meta ?? {}) as Record<string, string>;
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -204,6 +205,12 @@ function ContactInfo({ contact, sales, purchases, totalSales, totalPurchases }: 
             { label: "نوع", value: TYPE_LABELS[contact.type as ContactType] },
             { label: "تماس", value: contact.phone ? <PhoneLink phone={contact.phone} /> : "—" },
             { label: "کد", value: (contact as any).code ?? "—" },
+            { label: "نام", value: meta.first_name || "—" },
+            { label: "نام خانوادگی", value: meta.last_name || "—" },
+            { label: "تاریخ تولد", value: meta.birth_date || "—" },
+            { label: "ایمیل", value: meta.email || "—" },
+            { label: "کد ملی", value: meta.national_code || "—" },
+            { label: "شغل", value: meta.job_title || "—" },
           ].map((item, i) => (
             <div key={i} className="p-3 bg-slate-50 rounded-xl"><div className="text-xs text-slate-400 mb-1">{item.label}</div><div className="font-medium">{item.value}</div></div>
           ))}
@@ -316,28 +323,38 @@ function ContactTx({ txs }: { txs: any[] }) {
 
 // مودال ویرایش
 function ContactEditModal({ contact, onClose, onSaved }: { contact: any; onClose: () => void; onSaved: () => void }) {
+  const meta = (contact.meta ?? {}) as Record<string, string>;
   const [name, setName] = useState(contact.name); const [type, setType] = useState(contact.type ?? "customer");
-  const [phone, setPhone] = useState(contact.phone ?? ""); const [address, setAddress] = useState(contact.address ?? "");
+  const [firstName, setFirstName] = useState(meta.first_name ?? ""); const [lastName, setLastName] = useState(meta.last_name ?? "");
+  const [phone, setPhone] = useState(contact.phone ?? ""); const [email, setEmail] = useState(meta.email ?? "");
+  const [birthDate, setBirthDate] = useState(meta.birth_date ?? ""); const [nationalCode, setNationalCode] = useState(meta.national_code ?? "");
+  const [jobTitle, setJobTitle] = useState(meta.job_title ?? ""); const [address, setAddress] = useState(contact.address ?? "");
   const [desc, setDesc] = useState(contact.description ?? ""); const [code, setCode] = useState((contact as any).code ?? "");
   const [saving, setSaving] = useState(false); const [error, setError] = useState<string|null>(null);
 
   async function save() {
     if (!name.trim()) { setError("نام الزامی است."); return; }
     setSaving(true); const supabase = createClient();
-    try { await supabase.from("contacts").update({ name: name.trim(), type, phone: phone.trim()||null, address: address.trim()||null, description: desc.trim()||null, code: code.trim()||null }).eq("id", contact.id); onSaved(); }
+    try { await supabase.from("contacts").update({ name: name.trim(), type, phone: phone.trim()||null, address: address.trim()||null, description: desc.trim()||null, code: code.trim()||null, meta: { ...meta, first_name: firstName.trim() || null, last_name: lastName.trim() || null, email: email.trim() || null, birth_date: birthDate || null, national_code: nationalCode.trim() || null, job_title: jobTitle.trim() || null } }).eq("id", contact.id); onSaved(); }
     catch (err) { setError("خطا: " + (err as Error).message); setSaving(false); }
   }
 
   return (
     <Modal open onClose={onClose} title="ویرایش شخص" size="lg">
       <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <div><label className="label">نام *</label><input className="input" value={name} onChange={e=>setName(e.target.value)} /></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div><label className="label">نام</label><input className="input" value={firstName} onChange={e=>{setFirstName(e.target.value); setName([e.target.value,lastName].filter(Boolean).join(" "));}} /></div>
+          <div><label className="label">نام خانوادگی</label><input className="input" value={lastName} onChange={e=>{setLastName(e.target.value); setName([firstName,e.target.value].filter(Boolean).join(" "));}} /></div>
+          <div><label className="label">نام نمایشی *</label><input className="input" value={name} onChange={e=>setName(e.target.value)} /></div>
           <div><label className="label">کد</label><input className="input text-left" dir="ltr" value={code} onChange={e=>setCode(e.target.value)} /></div>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div><label className="label">نوع</label><select className="input" value={type} onChange={e=>setType(e.target.value)}><option value="customer">مشتری</option><option value="supplier">تامین‌کننده</option><option value="both">هر دو</option></select></div>
           <div><label className="label">تماس</label><input className="input text-left" dir="ltr" value={phone} onChange={e=>setPhone(e.target.value)} /></div>
+          <div><label className="label">ایمیل</label><input className="input text-left" dir="ltr" value={email} onChange={e=>setEmail(e.target.value)} /></div>
+          <div><label className="label">تاریخ تولد</label><input type="date" className="input" value={birthDate} onChange={e=>setBirthDate(e.target.value)} /></div>
+          <div><label className="label">کد ملی</label><input className="input text-left" dir="ltr" value={nationalCode} onChange={e=>setNationalCode(e.target.value)} /></div>
+          <div><label className="label">شغل</label><input className="input" value={jobTitle} onChange={e=>setJobTitle(e.target.value)} /></div>
         </div>
         <div><label className="label">آدرس</label><input className="input" value={address} onChange={e=>setAddress(e.target.value)} /></div>
         <div><label className="label">توضیحات</label><textarea className="input" rows={2} value={desc} onChange={e=>setDesc(e.target.value)} /></div>

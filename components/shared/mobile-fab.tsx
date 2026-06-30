@@ -3,17 +3,20 @@
 import { useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils/cn";
+import { usePermission } from "@/lib/hooks/usePermission";
 import { Plus, Receipt, ShoppingCart, UserPlus, PackagePlus, X, Zap } from "lucide-react";
 
 const ACTIONS = [
-  { href: "/sales", label: "فاکتور جدید", icon: Receipt, tone: "bg-brand-600" },
-  { href: "/purchases", label: "خرید جدید", icon: ShoppingCart, tone: "bg-emerald-600" },
-  { href: "/contacts?action=new&type=customer", label: "مشتری جدید", icon: UserPlus, tone: "bg-cyan-600" },
-  { href: "/products?action=new", label: "کالای جدید", icon: PackagePlus, tone: "bg-violet-600" },
+  { href: "/sales", label: "فاکتور جدید", icon: Receipt, tone: "bg-brand-600", permission: "sales.create" },
+  { href: "/purchases", label: "خرید جدید", icon: ShoppingCart, tone: "bg-emerald-600", permission: "purchases.create" },
+  { href: "/contacts/new-customer", label: "مشتری جدید", icon: UserPlus, tone: "bg-cyan-600", permission: "contacts.edit" },
+  { href: "/products?action=new", label: "کالای جدید", icon: PackagePlus, tone: "bg-violet-600", permission: "products.edit" },
 ];
 
 export function MobileFab() {
   const [open, setOpen] = useState(false);
+  const { can } = usePermission();
+  const actions = ACTIONS.filter((action) => can(action.permission));
 
   return (
     <div className="sm:hidden fixed bottom-20 left-4 z-40">
@@ -21,7 +24,7 @@ export function MobileFab() {
         <>
           <button className="fixed inset-0 bg-black/20" onClick={() => setOpen(false)} aria-label="بستن" />
           <div className="relative mb-3 flex flex-col gap-2">
-            {ACTIONS.map((action) => {
+            {actions.map((action) => {
               const Icon = action.icon;
               return (
                 <Link
@@ -43,6 +46,7 @@ export function MobileFab() {
 
       <button
         onClick={() => setOpen((s) => !s)}
+        disabled={actions.length === 0}
         className="w-14 h-14 rounded-2xl bg-brand-600 text-white shadow-xl flex items-center justify-center active:scale-95 transition-transform"
         aria-label="دسترسی سریع"
       >
