@@ -15,7 +15,7 @@ import {
   FileText, Percent, ShoppingBasket, Boxes, PercentCircle,
   Building, UserCheck, AlertCircle, PieChart, Activity,
   Briefcase, BookOpen, ShoppingBagIcon, Tags, Barcode,
-  ArrowRightLeft, History, PiggyBank, Banknote, Coins, Gift, MessageCircle, Calendar, Target,
+  ArrowRightLeft, History, PiggyBank, Banknote, Coins, Gift, MessageCircle, Calendar, Target, Bell,
 } from "lucide-react";
 
 const NAV = [
@@ -86,6 +86,7 @@ const NAV = [
       { href: "/crm/interactions", label: "تعاملات", icon: Activity },
       { href: "/crm/segments", label: "گروه‌بندی", icon: Tags },
       { href: "/crm/rfm", label: "تحلیل RFM", icon: Target },
+      { href: "/crm/automation", label: "اتوماسیون کمپین", icon: Bell },
       { href: "/crm/loyalty", label: "امتیاز و وفاداری", icon: Gift },
     ],
   },
