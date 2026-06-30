@@ -81,19 +81,21 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
       if (saleError) throw saleError;
       if (!sale) throw new Error("فاکتور یافت نشد");
 
-      const [customerResult, itemsResult, paymentSummaryResult, paymentsResult] = await Promise.all([
+      const [customerResult, itemsResult, paymentSummaryResult, paymentsResult, returnsResult] = await Promise.all([
         sale.customer_id
           ? supabase.from("contacts").select("id,name,phone,address,code").eq("id", sale.customer_id).maybeSingle()
           : Promise.resolve({ data: null, error: null } as any),
         supabase.from("sale_items").select("id, variant_id, qty, unit_price, discount, line_total, cost_price").eq("sale_id", id).order("created_at", { ascending: true }),
         supabase.from("sales_payment_summary").select("paid_total,balance,last_payment_at,payment_count").eq("sale_id", id).maybeSingle(),
         supabase.from("transactions").select("id,amount,date,method,note,account:accounts!transactions_account_id_fkey(name)").eq("sale_id", id).order("date", { ascending: false }),
+        supabase.from("sales_returns").select("id,total,return_no,created_at").eq("original_sale_id", id).limit(20),
       ]);
 
       if (customerResult.error) throw customerResult.error;
       if (itemsResult.error) throw itemsResult.error;
       if (paymentSummaryResult.error) throw paymentSummaryResult.error;
       if (paymentsResult.error) throw paymentsResult.error;
+      if (returnsResult.error) throw returnsResult.error;
 
       const rawItems = (itemsResult.data ?? []) as any[];
       const variantIds = rawItems.map((item) => item.variant_id).filter(Boolean);
@@ -149,6 +151,7 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
         customer: customerResult.data,
         items,
         payments: paymentsResult.data ?? [],
+        returns: returnsResult.data ?? [],
         paymentSummary: paymentSummaryResult.data,
         paidTotal,
         balance,
@@ -173,6 +176,7 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
   if (!data) return <EmptyState title="فاکتور یافت نشد" />;
 
   const { sale, customer, items, payments, paidTotal, balance } = data;
+  const hasReturns = (data.returns ?? []).length > 0;
 
   function handleExcel() {
     downloadCsv(`invoice-${sale.invoice_no ?? sale.id}.csv`, items.map((item, index) => ({
@@ -211,13 +215,19 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
             <ArrowRight size={16} /> بازگشت به فروش
           </Link>
           <div className="flex flex-wrap gap-2">
-            {sale.status !== "cancelled" && <button onClick={() => setEditOpen(true)} className="btn-secondary"><Pencil size={16} /> ویرایش فاکتور</button>}
-            {sale.status !== "cancelled" && <button onClick={() => setCancelOpen(true)} className="btn-secondary text-rose-600"><X size={16} /> ابطال</button>}
+            {sale.status !== "cancelled" && !hasReturns && <button onClick={() => setEditOpen(true)} className="btn-secondary"><Pencil size={16} /> ویرایش فاکتور</button>}
+            {sale.status !== "cancelled" && !hasReturns && <button onClick={() => setCancelOpen(true)} className="btn-secondary text-rose-600"><X size={16} /> ابطال</button>}
             {balance > 0 && sale.status !== "cancelled" && <button onClick={() => setPaymentOpen(true)} className="btn-secondary"><Plus size={16} /> ثبت پرداخت</button>}
             <button onClick={handleExcel} className="btn-secondary"><FileSpreadsheet size={16} /> Excel</button>
             <button onClick={() => window.print()} className="btn-primary"><Printer size={16} /> چاپ / PDF</button>
           </div>
         </div>
+
+        {hasReturns && (
+          <div className="no-print mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+            برای این فاکتور مرجوعی ثبت شده است؛ برای جلوگیری از خطای موجودی، ویرایش یا ابطال مستقیم فاکتور غیرفعال است.
+          </div>
+        )}
 
         <div id="invoice-print" className="card bg-white p-5 sm:p-8">
           <div className="flex items-start justify-between gap-4 border-b-2 border-brand-600 pb-4 mb-5">
