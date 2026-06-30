@@ -15,7 +15,7 @@ import {
   FileText, Percent, ShoppingBasket, Boxes, PercentCircle,
   Building, UserCheck, AlertCircle, PieChart, Activity,
   Briefcase, BookOpen, ShoppingBagIcon, Tags, Barcode,
-  ArrowRightLeft, History, PiggyBank, Banknote, Coins,
+  ArrowRightLeft, History, PiggyBank, Banknote, Coins, Gift,
 } from "lucide-react";
 
 const NAV = [
@@ -28,6 +28,7 @@ const NAV = [
     children: [
       { href: "/products", label: "کالاها", icon: PackageSearch },
       { href: "/products?action=new", label: "کالای جدید", icon: PlusIcon },
+      { href: "/settings/price-lists", label: "لیست قیمت‌ها", icon: Tags },
       { href: "/inventory/movements", label: "گردش انبار", icon: ClipboardList },
       { href: "/inventory/adjust", label: "تعدیل موجودی", icon: ArrowLeftRight },
       { href: "/inventory/in", label: "ورود کالا", icon: ArrowDownToLine },
@@ -64,6 +65,17 @@ const NAV = [
     children: [
       { href: "/sales/orders", label: "سفارش فروش", icon: ClipboardList },
       { href: "/sales/returns", label: "مرجوعی فروش", icon: ArrowLeftRight },
+    ],
+  },
+
+  {
+    label: "CRM و باشگاه مشتریان",
+    icon: Gift,
+    children: [
+      { href: "/crm", label: "نمای کلی CRM", icon: Users },
+      { href: "/crm/interactions", label: "تعاملات", icon: Activity },
+      { href: "/crm/segments", label: "گروه‌بندی", icon: Tags },
+      { href: "/crm/loyalty", label: "امتیاز و وفاداری", icon: Gift },
     ],
   },
   {
@@ -105,9 +117,11 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
     if (href.startsWith("/products")) return href.includes("action=new") ? "products.edit" : "products.view";
     if (href.startsWith("/inventory")) return href.includes("adjust") || href.endsWith("/in") || href.endsWith("/out") ? "inventory.adjust" : "inventory.view";
     if (href.startsWith("/contacts")) return href.includes("new-") ? "contacts.edit" : "contacts.view";
+    if (href.startsWith("/crm")) return "contacts.view";
     if (href.startsWith("/finance")) return href === "/finance" ? "finance.view" : "finance.create";
     if (href.startsWith("/checks")) return "finance.view";
     if (href.startsWith("/reports") || href.startsWith("/activity")) return "reports.view";
+    if (href.startsWith("/settings/price-lists")) return "products.edit";
     if (href.startsWith("/settings")) return "settings.manage";
     return null;
   }
