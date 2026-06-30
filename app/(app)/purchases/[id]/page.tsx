@@ -33,7 +33,7 @@ export default function PurchaseDetailPage({ params }: { params: { id: string } 
       const [{ data: txs }, { data: movements }, { data: paymentSummary }] = await Promise.all([
         supabase
           .from("transactions")
-          .select("id, type, amount, date, method, note, account:accounts(name)")
+          .select("id, type, amount, date, method, note, account:accounts!transactions_account_id_fkey(name)")
           .eq("purchase_id", id)
           .order("date", { ascending: false }),
         supabase

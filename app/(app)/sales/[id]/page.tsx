@@ -70,7 +70,7 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
           : Promise.resolve({ data: null, error: null } as any),
         supabase.from("sale_items").select("id, variant_id, qty, unit_price, discount, line_total, cost_price").eq("sale_id", id).order("created_at", { ascending: true }),
         supabase.from("sales_payment_summary").select("paid_total,balance,last_payment_at,payment_count").eq("sale_id", id).maybeSingle(),
-        supabase.from("transactions").select("id,amount,date,method,note,account:accounts(name)").eq("sale_id", id).order("date", { ascending: false }),
+        supabase.from("transactions").select("id,amount,date,method,note,account:accounts!transactions_account_id_fkey(name)").eq("sale_id", id).order("date", { ascending: false }),
       ]);
 
       if (customerResult.error) throw customerResult.error;
