@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils/cn";
 import { Loader2, Inbox } from "lucide-react";
-import type { ReactNode } from "react";
+import React, { type ReactNode } from "react";
 import Link from "next/link";
 
 export function PageHeader({
@@ -67,13 +67,22 @@ export function StatCard({
 
   const renderIcon = () => {
     if (!icon) return null;
-    // اگر icon یک کامپوننت React (مثل Wallet از lucide) باشد
-    if (typeof icon === "function") {
-      const IconComp = icon as React.ElementType;
-      return <IconComp size={20} className={trend ? trendColors[trend] : "text-slate-400"} />;
+    
+    // اگر قبلا یک React Element است (مثلا <Wallet size={20} />)
+    if (React.isValidElement(icon)) {
+      return <span className={trend ? trendColors[trend] : "text-slate-400"}>{icon}</span>;
     }
-    // اگر ReactNode باشد
-    return <span className={trend ? trendColors[trend || "neutral"] : "text-slate-400"}>{icon as ReactNode}</span>;
+    
+    // اگر یک کامپوننت است (function یا forwardRef object مثل Lucide icons)
+    // Lucide icons are ForwardRefExoticComponent -> typeof === 'object'
+    try {
+      const IconComp = icon as React.ElementType;
+      // @ts-ignore - Lucide icons accept size prop
+      return <IconComp size={20} className={trend ? trendColors[trend] : "text-slate-400"} />;
+    } catch (e) {
+      // fallback: render as-is if it's a valid ReactNode
+      return <span className={trend ? trendColors[trend || "neutral"] : "text-slate-400"}>{icon as ReactNode}</span>;
+    }
   };
 
   const cardInner = (
