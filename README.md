@@ -1,6 +1,7 @@
-# حساب‌یار (Hesabyar)
+# حساب‌یار (Hesabyar) v1.1
 
 نرم‌افزار مدیریت مالی و فروش برای کسب‌وکارهای کوچک — فارسی، RTL، تاریخ شمسی، PWA.
+
 
 ## فناوری
 - **Frontend:** Next.js 14 (App Router) + TypeScript + Tailwind CSS + React Query
