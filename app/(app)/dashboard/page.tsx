@@ -136,52 +136,69 @@ export default function DashboardPage() {
         title="داشبورد مدیریتی"
         subtitle="مرکز کنترل و تحلیل لحظه‌ای کسب‌وکار"
         action={
-          <button onClick={() => setQuickSaleOpen(true)} className="btn-primary shadow-lg shadow-brand-600/20">
+          <button onClick={() => setQuickSaleOpen(true)} className="btn-primary shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-shadow">
             <Plus size={18} />
             <span className="hidden sm:inline">فروش جدید</span>
+            <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded hidden sm:inline">F2</span>
           </button>
         }
       />
 
-      {/* بخش ۱: دسترسی‌های سریع و حیاتی (High Priority Actions) */}
-      <section>
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-1 h-5 bg-brand-600 rounded-full" />
-          <h2 className="text-sm font-bold text-slate-800">عملیات سریع</h2>
+      {/* بخش ۱: دسترسی‌های سریع - طراحی جدید */}
+      <section className="relative">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-1 h-6 bg-primary rounded-full shadow-sm shadow-primary/20" />
+            <div>
+              <h2 className="text-[15px] font-extrabold text-slate-800">عملیات سریع</h2>
+              <p className="text-[11px] text-slate-500 mt-0.5">دسترسی آنی به پرکاربردترین بخش‌ها</p>
+            </div>
+          </div>
+          <div className="hidden sm:flex items-center gap-1.5 text-[10px] text-slate-400">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            آنلاین
+          </div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
           <QuickActionButton 
             label="فروش جدید" 
+            description="ثبت فاکتور سریع"
             icon={Receipt} 
-            color="bg-brand-600" 
+            color="bg-brand-600"
+            badge="F2"
             onClick={() => setQuickSaleOpen(true)} 
           />
           <QuickActionButton 
             label="خرید کالا" 
+            description="ورود موجودی"
             icon={ShoppingCart} 
             color="bg-emerald-600" 
             href="/purchases" 
           />
           <QuickActionButton 
             label="تعدیل انبار" 
+            description="اصلاح موجودی"
             icon={ArrowDownToLine} 
             color="bg-blue-600" 
             href="/inventory/adjust" 
           />
           <QuickActionButton 
             label="کالای جدید" 
+            description="افزودن محصول"
             icon={Package2} 
             color="bg-slate-600" 
             href="/products?action=new" 
           />
           <QuickActionButton 
             label="مشتری جدید" 
+            description="ثبت مخاطب"
             icon={UserPlus} 
             color="bg-cyan-600" 
             href="/contacts?action=new&type=customer" 
           />
           <QuickActionButton 
             label="گزارشات" 
+            description="تحلیل و آمار"
             icon={BarChart3} 
             color="bg-indigo-600" 
             href="/reports/sales" 
@@ -204,6 +221,7 @@ export default function DashboardPage() {
               value={formatToman(s?.cash_total)}
               icon={Wallet}
               trend="neutral"
+              color="emerald"
               href="/finance"
             />
             <StatCard
@@ -212,6 +230,7 @@ export default function DashboardPage() {
               subValue={`${toFaDigits(s?.sales_today_count ?? 0)} فاکتور`}
               icon={TrendingUp}
               trend="up"
+              color="primary"
               href="/sales"
             />
             <button 
@@ -240,6 +259,7 @@ export default function DashboardPage() {
               subValue={`سود: ${formatToman(s?.profit_month, false)}`}
               icon={ShoppingBag}
               trend="up"
+              color="violet"
               href="/sales"
             />
             <div className="grid grid-cols-2 gap-3">
@@ -276,6 +296,7 @@ export default function DashboardPage() {
               value={formatToman(s?.inventory_value)}
               icon={Package}
               trend="neutral"
+              color="blue"
               href="/products"
             />
             <div className={`card p-4 border-l-4 ${ (s?.low_stock_count ?? 0) > 0 ? "border-l-amber-500 bg-amber-50/30" : "border-l-slate-200" }`}>
@@ -384,29 +405,100 @@ export default function DashboardPage() {
   );
 }
 
-function QuickActionButton({ label, icon: Icon, color, onClick, href }: { 
+type QuickActionAccent = "primary" | "emerald" | "blue" | "amber" | "rose" | "violet" | "cyan" | "slate";
+
+function QuickActionButton({ 
+  label, 
+  icon: Icon, 
+  color, 
+  accent: accentProp,
+  onClick, 
+  href,
+  description,
+  badge
+}: { 
   label: string; 
   icon: any; 
-  color: string; 
+  color?: string;
+  accent?: QuickActionAccent;
   onClick?: () => void; 
-  href?: string; 
+  href?: string;
+  description?: string;
+  badge?: string;
 }) {
+  // map color string like "bg-brand-600" to accent name
+  const accentMap: Record<string, QuickActionAccent> = {
+    "bg-brand-600": "primary",
+    "bg-emerald-600": "emerald",
+    "bg-blue-600": "blue",
+    "bg-slate-600": "slate",
+    "bg-cyan-600": "cyan",
+    "bg-indigo-600": "violet",
+    "bg-rose-600": "rose",
+    "bg-amber-600": "amber",
+  };
+  const accent: QuickActionAccent = accentProp ?? accentMap[color || ""] ?? "primary";
+
+  const accentStyles: Record<QuickActionAccent, {bg:string;text:string;ring:string;hover:string;shadow:string}> = {
+    primary: { bg: "bg-primary/10", text: "text-primary", ring: "ring-primary/20", hover: "hover:bg-primary/15", shadow: "shadow-primary/10" },
+    emerald: { bg: "bg-emerald-50", text: "text-emerald-600", ring: "ring-emerald-200", hover: "hover:bg-emerald-100", shadow: "shadow-emerald-600/10" },
+    blue: { bg: "bg-blue-50", text: "text-blue-600", ring: "ring-blue-200", hover: "hover:bg-blue-100", shadow: "shadow-blue-600/10" },
+    amber: { bg: "bg-amber-50", text: "text-amber-600", ring: "ring-amber-200", hover: "hover:bg-amber-100", shadow: "shadow-amber-600/10" },
+    rose: { bg: "bg-rose-50", text: "text-rose-600", ring: "ring-rose-200", hover: "hover:bg-rose-100", shadow: "shadow-rose-600/10" },
+    violet: { bg: "bg-violet-50", text: "text-violet-600", ring: "ring-violet-200", hover: "hover:bg-violet-100", shadow: "shadow-violet-600/10" },
+    cyan: { bg: "bg-cyan-50", text: "text-cyan-600", ring: "ring-cyan-200", hover: "hover:bg-cyan-100", shadow: "shadow-cyan-600/10" },
+    slate: { bg: "bg-slate-100", text: "text-slate-700", ring: "ring-slate-200", hover: "hover:bg-slate-200", shadow: "shadow-slate-600/10" },
+  };
+
+  const style = accentStyles[accent];
+
+  const content = (
+    <div className={cn(
+      "relative group w-full rounded-[20px] bg-card border border-border p-4 transition-all duration-200",
+      "hover:shadow-lg hover:shadow-slate-200/60 hover:-translate-y-0.5 hover:border-slate-300",
+      "focus:outline-none focus:ring-2 focus:ring-primary/20",
+      "text-right"
+    )}>
+      {/* subtle top accent */}
+      <div className={cn("absolute top-0 right-4 left-4 h-[3px] rounded-b-full opacity-60", style.text.replace('text-', 'bg-'))} />
+      
+      <div className="flex items-start gap-3">
+        <div className={cn(
+          "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 shadow-sm",
+          style.bg, style.text, style.shadow
+        )}>
+          <Icon size={22} strokeWidth={2} />
+        </div>
+        <div className="flex-1 min-w-0 pt-0.5">
+          <div className="font-bold text-[13px] text-slate-800 leading-tight">{label}</div>
+          {description && (
+            <div className="text-[11px] text-slate-500 mt-1 leading-snug">{description}</div>
+          )}
+          {badge && (
+            <div className={cn("inline-flex mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full", style.bg, style.text)}>
+              {badge}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* chevron hint */}
+      <div className="absolute left-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-slate-300">
+        <ChevronRight size={14} className="rotate-180" />
+      </div>
+    </div>
+  );
+
   if (href) {
     return (
-      <Link href={href} className="card p-3 flex flex-col items-center gap-2 hover:bg-slate-50 transition group no-underline">
-        <div className={cn("w-10 h-10 rounded-xl text-white flex items-center justify-center shadow-sm", color)}>
-          <Icon size={20} />
-        </div>
-        <span className="text-xs font-medium text-slate-700 group-hover:text-brand-700 transition-colors">{label}</span>
+      <Link href={href} className="block no-underline">
+        {content}
       </Link>
     );
   }
   return (
-    <button onClick={onClick} className="card p-3 flex flex-col items-center gap-2 hover:bg-slate-50 transition group">
-      <div className={cn("w-10 h-10 rounded-xl text-white flex items-center justify-center shadow-sm", color)}>
-        <Icon size={20} />
-      </div>
-      <span className="text-xs font-medium text-slate-700 group-hover:text-brand-700 transition-colors">{label}</span>
+    <button onClick={onClick} className="w-full text-right">
+      {content}
     </button>
   );
 }
@@ -565,7 +657,7 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
               </button>
             )}
           </div>
-          <button onClick={() => setProductPickerOpen(true)} className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-brand-200 bg-brand-50/40 px-4 py-3 text-sm font-medium text-brand-700 hover:bg-brand-50">
+          <button onClick={() => setProductPickerOpen(true)} className="w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-primary/20 bg-primary/[0.03] hover:bg-primary/[0.06] px-4 py-3.5 text-sm font-bold text-primary transition-colors">
             <Package2 size={18} /> افزودن کالا به فاکتور
           </button>
           {cart.length === 0 ? (
