@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatToman, toJalali } from "@/lib/utils/format";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
+import { DatePicker } from "@/components/shared/date-picker";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { Plus, Trash2, CreditCard, CheckCircle, XCircle, Clock } from "lucide-react";
@@ -260,8 +261,11 @@ export default function ChecksPage() {
                 <input type="number" className="input" value={formData.amount} onChange={e => setFormData({ ...formData, amount: e.target.value })} placeholder="مبلغ" />
               </div>
               <div>
-                <label className="label">تاریخ سررسید *</label>
-                <input type="date" className="input" value={formData.due_date} onChange={e => setFormData({ ...formData, due_date: e.target.value })} />
+<DatePicker 
+  label="تاریخ سررسید *" 
+  value={formData.due_date} 
+  onChange={date => setFormData({ ...formData, due_date: date })} 
+/>
               </div>
             </div>
             <div>

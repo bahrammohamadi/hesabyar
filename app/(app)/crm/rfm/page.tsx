@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Download, Target } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { EmptyState, PageHeader, Spinner } from "@/components/shared/ui";
+import { DatePicker } from "@/components/shared/date-picker";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { EntityLink } from "@/components/shared/entity-link";
 import { PhoneLink } from "@/components/shared/phone-link";
@@ -132,8 +133,8 @@ export default function RfmPage() {
       />
 
       <div className="card p-4 mb-4 grid grid-cols-1 md:grid-cols-4 gap-3">
-        <div><label className="label">از تاریخ</label><input className="input" type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
-        <div><label className="label">تا تاریخ</label><input className="input" type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>
+        <div><label className="label">از تاریخ</label><DatePicker value={from} onChange={setFrom} /></div>
+        <div><label className="label">تا تاریخ</label><DatePicker value={to} onChange={setTo} /></div>
         <div className="rounded-xl bg-slate-50 p-3"><div className="text-xs text-slate-500">مشتریان تحلیل‌شده</div><div className="font-bold text-slate-800 mt-1">{toFaDigits(rows.length)}</div></div>
         <div className="rounded-xl bg-slate-50 p-3"><div className="text-xs text-slate-500">قهرمان‌ها</div><div className="font-bold text-emerald-600 mt-1">{toFaDigits(rows.filter((r) => r.segment.label === "قهرمان").length)}</div></div>
       </div>

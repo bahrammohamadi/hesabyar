@@ -6,6 +6,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
+import { DatePicker } from "@/components/shared/date-picker";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { PhoneLink } from "@/components/shared/phone-link";
@@ -354,7 +355,7 @@ function ContactModal({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div><label className="label">شماره تماس</label><input className="input text-left" dir="ltr" value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
           <div><label className="label">ایمیل</label><input className="input text-left" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-          <div><label className="label">تاریخ تولد</label><input className="input" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} /></div>
+          <div><label className="label">تاریخ تولد</label><DatePicker value={birthDate} onChange={setBirthDate} /></div>
           <div><label className="label">کد ملی</label><input className="input text-left" dir="ltr" value={nationalCode} onChange={(e) => setNationalCode(e.target.value)} /></div>
           <div><label className="label">شغل / عنوان</label><input className="input" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} /></div>
           <div><label className="label">جنسیت</label><select className="input" value={gender} onChange={(e) => setGender(e.target.value)}><option value="">—</option><option value="female">خانم</option><option value="male">آقا</option><option value="other">سایر</option></select></div>

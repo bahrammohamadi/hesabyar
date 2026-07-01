@@ -4,27 +4,88 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #f5f7fb;
-  --foreground: #0f172a;
-  --brand-50: 233 244 240;
-  --brand-100: 200 227 218;
-  --brand-200: 159 205 191;
-  --brand-300: 111 179 160;
-  --brand-400: 68 150 131;
-  --brand-500: 31 122 102;
-  --brand-600: 19 100 81;
-  --brand-700: 15 79 65;
-  --brand-800: 12 63 52;
-  --brand-900: 10 51 43;
-  --rose-50: 253 238 240;
-  --rose-100: 250 215 220;
-  --rose-200: 244 179 188;
-  --rose-300: 236 139 152;
-  --rose-400: 227 114 127;
-  --rose-500: 215 109 122;
-  --rose-600: 194 85 99;
-  --rose-700: 162 63 76;
+@layer base {
+  :root {
+    /* Base Colors */
+    --background: 245 247 251; /* #f5f7fb */
+    --foreground: 215 25% 27%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 27%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 27%;
+    
+    --primary: 165 65% 33%; /* Default Brand-600 */
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 215 25% 27%;
+    
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215 16% 47%;
+    
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 215 25% 27%;
+    
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 165 65% 33%;
+    --radius: 0.75rem;
+
+    /* Brand Scale (kept for compatibility with legacy code) */
+    --brand-50: 233 244 240;
+    --brand-100: 200 227 218;
+    --brand-200: 159 205 191;
+    --brand-300: 111 179 160;
+    --brand-400: 68 150 131;
+    --brand-500: 31 122 102;
+    --brand-600: 19 100 81;
+    --brand-700: 15 79 65;
+    --brand-800: 12 63 52;
+    --brand-900: 10 51 43;
+    --rose-50: 253 238 240;
+    --rose-100: 250 215 220;
+    --rose-200: 244 179 188;
+    --rose-300: 236 139 152;
+    --rose-400: 227 114 127;
+    --rose-500: 215 109 122;
+    --rose-600: 194 85 99;
+    --rose-700: 162 63 76;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    
+    --card: 222.2 84% 7%;
+    --card-foreground: 210 40% 98%;
+    
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    
+    --primary: 165 65% 45%; 
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 165 65% 45%;
+  }
 }
 
 * {
@@ -36,8 +97,8 @@ html {
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
   margin: 0;
   -webkit-font-smoothing: antialiased;
 }
@@ -49,7 +110,7 @@ body {
 
 /* اسکرول‌بار تمیز */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+::-webkit-scrollbar-thumb { background: hsl(var(--muted-foreground) / 0.3); border-radius: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
 
 @layer components {
@@ -57,31 +118,31 @@ body {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-primary {
-    @apply btn bg-brand-600 text-white hover:bg-brand-700;
+    @apply btn bg-primary text-primary-foreground hover:opacity-90;
   }
   .btn-secondary {
-    @apply btn bg-white text-slate-700 border border-slate-200 hover:bg-slate-50;
+    @apply btn bg-secondary text-secondary-foreground border border-border hover:opacity-90;
   }
   .btn-danger {
-    @apply btn bg-rose-600 text-white hover:bg-rose-700;
+    @apply btn bg-destructive text-destructive-foreground hover:opacity-90;
   }
   .card {
-    @apply rounded-2xl bg-white border border-slate-200/70 shadow-sm;
+    @apply rounded-2xl bg-card text-card-foreground border border-border shadow-sm;
   }
   .input {
-    @apply w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 transition;
+    @apply w-full rounded-xl border border-input bg-card px-3.5 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition;
   }
   .label {
-    @apply block text-sm font-medium text-slate-700 mb-1.5;
+    @apply block text-sm font-medium text-muted-foreground mb-1.5;
   }
   .table-base {
     @apply w-full text-sm text-right;
   }
   .table-base th {
-    @apply px-4 py-3 font-medium text-slate-500 bg-slate-50 whitespace-nowrap;
+    @apply px-4 py-3 font-medium text-muted-foreground bg-muted/50 whitespace-nowrap;
   }
   .table-base td {
-    @apply px-4 py-3 border-t border-slate-100 whitespace-nowrap;
+    @apply px-4 py-3 border-t border-border whitespace-nowrap;
   }
   .badge {
     @apply inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium;

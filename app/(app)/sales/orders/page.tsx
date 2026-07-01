@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { formatToman, toFaDigits, toJalali } from "@/lib/utils/format";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
+import { DatePicker } from "@/components/shared/date-picker";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { Plus, Search, Edit, Trash2, FileText, ClipboardList } from "lucide-react";
@@ -288,10 +289,10 @@ export default function SalesOrdersPage() {
                   {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
-              <div>
-                <label className="label">تاریخ انقضا</label>
-                <input type="date" className="input" value={expiryDate} onChange={e => setExpiryDate(e.target.value)} />
-              </div>
+<div>
+  <label className="label">تاریخ انقضا</label>
+  <DatePicker value={expiryDate} onChange={setExpiryDate} />
+</div>
             </div>
 
             <div>

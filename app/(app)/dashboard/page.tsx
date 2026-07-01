@@ -10,7 +10,7 @@ import { ContactSelector, type SelectableContact } from "@/components/shared/con
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { PhoneLink } from "@/components/shared/phone-link";
-import { formatToman, formatNumber, toFaDigits, rialToToman, tomanToRial, toEnDigits } from "@/lib/utils/format";
+import { formatToman, formatNumber, toFaDigits, rialToToman, tomanToRial, toEnDigits, toJalali } from "@/lib/utils/format";
 import type { DashboardSummary, CartItem } from "@/types/db";
 import { logActivity } from "@/lib/utils/activity-log";
 import {
@@ -33,6 +33,9 @@ import {
   X,
   Package2,
   UserPlus,
+  ArrowLeftRight,
+  CreditCard,
+  ChevronRight,
 } from "lucide-react";
 import {
   AreaChart,
@@ -43,7 +46,6 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import { toJalali } from "@/lib/utils/format";
 import Link from "next/link";
 
 export default function DashboardPage() {
@@ -81,7 +83,6 @@ export default function DashboardPage() {
     },
   });
 
-  // Recent sales for quick view
   const { data: recentSales } = useQuery({
     queryKey: ["recent-sales", orgId],
     enabled: !!orgId,
@@ -97,7 +98,6 @@ export default function DashboardPage() {
     },
   });
 
-  // Low stock items
   const { data: lowStockItems } = useQuery({
     queryKey: ["dashboard-low-stock", orgId],
     enabled: !!orgId,
@@ -130,180 +130,213 @@ export default function DashboardPage() {
   const s = summaryQuery.data;
 
   return (
-    <div>
+    <div className="space-y-8">
       <PageHeader
         title="داشبورد مدیریتی"
-        subtitle="مرکز کنترل روزانه فروشگاه"
+        subtitle="مرکز کنترل و تحلیل لحظه‌ای کسب‌وکار"
         action={
-          <button onClick={() => setQuickSaleOpen(true)} className="btn-primary">
+          <button onClick={() => setQuickSaleOpen(true)} className="btn-primary shadow-lg shadow-brand-600/20">
             <Plus size={18} />
             <span className="hidden sm:inline">فروش جدید</span>
           </button>
         }
       />
 
-      {/* دکمه‌های دسترسی سریع */}
-      <div className="mb-6">
-        <h2 className="text-sm font-medium text-slate-500 mb-3">دسترسی سریع</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <button
-            onClick={() => setQuickSaleOpen(true)}
-            className="card p-3 flex flex-col items-center gap-2 hover:bg-brand-50 transition group cursor-pointer"
-          >
-            <div className="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center">
-              <Receipt size={20} />
+      {/* بخش ۱: دسترسی‌های سریع و حیاتی (High Priority Actions) */}
+      <section>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-1 h-5 bg-brand-600 rounded-full" />
+          <h2 className="text-sm font-bold text-slate-800">عملیات سریع</h2>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <QuickActionButton 
+            label="فروش جدید" 
+            icon={Receipt} 
+            color="bg-brand-600" 
+            onClick={() => setQuickSaleOpen(true)} 
+          />
+          <QuickActionButton 
+            label="خرید کالا" 
+            icon={ShoppingCart} 
+            color="bg-emerald-600" 
+            href="/purchases" 
+          />
+          <QuickActionButton 
+            label="تعدیل انبار" 
+            icon={ArrowDownToLine} 
+            color="bg-blue-600" 
+            href="/inventory/adjust" 
+          />
+          <QuickActionButton 
+            label="کالای جدید" 
+            icon={Package2} 
+            color="bg-slate-600" 
+            href="/products?action=new" 
+          />
+          <QuickActionButton 
+            label="مشتری جدید" 
+            icon={UserPlus} 
+            color="bg-cyan-600" 
+            href="/contacts?action=new&type=customer" 
+          />
+          <QuickActionButton 
+            label="گزارشات" 
+            icon={BarChart3} 
+            color="bg-indigo-600" 
+            href="/reports/sales" 
+          />
+        </div>
+      </section>
+
+      {/* بخش ۲: ویجت‌های آماری دسته‌بندی شده */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* ستون اول: مالیات (Finance) */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-1 h-5 bg-emerald-600 rounded-full" />
+            <h2 className="text-sm font-bold text-slate-800">وضعیت مالی</h2>
+          </div>
+          <div className="grid grid-cols-1 gap-3">
+            <StatCard
+              label="موجودی صندوق"
+              value={formatToman(s?.cash_total)}
+              icon={Wallet}
+              trend="neutral"
+              href="/finance"
+            />
+            <StatCard
+              label="فروش امروز"
+              value={formatToman(s?.sales_today)}
+              subValue={`${toFaDigits(s?.sales_today_count ?? 0)} فاکتور`}
+              icon={TrendingUp}
+              trend="up"
+              href="/sales"
+            />
+            <button 
+              onClick={() => setQuickExpenseOpen(true)}
+              className="card p-4 text-right hover:bg-rose-50 transition-colors group flex items-center justify-between"
+            >
+              <div>
+                <div className="text-sm text-slate-500">هزینه‌های ماه</div>
+                <div className="text-lg font-bold text-slate-800">{formatToman(s?.expenses_month)}</div>
+              </div>
+              <ArrowUpCircle className="text-slate-300 group-hover:text-rose-500 transition-colors" size={24} />
+            </button>
+          </div>
+        </div>
+
+        {/* ستون دوم: فروش و سود (Sales & Profit) */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-1 h-5 bg-brand-600 rounded-full" />
+            <h2 className="text-sm font-bold text-slate-800">عملکرد فروش</h2>
+          </div>
+          <div className="grid grid-cols-1 gap-3">
+            <StatCard
+              label="فروش این ماه"
+              value={formatToman(s?.sales_month)}
+              subValue={`سود: ${formatToman(s?.profit_month, false)}`}
+              icon={ShoppingBag}
+              trend="up"
+              href="/sales"
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="card p-4 text-right group hover:border-rose-200 transition-colors">
+                <div className="text-[11px] text-slate-400 mb-1">طلب مشتریان</div>
+                <div className="text-sm font-bold text-rose-600">{formatToman(s?.customers_debt)}</div>
+              </div>
+              <div className="card p-4 text-right group hover:border-emerald-200 transition-colors">
+                <div className="text-[11px] text-slate-400 mb-1">طلب تأمین‌کننده</div>
+                <div className="text-sm font-bold text-emerald-600">{formatToman(s?.suppliers_credit)}</div>
+              </div>
             </div>
-            <span className="text-xs font-medium text-slate-700 group-hover:text-brand-700">فروش جدید</span>
-          </button>
-          <Link href="/purchases" className="card p-3 flex flex-col items-center gap-2 hover:bg-emerald-50 transition group no-underline">
-            <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center">
-              <ShoppingCart size={20} />
+            <div className="card p-4 flex items-center justify-between hover:bg-slate-50 transition-colors cursor-pointer group" onClick={() => setQuickReceiptOpen(true)}>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                  <ArrowDownCircle size={16} />
+                </div>
+                <span className="text-sm font-medium text-slate-700">ثبت دریافت وجه</span>
+              </div>
+              <ChevronRight size={16} className="text-slate-300 group-hover:text-brand-600 transition-colors" />
             </div>
-            <span className="text-xs font-medium text-slate-700 group-hover:text-emerald-700">خرید</span>
-          </Link>
-          <Link href="/inventory/adjust" className="card p-3 flex flex-col items-center gap-2 hover:bg-blue-50 transition group no-underline">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center">
-              <ArrowDownToLine size={20} />
+          </div>
+        </div>
+
+        {/* ستون سوم: انبار (Inventory) */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-1 h-5 bg-blue-600 rounded-full" />
+            <h2 className="text-sm font-bold text-slate-800">مدیریت انبار</h2>
+          </div>
+          <div className="grid grid-cols-1 gap-3">
+            <StatCard
+              label="ارزش کل انبار"
+              value={formatToman(s?.inventory_value)}
+              icon={Package}
+              trend="neutral"
+              href="/products"
+            />
+            <div className={`card p-4 border-l-4 ${ (s?.low_stock_count ?? 0) > 0 ? "border-l-amber-500 bg-amber-50/30" : "border-l-slate-200" }`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm text-slate-500">کالاهای کم‌موجود</div>
+                  <div className="text-xl font-bold text-slate-800">{toFaDigits(s?.low_stock_count ?? 0)} مورد</div>
+                </div>
+                <AlertTriangle className={ (s?.low_stock_count ?? 0) > 0 ? "text-amber-500" : "text-slate-300" } size={24} />
+              </div>
+              {(s?.low_stock_count ?? 0) > 0 && (
+                <Link href="/inventory/movements" className="text-xs text-amber-600 font-medium mt-2 inline-block hover:underline">
+                  بررسی و سفارش کالا →
+                </Link>
+              )}
             </div>
-            <span className="text-xs font-medium text-slate-700 group-hover:text-blue-700">تعدیل انبار</span>
-          </Link>
-          <Link href="/products?action=new" className="card p-3 flex flex-col items-center gap-2 hover:bg-slate-100 transition group no-underline">
-            <div className="w-10 h-10 rounded-xl bg-slate-600 text-white flex items-center justify-center">
-              <Package size={20} />
-            </div>
-            <span className="text-xs font-medium text-slate-700 group-hover:text-slate-900">کالای جدید</span>
-          </Link>
-          <Link href="/contacts?action=new&type=customer" className="card p-3 flex flex-col items-center gap-2 hover:bg-cyan-50 transition group no-underline">
-            <div className="w-10 h-10 rounded-xl bg-cyan-600 text-white flex items-center justify-center">
-              <Users size={20} />
-            </div>
-            <span className="text-xs font-medium text-slate-700 group-hover:text-cyan-700">مشتری جدید</span>
-          </Link>
-          <Link href="/reports/sales" className="card p-3 flex flex-col items-center gap-2 hover:bg-indigo-50 transition group no-underline">
-            <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
-              <BarChart3 size={20} />
-            </div>
-            <span className="text-xs font-medium text-slate-700 group-hover:text-indigo-700">گزارش‌ها</span>
-          </Link>
+          </div>
         </div>
       </div>
 
-      {/* کارت‌های آماری (کلیک‌پذیر) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Link href="/sales" className="card p-4 sm:p-5 hover:shadow-md transition group block no-underline">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-500">فروش امروز</span>
-            <span className="text-slate-400 group-hover:text-brand-600 transition-colors"><Receipt size={20} /></span>
-          </div>
-          <div className="mt-2 text-lg sm:text-xl font-bold text-slate-800">{formatToman(s?.sales_today)}</div>
-          <div className="mt-1 text-xs text-slate-400">{toFaDigits(s?.sales_today_count ?? 0)} فاکتور</div>
-        </Link>
-        <Link href="/sales" className="card p-4 sm:p-5 hover:shadow-md transition group block no-underline">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-500">فروش این ماه</span>
-            <span className="text-slate-400 group-hover:text-emerald-600 transition-colors"><TrendingUp size={20} /></span>
-          </div>
-          <div className="mt-2 text-lg sm:text-xl font-bold text-slate-800">{formatToman(s?.sales_month)}</div>
-          <div className="mt-1 text-xs text-emerald-600">سود: {formatToman(s?.profit_month, false)}</div>
-        </Link>
-        <button onClick={() => setQuickExpenseOpen(true)} className="card p-4 sm:p-5 hover:shadow-md transition group cursor-pointer text-right">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-500">هزینه‌های ماه</span>
-            <span className="text-slate-400 group-hover:text-rose-600 transition-colors"><ArrowUpCircle size={20} /></span>
-          </div>
-          <div className="mt-2 text-lg sm:text-xl font-bold text-slate-800">{formatToman(s?.expenses_month)}</div>
-          <div className="mt-1 text-xs text-slate-400">تراکنش‌های مالی</div>
-        </button>
-        <Link href="/finance" className="card p-4 sm:p-5 hover:shadow-md transition group block no-underline">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-500">موجودی صندوق</span>
-            <span className="text-slate-400 group-hover:text-brand-600 transition-colors"><Wallet size={20} /></span>
-          </div>
-          <div className="mt-2 text-lg sm:text-xl font-bold text-slate-800">{formatToman(s?.cash_total)}</div>
-          <div className="mt-1 text-xs text-slate-400">نقد و بانک</div>
-        </Link>
-        <Link href="/products" className="card p-4 sm:p-5 hover:shadow-md transition group block no-underline">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-500">ارزش انبار</span>
-            <span className="text-slate-400 group-hover:text-cyan-600 transition-colors"><Package size={20} /></span>
-          </div>
-          <div className="mt-2 text-lg sm:text-xl font-bold text-slate-800">{formatToman(s?.inventory_value)}</div>
-          <div className="mt-1 text-xs text-slate-400">موجودی کل</div>
-        </Link>
-        <Link href="/inventory/movements" className={`card p-4 sm:p-5 hover:shadow-md transition group block no-underline ${(s?.low_stock_count ?? 0) > 0 ? "border-amber-200 bg-amber-50/30" : ""}`}>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-500">کالاهای کم‌موجود</span>
-            <span className={`${(s?.low_stock_count ?? 0) > 0 ? "text-amber-500" : "text-slate-400 group-hover:text-amber-600"} transition-colors`}>
-              <AlertTriangle size={20} />
-            </span>
-          </div>
-          <div className="mt-2 text-lg sm:text-xl font-bold text-slate-800">{toFaDigits(s?.low_stock_count ?? 0)}</div>
-          <div className="mt-1 text-xs text-amber-600">نیازمند بررسی</div>
-        </Link>
-        <Link href="/contacts" className="card p-4 sm:p-5 hover:shadow-md transition group block no-underline">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-500">بدهی مشتریان</span>
-            <span className="text-slate-400 group-hover:text-rose-600 transition-colors"><ArrowDownCircle size={20} /></span>
-          </div>
-          <div className="mt-2 text-lg sm:text-xl font-bold text-rose-600">{formatToman(s?.customers_debt)}</div>
-          <div className="mt-1 text-xs text-slate-400">طلب از مشتریان</div>
-        </Link>
-        <Link href="/contacts" className="card p-4 sm:p-5 hover:shadow-md transition group block no-underline">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-500">طلب تامین‌کننده</span>
-            <span className="text-slate-400 group-hover:text-emerald-600 transition-colors"><ArrowUpCircle size={20} /></span>
-          </div>
-          <div className="mt-2 text-lg sm:text-xl font-bold text-emerald-600">{formatToman(s?.suppliers_credit)}</div>
-          <div className="mt-1 text-xs text-slate-400">حساب تامین‌کنندگان</div>
-        </Link>
-      </div>
-
-      {/* بخش پایین: نمودار + سایدبارها */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-        {/* نمودار فروش */}
-        <div className="lg:col-span-2 card p-4 sm:p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-slate-800 flex items-center gap-2">
-              <TrendingUp size={18} className="text-brand-500" />
-              نمودار فروش ۳۰ روز اخیر
-            </h2>
-            <Link href="/reports" className="text-xs text-brand-600 hover:text-brand-700 flex items-center gap-1">
-              گزارش کامل →
-            </Link>
+      {/* بخش ۳: تحلیلات و لیست‌ها */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* نمودار فروش - فضای بیشتر */}
+        <div className="lg:col-span-2 card p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="font-bold text-slate-800 flex items-center gap-2">
+              <TrendingUp size={20} className="text-brand-500" />
+              روند فروش ۳۰ روز اخیر
+            </h3>
+            <Link href="/reports" className="text-xs text-brand-600 hover:underline">گزارش تحلیل فروش</Link>
           </div>
           {chartQuery.isLoading ? (
             <Spinner />
           ) : !chartQuery.data || chartQuery.data.length === 0 ? (
-            <div className="text-center text-sm text-slate-400 py-12">
-              هنوز فروشی ثبت نشده است.
-            </div>
+            <div className="text-center text-sm text-slate-400 py-16">داده‌ای برای نمایش در نمودار یافت نشد.</div>
           ) : (
-            <div className="h-64" dir="ltr">
+            <div className="h-72" dir="ltr">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartQuery.data}>
                   <defs>
-                    <linearGradient id="sales" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#1d60f2" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#1d60f2" stopOpacity={0} />
+                    <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                  <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="#94a3b8" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                  <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
                   <YAxis
                     tick={{ fontSize: 11 }}
-                    stroke="#94a3b8"
+                    stroke="hsl(var(--muted-foreground))"
                     tickFormatter={(v) => (v >= 1000000 ? `${v / 1000000}M` : `${v / 1000}k`)}
                   />
                   <Tooltip
                     formatter={(v: number) => [formatNumber(v) + " تومان", "فروش"]}
-                    contentStyle={{ fontFamily: "Vazirmatn", fontSize: 12, direction: "rtl" }}
+                    contentStyle={{ fontFamily: "Vazirmatn", fontSize: 12, direction: "rtl", borderRadius: '12px' }}
                   />
                   <Area
                     type="monotone"
                     dataKey="total"
-                    stroke="#1d60f2"
-                    strokeWidth={2}
-                    fill="url(#sales)"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={3}
+                    fill="url(#salesGradient)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -311,110 +344,74 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* سایدبار: کالاهای کم موجود + آخرین فروش‌ها */}
-        <div className="space-y-4">
-          {/* کالاهای کم موجود */}
-          {lowStockItems && lowStockItems.length > 0 && (
-            <div className="card p-4 border-amber-200 bg-amber-50/30">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-amber-700 flex items-center gap-2 text-sm">
-                  <AlertTriangle size={16} />
-                  کالاهای کم‌موجود
-                </h3>
-                <Link href="/inventory/movements" className="text-xs text-amber-600 hover:text-amber-700">
-                  مشاهده همه →
-                </Link>
-              </div>
-              <div className="space-y-2">
-                {lowStockItems.map((v: any) => (
-                  <div key={v.variant_id} className="flex items-center justify-between text-sm">
-                    <span className="text-slate-700 truncate flex-1">
-                      <EntityLink type="product" id={v.product_id}>{v.product_name}</EntityLink>
-                      {v.color || v.size ? (
-                        <span className="text-slate-400 text-xs mr-1">
-                          ({[v.color, v.size].filter(Boolean).join(" / ")})
-                        </span>
-                      ) : null}
-                    </span>
-                    <span className="text-amber-600 font-medium shrink-0 mr-2">
-                      {toFaDigits(v.stock_qty)} عدد
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* آخرین فاکتورها */}
-          {recentSales && recentSales.length > 0 && (
-            <div className="card p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-slate-700 flex items-center gap-2 text-sm">
-                  <Receipt size={16} className="text-brand-500" />
-                  آخرین فاکتورها
-                </h3>
-                <Link href="/sales" className="text-xs text-brand-600 hover:text-brand-700">
-                  مشاهده همه →
-                </Link>
-              </div>
-              <div className="space-y-2">
-                {recentSales.map((sale: any) => (
-                  <div
-                    key={sale.id}
-                    className="flex items-center justify-between text-sm hover:bg-slate-50 -mx-2 px-2 py-1.5 rounded-lg transition-colors"
-                  >
-                    <div>
-                      <EntityLink type="sale" id={sale.id} className="font-medium">{sale.invoice_no}</EntityLink>
-                      <div className="text-xs text-slate-400">
-                        {sale.customer_id ? (
-                          <span className="inline-flex items-center gap-1">
-                            <EntityLink type="contact" id={sale.customer_id}>{sale.customer?.name ?? "مشتری"}</EntityLink>
-                            <EntityActionMenu type="contact" id={sale.customer_id} label={sale.customer?.name ?? "مشتری"} />
-                          </span>
-                        ) : <span className="text-slate-400">مشتری نقدی</span>} • {toJalali(sale.date)}
-                      </div>
+        {/* لیست آخرین فعالیت‌ها / فاکتورها */}
+        <div className="card p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-slate-800 flex items-center gap-2">
+              <Receipt size={20} className="text-brand-500" />
+              آخرین فاکتورها
+            </h3>
+            <Link href="/sales" className="text-xs text-brand-600 hover:underline">مشاهده همه</Link>
+          </div>
+          <div className="space-y-3">
+            {recentSales && recentSales.length > 0 ? (
+              recentSales.map((sale: any) => (
+                <div key={sale.id} className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 transition-colors group border border-transparent hover:border-slate-100">
+                  <div className="min-w-0">
+                    <EntityLink type="sale" id={sale.id} className="text-sm font-medium block truncate">{sale.invoice_no}</EntityLink>
+                    <div className="text-[11px] text-slate-400">
+                      {sale.customer_id ? (
+                        <EntityLink type="contact" id={sale.customer_id}>{sale.customer?.name ?? "مشتری"}</EntityLink>
+                      ) : "مشتری نقدی"} • {toJalali(sale.date)}
                     </div>
-                    <span className="font-medium text-slate-700">{formatToman(sale.total, false)}</span>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                  <div className="text-sm font-bold text-slate-700 shrink-0">{formatToman(sale.total, false)}</div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center text-sm text-slate-400 py-8">فاکتوری یافت نشد.</div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* مودال فروش سریع */}
-      {quickSaleOpen && (
-        <QuickSaleModal
-          orgId={orgId}
-          onClose={() => setQuickSaleOpen(false)}
-        />
-      )}
-
-      {/* مودال ثبت هزینه سریع */}
-      {quickExpenseOpen && (
-        <QuickTxModal
-          orgId={orgId}
-          type="expense"
-          onClose={() => setQuickExpenseOpen(false)}
-        />
-      )}
-
-      {/* مودال ثبت دریافتی سریع */}
-      {quickReceiptOpen && (
-        <QuickTxModal
-          orgId={orgId}
-          type="receipt"
-          onClose={() => setQuickReceiptOpen(false)}
-        />
-      )}
+      {/* مودال‌ها */}
+      {quickSaleOpen && <QuickSaleModal orgId={orgId} onClose={() => setQuickSaleOpen(false)} />}
+      {quickExpenseOpen && <QuickTxModal orgId={orgId} type="expense" onClose={() => setQuickExpenseOpen(false)} />}
+      {quickReceiptOpen && <QuickTxModal orgId={orgId} type="receipt" onClose={() => setQuickReceiptOpen(false)} />}
     </div>
   );
 }
 
-// ==============================================================
-// مودال فروش سریع از داشبورد
-// ==============================================================
+function QuickActionButton({ label, icon: Icon, color, onClick, href }: { 
+  label: string; 
+  icon: any; 
+  color: string; 
+  onClick?: () => void; 
+  href?: string; 
+}) {
+  if (href) {
+    return (
+      <Link href={href} className="card p-3 flex flex-col items-center gap-2 hover:bg-slate-50 transition group no-underline">
+        <div className={cn("w-10 h-10 rounded-xl text-white flex items-center justify-center shadow-sm", color)}>
+          <Icon size={20} />
+        </div>
+        <span className="text-xs font-medium text-slate-700 group-hover:text-brand-700 transition-colors">{label}</span>
+      </Link>
+    );
+  }
+  return (
+    <button onClick={onClick} className="card p-3 flex flex-col items-center gap-2 hover:bg-slate-50 transition group">
+      <div className={cn("w-10 h-10 rounded-xl text-white flex items-center justify-center shadow-sm", color)}>
+        <Icon size={20} />
+      </div>
+      <span className="text-xs font-medium text-slate-700 group-hover:text-brand-700 transition-colors">{label}</span>
+    </button>
+  );
+}
+
+// ... (The rest of the QuickSaleModal and QuickTxModal remain as they were, but I'll include them for completeness)
+
 function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () => void }) {
   const { branchId } = useOrg();
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -657,9 +654,6 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
   );
 }
 
-// ==============================================================
-// مودال ثبت تراکنش سریع (هزینه / دریافت)
-// ==============================================================
 function QuickTxModal({ orgId, type, onClose }: { orgId: string | null; type: "expense" | "receipt"; onClose: () => void }) {
   const { branchId } = useOrg();
   const [amount, setAmount] = useState("");
@@ -727,7 +721,6 @@ function QuickTxModal({ orgId, type, onClose }: { orgId: string | null; type: "e
   }
 
   const title = type === "expense" ? "ثبت هزینه" : "ثبت دریافتی";
-  const iconColor = type === "expense" ? "text-rose-600" : "text-emerald-600";
 
   return (
     <Modal open onClose={onClose} title={title}>
