@@ -70,7 +70,7 @@ export default function PurchaseDetailPage({ params }: { params: { id: string } 
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-4 no-print">
-        <Link href="/purchases" className="flex items-center gap-1 text-slate-500 text-sm hover:text-brand-600">
+        <Link href="/purchases" className="flex items-center gap-1 text-slate-500 text-sm hover:text-primary">
           <ArrowRight size={18} /> بازگشت به خریدها
         </Link>
         <div className="flex items-center gap-2">
@@ -301,7 +301,7 @@ function EditPurchaseModal({ purchase, supplier, items, onClose }: { purchase: a
             <div><label className="label">تاریخ خرید</label><DatePicker value={date} onChange={setDate} /></div>
             <div><label className="label">تأمین‌کننده</label>{selectedSupplier ? <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3.5 py-2.5"><span>{selectedSupplier.name}</span><button onClick={() => setSelectedSupplier(null)} className="text-rose-500"><X size={16}/></button></div> : <button onClick={() => setSupplierOpen(true)} className="btn-secondary w-full">انتخاب تأمین‌کننده</button>}</div>
           </div>
-          <button onClick={() => setProductOpen(true)} className="w-full rounded-xl border-2 border-dashed border-brand-200 bg-brand-50/40 px-4 py-3 text-sm font-medium text-brand-700">+ افزودن کالا</button>
+          <button onClick={() => setProductOpen(true)} className="w-full rounded-xl border-2 border-dashed border-primary/20 bg-primary/[0.04] px-4 py-3 text-sm font-medium text-primary">+ افزودن کالا</button>
           <div className="space-y-2 max-h-[40vh] overflow-y-auto">
             {cart.map((item) => (
               <div key={item.variant_id} className="rounded-xl border border-slate-100 p-3">

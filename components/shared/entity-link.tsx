@@ -33,7 +33,7 @@ export function EntityLink({
   return (
     <Link
       href={href}
-      className={cn("font-medium text-brand-600 hover:text-brand-700 hover:underline", className)}
+      className={cn("font-medium text-primary hover:text-primary hover:underline", className)}
       onClick={(event) => event.stopPropagation()}
     >
       {content}

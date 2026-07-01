@@ -127,7 +127,7 @@ export default function PriceListsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="space-y-2">
             {lists.map((list) => (
-              <button key={list.id} onClick={() => setSelectedListId(list.id)} className={`card p-4 w-full text-right transition ${selectedList?.id === list.id ? "border-brand-400 bg-brand-50" : "hover:border-brand-200"}`}>
+              <button key={list.id} onClick={() => setSelectedListId(list.id)} className={`card p-4 w-full text-right transition ${selectedList?.id === list.id ? "border-primary/40 bg-primary/[0.06]" : "hover:border-primary/20"}`}>
                 <div className="flex items-center justify-between gap-2">
                   <div>
                     <div className="font-bold text-slate-800">{list.name}</div>
@@ -171,7 +171,7 @@ export default function PriceListsPage() {
                             <div className="text-xs text-slate-400 mt-1">{[variant?.color, variant?.size].filter(Boolean).join(" / ") || variant?.sku || "ساده"}</div>
                           </div>
                           <div className="flex items-center gap-3 shrink-0">
-                            <div className="text-left"><div className="font-bold text-brand-700">{formatToman(finalPrice, false)}</div><div className="text-xs text-slate-400">{item.price ? "قیمت اختصاصی" : "با تخفیف عمومی"}</div></div>
+                            <div className="text-left"><div className="font-bold text-primary">{formatToman(finalPrice, false)}</div><div className="text-xs text-slate-400">{item.price ? "قیمت اختصاصی" : "با تخفیف عمومی"}</div></div>
                             <button onClick={() => removeItem(item.id)} className="text-slate-400 hover:text-rose-600"><Trash2 size={16}/></button>
                           </div>
                         </div>

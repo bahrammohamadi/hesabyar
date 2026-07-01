@@ -216,7 +216,7 @@ export function ProductSelector({
               <Filter size={16} />
               فیلترها
               {activeFilters > 0 && (
-                <span className="badge bg-brand-100 text-brand-700">{toFaDigits(activeFilters)}</span>
+                <span className="badge bg-primary/10 text-primary">{toFaDigits(activeFilters)}</span>
               )}
             </button>
             <select
@@ -236,7 +236,7 @@ export function ProductSelector({
                 type="checkbox"
                 checked={onlyInStock}
                 onChange={(e) => setOnlyInStock(e.target.checked)}
-                className="rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                className="rounded border-slate-300 text-primary focus:ring-primary"
               />
               فقط موجود
             </label>
@@ -303,7 +303,7 @@ export function ProductSelector({
                   onClick={() => {
                     onSelect(v);
                   }}
-                  className="w-full text-right rounded-xl border border-slate-100 hover:border-brand-300 hover:bg-brand-50/40 p-3 transition flex items-center gap-3"
+                  className="w-full text-right rounded-xl border border-slate-100 hover:border-primary/30 hover:bg-primary/[0.04] p-3 transition flex items-center gap-3"
                 >
                   <div className="w-10 h-10 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
                     <Package size={18} />

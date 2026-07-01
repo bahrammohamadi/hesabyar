@@ -18,7 +18,7 @@ function SummaryCell({ label, value, tone = "default" }: { label: string; value:
     green: "bg-emerald-50 text-emerald-700",
     red: "bg-rose-50 text-rose-700",
     amber: "bg-amber-50 text-amber-700",
-    blue: "bg-brand-50 text-brand-700",
+    blue: "bg-primary/[0.06] text-primary",
   };
   return (
     <div className={cn("rounded-xl p-3", tones[tone])}>
@@ -85,7 +85,7 @@ function QuickAction({ href, children, tone = "default" }: { href: string; child
       href={href}
       className={cn(
         "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition",
-        tone === "primary" ? "bg-brand-600 text-white hover:bg-brand-700" :
+        tone === "primary" ? "bg-primary text-white hover:bg-primary" :
         tone === "green" ? "bg-emerald-600 text-white hover:bg-emerald-700" :
         "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
       )}
@@ -109,7 +109,7 @@ function ContactQuickView({ id, open }: { id?: string | null; open: boolean }) {
   return (
     <div className="space-y-4">
       <div className="flex items-start gap-3">
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/[0.06] text-primary">
           <User size={25} />
         </div>
         <div className="min-w-0 flex-1">
@@ -177,7 +177,7 @@ function ProductQuickView({ id, open }: { id?: string | null; open: boolean }) {
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-lg font-bold text-slate-800">{product.name}</h3>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-            {product.code && <span className="rounded-lg bg-slate-100 px-2 py-0.5 font-mono text-xs text-brand-700">{product.code}</span>}
+            {product.code && <span className="rounded-lg bg-slate-100 px-2 py-0.5 font-mono text-xs text-primary">{product.code}</span>}
             <span>{toFaDigits(product.variantCount)} تنوع</span>
           </div>
         </div>

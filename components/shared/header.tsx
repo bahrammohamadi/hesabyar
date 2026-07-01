@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { fullJalali } from "@/lib/utils/format";
-import { LogOut, UserCircle, Menu } from "lucide-react";
+import { LogOut, UserCircle, Menu, Bell } from "lucide-react";
 
 export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const router = useRouter();
@@ -30,32 +30,36 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   }
 
   return (
-    <header className="sticky top-0 z-20 bg-white/80 backdrop-blur border-b border-slate-200">
-      <div className="flex items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={onMenuClick} 
-            className="sm:hidden p-2 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors"
-            aria-label="Open Menu"
+    <header className="sticky top-0 z-20 border-b border-white/70 bg-white/85 shadow-sm shadow-slate-900/[0.03] backdrop-blur-xl">
+      <div className="flex h-16 items-center justify-between gap-3 px-3 sm:px-5 lg:px-6">
+        <div className="flex min-w-0 items-center gap-3">
+          <button
+            onClick={onMenuClick}
+            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 transition-colors hover:bg-slate-200 lg:hidden"
+            aria-label="باز کردن منو"
           >
             <Menu size={22} />
           </button>
-          <div className="text-sm text-slate-500 hidden sm:block">
-            {fullJalali()}
+          <div className="min-w-0">
+            <div className="text-sm font-extrabold text-slate-800 lg:hidden">مهرجامه</div>
+            <div className="hidden text-sm text-slate-500 sm:block">{fullJalali()}</div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 rounded-xl bg-slate-50 border border-slate-100 px-3 py-2 text-sm text-slate-700">
-            <UserCircle size={18} className="text-brand-600" />
-            <div className="leading-tight text-right">
-              <div className="font-medium max-w-36 truncate">{currentUser?.name ?? "کاربر"}</div>
-              {currentUser?.email && <div className="text-[11px] text-slate-400 max-w-40 truncate" dir="ltr">{currentUser.email}</div>}
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <button className="hidden h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-500 hover:text-primary sm:flex" aria-label="اعلان‌ها">
+            <Bell size={18} />
+          </button>
+          <div className="hidden min-w-0 items-center gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 px-3 py-2 text-sm text-slate-700 sm:flex">
+            <UserCircle size={18} className="shrink-0 text-primary" />
+            <div className="min-w-0 leading-tight text-right">
+              <div className="max-w-36 truncate font-bold">{currentUser?.name ?? "کاربر"}</div>
+              {currentUser?.email && <div className="max-w-40 truncate text-[11px] text-slate-400" dir="ltr">{currentUser.email}</div>}
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 text-sm text-slate-600 hover:text-rose-600 transition-colors"
+            className="flex h-11 items-center justify-center gap-2 rounded-2xl px-2.5 text-sm text-slate-600 transition-colors hover:bg-rose-50 hover:text-rose-600 sm:px-3"
           >
             <LogOut size={18} />
             <span className="hidden sm:inline">خروج</span>

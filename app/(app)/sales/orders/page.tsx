@@ -298,7 +298,7 @@ export default function SalesOrdersPage() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="label mb-0">آیتم‌های سفارش</label>
-                <button type="button" onClick={() => setShowProductSearch(!showProductSearch)} className="text-brand-600 text-sm font-medium">+ افزودن کالا</button>
+                <button type="button" onClick={() => setShowProductSearch(!showProductSearch)} className="text-primary text-sm font-medium">+ افزودن کالا</button>
               </div>
               {showProductSearch && (
                 <div className="mb-3 p-3 bg-slate-50 rounded-xl">
@@ -348,9 +348,9 @@ export default function SalesOrdersPage() {
               <textarea className="input" rows={2} value={note} onChange={e => setNote(e.target.value)} />
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-brand-50 rounded-xl">
+            <div className="flex items-center justify-between p-4 bg-primary/[0.06] rounded-xl">
               <span className="font-medium">جمع کل:</span>
-              <span className="text-xl font-bold text-brand-700">{formatToman(items.filter(i => i.qty > 0).reduce((sum, i) => sum + (i.qty * i.price), 0) - (parseInt(discount) || 0))}</span>
+              <span className="text-xl font-bold text-primary">{formatToman(items.filter(i => i.qty > 0).reduce((sum, i) => sum + (i.qty * i.price), 0) - (parseInt(discount) || 0))}</span>
             </div>
 
             <div className="flex gap-2">

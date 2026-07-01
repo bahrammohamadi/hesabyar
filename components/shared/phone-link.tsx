@@ -29,7 +29,7 @@ export function PhoneLink({
     <a
       href={`tel:${tel}`}
       dir="ltr"
-      className={cn("inline-flex items-center gap-1 text-brand-600 hover:text-brand-700 hover:underline", className)}
+      className={cn("inline-flex items-center gap-1 text-primary hover:text-primary hover:underline", className)}
       onClick={(event) => event.stopPropagation()}
     >
       {showIcon && <Phone size={13} />}

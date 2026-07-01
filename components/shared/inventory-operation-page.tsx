@@ -132,7 +132,7 @@ export function InventoryOperationPage({ mode }: { mode: InventoryMode }) {
       {mode !== "movements" && (
         <div className="card p-4 mb-5">
           {!selected ? (
-            <button onClick={() => setPickerOpen(true)} className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-brand-200 bg-brand-50/40 px-4 py-4 text-sm font-medium text-brand-700">
+            <button onClick={() => setPickerOpen(true)} className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/20 bg-primary/[0.04] px-4 py-4 text-sm font-medium text-primary">
               <Package size={18}/> انتخاب کالا
             </button>
           ) : (

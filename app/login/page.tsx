@@ -32,7 +32,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-brand-50 to-slate-100">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-slate-50 via-white to-slate-100">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <img src="/logo.png" alt="حسابیار" className="w-28 h-28 object-contain mx-auto mb-2" />
@@ -82,7 +82,7 @@ export default function LoginPage() {
 
           <p className="text-center text-sm text-slate-500">
             حساب ندارید؟{" "}
-            <Link href="/register" className="text-brand-600 font-medium hover:underline">
+            <Link href="/register" className="text-primary font-medium hover:underline">
               ثبت‌نام کنید
             </Link>
           </p>

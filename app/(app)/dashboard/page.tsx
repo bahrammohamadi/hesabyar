@@ -131,7 +131,7 @@ export default function DashboardPage() {
   const s = summaryQuery.data;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5 sm:space-y-8">
       <PageHeader
         title="داشبورد مدیریتی"
         subtitle="مرکز کنترل و تحلیل لحظه‌ای کسب‌وکار"
@@ -159,12 +159,12 @@ export default function DashboardPage() {
             آنلاین
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2.5 sm:gap-4">
           <QuickActionButton 
             label="فروش جدید" 
             description="ثبت فاکتور سریع"
             icon={Receipt} 
-            color="bg-brand-600"
+            color="bg-primary"
             badge="F2"
             onClick={() => setQuickSaleOpen(true)} 
           />
@@ -207,7 +207,7 @@ export default function DashboardPage() {
       </section>
 
       {/* بخش ۲: ویجت‌های آماری دسته‌بندی شده */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
         
         {/* ستون اول: مالیات (Finance) */}
         <div className="space-y-4">
@@ -249,7 +249,7 @@ export default function DashboardPage() {
         {/* ستون دوم: فروش و سود (Sales & Profit) */}
         <div className="space-y-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-1 h-5 bg-brand-600 rounded-full" />
+            <div className="w-1 h-5 bg-primary rounded-full" />
             <h2 className="text-sm font-bold text-slate-800">عملکرد فروش</h2>
           </div>
           <div className="grid grid-cols-1 gap-3">
@@ -279,7 +279,7 @@ export default function DashboardPage() {
                 </div>
                 <span className="text-sm font-medium text-slate-700">ثبت دریافت وجه</span>
               </div>
-              <ChevronRight size={16} className="text-slate-300 group-hover:text-brand-600 transition-colors" />
+              <ChevronRight size={16} className="text-slate-300 group-hover:text-primary transition-colors" />
             </div>
           </div>
         </div>
@@ -299,7 +299,7 @@ export default function DashboardPage() {
               color="blue"
               href="/products"
             />
-            <div className={`card p-4 border-l-4 ${ (s?.low_stock_count ?? 0) > 0 ? "border-l-amber-500 bg-amber-50/30" : "border-l-slate-200" }`}>
+            <div className={`card p-4 border-l-4 ${ (s?.low_stock_count ?? 0) > 0 ? "border-l-rose-400 bg-rose-50/30" : "border-l-slate-200" }`}>
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-sm text-slate-500">کالاهای کم‌موجود</div>
@@ -318,22 +318,22 @@ export default function DashboardPage() {
       </div>
 
       {/* بخش ۳: تحلیلات و لیست‌ها */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
         {/* نمودار فروش - فضای بیشتر */}
-        <div className="lg:col-span-2 card p-6">
+        <div className="lg:col-span-2 card p-4 sm:p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-bold text-slate-800 flex items-center gap-2">
-              <TrendingUp size={20} className="text-brand-500" />
+              <TrendingUp size={20} className="text-primary" />
               روند فروش ۳۰ روز اخیر
             </h3>
-            <Link href="/reports" className="text-xs text-brand-600 hover:underline">گزارش تحلیل فروش</Link>
+            <Link href="/reports" className="text-xs text-primary hover:underline">گزارش تحلیل فروش</Link>
           </div>
           {chartQuery.isLoading ? (
             <Spinner />
           ) : !chartQuery.data || chartQuery.data.length === 0 ? (
             <div className="text-center text-sm text-slate-400 py-16">داده‌ای برای نمایش در نمودار یافت نشد.</div>
           ) : (
-            <div className="h-72" dir="ltr">
+            <div className="h-56 sm:h-72" dir="ltr">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartQuery.data}>
                   <defs>
@@ -367,13 +367,13 @@ export default function DashboardPage() {
         </div>
 
         {/* لیست آخرین فعالیت‌ها / فاکتورها */}
-        <div className="card p-6">
+        <div className="card p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-slate-800 flex items-center gap-2">
-              <Receipt size={20} className="text-brand-500" />
+              <Receipt size={20} className="text-primary" />
               آخرین فاکتورها
             </h3>
-            <Link href="/sales" className="text-xs text-brand-600 hover:underline">مشاهده همه</Link>
+            <Link href="/sales" className="text-xs text-primary hover:underline">مشاهده همه</Link>
           </div>
           <div className="space-y-3">
             {recentSales && recentSales.length > 0 ? (
@@ -426,9 +426,9 @@ function QuickActionButton({
   description?: string;
   badge?: string;
 }) {
-  // map color string like "bg-brand-600" to accent name
+  // map color string like "bg-primary" to accent name
   const accentMap: Record<string, QuickActionAccent> = {
-    "bg-brand-600": "primary",
+    "bg-primary": "primary",
     "bg-emerald-600": "emerald",
     "bg-blue-600": "blue",
     "bg-slate-600": "slate",
@@ -440,7 +440,7 @@ function QuickActionButton({
   const accent: QuickActionAccent = accentProp ?? accentMap[color || ""] ?? "primary";
 
   const accentStyles: Record<QuickActionAccent, {bg:string;text:string;ring:string;hover:string;shadow:string}> = {
-    primary: { bg: "bg-primary/10", text: "text-primary", ring: "ring-primary/20", hover: "hover:bg-primary/15", shadow: "shadow-primary/10" },
+    primary: { bg: "bg-primary/10", text: "text-primary", ring: "ring-primary/20", hover: "hover:bg-primary/10", shadow: "shadow-primary/10" },
     emerald: { bg: "bg-emerald-50", text: "text-emerald-600", ring: "ring-emerald-200", hover: "hover:bg-emerald-100", shadow: "shadow-emerald-600/10" },
     blue: { bg: "bg-blue-50", text: "text-blue-600", ring: "ring-blue-200", hover: "hover:bg-blue-100", shadow: "shadow-blue-600/10" },
     amber: { bg: "bg-amber-50", text: "text-amber-600", ring: "ring-amber-200", hover: "hover:bg-amber-100", shadow: "shadow-amber-600/10" },
@@ -454,7 +454,7 @@ function QuickActionButton({
 
   const content = (
     <div className={cn(
-      "relative group w-full rounded-[20px] bg-card border border-border p-4 transition-all duration-200",
+      "relative group w-full rounded-[18px] sm:rounded-[20px] bg-card border border-border p-3 sm:p-4 transition-all duration-200",
       "hover:shadow-lg hover:shadow-slate-200/60 hover:-translate-y-0.5 hover:border-slate-300",
       "focus:outline-none focus:ring-2 focus:ring-primary/20",
       "text-right"
@@ -464,13 +464,13 @@ function QuickActionButton({
       
       <div className="flex items-start gap-3">
         <div className={cn(
-          "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 shadow-sm",
+          "w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 shadow-sm",
           style.bg, style.text, style.shadow
         )}>
-          <Icon size={22} strokeWidth={2} />
+          <Icon className="h-5 w-5 sm:h-[22px] sm:w-[22px]" strokeWidth={2} />
         </div>
         <div className="flex-1 min-w-0 pt-0.5">
-          <div className="font-bold text-[13px] text-slate-800 leading-tight">{label}</div>
+          <div className="font-extrabold text-[12px] sm:text-[13px] text-slate-800 leading-tight">{label}</div>
           {description && (
             <div className="text-[11px] text-slate-500 mt-1 leading-snug">{description}</div>
           )}
@@ -652,7 +652,7 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
                 <button onClick={() => setCustomer(null)} className="text-slate-400 hover:text-rose-500"><X size={18} /></button>
               </div>
             ) : (
-              <button onClick={() => setCustomerPickerOpen(true)} className="w-full flex items-center gap-2 rounded-xl border border-dashed border-slate-300 px-3.5 py-2.5 text-sm text-slate-500 hover:border-brand-300 hover:text-brand-600">
+              <button onClick={() => setCustomerPickerOpen(true)} className="w-full flex items-center gap-2 rounded-xl border border-dashed border-slate-300 px-3.5 py-2.5 text-sm text-slate-500 hover:border-primary/30 hover:text-primary">
                 <UserPlus size={18} /> انتخاب مشتری (یا مشتری نقدی)
               </button>
             )}

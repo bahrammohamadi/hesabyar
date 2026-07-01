@@ -84,7 +84,7 @@ export function EntityActionMenu({
           event.stopPropagation();
           setOpen((value) => !value);
         }}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 active:scale-95"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:border-primary/20 hover:bg-primary/[0.06] hover:text-primary active:scale-95"
         aria-label={label ? `عملیات ${label}` : "عملیات موجودیت"}
       >
         <MoreVertical size={17} />
@@ -107,7 +107,7 @@ export function EntityActionMenu({
                   "flex w-full items-center gap-2 rounded-xl px-3 py-3 text-right text-sm transition sm:py-2.5",
                   action.tone === "success" ? "text-emerald-700 hover:bg-emerald-50" :
                   action.tone === "danger" ? "text-rose-700 hover:bg-rose-50" :
-                  action.tone === "primary" ? "text-brand-700 hover:bg-brand-50" :
+                  action.tone === "primary" ? "text-primary hover:bg-primary/[0.06]" :
                   "text-slate-700 hover:bg-slate-50",
                   action.disabled && "pointer-events-none opacity-50"
                 );

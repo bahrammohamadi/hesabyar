@@ -116,7 +116,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-4">
-        <Link href="/products" className="flex items-center gap-1 text-slate-500 text-sm hover:text-brand-600">
+        <Link href="/products" className="flex items-center gap-1 text-slate-500 text-sm hover:text-primary">
           <ArrowRight size={18} /> بازگشت
         </Link>
         <div className="flex gap-2">
@@ -133,7 +133,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
       {/* کارت اصلی */}
       <div className="card p-6 mb-4">
         <div className="flex items-start gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+          <div className="w-16 h-16 rounded-2xl bg-primary/[0.06] text-primary flex items-center justify-center shrink-0">
             <Package size={28} />
           </div>
           <div className="flex-1">
@@ -180,7 +180,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           { id: "purchases", label: `خریدها (${toFaDigits(purchaseItems?.length ?? 0)})`, icon: <Truck size={15} /> },
         ].map((tab) => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition ${activeTab === tab.id ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition ${activeTab === tab.id ? "bg-primary text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
             {tab.icon} {tab.label}
           </button>
         ))}
@@ -207,7 +207,7 @@ function ProductInfo({ product, variants, onEdit }: { product: any; variants: an
       <div className="card p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-slate-700">اطلاعات کالا</h3>
-          <button onClick={onEdit} className="text-sm text-brand-600 hover:underline">ویرایش</button>
+          <button onClick={onEdit} className="text-sm text-primary hover:underline">ویرایش</button>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
@@ -251,7 +251,7 @@ function ProductInfo({ product, variants, onEdit }: { product: any; variants: an
                   <td className="font-mono text-xs text-slate-400">{v.sku || "—"}</td>
                   <td className="font-mono text-xs text-slate-400">{v.barcode || "—"}</td>
                   <td className="text-emerald-600">{formatToman(v.purchase_price, false)}</td>
-                  <td className="text-brand-600 font-medium">{formatToman(v.sale_price, false)}</td>
+                  <td className="text-primary font-medium">{formatToman(v.sale_price, false)}</td>
                   <td className={`font-bold ${v.stock_qty <= (product.low_stock_threshold ?? 3) ? "text-amber-600" : "text-emerald-600"}`}>{toFaDigits(v.stock_qty)}</td>
                 </tr>
               ))}
@@ -282,7 +282,7 @@ function MovementsList({ movements }: { movements: any[] }) {
                   <td className={`font-bold ${isIn ? "text-emerald-600" : "text-rose-600"}`}>{isIn ? "+" : ""}{toFaDigits(m.qty)}</td>
                   <td className="text-slate-400 text-sm max-w-[150px] truncate">{m.note ?? "—"}</td>
                   <td className="text-slate-500 text-sm">{toJalali(m.created_at)}</td>
-                  <td>{m.ref_table === "sales" && m.ref_id ? <Link href={`/sales/${m.ref_id}`} className="text-brand-600 text-sm hover:underline">فاکتور فروش</Link> : "—"}</td>
+                  <td>{m.ref_table === "sales" && m.ref_id ? <Link href={`/sales/${m.ref_id}`} className="text-primary text-sm hover:underline">فاکتور فروش</Link> : "—"}</td>
                 </tr>
               );
             })}
@@ -300,7 +300,7 @@ function SalesList({ items }: { items: any[] }) {
     <div>
       <div className="grid grid-cols-3 gap-3 mb-4">
         <div className="card p-4 text-center"><div className="text-xl font-bold text-emerald-600">{formatToman(total, false)}</div><div className="text-xs text-slate-500">مجموع فروش</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-brand-600">{toFaDigits(qty)}</div><div className="text-xs text-slate-500">تعداد فروخته</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-primary">{toFaDigits(qty)}</div><div className="text-xs text-slate-500">تعداد فروخته</div></div>
         <div className="card p-4 text-center"><div className="text-xl font-bold text-slate-600">{toFaDigits(items.length)}</div><div className="text-xs text-slate-500">فاکتور</div></div>
       </div>
       <div className="card overflow-x-auto">
@@ -314,7 +314,7 @@ function SalesList({ items }: { items: any[] }) {
                   <td>{it.sale ? <EntityLink type="sale" id={it.sale.id}>{it.sale.invoice_no}</EntityLink> : "—"}</td>
                   <td>{it.sale?.customer_id ? <EntityLink type="contact" id={it.sale.customer_id}>{it.sale?.customer?.name ?? "مشتری"}</EntityLink> : <span className="text-slate-400">—</span>}</td>
                   <td className="font-medium">{toFaDigits(it.qty)}</td>
-                  <td className="text-brand-600">{formatToman(it.unit_price, false)}</td>
+                  <td className="text-primary">{formatToman(it.unit_price, false)}</td>
                   <td className="font-medium">{formatToman(it.line_total, false)}</td>
                   <td className="text-slate-500 text-sm">{toJalali(it.created_at)}</td>
                 </tr>
@@ -334,7 +334,7 @@ function PurchasesList({ items }: { items: any[] }) {
     <div>
       <div className="grid grid-cols-3 gap-3 mb-4">
         <div className="card p-4 text-center"><div className="text-xl font-bold text-emerald-600">{formatToman(total, false)}</div><div className="text-xs text-slate-500">مجموع خرید</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-brand-600">{toFaDigits(qty)}</div><div className="text-xs text-slate-500">تعداد خریداری</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-primary">{toFaDigits(qty)}</div><div className="text-xs text-slate-500">تعداد خریداری</div></div>
         <div className="card p-4 text-center"><div className="text-xl font-bold text-slate-600">{toFaDigits(items.length)}</div><div className="text-xs text-slate-500">فاکتور</div></div>
       </div>
       <div className="card overflow-x-auto">

@@ -111,7 +111,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-4">
-        <Link href="/contacts" className="flex items-center gap-1 text-slate-500 text-sm hover:text-brand-600">
+        <Link href="/contacts" className="flex items-center gap-1 text-slate-500 text-sm hover:text-primary">
           <ArrowRight size={18} /> بازگشت
         </Link>
         <div className="flex gap-2 flex-wrap">
@@ -135,7 +135,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
       {/* کارت اصلی */}
       <div className="card p-6 mb-4">
         <div className="flex items-start gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+          <div className="w-16 h-16 rounded-2xl bg-primary/[0.06] text-primary flex items-center justify-center shrink-0">
             <User size={28} />
           </div>
           <div className="flex-1">
@@ -169,7 +169,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
           { id: "tx" as const, label: `تراکنش‌ها (${toFaDigits(txs?.length ?? 0)})`, icon: <DollarSign size={15}/> },
         ].map((t) => (
           <button key={t.id} onClick={() => setTab(t.id as any)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition ${tab === t.id ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition ${tab === t.id ? "bg-primary text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
             {t.icon} {t.label}
           </button>
         ))}
@@ -194,7 +194,7 @@ function ContactInfo({ contact, sales, purchases, totalSales, totalPurchases }: 
     <div className="space-y-4">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="card p-4 text-center"><div className="text-xl font-bold text-emerald-600">{formatToman(totalSales, false)}</div><div className="text-xs text-slate-500">مجموع خرید</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-brand-600">{formatToman(totalPurchases, false)}</div><div className="text-xs text-slate-500">مجموع خرید از</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-primary">{formatToman(totalPurchases, false)}</div><div className="text-xs text-slate-500">مجموع خرید از</div></div>
         <div className="card p-4 text-center"><div className="text-xl font-bold text-slate-600">{toFaDigits(sales.length)}</div><div className="text-xs text-slate-500">فاکتور فروش</div></div>
         <div className="card p-4 text-center"><div className="text-xl font-bold text-slate-600">{toFaDigits(purchases.length)}</div><div className="text-xs text-slate-500">فاکتور خرید</div></div>
       </div>
@@ -261,7 +261,7 @@ function ContactPurchases({ purchases }: { purchases: any[] }) {
     <div>
       <div className="grid grid-cols-3 gap-3 mb-4">
         <div className="card p-4 text-center"><div className="text-xl font-bold text-emerald-600">{formatToman(total, false)}</div><div className="text-xs text-slate-500">مجموع</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-brand-600">{formatToman(paid, false)}</div><div className="text-xs text-slate-500">پرداخت‌شده</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-primary">{formatToman(paid, false)}</div><div className="text-xs text-slate-500">پرداخت‌شده</div></div>
         <div className="card p-4 text-center"><div className="text-xl font-bold text-rose-600">{formatToman(total-paid, false)}</div><div className="text-xs text-slate-500">باقیمانده</div></div>
       </div>
       <div className="card overflow-x-auto">

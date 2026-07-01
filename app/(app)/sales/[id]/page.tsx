@@ -231,11 +231,11 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
         )}
 
         <div id="invoice-print" className="card bg-white p-5 sm:p-8">
-          <div className="flex items-start justify-between gap-4 border-b-2 border-brand-600 pb-4 mb-5">
+          <div className="flex items-start justify-between gap-4 border-b-2 border-primary pb-4 mb-5">
             <div className="flex items-center gap-3">
               <img src="/logo.png" alt="حسابیار" className="w-14 h-14 object-contain rounded-xl" />
               <div>
-                <h1 className="text-xl font-bold text-brand-700">مهرجامه</h1>
+                <h1 className="text-xl font-bold text-primary">مهرجامه</h1>
                 <p className="text-xs text-slate-500 mt-1">فاکتور فروش</p>
               </div>
             </div>
@@ -263,7 +263,7 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
           <div className="overflow-x-auto">
             <table className="w-full text-sm border border-slate-200 rounded-xl overflow-hidden">
               <thead>
-                <tr className="bg-brand-50 text-brand-800">
+                <tr className="bg-primary/[0.06] text-primary">
                   <th className="px-3 py-2 text-right">#</th>
                   <th className="px-3 py-2 text-right">کالا</th>
                   <th className="px-3 py-2 text-center">کد/SKU</th>
@@ -463,7 +463,7 @@ function EditInvoiceModal({
             <div><label className="label">مشتری</label>{selectedCustomer ? <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3.5 py-2.5"><span>{selectedCustomer.name}</span><button onClick={() => setSelectedCustomer(null)} className="text-rose-500"><X size={16}/></button></div> : <button onClick={() => setCustomerOpen(true)} className="btn-secondary w-full">انتخاب مشتری</button>}</div>
           </div>
 
-          <button onClick={() => setProductOpen(true)} className="w-full rounded-xl border-2 border-dashed border-brand-200 bg-brand-50/40 px-4 py-3 text-sm font-medium text-brand-700">+ افزودن کالا</button>
+          <button onClick={() => setProductOpen(true)} className="w-full rounded-xl border-2 border-dashed border-primary/20 bg-primary/[0.04] px-4 py-3 text-sm font-medium text-primary">+ افزودن کالا</button>
 
           <div className="space-y-2 max-h-[40vh] overflow-y-auto">
             {cart.map((item) => (

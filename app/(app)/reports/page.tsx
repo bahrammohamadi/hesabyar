@@ -102,7 +102,7 @@ function SalesReport({ orgId }: { orgId: string }) {
       {/* خلاصه آمار */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="card p-4 text-center">
-          <div className="text-2xl font-bold text-brand-600">{formatToman(summary?.sales_today ?? 0)}</div>
+          <div className="text-2xl font-bold text-primary">{formatToman(summary?.sales_today ?? 0)}</div>
           <div className="text-xs text-slate-500 mt-1">فروش امروز</div>
         </div>
         <div className="card p-4 text-center">
@@ -126,7 +126,7 @@ function SalesReport({ orgId }: { orgId: string }) {
             key={p}
             onClick={() => setPeriod(p)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-              period === p ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              period === p ? "bg-primary text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
             {p === "7d" ? "۷ روز" : p === "30d" ? "۳۰ روز" : p === "90d" ? "۹۰ روز" : "یک سال"}
@@ -381,7 +381,7 @@ function ContactsReport({ orgId }: { orgId: string }) {
       {/* آمار */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="card p-4 text-center">
-          <div className="text-2xl font-bold text-brand-600">{toFaDigits(stats.customers)}</div>
+          <div className="text-2xl font-bold text-primary">{toFaDigits(stats.customers)}</div>
           <div className="text-xs text-slate-500 mt-1">مشتریان</div>
         </div>
         <div className="card p-4 text-center">
@@ -530,7 +530,7 @@ function ProfitReport({ orgId }: { orgId: string }) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {salesBySize.map((s: any) => (
               <div key={s.size} className="p-4 bg-slate-50 rounded-xl text-center">
-                <div className="text-lg font-bold text-brand-600">{s.size || "-"}</div>
+                <div className="text-lg font-bold text-primary">{s.size || "-"}</div>
                 <div className="text-2xl font-bold text-slate-800">{toFaDigits(s.total_sold_qty)}</div>
                 <div className="text-xs text-slate-500">فروش</div>
               </div>
@@ -566,7 +566,7 @@ function ProfitReport({ orgId }: { orgId: string }) {
                       </div>
                     </td>
                     <td className="py-2 px-3">{toFaDigits(p.total_sold_qty)}</td>
-                    <td className="py-2 px-3 text-brand-600">{formatToman(p.total_sales_amount)}</td>
+                    <td className="py-2 px-3 text-primary">{formatToman(p.total_sales_amount)}</td>
                     <td className="py-2 px-3 text-emerald-600">{formatToman(p.total_profit)}</td>
                   </tr>
                 ))}
@@ -664,7 +664,7 @@ export function ReportsPageContent({ forcedTab }: { forcedTab?: TabId }) {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition ${
                 activeTab === tab.id
-                  ? "bg-brand-600 text-white"
+                  ? "bg-primary text-white"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >

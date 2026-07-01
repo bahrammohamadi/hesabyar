@@ -142,7 +142,7 @@ export function LoyaltyPage({ mode }: { mode: LoyaltyMode }) {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <div className="card p-4"><div className="text-xs text-slate-500">اعضا</div><div className="text-xl font-bold text-slate-800 mt-1">{toFaDigits(rows.length)}</div></div>
-        <div className="card p-4"><div className="text-xs text-slate-500">امتیاز کل</div><div className="text-xl font-bold text-brand-600 mt-1">{toFaDigits(totalPoints)}</div></div>
+        <div className="card p-4"><div className="text-xs text-slate-500">امتیاز کل</div><div className="text-xl font-bold text-primary mt-1">{toFaDigits(totalPoints)}</div></div>
         <div className="card p-4"><div className="text-xs text-slate-500">اعتبار کل</div><div className="text-xl font-bold text-emerald-600 mt-1">{formatToman(totalWallet, false)}</div></div>
         <div className="card p-4"><div className="text-xs text-slate-500">VIP</div><div className="text-xl font-bold text-amber-600 mt-1">{toFaDigits(vipRows.length)}</div></div>
       </div>
@@ -156,7 +156,7 @@ export function LoyaltyPage({ mode }: { mode: LoyaltyMode }) {
         <div className="space-y-4">
           {campaignRows.map((campaign) => (
             <div key={campaign.title} className="card p-4">
-              <div className="flex items-center gap-2 mb-3"><MessageCircle size={17} className="text-brand-600" /><div><h3 className="font-bold text-slate-800">{campaign.title}</h3><p className="text-xs text-slate-400">{campaign.hint}</p></div></div>
+              <div className="flex items-center gap-2 mb-3"><MessageCircle size={17} className="text-primary" /><div><h3 className="font-bold text-slate-800">{campaign.title}</h3><p className="text-xs text-slate-400">{campaign.hint}</p></div></div>
               {!campaign.rows.length ? <EmptyState title="موردی وجود ندارد" /> : <CustomerRows rows={campaign.rows} onWallet={setWalletContact} />}
             </div>
           ))}
@@ -225,7 +225,7 @@ function CustomerRows({ rows, onWallet }: { rows: LoyaltyRow[]; onWallet: (row: 
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <EntityLink type="contact" id={row.contact.id}>{row.contact.name}</EntityLink>
-              <span className="badge bg-brand-100 text-brand-700">{row.segment}</span>
+              <span className="badge bg-primary/10 text-primary">{row.segment}</span>
               <span className="badge bg-amber-100 text-amber-700"><Gift size={12} /> {toFaDigits(row.points)} امتیاز</span>
             </div>
             <div className="text-xs text-slate-400 mt-1 flex flex-wrap gap-3">

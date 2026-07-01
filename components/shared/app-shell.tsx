@@ -10,21 +10,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar - visible on sm, togglable on xs */}
-      <div className="hidden sm:block">
+    <div className="min-h-screen bg-background text-foreground lg:flex">
+      <div className="hidden lg:block">
         <Sidebar open={true} onClose={() => {}} />
       </div>
-      <div className="fixed inset-0 z-40 sm:hidden">
-         <Sidebar open={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+
+      <div className="lg:hidden">
+        <Sidebar open={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       </div>
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
         <Header onMenuClick={() => setIsSidebarOpen(true)} />
-        <main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto pb-32 sm:pb-24 lg:pb-6">
+        <main className="mx-auto w-full max-w-7xl flex-1 px-3 py-4 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:px-5 sm:py-6 lg:px-6 lg:pb-6">
           {children}
         </main>
       </div>
+
       <BottomNav />
       <MobileFab />
     </div>

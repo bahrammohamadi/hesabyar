@@ -66,7 +66,7 @@ function ThemeSettings() {
             key={theme.id}
             type="button"
             onClick={() => choose(theme.id)}
-            className={`text-right rounded-2xl border p-4 transition hover:shadow-sm ${selected === theme.id ? "border-brand-500 bg-brand-50" : "border-slate-200 bg-white hover:border-brand-200"}`}
+            className={`text-right rounded-2xl border p-4 transition hover:shadow-sm ${selected === theme.id ? "border-primary bg-primary/[0.06]" : "border-slate-200 bg-white hover:border-primary/20"}`}
           >
             <div className="flex gap-1 mb-3">
               {theme.swatches.map((color) => <span key={color} className="w-7 h-7 rounded-full border border-white shadow-sm" style={{ backgroundColor: color }} />)}
@@ -202,7 +202,7 @@ function ManageableList({
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => { setEditingId(d.id); setEditName(d.name); }}
-                        className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg"
+                        className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/[0.06] rounded-lg"
                         title="ویرایش"
                       >
                         <Pencil size={14} />
