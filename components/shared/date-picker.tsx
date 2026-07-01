@@ -26,7 +26,8 @@ export function DatePicker({ value, onChange, label, placeholder = "۱۴۰۲/۰�
     // Simple validation for YYYY/MM/DD
     if (/^\d{4}\/\d{2}\/\d{2}$/.test(input)) {
       // Convert Jalali input back to Gregorian ISO string for the database
-      const gDate = dayjs().calendar("jalali").set('year', parseInt(input.split('/')[0])).set('month', parseInt(input.split('/')[1]) - 1).set('date', parseInt(input.split('/')[2])).calendar('gregorian');
+      // @ts-ignore - jalaliday types
+      const gDate = (dayjs() as any).calendar("jalali").set('year', parseInt(input.split('/')[0])).set('month', parseInt(input.split('/')[1]) - 1).set('date', parseInt(input.split('/')[2])).calendar('gregorian');
       onChange(gDate.toISOString());
     }
   };

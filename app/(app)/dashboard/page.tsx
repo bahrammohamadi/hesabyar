@@ -11,6 +11,7 @@ import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { PhoneLink } from "@/components/shared/phone-link";
 import { formatToman, formatNumber, toFaDigits, rialToToman, tomanToRial, toEnDigits, toJalali } from "@/lib/utils/format";
+import { cn } from "@/lib/utils/cn";
 import type { DashboardSummary, CartItem } from "@/types/db";
 import { logActivity } from "@/lib/utils/activity-log";
 import {
