@@ -212,12 +212,12 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
               return (
                 <Link key={item.href} href={item.href ?? "#"} onClick={onClose}
                   className={cn(
-                    "flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors",
+                    "flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all",
                     active 
-                      ? "bg-brand-600 text-white shadow-sm" 
+                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" 
                       : isHighlight
                       ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                      : "text-slate-600 hover:bg-slate-50"
+                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                   )}>
                   <Icon size={18} />
                   {item.label}
@@ -233,7 +233,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                   className={cn(
                     "w-full flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors",
                     active 
-                      ? "bg-brand-50 text-brand-700" 
+                      ? "bg-primary/10 text-primary" 
                       : "text-slate-600 hover:bg-slate-50"
                   )}>
                   <Icon size={18} />
@@ -254,7 +254,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                           className={cn(
                             "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
                             childActive 
-                              ? "bg-brand-100 text-brand-700 font-medium" 
+                              ? "bg-primary/10 text-primary font-bold" 
                               : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
                           )}>
                           <ChildIcon size={14} />

@@ -37,6 +37,7 @@ export function StatCard({
   tone = "default",
   trend,
   href,
+  color,
 }: {
   title?: string;
   label?: string;
@@ -44,68 +45,121 @@ export function StatCard({
   hint?: string;
   subValue?: ReactNode;
   icon?: IconType;
-  tone?: "default" | "green" | "red" | "amber" | "blue";
+  tone?: "default" | "green" | "red" | "amber" | "blue" | "primary" | "violet" | "cyan";
   trend?: "up" | "down" | "neutral";
   href?: string;
+  // رنگ آیکون - برای سازگاری با تم
+  color?: "primary" | "emerald" | "blue" | "amber" | "rose" | "violet" | "cyan" | "slate";
 }) {
   const displayTitle = label ?? title ?? "";
   const displayHint = subValue ?? hint;
 
-  const tones: Record<string, string> = {
-    default: "bg-white",
-    green: "bg-emerald-50 border-emerald-100",
-    red: "bg-rose-50 border-rose-100",
-    amber: "bg-amber-50 border-amber-100",
-    blue: "bg-brand-50 border-brand-100",
+  // تعیین رنگ بر اساس trend یا color prop یا tone
+  type ColorCfg = { bg: string; text: string; soft: string; border: string; accent: string };
+  const getColorConfig = (): ColorCfg => {
+    // اولویت: color prop > trend > tone
+    if (color) {
+      const map: Record<string, { bg: string; text: string; soft: string; border: string; accent: string }> = {
+        primary: { bg: "bg-primary/10", text: "text-primary", soft: "bg-primary/5", border: "border-primary/20", accent: "bg-primary" },
+        emerald: { bg: "bg-emerald-50", text: "text-emerald-600", soft: "bg-emerald-50/50", border: "border-emerald-100", accent: "bg-emerald-600" },
+        blue: { bg: "bg-blue-50", text: "text-blue-600", soft: "bg-blue-50/50", border: "border-blue-100", accent: "bg-blue-600" },
+        amber: { bg: "bg-amber-50", text: "text-amber-600", soft: "bg-amber-50/50", border: "border-amber-100", accent: "bg-amber-600" },
+        rose: { bg: "bg-rose-50", text: "text-rose-600", soft: "bg-rose-50/50", border: "border-rose-100", accent: "bg-rose-600" },
+        violet: { bg: "bg-violet-50", text: "text-violet-600", soft: "bg-violet-50/50", border: "border-violet-100", accent: "bg-violet-600" },
+        cyan: { bg: "bg-cyan-50", text: "text-cyan-600", soft: "bg-cyan-50/50", border: "border-cyan-100", accent: "bg-cyan-600" },
+        slate: { bg: "bg-slate-100", text: "text-slate-600", soft: "bg-slate-50", border: "border-slate-200", accent: "bg-slate-600" },
+      };
+      return map[color] ?? map.primary;
+    }
+    if (trend === "up") return { bg: "bg-emerald-50", text: "text-emerald-600", soft: "bg-emerald-50/50", border: "border-emerald-100", accent: "bg-emerald-600" };
+    if (trend === "down") return { bg: "bg-rose-50", text: "text-rose-600", soft: "bg-rose-50/50", border: "border-rose-100", accent: "bg-rose-600" };
+    // tone mapping
+    const toneMap: Record<string, ColorCfg> = {
+      green: { bg: "bg-emerald-50", text: "text-emerald-600", soft: "bg-emerald-50/50", border: "border-emerald-100", accent: "bg-emerald-600" },
+      red: { bg: "bg-rose-50", text: "text-rose-600", soft: "bg-rose-50/50", border: "border-rose-100", accent: "bg-rose-600" },
+      amber: { bg: "bg-amber-50", text: "text-amber-600", soft: "bg-amber-50/50", border: "border-amber-100", accent: "bg-amber-600" },
+      blue: { bg: "bg-blue-50", text: "text-blue-600", soft: "bg-blue-50/50", border: "border-blue-100", accent: "bg-blue-600" },
+      primary: { bg: "bg-primary/10", text: "text-primary", soft: "bg-primary/5", border: "border-primary/20", accent: "bg-primary" },
+      violet: { bg: "bg-violet-50", text: "text-violet-600", soft: "bg-violet-50/50", border: "border-violet-100", accent: "bg-violet-600" },
+      cyan: { bg: "bg-cyan-50", text: "text-cyan-600", soft: "bg-cyan-50/50", border: "border-cyan-100", accent: "bg-cyan-600" },
+      default: { bg: "bg-primary/10", text: "text-primary", soft: "bg-muted/50", border: "border-border", accent: "bg-primary" },
+    };
+    return toneMap[tone] ?? toneMap.default;
   };
 
-  const trendColors: Record<string, string> = {
-    up: "text-emerald-600",
-    down: "text-rose-600",
-    neutral: "text-slate-400",
-  };
+  const colors = getColorConfig();
+
+  const trendBadge = trend ? {
+    up: { text: "text-emerald-700", bg: "bg-emerald-50", icon: "↗", label: "صعودی" },
+    down: { text: "text-rose-700", bg: "bg-rose-50", icon: "↘", label: "نزولی" },
+    neutral: { text: "text-slate-500", bg: "bg-slate-50", icon: "→", label: "پایدار" },
+  }[trend] : null;
 
   const renderIcon = () => {
     if (!icon) return null;
     
-    // اگر قبلا یک React Element است (مثلا <Wallet size={20} />)
+    let iconNode: ReactNode = null;
     if (React.isValidElement(icon)) {
-      return <span className={trend ? trendColors[trend] : "text-slate-400"}>{icon}</span>;
+      iconNode = icon;
+    } else {
+      try {
+        const IconComp = icon as React.ElementType;
+        iconNode = <IconComp size={20} />;
+      } catch {
+        iconNode = icon as ReactNode;
+      }
     }
-    
-    // اگر یک کامپوننت است (function یا forwardRef object مثل Lucide icons)
-    // Lucide icons are ForwardRefExoticComponent -> typeof === 'object'
-    try {
-      const IconComp = icon as React.ElementType;
-      // @ts-ignore - Lucide icons accept size prop
-      return <IconComp size={20} className={trend ? trendColors[trend] : "text-slate-400"} />;
-    } catch (e) {
-      // fallback: render as-is if it's a valid ReactNode
-      return <span className={trend ? trendColors[trend || "neutral"] : "text-slate-400"}>{icon as ReactNode}</span>;
-    }
+
+    return (
+      <div className={cn("w-11 h-11 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105", colors.bg, colors.text)}>
+        {iconNode}
+      </div>
+    );
   };
 
   const cardInner = (
-    <div className={cn("card p-4 sm:p-5 transition-all hover:shadow-md", tones[tone], href ? "hover:border-brand-200 cursor-pointer group" : "")}>
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-slate-500">{displayTitle}</span>
+    <div className={cn(
+      "relative overflow-hidden rounded-[20px] bg-card border border-border p-5 transition-all duration-200",
+      "hover:shadow-lg hover:shadow-slate-200/50 hover:-translate-y-0.5",
+      "hover:border-slate-300",
+      href && "cursor-pointer group",
+      // نوار رنگی بالا
+      "before:absolute before:top-0 before:right-0 before:left-0 before:h-1",
+      colors.accent,
+      "before:opacity-80"
+    )}>
+      <div className="flex items-start justify-between mb-3 pt-1">
+        <div className="flex-1 min-w-0">
+          <div className="text-[13px] font-medium text-muted-foreground mb-1">{displayTitle}</div>
+          <div className="text-xl sm:text-[22px] font-extrabold text-slate-800 tracking-tight leading-tight">
+            {value ?? "—"}
+          </div>
+        </div>
         {renderIcon()}
       </div>
-      <div className="mt-2 text-lg sm:text-xl font-bold text-slate-800">{value}</div>
-      {displayHint && <div className="mt-1 text-xs text-slate-400">{displayHint}</div>}
-      {trend && (
-        <div className={cn("mt-1 text-[11px] font-medium", trendColors[trend])}>
-          {trend === "up" && "▲ روند صعودی"}
-          {trend === "down" && "▼ روند نزولی"}
-          {trend === "neutral" && "— پایدار"}
+      
+      <div className="flex items-center justify-between gap-2 min-h-[22px]">
+        <div className="flex-1 min-w-0">
+          {displayHint && (
+            <div className="text-xs text-slate-500 truncate">{displayHint}</div>
+          )}
         </div>
-      )}
+        {trendBadge && (
+          <div className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold", trendBadge.bg, trendBadge.text)}>
+            <span>{trendBadge.icon}</span>
+            <span className="hidden sm:inline">{trendBadge.label}</span>
+          </div>
+        )}
+      </div>
+
+      {/* دکور پس‌زمینه محو */}
+      <div className={cn("absolute -left-6 -bottom-6 w-20 h-20 rounded-full opacity-[0.04] pointer-events-none", colors.accent)} />
     </div>
   );
 
   if (href) {
     return (
-      <Link href={href} className="block no-underline">
+      <Link href={href} className="block no-underline focus:outline-none focus:ring-2 focus:ring-primary/30 rounded-[20px]">
         {cardInner}
       </Link>
     );
