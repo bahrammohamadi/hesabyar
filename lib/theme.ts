@@ -158,6 +158,26 @@ export function applyTheme(id?: string | null) {
   const theme = getTheme(id);
   Object.entries(theme.vars).forEach(([key, value]) => document.documentElement.style.setProperty(key, value));
   document.documentElement.dataset.theme = theme.id;
+
+  // Force safe background colors - prevent yellow bug
+  // Always use clean light background regardless of theme
+  // Theme colors only affect primary/accent, not page background
+  const isDark = document.documentElement.classList.contains("dark");
+  if (!isDark) {
+    document.documentElement.style.setProperty("--background", "220 20% 98%"); // #f8fafc very light gray
+    document.documentElement.style.setProperty("--foreground", "215 25% 27%");
+    document.documentElement.style.setProperty("--card", "0 0% 100%");
+    document.documentElement.style.setProperty("--card-foreground", "215 25% 27%");
+    document.documentElement.style.setProperty("--muted", "210 40% 96%");
+    document.documentElement.style.setProperty("--muted-foreground", "215 16% 47%");
+    document.documentElement.style.setProperty("--border", "214 32% 91%");
+    document.documentElement.style.setProperty("--input", "214 32% 91%");
+    document.documentElement.style.setProperty("--secondary", "210 40% 96%");
+    document.documentElement.style.setProperty("--secondary-foreground", "215 25% 27%");
+    // Force body background immediately
+    document.body.style.backgroundColor = "#f8fafc";
+    document.documentElement.style.backgroundColor = "#f8fafc";
+  }
 }
 
 export function applyMode(mode: ThemeMode) {
