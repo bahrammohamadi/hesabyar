@@ -107,15 +107,16 @@ body {
   min-height: 100vh;
 }
 
-/* Force light background - prevent yellow theme bug */
-html, body, #__next, main {
+/* Stable neutral app surface - prevents the old yellow/cream theme bleed */
+html, body {
   background-color: hsl(var(--background)) !important;
+  overflow-x: hidden;
 }
-@media (prefers-color-scheme: light) {
-  html, body {
-    background: #f8fafc !important;
-    background-color: hsl(220 20% 98%) !important;
-  }
+
+body {
+  min-width: 320px;
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* اعداد فارسی برای نمایش بهتر */
@@ -131,6 +132,8 @@ html, body, #__next, main {
 @layer components {
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    min-height: 44px;
+    touch-action: manipulation;
   }
   .btn-primary {
     @apply btn bg-primary text-primary-foreground hover:opacity-90;
@@ -146,6 +149,8 @@ html, body, #__next, main {
   }
   .input {
     @apply w-full rounded-xl border border-input bg-card px-3.5 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition;
+    min-height: 44px;
+    font-size: 16px;
   }
   .label {
     @apply block text-sm font-medium text-muted-foreground mb-1.5;

@@ -106,8 +106,8 @@ export const THEMES: ThemeDefinition[] = [
     primaryHsl: "25 60% 40%",
     primaryForegroundHsl: "30 20% 98%",
     vars: brandScale(
-      // بازطراحی شده: کرم گرم خنثی، بدون زردی آزاردهنده
-      ["252 248 243", "245 235 220", "230 210 180", "205 170 135", "180 130 90", "155 95 55", "146 64 32", "120 53 25", "90 40 18", "60 28 12"],
+      // بازطراحی شده: پایه‌های کاملاً خنثی/سفید، بدون کرم یا زردی در پس‌زمینه‌ها
+      ["248 250 252", "241 245 249", "226 232 240", "203 213 225", "180 130 90", "155 95 55", "146 64 32", "120 53 25", "90 40 18", "60 28 12"],
       ["255 241 242", "255 228 230", "254 205 211", "253 164 175", "251 113 133", "244 63 94", "225 29 72", "190 18 60"],
       { primaryHsl: "25 60% 40%", primaryForegroundHsl: "30 20% 98%", ringHsl: "25 60% 45%" }
     ),
@@ -134,13 +134,14 @@ export const THEMES: ThemeDefinition[] = [
     primaryForegroundHsl: "0 0% 100%",
     vars: brandScale(
       ["250 245 255", "237 224 255", "215 190 250", "185 150 240", "155 110 230", "124 58 237", "109 40 217", "91 33 182", "76 29 149", "59 22 110"],
-      ["253 244 255", "250 232 255", "245 208 254", "240 171 252", "232 121 249", "217 70 239", "192 38 211", "162 28 175"]
+      ["253 244 255", "250 232 255", "245 208 254", "240 171 252", "232 121 249", "217 70 239", "192 38 211", "162 28 175"],
+      { primaryHsl: "262 83% 58%", primaryForegroundHsl: "0 0% 100%", ringHsl: "262 83% 58%" }
     ),
   },
 ];
 
 export const DEFAULT_THEME: ThemeId = "mehrjameh";
-export const DEFAULT_MODE: ThemeMode = "system";
+export const DEFAULT_MODE: ThemeMode = "light";
 export const THEME_STORAGE_KEY = "hesabyar-theme";
 export const MODE_STORAGE_KEY = "hesabyar-mode";
 
@@ -186,8 +187,7 @@ export function applyMode(mode: ThemeMode) {
   let effectiveMode = mode;
   if (mode === "system") {
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const night = isNightTime();
-    effectiveMode = (prefersDark || night) ? "dark" : "light";
+    effectiveMode = prefersDark ? "dark" : "light";
   }
 
   if (effectiveMode === "dark") {

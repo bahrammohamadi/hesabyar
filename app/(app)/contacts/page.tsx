@@ -198,7 +198,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
                       {c.name || "بدون نام"}
                     </EntityLink>
                     <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5 flex-wrap">
-                      {(c as any).code && <span className="font-mono text-brand-600">{(c as any).code}</span>}
+                      {(c as any).code && <span className="font-mono text-primary">{(c as any).code}</span>}
                       <span className="badge bg-slate-100 text-slate-500">{TYPE_LABEL[c.type]}</span>
                       {c.phone && <PhoneLink phone={c.phone} className="text-xs" />}
                     </div>
@@ -223,7 +223,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
                       setEditing(c);
                       setModalOpen(true);
                     }}
-                    className="text-slate-400 hover:text-brand-600 p-1"
+                    className="text-slate-400 hover:text-primary p-1"
                   >
                     <Pencil size={17} />
                   </button>

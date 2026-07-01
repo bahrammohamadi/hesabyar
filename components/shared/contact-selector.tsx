@@ -172,7 +172,7 @@ export function ContactSelector({
             {filtered.map((c) => (
               <div
                 key={c.id}
-                className="w-full rounded-xl border border-slate-100 hover:border-brand-300 hover:bg-brand-50/40 p-3 transition flex items-center gap-3"
+                className="w-full rounded-xl border border-slate-100 hover:border-primary/30 hover:bg-primary/[0.04] p-3 transition flex items-center gap-3"
               >
                 <button
                   type="button"

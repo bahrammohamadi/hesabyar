@@ -126,7 +126,7 @@ export default function StockCardPage() {
                 <button onClick={() => setPickerOpen(true)} className="btn-secondary text-sm"><Search size={15} /> تغییر</button>
               </div>
             ) : (
-              <button onClick={() => setPickerOpen(true)} className="w-full rounded-xl border-2 border-dashed border-brand-200 bg-brand-50/40 px-4 py-4 text-sm font-medium text-brand-700 flex items-center justify-center gap-2"><PackageSearch size={18} /> انتخاب کالا</button>
+              <button onClick={() => setPickerOpen(true)} className="w-full rounded-xl border-2 border-dashed border-primary/20 bg-primary/[0.04] px-4 py-4 text-sm font-medium text-primary flex items-center justify-center gap-2"><PackageSearch size={18} /> انتخاب کالا</button>
             )}
           </div>
           <div><label className="label">از تاریخ</label><DatePicker value={fromDate} onChange={setFromDate} /></div>
@@ -150,7 +150,7 @@ export default function StockCardPage() {
                     <td className="text-slate-500">{REASON_LABEL[row.reason] ?? row.reason}</td>
                     <td className={(row.qty ?? 0) >= 0 ? "font-bold text-emerald-600" : "font-bold text-rose-600"}>{(row.qty ?? 0) >= 0 ? "+" : ""}{toFaDigits(row.qty ?? 0)}</td>
                     <td className="font-bold text-slate-800">{toFaDigits(row.balance)}</td>
-                    <td>{href ? <Link href={href} className="text-brand-600 hover:underline">مشاهده</Link> : <span className="text-slate-300">—</span>}</td>
+                    <td>{href ? <Link href={href} className="text-primary hover:underline">مشاهده</Link> : <span className="text-slate-300">—</span>}</td>
                     <td className="text-slate-400 max-w-[220px] truncate">{row.note ?? "—"}</td>
                   </tr>
                 );

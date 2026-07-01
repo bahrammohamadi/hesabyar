@@ -15,12 +15,12 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 mb-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-slate-800">{title}</h1>
-        {subtitle && <p className="text-sm text-slate-500 mt-1">{subtitle}</p>}
+    <div className="mb-5 flex items-start justify-between gap-3 sm:mb-6">
+      <div className="min-w-0">
+        <h1 className="truncate text-lg font-extrabold text-slate-800 sm:text-2xl">{title}</h1>
+        {subtitle && <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500 sm:text-sm">{subtitle}</p>}
       </div>
-      {action}
+      {action && <div className="shrink-0">{action}</div>}
     </div>
   );
 }
@@ -119,7 +119,7 @@ export function StatCard({
 
   const cardInner = (
     <div className={cn(
-      "relative overflow-hidden rounded-[20px] bg-card border border-border p-5 transition-all duration-200",
+      "relative overflow-hidden rounded-[20px] bg-card border border-border p-4 sm:p-5 transition-all duration-200",
       "hover:shadow-lg hover:shadow-slate-200/50 hover:-translate-y-0.5",
       "hover:border-slate-300",
       href && "cursor-pointer group"
@@ -223,7 +223,7 @@ export function Modal({
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div
         className={cn(
-          "relative bg-white w-full rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[92vh] overflow-y-auto",
+          "relative w-full overflow-y-auto rounded-t-[24px] bg-white shadow-2xl max-h-[92vh] sm:rounded-2xl",
           mobileFullscreen ? "h-[92vh] sm:h-auto" : "",
           size === "lg" ? "sm:max-w-2xl" : "sm:max-w-md"
         )}

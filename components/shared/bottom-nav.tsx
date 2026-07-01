@@ -20,24 +20,27 @@ export function BottomNav() {
   const visibleItems = ITEMS.filter((item) => can(item.permission));
 
   return (
-    <nav className="sm:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-slate-200 pb-[env(safe-area-inset-bottom)]">
-      <div className="grid h-16" style={{ gridTemplateColumns: `repeat(${visibleItems.length || 1}, minmax(0, 1fr))` }}>
+    <nav className="fixed inset-x-3 bottom-3 z-30 rounded-[24px] border border-white/70 bg-white/90 shadow-2xl shadow-slate-900/10 backdrop-blur-xl pb-[env(safe-area-inset-bottom)] lg:hidden">
+      <div
+        className="grid h-[68px] items-center"
+        style={{ gridTemplateColumns: `repeat(${visibleItems.length || 1}, minmax(0, 1fr))` }}
+      >
         {visibleItems.map((item) => {
           const active = pathname === item.href || pathname.startsWith(item.href + "/");
           const Icon = item.icon;
 
           if (item.primary) {
             return (
-              <Link key={item.href} href={item.href} className="flex flex-col items-center justify-center">
+              <Link key={item.href} href={item.href} className="flex min-w-0 flex-col items-center justify-center">
                 <div
                   className={cn(
-                    "w-12 h-12 -mt-5 rounded-2xl flex items-center justify-center shadow-lg transition-colors",
-                    active ? "bg-brand-700 text-white" : "bg-brand-600 text-white"
+                    "-mt-6 flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-xl shadow-primary/25 transition-transform active:scale-95",
+                    active ? "bg-primary" : "bg-primary/95"
                   )}
                 >
-                  <Icon size={24} />
+                  <Icon size={25} />
                 </div>
-                <span className="text-[10px] mt-0.5 text-brand-700 font-medium">{item.label}</span>
+                <span className="mt-0.5 text-[10px] font-extrabold text-primary">{item.label}</span>
               </Link>
             );
           }
@@ -47,12 +50,12 @@ export function BottomNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 transition-colors min-h-16",
-                active ? "text-brand-600" : "text-slate-400"
+                "flex min-h-16 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl transition-colors active:scale-95",
+                active ? "text-primary" : "text-slate-400"
               )}
             >
-              <Icon size={21} />
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <span className={cn("rounded-xl p-1.5", active && "bg-primary/10")}><Icon size={21} /></span>
+              <span className="max-w-full truncate px-1 text-[10px] font-bold">{item.label}</span>
             </Link>
           );
         })}

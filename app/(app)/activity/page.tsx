@@ -115,7 +115,7 @@ export default function ActivityPage() {
               <div key={log.id} className="card p-4 flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="badge bg-brand-100 text-brand-700">{ACTION_LABEL[log.action] ?? log.action}</span>
+                    <span className="badge bg-primary/10 text-primary">{ACTION_LABEL[log.action] ?? log.action}</span>
                     <span className="text-sm font-semibold text-slate-800">{ENTITY_LABEL[log.entity_type] ?? log.entity_type}</span>
                     {linkType && log.entity_id && <EntityLink type={linkType} id={log.entity_id}>مشاهده</EntityLink>}
                   </div>

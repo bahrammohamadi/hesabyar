@@ -130,13 +130,13 @@ export default function ProductsPage() {
               <div key={p.id} className="card p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3 min-w-0">
-                    <div className="w-11 h-11 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+                    <div className="w-11 h-11 rounded-xl bg-primary/[0.06] text-primary flex items-center justify-center shrink-0">
                       <Package size={20} />
                     </div>
                     <div className="min-w-0">
                       <EntityLink type="product" id={p.id} className="block truncate font-semibold">{p.name}</EntityLink>
                       <div className="text-xs text-slate-400 mt-0.5 flex flex-wrap gap-x-2">
-                        {p.code && <span className="font-mono text-brand-600">{p.code}</span>}
+                        {p.code && <span className="font-mono text-primary">{p.code}</span>}
                         {p.brand?.name && <span>برند: {p.brand.name}</span>}
                         {p.category?.name && <span>دسته: {p.category.name}</span>}
                         {p.season && <span>فصل: {p.season}</span>}
@@ -154,7 +154,7 @@ export default function ProductsPage() {
                     <EntityActionMenu type="product" id={p.id} label={p.name} />
                     <button
                       onClick={() => openEdit(p)}
-                      className="text-slate-400 hover:text-brand-600 p-1"
+                      className="text-slate-400 hover:text-primary p-1"
                     >
                       <Pencil size={17} />
                     </button>
@@ -441,7 +441,7 @@ function ProductModal({
             <button
               type="button"
               onClick={() => setVariants((p) => [...p, emptyVariant()])}
-              className="text-brand-600 text-sm font-medium"
+              className="text-primary text-sm font-medium"
             >
               + افزودن تنوع
             </button>

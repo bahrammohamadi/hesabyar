@@ -217,7 +217,7 @@ function PurchaseModal({ orgId, onClose }: { orgId: string | null; onClose: () =
             ) : (
               <button
                 onClick={() => setSupplierPickerOpen(true)}
-                className="w-full flex items-center gap-2 rounded-xl border border-dashed border-slate-300 px-3.5 py-2.5 text-sm text-slate-500 hover:border-brand-300 hover:text-brand-600"
+                className="w-full flex items-center gap-2 rounded-xl border border-dashed border-slate-300 px-3.5 py-2.5 text-sm text-slate-500 hover:border-primary/30 hover:text-primary"
               >
                 <UserPlus size={18} /> انتخاب تامین‌کننده
               </button>
@@ -226,7 +226,7 @@ function PurchaseModal({ orgId, onClose }: { orgId: string | null; onClose: () =
 
           <button
             onClick={() => setProductPickerOpen(true)}
-            className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-brand-200 bg-brand-50/40 px-4 py-3 text-sm font-medium text-brand-700 hover:bg-brand-50"
+            className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/20 bg-primary/[0.04] px-4 py-3 text-sm font-medium text-primary hover:bg-primary/[0.06]"
           >
             <Package size={18} /> افزودن کالا
           </button>

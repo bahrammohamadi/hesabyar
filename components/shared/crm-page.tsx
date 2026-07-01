@@ -92,7 +92,7 @@ export function CrmPage({ mode }: { mode: CrmMode }) {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <div className="card p-4"><div className="text-xs text-slate-500">کل مشتریان</div><div className="text-xl font-bold text-slate-800 mt-1">{toFaDigits(rows.length)}</div></div>
-        <div className="card p-4"><div className="text-xs text-slate-500">مشتریان VIP</div><div className="text-xl font-bold text-brand-600 mt-1">{toFaDigits(vipCount)}</div></div>
+        <div className="card p-4"><div className="text-xs text-slate-500">مشتریان VIP</div><div className="text-xl font-bold text-primary mt-1">{toFaDigits(vipCount)}</div></div>
         <div className="card p-4"><div className="text-xs text-slate-500">غیرفعال</div><div className="text-xl font-bold text-rose-600 mt-1">{toFaDigits(inactiveCount)}</div></div>
         <div className="card p-4"><div className="text-xs text-slate-500">ارزش خرید</div><div className="text-xl font-bold text-emerald-600 mt-1">{formatToman(totalValue, false)}</div></div>
       </div>
@@ -111,7 +111,7 @@ export function CrmPage({ mode }: { mode: CrmMode }) {
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <EntityLink type="contact" id={row.contact.id}>{row.contact.name}</EntityLink>
-                  <span className="badge bg-brand-100 text-brand-700">{row.segment}</span>
+                  <span className="badge bg-primary/10 text-primary">{row.segment}</span>
                   <span className="badge bg-amber-100 text-amber-700"><Gift size={12} /> {toFaDigits(row.points)} امتیاز</span>
                 </div>
                 <div className="text-xs text-slate-400 mt-1 flex flex-wrap gap-3">

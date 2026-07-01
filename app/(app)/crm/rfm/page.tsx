@@ -50,7 +50,7 @@ function scoreAscending(value: number, values: number[]) {
 function labelFor(r: number, f: number, m: number) {
   const sum = r + f + m;
   if (r >= 4 && f >= 4 && m >= 4) return { label: "قهرمان", hint: "حفظ با مزایا و پیام اختصاصی", tone: "bg-emerald-100 text-emerald-700" };
-  if (r >= 4 && f >= 3) return { label: "وفادار", hint: "پیشنهاد خرید مکمل", tone: "bg-brand-100 text-brand-700" };
+  if (r >= 4 && f >= 3) return { label: "وفادار", hint: "پیشنهاد خرید مکمل", tone: "bg-primary/10 text-primary" };
   if (r <= 2 && f >= 4) return { label: "در خطر ریزش", hint: "کمپین بازگشت فوری", tone: "bg-rose-100 text-rose-700" };
   if (r <= 2 && m >= 4) return { label: "ارزشمند خوابیده", hint: "پیام شخصی‌سازی‌شده", tone: "bg-amber-100 text-amber-700" };
   if (sum <= 5) return { label: "کم‌فعال", hint: "کمپین معرفی/تخفیف سبک", tone: "bg-slate-100 text-slate-600" };
