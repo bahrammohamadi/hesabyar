@@ -6,8 +6,8 @@
 
 @layer base {
   :root {
-    /* Base Colors */
-    --background: 245 247 251; /* #f5f7fb */
+    /* Base Colors - FIXED: proper HSL values */
+    --background: 220 26% 97%; /* #f5f7fb - light gray blue */
     --foreground: 215 25% 27%;
     
     --card: 0 0% 100%;
@@ -16,24 +16,24 @@
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 27%;
     
-    --primary: 165 65% 33%; /* Default Brand-600 */
-    --primary-foreground: 0 0% 100%;
+    --primary: 165 65% 24%; /* Mehrjameh green - will be overridden by theme */
+    --primary-foreground: 0 0% 98%;
     
-    --secondary: 210 40% 96.1%;
+    --secondary: 210 40% 96%;
     --secondary-foreground: 215 25% 27%;
     
-    --muted: 210 40% 96.1%;
+    --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
     
-    --accent: 210 40% 96.1%;
+    --accent: 210 40% 96%;
     --accent-foreground: 215 25% 27%;
     
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
     
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 165 65% 33%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 165 65% 32%;
     --radius: 0.75rem;
 
     /* Brand Scale (kept for compatibility with legacy code) */
@@ -94,13 +94,28 @@
 
 html {
   font-family: "Vazirmatn", Tahoma, sans-serif;
+  background-color: #f5f7fb;
+  background-color: hsl(220 26% 97%);
 }
 
 body {
-  background-color: hsl(var(--background));
+  background-color: #f8fafc !important;
+  background-color: hsl(var(--background)) !important;
   color: hsl(var(--foreground));
   margin: 0;
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* Force light background - prevent yellow theme bug */
+html, body, #__next, main {
+  background-color: hsl(var(--background)) !important;
+}
+@media (prefers-color-scheme: light) {
+  html, body {
+    background: #f8fafc !important;
+    background-color: hsl(220 20% 98%) !important;
+  }
 }
 
 /* اعداد فارسی برای نمایش بهتر */
