@@ -122,12 +122,11 @@ export function StatCard({
       "relative overflow-hidden rounded-[20px] bg-card border border-border p-5 transition-all duration-200",
       "hover:shadow-lg hover:shadow-slate-200/50 hover:-translate-y-0.5",
       "hover:border-slate-300",
-      href && "cursor-pointer group",
-      // نوار رنگی بالا
-      "before:absolute before:top-0 before:right-0 before:left-0 before:h-1",
-      colors.accent,
-      "before:opacity-80"
+      href && "cursor-pointer group"
     )}>
+      {/* نوار رنگی بالا - theme aware */}
+      <div className={cn("absolute top-0 inset-x-0 h-[3px]", colors.accent)} />
+      
       <div className="flex items-start justify-between mb-3 pt-1">
         <div className="flex-1 min-w-0">
           <div className="text-[13px] font-medium text-muted-foreground mb-1">{displayTitle}</div>
