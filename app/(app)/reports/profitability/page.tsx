@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Download, Printer, TrendingUp } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { EmptyState, PageHeader, Spinner } from "@/components/shared/ui";
+import { DatePicker } from "@/components/shared/date-picker";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { EntityLink } from "@/components/shared/entity-link";
 import { formatToman, toFaDigits, toJalali } from "@/lib/utils/format";
@@ -165,8 +166,8 @@ export default function ProfitabilityReportPage() {
       />
 
       <div className="card p-4 mb-4 grid grid-cols-1 md:grid-cols-5 gap-3">
-        <div><label className="label">از تاریخ</label><input className="input" type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
-        <div><label className="label">تا تاریخ</label><input className="input" type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>
+        <div><label className="label">از تاریخ</label><DatePicker value={from} onChange={setFrom} /></div>
+        <div><label className="label">تا تاریخ</label><DatePicker value={to} onChange={setTo} /></div>
         <div className="rounded-xl bg-slate-50 p-3"><div className="text-xs text-slate-500">فروش</div><div className="font-bold text-slate-800 mt-1">{formatToman(totals.revenue)}</div></div>
         <div className="rounded-xl bg-slate-50 p-3"><div className="text-xs text-slate-500">بهای تمام‌شده</div><div className="font-bold text-amber-600 mt-1">{formatToman(totals.cost)}</div></div>
         <div className="rounded-xl bg-slate-50 p-3"><div className="text-xs text-slate-500">سود ناخالص</div><div className={totals.profit >= 0 ? "font-bold text-emerald-600 mt-1" : "font-bold text-rose-600 mt-1"}>{formatToman(totals.profit)}</div></div>

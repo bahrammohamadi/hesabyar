@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Download, Printer, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { EmptyState, PageHeader, Spinner } from "@/components/shared/ui";
+import { DatePicker } from "@/components/shared/date-picker";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { EntityLink } from "@/components/shared/entity-link";
 import { formatToman, toFaDigits, toJalali } from "@/lib/utils/format";
@@ -140,8 +141,8 @@ export default function CustomerProfitabilityReportPage() {
       />
 
       <div className="card p-4 mb-4 grid grid-cols-1 md:grid-cols-5 gap-3">
-        <div><label className="label">از تاریخ</label><input className="input" type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
-        <div><label className="label">تا تاریخ</label><input className="input" type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>
+        <div><label className="label">از تاریخ</label><DatePicker value={from} onChange={setFrom} /></div>
+        <div><label className="label">تا تاریخ</label><DatePicker value={to} onChange={setTo} /></div>
         <label className="flex items-end gap-2 text-sm text-slate-600 pb-3"><input type="checkbox" checked={onlyWithCustomer} onChange={(e) => setOnlyWithCustomer(e.target.checked)} /> فقط مشتریان ثبت‌شده</label>
         <div className="rounded-xl bg-slate-50 p-3"><div className="text-xs text-slate-500">تعداد فاکتور</div><div className="font-bold text-slate-800 mt-1">{toFaDigits(totals.invoices)}</div></div>
         <div className="rounded-xl bg-slate-50 p-3"><div className="text-xs text-slate-500">سود کل</div><div className={totals.profit >= 0 ? "font-bold text-emerald-600 mt-1" : "font-bold text-rose-600 mt-1"}>{formatToman(totals.profit)}</div></div>

@@ -6,6 +6,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, CreditCard, FileSpreadsheet, Loader2, Plus, Printer, Pencil, Trash2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { EmptyState, Modal, Spinner } from "@/components/shared/ui";
+import { DatePicker } from "@/components/shared/date-picker";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { EntityLink } from "@/components/shared/entity-link";
 import { PhoneLink } from "@/components/shared/phone-link";
@@ -458,7 +459,7 @@ function EditInvoiceModal({
       <Modal open onClose={onClose} title="ویرایش فاکتور فروش" size="lg" mobileFullscreen>
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div><label className="label">تاریخ فاکتور</label><input className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} /></div>
+            <div><label className="label">تاریخ فاکتور</label><DatePicker value={date} onChange={setDate} /></div>
             <div><label className="label">مشتری</label>{selectedCustomer ? <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3.5 py-2.5"><span>{selectedCustomer.name}</span><button onClick={() => setSelectedCustomer(null)} className="text-rose-500"><X size={16}/></button></div> : <button onClick={() => setCustomerOpen(true)} className="btn-secondary w-full">انتخاب مشتری</button>}</div>
           </div>
 

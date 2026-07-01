@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Download, Printer, UserCheck } from "lucide-react";
 import { EmptyState, PageHeader, Spinner } from "@/components/shared/ui";
+import { DatePicker } from "@/components/shared/date-picker";
 import { formatToman, toFaDigits, toJalali } from "@/lib/utils/format";
 
 function csvEscape(value: unknown) {
@@ -79,8 +80,8 @@ export default function SellerReportPage() {
       />
 
       <div className="card p-4 mb-4 grid grid-cols-1 md:grid-cols-4 gap-3">
-        <div><label className="label">از تاریخ</label><input className="input" type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
-        <div><label className="label">تا تاریخ</label><input className="input" type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>
+        <div><label className="label">از تاریخ</label><DatePicker value={from} onChange={setFrom} /></div>
+        <div><label className="label">تا تاریخ</label><DatePicker value={to} onChange={setTo} /></div>
         <div className="rounded-xl bg-slate-50 p-3"><div className="text-xs text-slate-500">مجموع فروش</div><div className="font-bold text-emerald-600 mt-1">{formatToman(totals.sales_total)}</div></div>
         <div className="rounded-xl bg-slate-50 p-3"><div className="text-xs text-slate-500">تعداد فاکتور</div><div className="font-bold text-slate-800 mt-1">{toFaDigits(totals.invoice_count)}</div></div>
       </div>

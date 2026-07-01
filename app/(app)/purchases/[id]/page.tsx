@@ -6,6 +6,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Calendar, CreditCard, Loader2, Package, Pencil, Plus, Printer, ShoppingCart, Trash2, Truck, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { EmptyState, Modal, Spinner } from "@/components/shared/ui";
+import { DatePicker } from "@/components/shared/date-picker";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { EntityLink } from "@/components/shared/entity-link";
 import { formatToman, rialToToman, toFaDigits, toJalali, toEnDigits, tomanToRial } from "@/lib/utils/format";
@@ -297,7 +298,7 @@ function EditPurchaseModal({ purchase, supplier, items, onClose }: { purchase: a
       <Modal open onClose={onClose} title="ویرایش فاکتور خرید" size="lg" mobileFullscreen>
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div><label className="label">تاریخ خرید</label><input className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} /></div>
+            <div><label className="label">تاریخ خرید</label><DatePicker value={date} onChange={setDate} /></div>
             <div><label className="label">تأمین‌کننده</label>{selectedSupplier ? <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3.5 py-2.5"><span>{selectedSupplier.name}</span><button onClick={() => setSelectedSupplier(null)} className="text-rose-500"><X size={16}/></button></div> : <button onClick={() => setSupplierOpen(true)} className="btn-secondary w-full">انتخاب تأمین‌کننده</button>}</div>
           </div>
           <button onClick={() => setProductOpen(true)} className="w-full rounded-xl border-2 border-dashed border-brand-200 bg-brand-50/40 px-4 py-3 text-sm font-medium text-brand-700">+ افزودن کالا</button>

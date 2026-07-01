@@ -6,6 +6,7 @@ import { Bell, CalendarDays, Gift, MessageCircle, Plus, Target, Wallet } from "l
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { EmptyState, Modal, PageHeader, Spinner } from "@/components/shared/ui";
+import { DatePicker } from "@/components/shared/date-picker";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { EntityLink } from "@/components/shared/entity-link";
 import { PhoneLink } from "@/components/shared/phone-link";
@@ -162,5 +163,5 @@ function FollowupModal({ row, onClose }: { row: CampaignRow; onClose: () => void
       onClose();
     } catch (e) { setError((e as Error).message); }
   }
-  return <Modal open onClose={onClose} title="ثبت پیگیری کمپین" size="md"><div className="space-y-4"><div className="rounded-xl bg-slate-50 p-3"><EntityLink type="contact" id={row.contact.id}>{row.contact.name}</EntityLink><div className="text-xs text-slate-400 mt-1">{row.reason}</div></div><div><label className="label">عنوان</label><input className="input" value={title} onChange={(e) => setTitle(e.target.value)} /></div><div><label className="label">متن پیام/پیگیری</label><textarea className="input" rows={4} value={description} onChange={(e) => setDescription(e.target.value)} /></div><div><label className="label">تاریخ پیگیری بعدی</label><input className="input" type="date" value={nextDate} onChange={(e) => setNextDate(e.target.value)} /></div>{error && <div className="rounded-xl bg-rose-50 text-rose-700 p-3 text-sm">{error}</div>}<div className="flex gap-2"><button onClick={save} className="btn-primary flex-1">ثبت</button><button onClick={onClose} className="btn-secondary">انصراف</button></div></div></Modal>;
+  return <Modal open onClose={onClose} title="ثبت پیگیری کمپین" size="md"><div className="space-y-4"><div className="rounded-xl bg-slate-50 p-3"><EntityLink type="contact" id={row.contact.id}>{row.contact.name}</EntityLink><div className="text-xs text-slate-400 mt-1">{row.reason}</div></div><div><label className="label">عنوان</label><input className="input" value={title} onChange={(e) => setTitle(e.target.value)} /></div><div><label className="label">متن پیام/پیگیری</label><textarea className="input" rows={4} value={description} onChange={(e) => setDescription(e.target.value)} /></div><div><label className="label">تاریخ پیگیری بعدی</label><DatePicker value={nextDate} onChange={setNextDate} /></div>{error && <div className="rounded-xl bg-rose-50 text-rose-700 p-3 text-sm">{error}</div>}<div className="flex gap-2"><button onClick={save} className="btn-primary flex-1">ثبت</button><button onClick={onClose} className="btn-secondary">انصراف</button></div></div></Modal>;
 }

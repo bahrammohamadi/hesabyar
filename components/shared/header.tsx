@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { fullJalali } from "@/lib/utils/format";
-import { LogOut, UserCircle } from "lucide-react";
+import { LogOut, UserCircle, Menu } from "lucide-react";
 
-export function Header() {
+export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const router = useRouter();
   const { data: currentUser } = useQuery({
     queryKey: ["header-current-user"],
@@ -33,6 +33,13 @@ export function Header() {
     <header className="sticky top-0 z-20 bg-white/80 backdrop-blur border-b border-slate-200">
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
+          <button 
+            onClick={onMenuClick} 
+            className="sm:hidden p-2 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors"
+            aria-label="Open Menu"
+          >
+            <Menu size={22} />
+          </button>
           <div className="text-sm text-slate-500 hidden sm:block">
             {fullJalali()}
           </div>

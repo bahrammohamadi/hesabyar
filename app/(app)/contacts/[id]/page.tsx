@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { Spinner, Modal, EmptyState } from "@/components/shared/ui";
+import { DatePicker } from "@/components/shared/date-picker";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { PhoneLink } from "@/components/shared/phone-link";
@@ -352,7 +353,7 @@ function ContactEditModal({ contact, onClose, onSaved }: { contact: any; onClose
           <div><label className="label">نوع</label><select className="input" value={type} onChange={e=>setType(e.target.value)}><option value="customer">مشتری</option><option value="supplier">تامین‌کننده</option><option value="both">هر دو</option></select></div>
           <div><label className="label">تماس</label><input className="input text-left" dir="ltr" value={phone} onChange={e=>setPhone(e.target.value)} /></div>
           <div><label className="label">ایمیل</label><input className="input text-left" dir="ltr" value={email} onChange={e=>setEmail(e.target.value)} /></div>
-          <div><label className="label">تاریخ تولد</label><input type="date" className="input" value={birthDate} onChange={e=>setBirthDate(e.target.value)} /></div>
+          <div><label className="label">تاریخ تولد</label><DatePicker value={birthDate} onChange={setBirthDate} /></div>
           <div><label className="label">کد ملی</label><input className="input text-left" dir="ltr" value={nationalCode} onChange={e=>setNationalCode(e.target.value)} /></div>
           <div><label className="label">شغل</label><input className="input" value={jobTitle} onChange={e=>setJobTitle(e.target.value)} /></div>
         </div>

@@ -1,4 +1,5 @@
 export type ThemeId = "mehrjameh" | "emerald" | "royal" | "copper" | "slate";
+export type ThemeMode = "light" | "dark" | "system";
 
 export type ThemeDefinition = {
   id: ThemeId;
@@ -85,10 +86,17 @@ export const THEMES: ThemeDefinition[] = [
 ];
 
 export const DEFAULT_THEME: ThemeId = "mehrjameh";
+export const DEFAULT_MODE: ThemeMode = "system";
 export const THEME_STORAGE_KEY = "hesabyar-theme";
+export const MODE_STORAGE_KEY = "hesabyar-mode";
 
 export function getTheme(id?: string | null) {
   return THEMES.find((theme) => theme.id === id) ?? THEMES.find((theme) => theme.id === DEFAULT_THEME)!;
+}
+
+export function isNightTime() {
+  const hour = new Date().getHours();
+  return hour >= 20 || hour < 7; // 8 PM to 7 AM
 }
 
 export function applyTheme(id?: string | null) {
@@ -96,4 +104,21 @@ export function applyTheme(id?: string | null) {
   const theme = getTheme(id);
   Object.entries(theme.vars).forEach(([key, value]) => document.documentElement.style.setProperty(key, value));
   document.documentElement.dataset.theme = theme.id;
+}
+
+export function applyMode(mode: ThemeMode) {
+  if (typeof document === "undefined") return;
+  
+  let effectiveMode = mode;
+  if (mode === "system") {
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const night = isNightTime();
+    effectiveMode = (prefersDark || night) ? "dark" : "light";
+  }
+
+  if (effectiveMode === "dark") {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
 }

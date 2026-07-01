@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Download, PackageSearch, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { EmptyState, PageHeader, Spinner } from "@/components/shared/ui";
+import { DatePicker } from "@/components/shared/date-picker";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { EntityLink } from "@/components/shared/entity-link";
@@ -128,8 +129,8 @@ export default function StockCardPage() {
               <button onClick={() => setPickerOpen(true)} className="w-full rounded-xl border-2 border-dashed border-brand-200 bg-brand-50/40 px-4 py-4 text-sm font-medium text-brand-700 flex items-center justify-center gap-2"><PackageSearch size={18} /> انتخاب کالا</button>
             )}
           </div>
-          <div><label className="label">از تاریخ</label><input className="input" type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} /></div>
-          <div><label className="label">تا تاریخ</label><input className="input" type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} /></div>
+          <div><label className="label">از تاریخ</label><DatePicker value={fromDate} onChange={setFromDate} /></div>
+          <div><label className="label">تا تاریخ</label><DatePicker value={toDate} onChange={setToDate} /></div>
         </div>
       </div>
 

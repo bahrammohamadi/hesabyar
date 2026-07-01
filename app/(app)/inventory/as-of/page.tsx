@@ -6,6 +6,7 @@ import { CalendarDays, Download, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { EmptyState, PageHeader, Spinner } from "@/components/shared/ui";
+import { DatePicker } from "@/components/shared/date-picker";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { EntityLink } from "@/components/shared/entity-link";
 import { formatToman, toFaDigits } from "@/lib/utils/format";
@@ -116,7 +117,7 @@ export default function InventoryAsOfPage() {
 
       <div className="card p-4 mb-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <div><label className="label">تاریخ</label><input className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} /></div>
+          <div><label className="label">تاریخ</label><DatePicker value={date} onChange={setDate} /></div>
           <div className="md:col-span-2"><label className="label">جستجو</label><div className="relative"><Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} /><input className="input pr-10" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="نام، کد، بارکد، SKU..." /></div></div>
           <label className="flex items-end gap-2 text-sm text-slate-600 pb-3"><input type="checkbox" checked={onlyPositive} onChange={(e) => setOnlyPositive(e.target.checked)} /> فقط موجودی مثبت</label>
         </div>
