@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils/cn";
 import { Loader2, Inbox } from "lucide-react";
 import type { ReactNode } from "react";
+import Link from "next/link";
 
 export function PageHeader({
   title,
@@ -24,19 +25,32 @@ export function PageHeader({
   );
 }
 
+type IconType = React.ElementType | ReactNode;
+
 export function StatCard({
   title,
+  label,
   value,
   hint,
+  subValue,
   icon,
   tone = "default",
+  trend,
+  href,
 }: {
-  title: string;
+  title?: string;
+  label?: string;
   value: ReactNode;
   hint?: string;
-  icon?: ReactNode;
+  subValue?: ReactNode;
+  icon?: IconType;
   tone?: "default" | "green" | "red" | "amber" | "blue";
+  trend?: "up" | "down" | "neutral";
+  href?: string;
 }) {
+  const displayTitle = label ?? title ?? "";
+  const displayHint = subValue ?? hint;
+
   const tones: Record<string, string> = {
     default: "bg-white",
     green: "bg-emerald-50 border-emerald-100",
@@ -44,16 +58,51 @@ export function StatCard({
     amber: "bg-amber-50 border-amber-100",
     blue: "bg-brand-50 border-brand-100",
   };
-  return (
-    <div className={cn("card p-4 sm:p-5", tones[tone])}>
+
+  const trendColors: Record<string, string> = {
+    up: "text-emerald-600",
+    down: "text-rose-600",
+    neutral: "text-slate-400",
+  };
+
+  const renderIcon = () => {
+    if (!icon) return null;
+    // اگر icon یک کامپوننت React (مثل Wallet از lucide) باشد
+    if (typeof icon === "function") {
+      const IconComp = icon as React.ElementType;
+      return <IconComp size={20} className={trend ? trendColors[trend] : "text-slate-400"} />;
+    }
+    // اگر ReactNode باشد
+    return <span className={trend ? trendColors[trend || "neutral"] : "text-slate-400"}>{icon as ReactNode}</span>;
+  };
+
+  const cardInner = (
+    <div className={cn("card p-4 sm:p-5 transition-all hover:shadow-md", tones[tone], href ? "hover:border-brand-200 cursor-pointer group" : "")}>
       <div className="flex items-center justify-between">
-        <span className="text-sm text-slate-500">{title}</span>
-        {icon && <span className="text-slate-400">{icon}</span>}
+        <span className="text-sm text-slate-500">{displayTitle}</span>
+        {renderIcon()}
       </div>
       <div className="mt-2 text-lg sm:text-xl font-bold text-slate-800">{value}</div>
-      {hint && <div className="mt-1 text-xs text-slate-400">{hint}</div>}
+      {displayHint && <div className="mt-1 text-xs text-slate-400">{displayHint}</div>}
+      {trend && (
+        <div className={cn("mt-1 text-[11px] font-medium", trendColors[trend])}>
+          {trend === "up" && "▲ روند صعودی"}
+          {trend === "down" && "▼ روند نزولی"}
+          {trend === "neutral" && "— پایدار"}
+        </div>
+      )}
     </div>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="block no-underline">
+        {cardInner}
+      </Link>
+    );
+  }
+
+  return cardInner;
 }
 
 export function Spinner({ label }: { label?: string }) {
