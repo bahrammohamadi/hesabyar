@@ -4,16 +4,13 @@ import { useEffect } from "react";
 import { cn } from "@/lib/utils/cn";
 import { usePanelManager } from "./panel-manager.store";
 import type { PanelInstance } from "./types";
-import {
-  ContactPlaceholderPanel,
-  InvoicePlaceholderPanel,
-  PaymentPlaceholderPanel,
-  ProductPlaceholderPanel,
-} from "@/src/shared/panels/PlaceholderPanels";
+import { InvoicePlaceholderPanel, PaymentPlaceholderPanel } from "@/src/shared/panels/PlaceholderPanels";
+import { ContactPanel } from "@/src/shared/panels/ContactPanel";
+import { ProductPanel } from "@/src/shared/panels/ProductPanel";
 
 function RenderPanel({ panel }: { panel: PanelInstance }) {
-  if (panel.type === "contact") return <ContactPlaceholderPanel panel={panel} />;
-  if (panel.type === "product") return <ProductPlaceholderPanel panel={panel} />;
+  if (panel.type === "contact") return <ContactPanel panel={panel} />;
+  if (panel.type === "product") return <ProductPanel panel={panel} />;
   if (panel.type === "invoice") return <InvoicePlaceholderPanel panel={panel} />;
   if (panel.type === "payment") return <PaymentPlaceholderPanel panel={panel} />;
   return null;
