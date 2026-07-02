@@ -3,6 +3,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 import { ThemeProvider } from "@/components/shared/theme-provider";
+import { PanelManagerProvider } from "@/src/core/panel-manager/PanelManagerProvider";
+import { PickerHost } from "@/src/core/picker/PickerHost";
+import { PickerProvider } from "@/src/core/picker/usePicker";
+import { CoreRuntimeDevButton } from "@/src/core/panel-manager/CoreRuntimeDevButton";
 
 export function Providers({ children }: { children: ReactNode }) {
   const [client] = useState(
@@ -18,5 +22,17 @@ export function Providers({ children }: { children: ReactNode }) {
       })
   );
 
-  return <QueryClientProvider client={client}><ThemeProvider>{children}</ThemeProvider></QueryClientProvider>;
+  return (
+    <QueryClientProvider client={client}>
+      <ThemeProvider>
+        <PanelManagerProvider>
+          <PickerProvider>
+            {children}
+            <PickerHost />
+            <CoreRuntimeDevButton />
+          </PickerProvider>
+        </PanelManagerProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
 }
