@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { globalSearch, type GlobalSearchResult } from "@/src/core/services/search-service";
+import { Badge, EmptyState, Input, Spinner } from "@/src/shared/ui";
 import { usePicker } from "./usePicker";
 
 function useDebouncedValue(value: string, delay: number) {
@@ -90,7 +91,7 @@ export function PickerHost() {
         </div>
         <div className="relative border-b border-slate-100 p-3">
           <Search className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input
+          <Input
             ref={inputRef}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -109,19 +110,15 @@ export function PickerHost() {
                 selectItem(results[activeIndex]);
               }
             }}
-            className="input pr-10"
+            className="pr-10"
             placeholder={placeholder}
           />
         </div>
         <div className="max-h-[55vh] overflow-y-auto p-2">
-          {loading && (
-            <div className="flex items-center justify-center gap-2 py-10 text-sm text-slate-500">
-              <Loader2 className="animate-spin" size={18} /> در حال جستجو...
-            </div>
-          )}
+          {loading && <Spinner label="در حال جستجو..." />}
           {error && <div className="m-2 rounded-xl bg-rose-50 p-3 text-sm text-rose-700">{error}</div>}
-          {!loading && !error && query.trim() && results.length === 0 && <div className="py-10 text-center text-sm text-slate-400">نتیجه‌ای یافت نشد.</div>}
-          {!query.trim() && <div className="py-10 text-center text-sm text-slate-400">برای شروع، عبارت جستجو را وارد کنید.</div>}
+          {!loading && !error && query.trim() && results.length === 0 && <EmptyState title="نتیجه‌ای یافت نشد" description="عبارت دیگری را امتحان کنید." />}
+          {!query.trim() && <EmptyState title="جستجوی سریع" description="برای شروع، عبارت جستجو را وارد کنید." />}
           {results.map((item, index) => (
             <button
               key={`${item.result_type}-${item.id}-${index}`}
@@ -137,7 +134,7 @@ export function PickerHost() {
                 <span className="block truncate text-sm font-extrabold">{item.title}</span>
                 {item.subtitle && <span className="mt-0.5 block truncate text-xs text-slate-500">{item.subtitle}</span>}
               </span>
-              <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-500">{item.result_type}</span>
+              <Badge tone={item.result_type === "contact" ? "primary" : item.result_type === "product" ? "success" : "info"}>{item.result_type}</Badge>
             </button>
           ))}
         </div>

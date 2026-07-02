@@ -11,6 +11,9 @@ const config: Config = {
       fontFamily: {
         sans: ["Vazirmatn", "Tahoma", "sans-serif"],
       },
+      boxShadow: {
+        panel: "var(--shadow-panel)",
+      },
       colors: {
         background: "hsl(var(--background) / <alpha-value>)",
         foreground: "hsl(var(--foreground) / <alpha-value>)",
@@ -41,6 +44,27 @@ const config: Config = {
         destructive: {
           DEFAULT: "hsl(var(--destructive) / <alpha-value>)",
           foreground: "hsl(var(--destructive-foreground) / <alpha-value>)",
+        },
+        success: {
+          DEFAULT: "hsl(var(--success) / <alpha-value>)",
+          foreground: "hsl(var(--success-foreground) / <alpha-value>)",
+          soft: "hsl(var(--success-soft) / <alpha-value>)",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning) / <alpha-value>)",
+          foreground: "hsl(var(--warning-foreground) / <alpha-value>)",
+          soft: "hsl(var(--warning-soft) / <alpha-value>)",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info) / <alpha-value>)",
+          foreground: "hsl(var(--info-foreground) / <alpha-value>)",
+          soft: "hsl(var(--info-soft) / <alpha-value>)",
+        },
+        finance: {
+          profit: "hsl(var(--finance-profit) / <alpha-value>)",
+          loss: "hsl(var(--finance-loss) / <alpha-value>)",
+          debt: "hsl(var(--finance-debt) / <alpha-value>)",
+          credit: "hsl(var(--finance-credit) / <alpha-value>)",
         },
         border: "hsl(var(--border) / <alpha-value>)",
         input: "hsl(var(--input) / <alpha-value>)",
