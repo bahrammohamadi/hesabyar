@@ -1,7 +1,9 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
+import { toEnglishDigits } from "@/src/shared/format";
+import { useToast } from "@/src/shared/ui";
 
 export type ContactType = "customer" | "supplier" | "both";
 export type DocumentType = "sale" | "purchase";
@@ -51,6 +53,36 @@ export interface ContactDocument {
   status: string;
   invoice_no: string | null;
 }
+
+export interface ContactMutationInput {
+  org_id?: string;
+  branch_id?: string | null;
+  name: string;
+  type: ContactType;
+  phone?: string | null;
+  address?: string | null;
+  description?: string | null;
+  meta?: Record<string, unknown>;
+}
+
+export interface ContactUpdatePatch {
+  name?: string;
+  type?: ContactType;
+  phone?: string | null;
+  address?: string | null;
+  description?: string | null;
+  meta?: Record<string, unknown>;
+  is_active?: boolean;
+}
+
+type ContactWritePayload = {
+  name: string;
+  type: ContactType;
+  phone: string | null;
+  address: string | null;
+  description: string | null;
+  meta: Record<string, unknown>;
+};
 
 type ContactRow = Omit<ContactEntity, "mobile" | "tags" | "meta"> & {
   tags: string[] | null;
@@ -172,5 +204,144 @@ export function useContactDocuments(id?: string | null) {
     enabled: !!id,
     staleTime: 60_000,
     queryFn: () => getContactDocuments(id!),
+  });
+}
+
+function normalizePhone(phone?: string | null) {
+  const raw = (phone ?? "").trim();
+  if (!raw) return null;
+  return toEnglishDigits(raw).replace(/[\s-]/g, "");
+}
+
+function validateContactInput(input: Pick<ContactMutationInput, "name" | "phone">) {
+  const name = input.name.trim();
+  if (!name) throw new Error("نام مخاطب الزامی است.");
+  const phone = normalizePhone(input.phone);
+  if (phone && !/^\+?\d{7,15}$/.test(phone)) throw new Error("شماره تماس معتبر نیست.");
+  return { name, phone };
+}
+
+function toContactPayload(input: ContactMutationInput): ContactWritePayload {
+  const { name, phone } = validateContactInput(input);
+  return {
+    name,
+    type: input.type,
+    phone,
+    address: input.address?.trim() || null,
+    description: input.description?.trim() || null,
+    meta: input.meta ?? {},
+  };
+}
+
+export async function createContact(input: ContactMutationInput & { org_id: string }): Promise<ContactEntity> {
+  const supabase = createClient();
+  const payload = toContactPayload(input);
+  const { data, error } = await supabase
+    .from("contacts")
+    .insert({ ...payload, org_id: input.org_id, branch_id: input.branch_id ?? null })
+    .select("id, org_id, branch_id, name, type, phone, code, address, description, credit_limit, opening_balance, tags, meta, is_active, created_at")
+    .single();
+  if (error) throw new Error("خطا در ساخت مخاطب: " + error.message);
+  return normalizeContact(data as ContactRow);
+}
+
+export async function updateContact(id: string, patch: ContactUpdatePatch): Promise<ContactEntity> {
+  const supabase = createClient();
+  const payload: Partial<ContactWritePayload> & { is_active?: boolean } = {};
+  if (patch.name !== undefined || patch.phone !== undefined || patch.type !== undefined || patch.address !== undefined || patch.description !== undefined || patch.meta !== undefined) {
+    const next = toContactPayload({
+      name: patch.name ?? "_",
+      type: patch.type ?? "customer",
+      phone: patch.phone,
+      address: patch.address,
+      description: patch.description,
+      meta: patch.meta,
+    });
+    if (patch.name !== undefined) payload.name = next.name;
+    if (patch.type !== undefined) payload.type = next.type;
+    if (patch.phone !== undefined) payload.phone = next.phone;
+    if (patch.address !== undefined) payload.address = next.address;
+    if (patch.description !== undefined) payload.description = next.description;
+    if (patch.meta !== undefined) payload.meta = next.meta;
+  }
+  if (patch.is_active !== undefined) payload.is_active = patch.is_active;
+
+  const { data, error } = await supabase
+    .from("contacts")
+    .update(payload)
+    .eq("id", id)
+    .select("id, org_id, branch_id, name, type, phone, code, address, description, credit_limit, opening_balance, tags, meta, is_active, created_at")
+    .single();
+  if (error) throw new Error("خطا در ویرایش مخاطب: " + error.message);
+  return normalizeContact(data as ContactRow);
+}
+
+export async function deactivateContact(id: string) {
+  return updateContact(id, { is_active: false });
+}
+
+export async function reactivateContact(id: string) {
+  return updateContact(id, { is_active: true });
+}
+
+function invalidateContactQueries(queryClient: ReturnType<typeof useQueryClient>, id?: string) {
+  queryClient.invalidateQueries({ queryKey: ["contacts"] });
+  queryClient.invalidateQueries({ queryKey: ["contact-balances"] });
+  queryClient.invalidateQueries({ queryKey: ["entity", "contact"] });
+  if (id) {
+    queryClient.invalidateQueries({ queryKey: ["entity", "contact", "detail", id] });
+    queryClient.invalidateQueries({ queryKey: ["entity", "contact", "documents", id] });
+  }
+}
+
+export function useCreateContact() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: createContact,
+    onSuccess: (contact) => {
+      invalidateContactQueries(queryClient, contact.id);
+      toast({ title: "مخاطب ساخته شد", description: contact.name, tone: "success" });
+    },
+    onError: (error) => toast({ title: "خطا در ساخت مخاطب", description: (error as Error).message, tone: "error" }),
+  });
+}
+
+export function useUpdateContact() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: ({ id, patch }: { id: string; patch: ContactUpdatePatch }) => updateContact(id, patch),
+    onSuccess: (contact) => {
+      invalidateContactQueries(queryClient, contact.id);
+      toast({ title: "مخاطب ذخیره شد", description: contact.name, tone: "success" });
+    },
+    onError: (error) => toast({ title: "خطا در ذخیره مخاطب", description: (error as Error).message, tone: "error" }),
+  });
+}
+
+export function useDeactivateContact() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: deactivateContact,
+    onSuccess: (contact) => {
+      invalidateContactQueries(queryClient, contact.id);
+      toast({ title: "مخاطب غیرفعال شد", description: contact.name, tone: "success" });
+    },
+    onError: (error) => toast({ title: "خطا در غیرفعال‌سازی", description: (error as Error).message, tone: "error" }),
+  });
+}
+
+export function useReactivateContact() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: reactivateContact,
+    onSuccess: (contact) => {
+      invalidateContactQueries(queryClient, contact.id);
+      toast({ title: "مخاطب فعال شد", description: contact.name, tone: "success" });
+    },
+    onError: (error) => toast({ title: "خطا در فعال‌سازی", description: (error as Error).message, tone: "error" }),
   });
 }
