@@ -63,6 +63,13 @@ export interface ContactMutationInput {
   address?: string | null;
   description?: string | null;
   meta?: Record<string, unknown>;
+  first_name?: string | null;
+  last_name?: string | null;
+  email?: string | null;
+  birth_date?: string | null;
+  national_code?: string | null;
+  job_title?: string | null;
+  gender?: string | null;
 }
 
 export interface ContactUpdatePatch {
@@ -72,6 +79,13 @@ export interface ContactUpdatePatch {
   address?: string | null;
   description?: string | null;
   meta?: Record<string, unknown>;
+  first_name?: string | null;
+  last_name?: string | null;
+  email?: string | null;
+  birth_date?: string | null;
+  national_code?: string | null;
+  job_title?: string | null;
+  gender?: string | null;
   is_active?: boolean;
 }
 
@@ -223,13 +237,24 @@ function validateContactInput(input: Pick<ContactMutationInput, "name" | "phone"
 
 function toContactPayload(input: ContactMutationInput): ContactWritePayload {
   const { name, phone } = validateContactInput(input);
+  const meta = { ...(input.meta ?? {}) };
+  const setMeta = (key: string, value: string | null | undefined) => {
+    if (value !== undefined) meta[key] = value?.trim() || null;
+  };
+  setMeta("first_name", input.first_name);
+  setMeta("last_name", input.last_name);
+  setMeta("email", input.email);
+  setMeta("birth_date", input.birth_date);
+  setMeta("national_code", input.national_code);
+  setMeta("job_title", input.job_title);
+  setMeta("gender", input.gender);
   return {
     name,
     type: input.type,
     phone,
     address: input.address?.trim() || null,
     description: input.description?.trim() || null,
-    meta: input.meta ?? {},
+    meta,
   };
 }
 
@@ -248,7 +273,7 @@ export async function createContact(input: ContactMutationInput & { org_id: stri
 export async function updateContact(id: string, patch: ContactUpdatePatch): Promise<ContactEntity> {
   const supabase = createClient();
   const payload: Partial<ContactWritePayload> & { is_active?: boolean } = {};
-  if (patch.name !== undefined || patch.phone !== undefined || patch.type !== undefined || patch.address !== undefined || patch.description !== undefined || patch.meta !== undefined) {
+  if (patch.name !== undefined || patch.phone !== undefined || patch.type !== undefined || patch.address !== undefined || patch.description !== undefined || patch.meta !== undefined || patch.first_name !== undefined || patch.last_name !== undefined || patch.email !== undefined || patch.birth_date !== undefined || patch.national_code !== undefined || patch.job_title !== undefined || patch.gender !== undefined) {
     const next = toContactPayload({
       name: patch.name ?? "_",
       type: patch.type ?? "customer",
@@ -256,13 +281,20 @@ export async function updateContact(id: string, patch: ContactUpdatePatch): Prom
       address: patch.address,
       description: patch.description,
       meta: patch.meta,
+      first_name: patch.first_name,
+      last_name: patch.last_name,
+      email: patch.email,
+      birth_date: patch.birth_date,
+      national_code: patch.national_code,
+      job_title: patch.job_title,
+      gender: patch.gender,
     });
     if (patch.name !== undefined) payload.name = next.name;
     if (patch.type !== undefined) payload.type = next.type;
     if (patch.phone !== undefined) payload.phone = next.phone;
     if (patch.address !== undefined) payload.address = next.address;
     if (patch.description !== undefined) payload.description = next.description;
-    if (patch.meta !== undefined) payload.meta = next.meta;
+    if (patch.meta !== undefined || patch.first_name !== undefined || patch.last_name !== undefined || patch.email !== undefined || patch.birth_date !== undefined || patch.national_code !== undefined || patch.job_title !== undefined || patch.gender !== undefined) payload.meta = next.meta;
   }
   if (patch.is_active !== undefined) payload.is_active = patch.is_active;
 
