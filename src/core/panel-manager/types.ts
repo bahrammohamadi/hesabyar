@@ -35,6 +35,13 @@ export interface OpenPanelOptions {
   replace?: boolean;
 }
 
+export interface PanelResult {
+  id: string;
+  type?: PanelType;
+  title?: string;
+  data?: unknown;
+}
+
 export type PanelAction =
   | { type: "PUSH"; panel: Omit<PanelInstance, "stackIndex"> }
   | { type: "REPLACE_TOP"; panel: Omit<PanelInstance, "stackIndex"> }
@@ -46,6 +53,8 @@ export interface PanelManagerApi {
   stack: PanelInstance[];
   topPanel: PanelInstance | null;
   openEntity: (type: EntityPanelType, id?: string, opts?: OpenPanelOptions) => string;
+  openEntityForResult: (type: EntityPanelType, opts?: OpenPanelOptions) => Promise<PanelResult | null>;
+  resolveTop: (result: PanelResult) => void;
   openDocument: (docType: DocumentType, id?: string, opts?: OpenPanelOptions) => string;
   openPanel: (type: PanelType, opts?: OpenPanelOptions & { entityId?: string; docType?: DocumentType }) => string;
   closeTop: () => void;

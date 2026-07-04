@@ -43,7 +43,7 @@ function emptyForm(): ContactFormState {
 }
 
 export function ContactPanel({ panel }: { panel: PanelInstance }) {
-  const { closeTop, replaceTop } = usePanelManager();
+  const { closeTop, replaceTop, resolveTop } = usePanelManager();
   const { orgId, branchId } = useOrg();
   const contactId = panel.entityId;
   const [mode, setMode] = useState<PanelMode>(panel.mode);
@@ -61,7 +61,9 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
 
   useEffect(() => {
     if (mode === "create") {
-      setForm(emptyForm());
+      const initialName = typeof panel.props?.initialName === "string" ? panel.props.initialName : "";
+      const initialType = panel.props?.initialType === "supplier" || panel.props?.initialType === "both" ? panel.props.initialType : "customer";
+      setForm({ ...emptyForm(), name: initialName, type: initialType });
       return;
     }
     if (contact) {
@@ -96,7 +98,11 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
           address: form.address,
           description: form.description,
         });
-        replaceTop({ type: "contact", entityId: created.id, mode: "view", title: created.name, context: panel.context });
+        if (typeof panel.props?.resultRequestId === "string") {
+          resolveTop({ id: created.id, type: "contact", title: created.name, data: created });
+        } else {
+          replaceTop({ type: "contact", entityId: created.id, mode: "view", title: created.name, context: panel.context });
+        }
       } else if (contactId) {
         await updateContact.mutateAsync({
           id: contactId,

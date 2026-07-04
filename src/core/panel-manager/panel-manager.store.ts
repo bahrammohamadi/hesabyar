@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, type ReactNode } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, type ReactNode } from "react";
 import type {
   DocumentType,
   EntityPanelType,
@@ -9,6 +9,7 @@ import type {
   PanelInstance,
   PanelManagerApi,
   PanelMode,
+  PanelResult,
   PanelType,
 } from "./types";
 
@@ -123,6 +124,7 @@ const PanelManagerContext = createContext<PanelManagerApi | null>(null);
 
 export function PanelManagerStoreProvider({ children }: { children: ReactNode }) {
   const [stack, dispatch] = useReducer(panelReducer, undefined, parsePanelsFromUrl);
+  const resultResolvers = useRef(new Map<string, (result: PanelResult | null) => void>());
 
   useEffect(() => {
     function handlePopState() {
@@ -178,8 +180,21 @@ export function PanelManagerStoreProvider({ children }: { children: ReactNode })
     [openPanel]
   );
 
-  const closeTop = useCallback(() => setStack(stack.slice(0, -1), "replace"), [setStack, stack]);
-  const closeAll = useCallback(() => setStack([], "replace"), [setStack]);
+  const closeTop = useCallback(() => {
+    const top = stack.at(-1);
+    const requestId = typeof top?.props?.resultRequestId === "string" ? top.props.resultRequestId : null;
+    if (requestId && resultResolvers.current.has(requestId)) {
+      resultResolvers.current.get(requestId)?.(null);
+      resultResolvers.current.delete(requestId);
+    }
+    setStack(stack.slice(0, -1), "replace");
+  }, [setStack, stack]);
+
+  const closeAll = useCallback(() => {
+    for (const [, resolve] of resultResolvers.current) resolve(null);
+    resultResolvers.current.clear();
+    setStack([], "replace");
+  }, [setStack]);
 
   const replaceTop = useCallback((panel: Omit<PanelInstance, "id" | "stackIndex"> & { id?: string }) => {
     const id = panel.id ?? createPanelId();
@@ -189,18 +204,43 @@ export function PanelManagerStoreProvider({ children }: { children: ReactNode })
     return id;
   }, [setStack, stack]);
 
+  const openEntityForResult = useCallback((type: EntityPanelType, opts?: OpenPanelOptions) => {
+    const requestId = createPanelId();
+    return new Promise<PanelResult | null>((resolve) => {
+      resultResolvers.current.set(requestId, resolve);
+      openPanel(type, {
+        ...opts,
+        entityId: undefined,
+        mode: opts?.mode ?? "create",
+        props: { ...(opts?.props ?? {}), resultRequestId: requestId },
+      });
+    });
+  }, [openPanel]);
+
+  const resolveTop = useCallback((result: PanelResult) => {
+    const top = stack.at(-1);
+    const requestId = typeof top?.props?.resultRequestId === "string" ? top.props.resultRequestId : null;
+    if (requestId && resultResolvers.current.has(requestId)) {
+      resultResolvers.current.get(requestId)?.(result);
+      resultResolvers.current.delete(requestId);
+    }
+    setStack(stack.slice(0, -1), "replace");
+  }, [setStack, stack]);
+
   const value = useMemo<PanelManagerApi>(
     () => ({
       stack,
       topPanel: stack.at(-1) ?? null,
       openEntity,
+      openEntityForResult,
+      resolveTop,
       openDocument,
       openPanel,
       closeTop,
       closeAll,
       replaceTop,
     }),
-    [stack, openEntity, openDocument, openPanel, closeTop, closeAll, replaceTop]
+    [stack, openEntity, openEntityForResult, resolveTop, openDocument, openPanel, closeTop, closeAll, replaceTop]
   );
 
   return React.createElement(PanelManagerContext.Provider, { value }, children);
