@@ -1,7 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/src/shared/ui";
 import { getContactById, type ContactWithBalance } from "./contact-service";
 
 export type InvoiceDocType = "sale" | "purchase";
@@ -220,5 +221,96 @@ export function useDocumentEntity(docType?: InvoiceDocType | null, id?: string |
     enabled: !!docType && !!id,
     staleTime: 60_000,
     queryFn: () => getInvoiceEntity(docType!, id!),
+  });
+}
+
+export type DocumentTransitionStatus = "confirmed" | "paid" | "settled" | "reversed";
+export type PaymentMethod = "cash" | "card" | "credit" | "transfer";
+
+export interface TransitionDocumentInput {
+  docType: InvoiceDocType;
+  docId: string;
+  newStatus: DocumentTransitionStatus;
+  affectedProductIds?: string[];
+  contactId?: string | null;
+}
+
+export interface RegisterPaymentInput {
+  docType: InvoiceDocType;
+  docId: string;
+  amountRial: number;
+  method: PaymentMethod;
+  affectedProductIds?: string[];
+  contactId?: string | null;
+}
+
+function toReadableRpcError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message || "خطای نامشخص در عملیات سند";
+}
+
+export async function transitionDocument(docType: InvoiceDocType, docId: string, newStatus: DocumentTransitionStatus) {
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc("fn_transition_document", {
+    p_doc_type: docType,
+    p_doc_id: docId,
+    p_new_status: newStatus,
+  });
+  if (error) throw new Error(toReadableRpcError(error));
+  return data as Record<string, unknown>;
+}
+
+export async function registerPayment(docType: InvoiceDocType, docId: string, amountRial: number, method: PaymentMethod) {
+  if (!amountRial || amountRial <= 0) throw new Error("مبلغ پرداخت باید بزرگتر از صفر باشد.");
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc("fn_register_payment", {
+    p_doc_type: docType,
+    p_doc_id: docId,
+    p_amount: amountRial,
+    p_method: method,
+  });
+  if (error) throw new Error(toReadableRpcError(error));
+  return data as string;
+}
+
+function invalidateInvoiceMutation(
+  queryClient: ReturnType<typeof useQueryClient>,
+  variables: { docType: InvoiceDocType; docId: string; affectedProductIds?: string[]; contactId?: string | null }
+) {
+  queryClient.invalidateQueries({ queryKey: ["entity", "invoice", variables.docType, "detail", variables.docId] });
+  if (variables.contactId) {
+    queryClient.invalidateQueries({ queryKey: ["entity", "contact", "detail", variables.contactId] });
+    queryClient.invalidateQueries({ queryKey: ["entity", "contact", "documents", variables.contactId] });
+  }
+  for (const productId of variables.affectedProductIds ?? []) {
+    if (!productId) continue;
+    queryClient.invalidateQueries({ queryKey: ["entity", "product", "stock", productId] });
+    queryClient.invalidateQueries({ queryKey: ["entity", "product", "detail", productId] });
+  }
+}
+
+export function useTransitionDocument() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: (input: TransitionDocumentInput) => transitionDocument(input.docType, input.docId, input.newStatus),
+    onSuccess: (_result, variables) => {
+      invalidateInvoiceMutation(queryClient, variables);
+      toast({ title: "وضعیت سند تغییر کرد", description: `وضعیت جدید: ${variables.newStatus}`, tone: variables.newStatus === "reversed" ? "warning" : "success" });
+    },
+    onError: (error) => toast({ title: "خطا در تغییر وضعیت سند", description: toReadableRpcError(error), tone: "error" }),
+  });
+}
+
+export function useRegisterPayment() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: (input: RegisterPaymentInput) => registerPayment(input.docType, input.docId, input.amountRial, input.method),
+    onSuccess: (_txId, variables) => {
+      invalidateInvoiceMutation(queryClient, variables);
+      toast({ title: "پرداخت ثبت شد", tone: "success" });
+    },
+    onError: (error) => toast({ title: "خطا در ثبت پرداخت", description: toReadableRpcError(error), tone: "error" }),
   });
 }
