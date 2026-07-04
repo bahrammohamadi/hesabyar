@@ -1,5 +1,8 @@
 "use client";
 
+// EntityLink جدید و panel-based: این کامپوننت route change نمی‌دهد و از PanelManager استفاده می‌کند.
+// نسخه route-based قدیمی همچنان در components/shared/entity-link.tsx وجود دارد.
+
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils/cn";
 import { usePanelManager } from "./panel-manager.store";

@@ -1,5 +1,9 @@
 "use client";
 
+// EntityLink قدیمی و route-based: این کامپوننت برای لینک مستقیم به صفحات full-page مثل /contacts/[id] است.
+// برای باز کردن پنل‌های Entity-based از نسخه جدید استفاده کنید:
+// src/core/panel-manager/EntityLink.tsx
+
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils/cn";

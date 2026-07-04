@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FileText, MoreVertical, Phone, User } from "lucide-react";
 import type { PanelInstance, PanelMode } from "@/src/core/panel-manager/types";
@@ -220,6 +221,9 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
           {contact!.phone && <Badge tone="neutral"><Phone size={12} /> {contact!.phone}</Badge>}
         </div>
         <div className="flex flex-wrap gap-2">
+          <Link href={`/contacts/${contact!.id}`} className="btn-secondary min-h-9 rounded-xl px-3 py-1.5 text-xs">
+            مشاهده صفحه کامل
+          </Link>
           <Button size="sm" variant="secondary" onClick={() => setMode("edit")}>ویرایش</Button>
           <Button size="sm" variant={contact!.is_active ? "danger" : "secondary"} loading={isToggling} onClick={toggleActive}>{contact!.is_active ? "غیرفعال‌سازی" : "فعال‌سازی"}</Button>
         </div>
