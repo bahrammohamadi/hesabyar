@@ -68,7 +68,7 @@ export function PanelHost() {
             aria-modal={isTop}
             aria-hidden={!isTop}
             className={cn(
-              "pointer-events-auto fixed bottom-0 top-0 right-0 w-[min(92vw,560px)] overflow-hidden border-l border-slate-200 bg-white shadow-2xl transition-all duration-200 ease-out",
+              "pointer-events-auto fixed bottom-0 top-0 right-0 w-full overflow-hidden border-l border-slate-200 bg-white shadow-2xl transition-all duration-200 ease-out sm:w-[min(92vw,560px)]",
               isTop ? "translate-x-0 opacity-100" : "translate-x-6 opacity-75 pointer-events-none"
             )}
             style={{

@@ -188,7 +188,7 @@ export function ProductSelector({
 
   return (
     <Modal open={open} onClose={onClose} title="انتخاب کالا" size="lg" mobileFullscreen>
-      <div className="space-y-3">
+      <div className="flex h-full min-h-0 flex-col gap-3">
         {/* جستجو */}
         <div className="relative">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
@@ -290,7 +290,7 @@ export function ProductSelector({
           {isLoading ? "در حال بارگذاری..." : `${toFaDigits(filtered.length)} کالا`}
         </div>
 
-        <div className="max-h-[50vh] overflow-y-auto -mx-1 px-1 space-y-1.5">
+        <div className="min-h-0 flex-1 overflow-y-auto -mx-1 px-1 space-y-1.5 pb-3">
           {filtered.length === 0 && !isLoading ? (
             <div className="text-center text-sm text-slate-400 py-10">کالایی یافت نشد.</div>
           ) : (
