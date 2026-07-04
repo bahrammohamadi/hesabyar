@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, type MouseEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
+import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
@@ -12,6 +13,7 @@ import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { formatToman, toFaDigits, toEnDigits, tomanToRial, rialToToman, toJalali } from "@/lib/utils/format";
 import { Plus, Trash2, Loader2, Package, UserPlus, X } from "lucide-react";
 import { logActivity } from "@/lib/utils/activity-log";
+import Link from "next/link";
 
 interface PItem {
   variant_id: string;
@@ -24,6 +26,7 @@ interface PItem {
 export default function PurchasesPage() {
   const { orgId } = useOrg();
   const qc = useQueryClient();
+  const { openDocument } = usePanelManager();
   const [open, setOpen] = useState(false);
 
   const { data: purchases, isLoading } = useQuery({
@@ -48,6 +51,27 @@ export default function PurchasesPage() {
       }[];
     },
   });
+
+  function openPurchase(id: string) {
+    openDocument("purchase", id, { mode: "view", context: "workspace" });
+  }
+
+  function handlePurchaseRowClick(event: MouseEvent<HTMLElement>, id: string) {
+    if (event.defaultPrevented) return;
+    const href = `/purchases/${id}`;
+    if (event.metaKey || event.ctrlKey) {
+      window.open(href, "_blank", "noopener,noreferrer");
+      return;
+    }
+    openPurchase(id);
+  }
+
+  function handlePurchaseRowAuxClick(event: MouseEvent<HTMLElement>, id: string) {
+    if (event.button === 1) {
+      event.preventDefault();
+      window.open(`/purchases/${id}`, "_blank", "noopener,noreferrer");
+    }
+  }
 
   return (
     <div>
@@ -88,14 +112,35 @@ export default function PurchasesPage() {
             </thead>
             <tbody>
               {purchases.map((p) => (
-                <tr key={p.id} className="hover:bg-slate-50">
-                  <td><EntityLink type="purchase" id={p.id}>{p.invoice_no}</EntityLink></td>
+                <tr
+                  key={p.id}
+                  role="link"
+                  tabIndex={0}
+                  onClick={(event) => handlePurchaseRowClick(event, p.id)}
+                  onAuxClick={(event) => handlePurchaseRowAuxClick(event, p.id)}
+                  onKeyDown={(event) => { if (event.key === "Enter") openPurchase(p.id); }}
+                  className="cursor-pointer hover:bg-slate-50"
+                >
+                  <td>
+                    <Link
+                      href={`/purchases/${p.id}`}
+                      className="font-medium text-primary hover:underline"
+                      onClick={(event) => {
+                        if (event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1) return;
+                        event.preventDefault();
+                        event.stopPropagation();
+                        openPurchase(p.id);
+                      }}
+                    >
+                      {p.invoice_no}
+                    </Link>
+                  </td>
                   <td className="text-slate-500">{toJalali(p.date)}</td>
                   <td>
                     {p.supplier_id ? (
                       <div className="flex items-center gap-2">
                         <EntityLink type="contact" id={p.supplier_id}>{p.supplier?.name ?? "تامین‌کننده"}</EntityLink>
-                        <EntityActionMenu type="contact" id={p.supplier_id} label={p.supplier?.name ?? "تامین‌کننده"} />
+                        <span onClick={(event) => event.stopPropagation()}><EntityActionMenu type="contact" id={p.supplier_id} label={p.supplier?.name ?? "تامین‌کننده"} /></span>
                       </div>
                     ) : (
                       <span className="text-slate-400">—</span>

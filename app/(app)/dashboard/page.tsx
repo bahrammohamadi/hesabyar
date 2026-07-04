@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
+import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { PageHeader, StatCard, Spinner, Modal } from "@/components/shared/ui";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
@@ -51,6 +52,7 @@ import Link from "next/link";
 
 export default function DashboardPage() {
   const { orgId, loading: orgLoading } = useOrg();
+  const { openDocument } = usePanelManager();
   const [quickSaleOpen, setQuickSaleOpen] = useState(false);
   const [quickExpenseOpen, setQuickExpenseOpen] = useState(false);
   const [quickReceiptOpen, setQuickReceiptOpen] = useState(false);
@@ -129,6 +131,27 @@ export default function DashboardPage() {
   }
 
   const s = summaryQuery.data;
+
+  function openRecentSale(id: string) {
+    openDocument("sale", id, { mode: "view", context: "dashboard" });
+  }
+
+  function handleRecentSaleClick(event: MouseEvent<HTMLElement>, id: string) {
+    if (event.defaultPrevented) return;
+    const href = `/sales/${id}`;
+    if (event.metaKey || event.ctrlKey) {
+      window.open(href, "_blank", "noopener,noreferrer");
+      return;
+    }
+    openRecentSale(id);
+  }
+
+  function handleRecentSaleAuxClick(event: MouseEvent<HTMLElement>, id: string) {
+    if (event.button === 1) {
+      event.preventDefault();
+      window.open(`/sales/${id}`, "_blank", "noopener,noreferrer");
+    }
+  }
 
   return (
     <div className="space-y-5 sm:space-y-8">
@@ -378,9 +401,28 @@ export default function DashboardPage() {
           <div className="space-y-3">
             {recentSales && recentSales.length > 0 ? (
               recentSales.map((sale: any) => (
-                <div key={sale.id} className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 transition-colors group border border-transparent hover:border-slate-100">
+                <div
+                  key={sale.id}
+                  role="link"
+                  tabIndex={0}
+                  onClick={(event) => handleRecentSaleClick(event, sale.id)}
+                  onAuxClick={(event) => handleRecentSaleAuxClick(event, sale.id)}
+                  onKeyDown={(event) => { if (event.key === "Enter") openRecentSale(sale.id); }}
+                  className="flex cursor-pointer items-center justify-between p-2 rounded-xl hover:bg-slate-50 transition-colors group border border-transparent hover:border-primary/30"
+                >
                   <div className="min-w-0">
-                    <EntityLink type="sale" id={sale.id} className="text-sm font-medium block truncate">{sale.invoice_no}</EntityLink>
+                    <Link
+                      href={`/sales/${sale.id}`}
+                      className="text-sm font-medium block truncate text-primary hover:underline"
+                      onClick={(event) => {
+                        if (event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1) return;
+                        event.preventDefault();
+                        event.stopPropagation();
+                        openRecentSale(sale.id);
+                      }}
+                    >
+                      {sale.invoice_no}
+                    </Link>
                     <div className="text-[11px] text-slate-400">
                       {sale.customer_id ? (
                         <EntityLink type="contact" id={sale.customer_id}>{sale.customer?.name ?? "مشتری"}</EntityLink>
