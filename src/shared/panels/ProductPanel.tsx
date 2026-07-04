@@ -149,6 +149,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
   const [formError, setFormError] = useState<string | null>(null);
 
   const product = productQuery.data;
+  const initialTab = typeof panel.props?.initialTab === "string" ? panel.props.initialTab : undefined;
 
   useEffect(() => {
     if (mode === "create") setProductForm(emptyProductForm());
@@ -532,6 +533,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
         </div>
 
         <Tabs
+          defaultValue={initialTab}
           items={[
             {
               value: "summary",

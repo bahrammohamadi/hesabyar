@@ -202,3 +202,61 @@ docs/frontend/0034_stock_adjust_test_result.json
 next build: passed
 vitest: 2 files / 8 tests passed
 ```
+
+## بخش ۳ — ممیزی و حذف مشروط Modalها
+
+### نتیجه ممیزی نهایی
+
+| Modal | نتیجه | دلیل |
+|---|---|---|
+| `PriceChangeModal` | ✅ حذف شد | ProductPanel حالا تب «تاریخچه قیمت» و فرم تغییر قیمت دارد و همان RPC رسمی `change_product_price` را صدا می‌زند؛ history هم در `product_price_history` نمایش داده می‌شود. |
+| `AdjustModal` | ✅ حذف شد | ProductPanel حالا از کنار هر variant فرم «تعدیل موجودی» دارد و به‌جای insert مستقیم، از RPC موجود `fn_add_stock_movement` با `p_type='adjust'` استفاده می‌کند. |
+| `ProductEditModal` | ✅ حذف شد | ProductPanel فرم edit کامل‌تر دارد: فیلدهای ProductEditModal + image_url + قیمت‌های پایه. دکمه edit صفحه detail به ProductPanel mode=`edit` منتقل شد. |
+| `ContactEditModal` | ⚠️ نگه داشته شد | ContactPanel تقریباً همه فیلدها را دارد، اما در صفحه detail فیلد `code` هنوز قابل ویرایش است؛ در ContactPanel طبق تصمیم قبلی code read-only/auto-generated است. بنابراین حذف ContactEditModal بدون تصمیم محصولی درباره کد مخاطب ریسک دارد. |
+
+### تغییرات کد بخش ۳
+
+فایل:
+
+```text
+app/(app)/products/[id]/page.tsx
+```
+
+حذف شد:
+- `ProductEditModal`
+- `PriceChangeModal`
+- `AdjustModal`
+- stateهای `editOpen`, `priceOpen`, `adjustOpen`
+- insert مستقیم stock_movements در AdjustModal legacy
+
+جایگزین شد با:
+- `openEntity("product", id, { mode: "edit" })` برای ویرایش
+- `openEntity("product", id, { props: { initialTab: "price-history" } })` برای action قیمت
+- `openEntity("product", id, { props: { initialTab: "variants" } })` برای action تعدیل موجودی
+
+فایل:
+
+```text
+src/shared/panels/ProductPanel.tsx
+```
+
+- پشتیبانی از `panel.props.initialTab` اضافه شد تا صفحات detail بتوانند کاربر را مستقیم به تب مربوط بفرستند.
+
+### تست/ممیزی بخش ۳
+
+- grep بعد از حذف روی فایل product detail هیچ موردی از این‌ها برنگرداند:
+
+```text
+ProductEditModal
+PriceChangeModal
+AdjustModal
+```
+
+- `ContactEditModal` عمداً باقی ماند و حذف نشد.
+
+### Build/Test بخش ۳
+
+```text
+next build: passed
+vitest: 2 files / 8 tests passed
+```
