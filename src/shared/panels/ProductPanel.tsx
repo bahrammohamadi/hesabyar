@@ -11,14 +11,17 @@ import { useBrands, useCategories } from "@/lib/hooks/useProducts";
 import {
   createVariant as createVariantRecord,
   productMoney,
+  useChangeProductPrice,
   useCreateProduct,
   useCreateVariant,
   useDeactivateProduct,
   useProductEntity,
+  useProductPriceHistory,
   useProductStock,
   useUpdateProduct,
   useUpdateVariant,
   type ProductEntity,
+  type ProductPriceHistoryEntry,
   type ProductVariantEntity,
 } from "@/src/core/services/product-service";
 import { Badge, Button, DataTable, EmptyState, Field, IconButton, Input, NumberInput, PanelShell, Section, Select, Spinner, Tabs, useToast, type Column } from "@/src/shared/ui";
@@ -54,6 +57,17 @@ type VariantFormState = {
   salePriceToman: number | null;
   initialStock: number | null;
 };
+
+type PriceChangeFormState = {
+  purchasePriceToman: number | null;
+  salePriceToman: number | null;
+  applyToVariants: boolean;
+  reason: string;
+};
+
+function emptyPriceChangeForm(): PriceChangeFormState {
+  return { purchasePriceToman: null, salePriceToman: null, applyToVariants: true, reason: "" };
+}
 
 function emptyProductForm(): ProductFormState {
   return { name: "", code: "", season: "", material: "", imageUrl: "", categoryId: "", brandId: "", basePurchasePriceToman: null, baseSalePriceToman: null, lowStockThreshold: 3, description: "" };
@@ -103,8 +117,10 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
   const [mode, setMode] = useState<PanelMode>(panel.mode);
   const productQuery = useProductEntity(productId);
   const stockQuery = useProductStock(productId);
+  const priceHistoryQuery = useProductPriceHistory(productId);
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
+  const changeProductPrice = useChangeProductPrice();
   const deactivateProduct = useDeactivateProduct();
   const createVariant = useCreateVariant(productId);
   const updateVariant = useUpdateVariant();
@@ -113,6 +129,8 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
   const [batchVariantForms, setBatchVariantForms] = useState<VariantFormState[]>([emptyVariantForm(), emptyVariantForm()]);
   const [batchOpen, setBatchOpen] = useState(false);
   const [savingBatch, setSavingBatch] = useState(false);
+  const [priceForm, setPriceForm] = useState<PriceChangeFormState>(emptyPriceChangeForm());
+  const [priceFormOpen, setPriceFormOpen] = useState(false);
   const [variantEdit, setVariantEdit] = useState<VariantFormState | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -120,7 +138,15 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
 
   useEffect(() => {
     if (mode === "create") setProductForm(emptyProductForm());
-    else if (product) setProductForm(formFromProduct(product));
+    else if (product) {
+      setProductForm(formFromProduct(product));
+      setPriceForm({
+        purchasePriceToman: productMoney.rialToTomanNumber(product.base_purchase_price),
+        salePriceToman: productMoney.rialToTomanNumber(product.base_sale_price),
+        applyToVariants: true,
+        reason: "",
+      });
+    }
   }, [mode, product]);
 
   useEffect(() => {
@@ -300,6 +326,24 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
     setVariantEdit(null);
   }
 
+
+  async function handleChangePrice() {
+    if (!productId) return;
+    if (!priceForm.purchasePriceToman || !priceForm.salePriceToman) {
+      setFormError("قیمت خرید و فروش جدید را وارد کنید.");
+      return;
+    }
+    setFormError(null);
+    await changeProductPrice.mutateAsync({
+      product_id: productId,
+      purchase_price_toman: priceForm.purchasePriceToman,
+      sale_price_toman: priceForm.salePriceToman,
+      apply_variants: priceForm.applyToVariants,
+      reason: priceForm.reason,
+    });
+    setPriceFormOpen(false);
+  }
+
   const isCreate = mode === "create";
   const savingProduct = createProduct.isPending || updateProduct.isPending;
 
@@ -380,6 +424,15 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
     { key: "purchase", header: "خرید", align: "left", render: (row) => <Money value={row.purchase_price ?? 0} /> },
     { key: "sale", header: "فروش", align: "left", render: (row) => <Money value={row.sale_price ?? 0} /> },
     { key: "action", header: "", render: (row) => <Button size="sm" variant="ghost" onClick={() => setVariantEdit(formFromVariant(row))}>ویرایش</Button> },
+  ];
+
+  const priceHistoryColumns: Column<ProductPriceHistoryEntry>[] = [
+    { key: "created_at", header: "تاریخ", render: (row) => <PersianDate value={row.created_at} /> },
+    { key: "scope", header: "دامنه", render: (row) => row.variant_id ? "واریانت" : "کالا" },
+    { key: "old_price", header: "قیمت قبلی", align: "left", render: (row) => <div className="space-y-1"><div>خرید: <Money value={row.old_purchase_price ?? 0} /></div><div>فروش: <Money value={row.old_sale_price ?? 0} /></div></div> },
+    { key: "new_price", header: "قیمت جدید", align: "left", render: (row) => <div className="space-y-1"><div>خرید: <Money value={row.new_purchase_price ?? 0} /></div><div>فروش: <Money value={row.new_sale_price ?? 0} /></div></div> },
+    { key: "created_by", header: "تغییردهنده", render: (row) => <span className="font-mono text-xs" dir="ltr">{row.created_by ?? "—"}</span> },
+    { key: "reason", header: "دلیل", render: (row) => row.reason ?? "—" },
   ];
 
   const variantFormView = (state: VariantFormState, setState: (updater: (prev: VariantFormState) => VariantFormState) => void, includeStock: boolean) => (
@@ -488,6 +541,36 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
                       <div className="mt-4 flex gap-2"><Button loading={updateVariant.isPending} onClick={handleUpdateVariant}>ذخیره واریانت</Button><Button variant="secondary" onClick={() => setVariantEdit(null)}>انصراف</Button></div>
                     </Section>
                   )}
+                </div>
+              ),
+            },
+            {
+              value: "price-history",
+              label: "تاریخچه قیمت",
+              content: (
+                <div className="space-y-4">
+                  <Section title="تغییر قیمت" description="از RPC رسمی change_product_price استفاده می‌شود و در product_price_history ثبت می‌شود.">
+                    {!priceFormOpen ? (
+                      <Button onClick={() => setPriceFormOpen(true)}>تغییر قیمت</Button>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <Field label="قیمت خرید جدید (تومان)"><NumberInput value={priceForm.purchasePriceToman} onValueChange={(value) => setPriceForm((prev) => ({ ...prev, purchasePriceToman: value }))} /></Field>
+                          <Field label="قیمت فروش جدید (تومان)"><NumberInput value={priceForm.salePriceToman} onValueChange={(value) => setPriceForm((prev) => ({ ...prev, salePriceToman: value }))} /></Field>
+                          <Field label="دلیل تغییر" className="sm:col-span-2"><Input value={priceForm.reason} onChange={(event) => setPriceForm((prev) => ({ ...prev, reason: event.target.value }))} placeholder="مثلاً: بروزرسانی لیست قیمت" /></Field>
+                        </div>
+                        <label className="flex items-center gap-2 text-sm text-slate-600">
+                          <input type="checkbox" checked={priceForm.applyToVariants} onChange={(event) => setPriceForm((prev) => ({ ...prev, applyToVariants: event.target.checked }))} />
+                          اعمال قیمت روی همه واریانت‌های فعال کالا
+                        </label>
+                        {formError && <div className="rounded-xl bg-rose-50 p-3 text-sm text-destructive">{formError}</div>}
+                        <div className="flex gap-2"><Button loading={changeProductPrice.isPending} onClick={handleChangePrice}>ذخیره قیمت</Button><Button variant="secondary" onClick={() => setPriceFormOpen(false)}>انصراف</Button></div>
+                      </div>
+                    )}
+                  </Section>
+                  <Section title="تاریخچه قیمت" description="آخرین تغییرات ثبت‌شده در product_price_history">
+                    {priceHistoryQuery.isLoading ? <Spinner /> : priceHistoryQuery.error ? <EmptyState title="خطا در دریافت تاریخچه قیمت" description={(priceHistoryQuery.error as Error).message} /> : <DataTable rows={priceHistoryQuery.data ?? []} columns={priceHistoryColumns} keyExtractor={(row) => row.id} empty={<EmptyState title="تاریخچه قیمتی ثبت نشده" />} />}
+                  </Section>
                 </div>
               ),
             },

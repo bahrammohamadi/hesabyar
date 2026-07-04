@@ -1,0 +1,83 @@
+{
+  "product": {
+    "id": "c518275a-5b08-410c-af6b-49e0186eeaae",
+    "org_id": "ec60535d-6372-428a-92fe-06f1eb63f4b7",
+    "branch_id": "a4e596ac-92a1-42d3-beb0-a72964edc8dd",
+    "name": "تست تاریخچه قیمت پنل 1783187060",
+    "category_id": null,
+    "brand_id": null,
+    "description": null,
+    "image_url": null,
+    "base_purchase_price": 1000000,
+    "base_sale_price": 1500000,
+    "low_stock_threshold": 1,
+    "is_active": true,
+    "created_at": "2026-07-04T17:44:20.332157+00:00",
+    "updated_at": "2026-07-04T17:44:20.332157+00:00",
+    "created_by": null,
+    "code": "TP-PH-1783187060",
+    "season": null,
+    "material": null
+  },
+  "variant": {
+    "id": "2bbec398-9b11-4e6d-8cca-b51d3e604c74",
+    "org_id": "ec60535d-6372-428a-92fe-06f1eb63f4b7",
+    "branch_id": "a4e596ac-92a1-42d3-beb0-a72964edc8dd",
+    "product_id": "c518275a-5b08-410c-af6b-49e0186eeaae",
+    "color": null,
+    "size": null,
+    "sku": "TP-PH-1783187060-01",
+    "barcode": null,
+    "purchase_price": 1000000,
+    "sale_price": 1500000,
+    "stock_qty": 0,
+    "is_active": true,
+    "created_at": "2026-07-04T17:44:20.941588+00:00",
+    "updated_at": "2026-07-04T17:44:20.941588+00:00",
+    "created_by": null,
+    "season": null,
+    "material": null,
+    "collection": null
+  },
+  "product_after": {
+    "id": "c518275a-5b08-410c-af6b-49e0186eeaae",
+    "base_purchase_price": 1200000,
+    "base_sale_price": 1800000,
+    "is_active": true
+  },
+  "variant_after": {
+    "id": "2bbec398-9b11-4e6d-8cca-b51d3e604c74",
+    "purchase_price": 1200000,
+    "sale_price": 1800000
+  },
+  "history": [
+    {
+      "id": "d784e01b-05ab-4014-b28e-442cdb474dc8",
+      "product_id": "c518275a-5b08-410c-af6b-49e0186eeaae",
+      "variant_id": null,
+      "old_purchase_price": 1000000,
+      "new_purchase_price": 1200000,
+      "old_sale_price": 1500000,
+      "new_sale_price": 1800000,
+      "reason": "تست تاریخچه قیمت ProductPanel",
+      "created_at": "2026-07-04T17:44:21.165292+00:00",
+      "created_by": "43cc8690-dfac-4a54-85ee-86c91e5b9acc"
+    },
+    {
+      "id": "a7003d47-a281-40c6-9cd2-b3f4563cb84f",
+      "product_id": "c518275a-5b08-410c-af6b-49e0186eeaae",
+      "variant_id": "2bbec398-9b11-4e6d-8cca-b51d3e604c74",
+      "old_purchase_price": 1000000,
+      "new_purchase_price": 1200000,
+      "old_sale_price": 1500000,
+      "new_sale_price": 1800000,
+      "reason": "تست تاریخچه قیمت ProductPanel",
+      "created_at": "2026-07-04T17:44:21.165292+00:00",
+      "created_by": "43cc8690-dfac-4a54-85ee-86c91e5b9acc"
+    }
+  ],
+  "deactivated": {
+    "id": "c518275a-5b08-410c-af6b-49e0186eeaae",
+    "is_active": false
+  }
+}
