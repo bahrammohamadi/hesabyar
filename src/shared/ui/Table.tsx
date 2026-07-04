@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { HTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/utils/cn";
 
 export type Column<T> = {
@@ -11,7 +11,7 @@ export type Column<T> = {
   className?: string;
 };
 
-export function DataTable<T>({ columns, rows, keyExtractor, empty, className }: { columns: Column<T>[]; rows: T[]; keyExtractor: (row: T, index: number) => string; empty?: ReactNode; className?: string }) {
+export function DataTable<T>({ columns, rows, keyExtractor, empty, className, getRowProps }: { columns: Column<T>[]; rows: T[]; keyExtractor: (row: T, index: number) => string; empty?: ReactNode; className?: string; getRowProps?: (row: T, index: number) => HTMLAttributes<HTMLTableRowElement> }) {
   if (rows.length === 0) return <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">{empty ?? "داده‌ای برای نمایش وجود ندارد."}</div>;
   return (
     <div className={cn("overflow-auto rounded-2xl border border-border bg-card", className)}>
@@ -26,15 +26,18 @@ export function DataTable<T>({ columns, rows, keyExtractor, empty, className }: 
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, index) => (
-            <tr key={keyExtractor(row, index)} className="border-t border-border transition hover:bg-muted/35">
+          {rows.map((row, index) => {
+            const rowProps = getRowProps?.(row, index) ?? {};
+            return (
+            <tr {...rowProps} key={keyExtractor(row, index)} className={cn("border-t border-border transition hover:bg-muted/35", rowProps.className)}>
               {columns.map((column) => (
                 <td key={column.key} className={cn("whitespace-nowrap px-4 py-3", column.align === "center" && "text-center", column.align === "left" && "text-left", column.className)}>
                   {column.render(row)}
                 </td>
               ))}
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
     </div>

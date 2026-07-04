@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { PageHeader, Spinner, Modal } from "@/components/shared/ui";
+import { DataTable, type Column } from "@/src/shared/ui";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
 import { EntityLink } from "@/components/shared/entity-link";
@@ -95,70 +96,53 @@ export default function SalesPage() {
           </button>
         </div>
       ) : (
-        <div className="card overflow-x-auto">
-          <table className="table-base">
-            <thead>
-              <tr>
-                <th>شماره فاکتور</th>
-                <th>تاریخ</th>
-                <th>مشتری</th>
-                <th>مبلغ</th>
-                <th>نسیه</th>
-                <th>وضعیت</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sales.map((s) => (
-                <tr
-                  key={s.id}
-                  role="link"
-                  tabIndex={0}
-                  onClick={(event) => handleSaleRowClick(event, s.id)}
-                  onAuxClick={(event) => handleSaleRowAuxClick(event, s.id)}
-                  onKeyDown={(event) => { if (event.key === "Enter") openSale(s.id); }}
-                  className="cursor-pointer odd:bg-white even:bg-slate-50/60 transition hover:bg-primary/[0.06] hover:shadow-sm"
+        <DataTable
+          rows={sales}
+          keyExtractor={(s) => s.id}
+          className="bg-white/90"
+          getRowProps={(s) => ({
+            role: "link",
+            tabIndex: 0,
+            onClick: (event) => handleSaleRowClick(event, s.id),
+            onAuxClick: (event) => handleSaleRowAuxClick(event, s.id),
+            onKeyDown: (event) => { if (event.key === "Enter") openSale(s.id); },
+            className: "cursor-pointer odd:bg-white even:bg-slate-50/60 hover:bg-primary/[0.06] hover:shadow-sm",
+          })}
+          columns={[
+            {
+              key: "invoice_no",
+              header: "شماره فاکتور",
+              render: (s) => (
+                <Link
+                  href={`/sales/${s.id}`}
+                  className="font-medium text-primary hover:underline"
+                  onClick={(event) => {
+                    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1) return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    openSale(s.id);
+                  }}
                 >
-                  <td>
-                    <Link
-                      href={`/sales/${s.id}`}
-                      className="font-medium text-primary hover:underline"
-                      onClick={(event) => {
-                        if (event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1) return;
-                        event.preventDefault();
-                        event.stopPropagation();
-                        openSale(s.id);
-                      }}
-                    >
-                      {s.invoice_no}
-                    </Link>
-                  </td>
-                  <td className="text-slate-500">{toJalali(s.date)}</td>
-                  <td>
-                    {s.customer_id ? (
-                      <div className="flex items-center gap-2">
-                        <EntityLink type="contact" id={s.customer_id}>{s.customer?.name ?? "مشتری"}</EntityLink>
-                        <span onClick={(event) => event.stopPropagation()}><EntityActionMenu type="contact" id={s.customer_id} label={s.customer?.name ?? "مشتری"} /></span>
-                      </div>
-                    ) : (
-                      <span className="text-slate-400">مشتری نقدی</span>
-                    )}
-                  </td>
-                  <td className="text-left font-semibold tabular-nums">{formatToman(s.total)}</td>
-                  <td>
-                    {s.paid_credit > 0 ? (
-                      <span className="text-rose-600">{formatToman(s.paid_credit, false)}</span>
-                    ) : (
-                      <span className="text-slate-300">—</span>
-                    )}
-                  </td>
-                  <td>
-                    <span className="badge bg-info-soft text-info border border-info/20">{s.status === "settled" ? "تسویه‌شده" : s.status === "reversed" ? "برگشت‌خورده" : "ثبت‌شده"}</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  {s.invoice_no}
+                </Link>
+              ),
+            },
+            { key: "date", header: "تاریخ", render: (s) => <span className="text-slate-500">{toJalali(s.date)}</span> },
+            {
+              key: "customer",
+              header: "مشتری",
+              render: (s) => s.customer_id ? (
+                <div className="flex items-center gap-2">
+                  <EntityLink type="contact" id={s.customer_id}>{s.customer?.name ?? "مشتری"}</EntityLink>
+                  <span onClick={(event) => event.stopPropagation()}><EntityActionMenu type="contact" id={s.customer_id} label={s.customer?.name ?? "مشتری"} /></span>
+                </div>
+              ) : <span className="text-slate-400">مشتری نقدی</span>,
+            },
+            { key: "total", header: "مبلغ", align: "left", render: (s) => <span className="font-semibold tabular-nums">{formatToman(s.total)}</span> },
+            { key: "credit", header: "نسیه", render: (s) => s.paid_credit > 0 ? <span className="text-rose-600">{formatToman(s.paid_credit, false)}</span> : <span className="text-slate-300">—</span> },
+            { key: "status", header: "وضعیت", render: (s) => <span className="badge bg-info-soft text-info border border-info/20">{s.status === "settled" ? "تسویه‌شده" : s.status === "reversed" ? "برگشت‌خورده" : "ثبت‌شده"}</span> },
+          ] satisfies Column<(typeof sales)[number]>[]}
+        />
       )}
 
       {posOpen && (
