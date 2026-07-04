@@ -1,0 +1,62 @@
+{
+  "org_id": "ec60535d-6372-428a-92fe-06f1eb63f4b7",
+  "branch_id": "a4e596ac-92a1-42d3-beb0-a72964edc8dd",
+  "product": {
+    "id": "e62940bf-9898-49f5-900c-e753b9371d86",
+    "org_id": "ec60535d-6372-428a-92fe-06f1eb63f4b7",
+    "branch_id": "a4e596ac-92a1-42d3-beb0-a72964edc8dd",
+    "name": "تست مولتی واریانت پنل 1783186355",
+    "category_id": null,
+    "brand_id": null,
+    "description": "محصول تستی برای ممیزی multi-variant ProductPanel؛ پس از تست غیرفعال شد.",
+    "image_url": null,
+    "base_purchase_price": 1000000,
+    "base_sale_price": 1500000,
+    "low_stock_threshold": 1,
+    "is_active": true,
+    "created_at": "2026-07-04T17:32:35.995704+00:00",
+    "updated_at": "2026-07-04T17:32:35.995704+00:00",
+    "created_by": null,
+    "code": "TP-MV-1783186355",
+    "season": "چهارفصل",
+    "material": "تست"
+  },
+  "variants": [
+    {
+      "id": "04888cf6-dffe-4233-adea-4b21c2b5aad3",
+      "sku": "TP-MV-1783186355-M",
+      "expected_stock": 2
+    },
+    {
+      "id": "7858d1ca-4f32-48df-8380-c32f91b6f916",
+      "sku": "TP-MV-1783186355-L",
+      "expected_stock": 3
+    },
+    {
+      "id": "99ba1f96-6e4f-4b77-9115-9f92a82f87e9",
+      "sku": "TP-MV-1783186355-S",
+      "expected_stock": 4
+    }
+  ],
+  "stock_view": [
+    {
+      "product_id": "e62940bf-9898-49f5-900c-e753b9371d86",
+      "product_variant_id": "04888cf6-dffe-4233-adea-4b21c2b5aad3",
+      "current_stock": 2
+    },
+    {
+      "product_id": "e62940bf-9898-49f5-900c-e753b9371d86",
+      "product_variant_id": "7858d1ca-4f32-48df-8380-c32f91b6f916",
+      "current_stock": 3
+    },
+    {
+      "product_id": "e62940bf-9898-49f5-900c-e753b9371d86",
+      "product_variant_id": "99ba1f96-6e4f-4b77-9115-9f92a82f87e9",
+      "current_stock": 4
+    }
+  ],
+  "deactivated": {
+    "id": "e62940bf-9898-49f5-900c-e753b9371d86",
+    "is_active": false
+  }
+}

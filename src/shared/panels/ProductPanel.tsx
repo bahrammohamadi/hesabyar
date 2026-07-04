@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { MoreVertical, Package } from "lucide-react";
+import { MoreVertical, Package, Plus, Trash2 } from "lucide-react";
 import type { PanelInstance, PanelMode } from "@/src/core/panel-manager/types";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { useOrg } from "@/lib/hooks/useOrg";
+import { useQueryClient } from "@tanstack/react-query";
 import { useBrands, useCategories } from "@/lib/hooks/useProducts";
 import {
+  createVariant as createVariantRecord,
   productMoney,
   useCreateProduct,
   useCreateVariant,
@@ -19,7 +21,7 @@ import {
   type ProductEntity,
   type ProductVariantEntity,
 } from "@/src/core/services/product-service";
-import { Badge, Button, DataTable, EmptyState, Field, IconButton, Input, NumberInput, PanelShell, Section, Select, Spinner, Tabs, type Column } from "@/src/shared/ui";
+import { Badge, Button, DataTable, EmptyState, Field, IconButton, Input, NumberInput, PanelShell, Section, Select, Spinner, Tabs, useToast, type Column } from "@/src/shared/ui";
 import { Money, PersianDate, toPersianDigits } from "@/src/shared/format";
 
 function stockTone(stock: number) {
@@ -92,6 +94,8 @@ function formFromVariant(variant: ProductVariantEntity): VariantFormState {
 
 export function ProductPanel({ panel }: { panel: PanelInstance }) {
   const { closeTop, replaceTop } = usePanelManager();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
   const { orgId, branchId } = useOrg();
   const { data: categories } = useCategories(orgId);
   const { data: brands } = useBrands(orgId);
@@ -106,6 +110,9 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
   const updateVariant = useUpdateVariant();
   const [productForm, setProductForm] = useState<ProductFormState>(emptyProductForm());
   const [variantForm, setVariantForm] = useState<VariantFormState>(emptyVariantForm());
+  const [batchVariantForms, setBatchVariantForms] = useState<VariantFormState[]>([emptyVariantForm(), emptyVariantForm()]);
+  const [batchOpen, setBatchOpen] = useState(false);
+  const [savingBatch, setSavingBatch] = useState(false);
   const [variantEdit, setVariantEdit] = useState<VariantFormState | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -116,8 +123,87 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
     else if (product) setProductForm(formFromProduct(product));
   }, [mode, product]);
 
+  useEffect(() => {
+    setBatchVariantForms([emptyVariantForm(), emptyVariantForm()]);
+    setBatchOpen(false);
+    setSavingBatch(false);
+  }, [productId, mode]);
+
   const stockByVariant = useMemo(() => new Map((stockQuery.data ?? []).map((row) => [row.product_variant_id, row.current_stock])), [stockQuery.data]);
   const totalStock = (stockQuery.data ?? []).reduce((sum, row) => sum + row.current_stock, 0);
+
+  function updateBatchVariant(index: number, updater: (prev: VariantFormState) => VariantFormState) {
+    setBatchVariantForms((prev) => prev.map((row, rowIndex) => (rowIndex === index ? updater(row) : row)));
+  }
+
+  function addBatchVariantRow() {
+    setBatchVariantForms((prev) => [...prev, emptyVariantForm()]);
+  }
+
+  function removeBatchVariantRow(index: number) {
+    setBatchVariantForms((prev) => (prev.length <= 1 ? [emptyVariantForm()] : prev.filter((_, rowIndex) => rowIndex !== index)));
+  }
+
+  function isMeaningfulVariant(row: VariantFormState) {
+    return Boolean(
+      row.color.trim() ||
+      row.size.trim() ||
+      row.sku.trim() ||
+      row.barcode.trim() ||
+      row.purchasePriceToman ||
+      row.salePriceToman ||
+      row.initialStock,
+    );
+  }
+
+  function batchRowsToSave(rows = batchVariantForms) {
+    return rows.filter(isMeaningfulVariant);
+  }
+
+  async function saveVariantRows(targetProductId: string, rows: VariantFormState[]) {
+    if (!orgId) throw new Error("سازمان فعال یافت نشد.");
+    let savedCount = 0;
+    for (const row of rows) {
+      await createVariantRecord(targetProductId, {
+        org_id: orgId,
+        branch_id: branchId,
+        color: row.color,
+        size: row.size,
+        sku: row.sku,
+        barcode: row.barcode,
+        purchase_price_toman: row.purchasePriceToman,
+        sale_price_toman: row.salePriceToman,
+        initial_stock: row.initialStock,
+      });
+      savedCount += 1;
+    }
+    await queryClient.invalidateQueries({ queryKey: ["products"] });
+    await queryClient.invalidateQueries({ queryKey: ["entity", "product"] });
+    await queryClient.invalidateQueries({ queryKey: ["entity", "product", "detail", targetProductId] });
+    await queryClient.invalidateQueries({ queryKey: ["entity", "product", "stock", targetProductId] });
+    return savedCount;
+  }
+
+  async function handleSaveBatchVariants() {
+    if (!productId) return;
+    const rows = batchRowsToSave();
+    if (rows.length === 0) {
+      setFormError("برای افزودن دسته‌ای، حداقل یک ردیف واریانت را تکمیل کنید.");
+      return;
+    }
+    setFormError(null);
+    setSavingBatch(true);
+    try {
+      const savedCount = await saveVariantRows(productId, rows);
+      setBatchVariantForms([emptyVariantForm(), emptyVariantForm()]);
+      setBatchOpen(false);
+      toast({ title: `${toPersianDigits(savedCount)} واریانت اضافه شد`, tone: "success" });
+    } catch (error) {
+      setFormError((error as Error).message);
+    } finally {
+      setSavingBatch(false);
+    }
+  }
 
   async function handleProductSave() {
     setFormError(null);
@@ -131,6 +217,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
           setFormError("سازمان فعال یافت نشد.");
           return;
         }
+        const variantRows = batchRowsToSave();
         const created = await createProduct.mutateAsync({
           org_id: orgId,
           branch_id: branchId,
@@ -146,6 +233,10 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
           base_sale_price_toman: productForm.baseSalePriceToman,
           low_stock_threshold: productForm.lowStockThreshold ?? 3,
         });
+        if (variantRows.length > 0) {
+          const savedCount = await saveVariantRows(created.id, variantRows);
+          toast({ title: `${toPersianDigits(savedCount)} واریانت اضافه شد`, tone: "success" });
+        }
         replaceTop({ type: "product", entityId: created.id, mode: "view", title: created.name, context: panel.context });
       } else if (productId) {
         await updateProduct.mutateAsync({
@@ -257,6 +348,18 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
         <Field label="حداقل موجودی"><NumberInput value={productForm.lowStockThreshold} onValueChange={(value) => setProductForm((prev) => ({ ...prev, lowStockThreshold: value }))} /></Field>
         <Field label="توضیحات" className="sm:col-span-2"><Input value={productForm.description} onChange={(event) => setProductForm((prev) => ({ ...prev, description: event.target.value }))} /></Field>
       </div>
+      {isCreate && (
+        <div className="mt-4 rounded-2xl border border-dashed border-primary/20 bg-primary/[0.03] p-3">
+          <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="text-sm font-extrabold text-slate-800">تنوع‌های اولیه</div>
+              <p className="text-xs text-muted-foreground">اختیاری؛ چند واریانت را همراه ساخت کالا با یک ذخیره ثبت کنید.</p>
+            </div>
+            <Button size="sm" variant="secondary" onClick={addBatchVariantRow}><Plus size={16} /> افزودن ردیف دیگر</Button>
+          </div>
+          {renderBatchVariantRows()}
+        </div>
+      )}
       {formError && productForm.name.trim() && <div className="mt-3 rounded-xl bg-rose-50 p-3 text-sm text-destructive">{formError}</div>}
       <div className="mt-4 flex gap-2">
         <Button loading={savingProduct} onClick={handleProductSave}>ذخیره</Button>
@@ -290,6 +393,31 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
       {includeStock && <Field label="موجودی اولیه"><NumberInput value={state.initialStock} onValueChange={(v) => setState((p) => ({ ...p, initialStock: v }))} /></Field>}
     </div>
   );
+
+  function renderBatchVariantRows() {
+    return (
+      <div className="space-y-3">
+        {batchVariantForms.map((row, index) => (
+          <div key={index} className="rounded-2xl border border-border bg-slate-50/50 p-3">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <div className="text-sm font-bold text-slate-700">ردیف {toPersianDigits(index + 1)}</div>
+              <Button size="sm" variant="ghost" onClick={() => removeBatchVariantRow(index)}><Trash2 size={15} /> حذف</Button>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <Field label="SKU"><Input dir="ltr" className="text-left" value={row.sku} onChange={(e) => updateBatchVariant(index, (prev) => ({ ...prev, sku: e.target.value }))} /></Field>
+              <Field label="بارکد"><Input dir="ltr" className="text-left" value={row.barcode} onChange={(e) => updateBatchVariant(index, (prev) => ({ ...prev, barcode: e.target.value }))} /></Field>
+              <Field label="رنگ"><Input value={row.color} onChange={(e) => updateBatchVariant(index, (prev) => ({ ...prev, color: e.target.value }))} /></Field>
+              <Field label="سایز"><Input value={row.size} onChange={(e) => updateBatchVariant(index, (prev) => ({ ...prev, size: e.target.value }))} /></Field>
+              <Field label="قیمت خرید (تومان)"><NumberInput value={row.purchasePriceToman} onValueChange={(value) => updateBatchVariant(index, (prev) => ({ ...prev, purchasePriceToman: value }))} /></Field>
+              <Field label="قیمت فروش (تومان)"><NumberInput value={row.salePriceToman} onValueChange={(value) => updateBatchVariant(index, (prev) => ({ ...prev, salePriceToman: value }))} /></Field>
+              <Field label="موجودی اولیه"><NumberInput value={row.initialStock} onValueChange={(value) => updateBatchVariant(index, (prev) => ({ ...prev, initialStock: value }))} /></Field>
+            </div>
+          </div>
+        ))}
+        <Button variant="secondary" onClick={addBatchVariantRow}><Plus size={16} /> افزودن ردیف دیگر</Button>
+      </div>
+    );
+  }
 
   return (
     <PanelShell title={product!.name} subtitle={product!.code ? `کد: ${product!.code}` : "کالا"} icon={<Package size={20} />} onClose={closeTop} actions={<IconButton aria-label="گزینه‌های کالا"><MoreVertical size={18} /></IconButton>}>
@@ -338,8 +466,21 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
                 <div className="space-y-4">
                   <DataTable rows={product!.variants} columns={variantColumns} keyExtractor={(row) => row.id} empty={<EmptyState title="واریانتی برای این کالا ثبت نشده" />} />
                   <Section title="افزودن واریانت جدید" description="موجودی اولیه از مسیر fn_add_stock_movement ثبت می‌شود.">
-                    {variantFormView(variantForm, setVariantForm, true)}
-                    <div className="mt-4"><Button loading={createVariant.isPending} onClick={handleCreateVariant}>افزودن واریانت</Button></div>
+                    <div className="mb-4 flex flex-wrap gap-2">
+                      <Button size="sm" variant={!batchOpen ? "primary" : "secondary"} onClick={() => setBatchOpen(false)}>تکی</Button>
+                      <Button size="sm" variant={batchOpen ? "primary" : "secondary"} onClick={() => setBatchOpen(true)}>افزودن دسته‌ای</Button>
+                    </div>
+                    {batchOpen ? (
+                      <>
+                        {renderBatchVariantRows()}
+                        <div className="mt-4"><Button loading={savingBatch} onClick={handleSaveBatchVariants}>ذخیره همه</Button></div>
+                      </>
+                    ) : (
+                      <>
+                        {variantFormView(variantForm, setVariantForm, true)}
+                        <div className="mt-4"><Button loading={createVariant.isPending} onClick={handleCreateVariant}>افزودن واریانت</Button></div>
+                      </>
+                    )}
                   </Section>
                   {variantEdit && (
                     <Section title="ویرایش واریانت" description="ویرایش قیمت‌ها و شناسه‌های واریانت؛ موجودی از مسیر انبار تغییر می‌کند.">
