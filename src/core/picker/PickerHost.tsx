@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { globalSearch, type GlobalSearchResult } from "@/src/core/services/search-service";
@@ -18,6 +19,7 @@ function useDebouncedValue(value: string, delay: number) {
 
 export function PickerHost() {
   const { activePicker, closePicker } = usePicker();
+  const [mounted, setMounted] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<GlobalSearchResult[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -25,6 +27,8 @@ export function PickerHost() {
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const debouncedQuery = useDebouncedValue(query, 250);
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!activePicker) return;
@@ -70,15 +74,15 @@ export function PickerHost() {
 
   const typeLabel = useMemo(() => ({ contact: "مشتری", product: "کالا", document: "سند", all: "همه" }[activePicker?.type ?? "all"]), [activePicker?.type]);
 
-  if (!activePicker) return null;
+  if (!activePicker || !mounted) return null;
 
   function selectItem(item: GlobalSearchResult) {
     activePicker?.onSelect(item);
     closePicker();
   }
 
-  return (
-    <div className="fixed inset-0 z-[120] flex items-start justify-center bg-slate-950/35 p-3 pt-[10vh] backdrop-blur-sm" dir="rtl">
+  return createPortal(
+    <div className="fixed inset-0 flex items-start justify-center bg-slate-950/35 p-3 pt-[10vh] backdrop-blur-sm" style={{ zIndex: "var(--z-picker)" }} dir="rtl">
       <div className="w-full max-w-2xl overflow-hidden rounded-[24px] border border-white/70 bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
           <div>
@@ -139,6 +143,7 @@ export function PickerHost() {
           ))}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

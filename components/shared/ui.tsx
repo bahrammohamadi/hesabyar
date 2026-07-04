@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils/cn";
 import { Loader2, Inbox } from "lucide-react";
 import React, { type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 
 export function PageHeader({
@@ -220,9 +221,12 @@ export function Modal({
   size?: "md" | "lg";
   mobileFullscreen?: boolean;
 }) {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
+  if (!open || !mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 flex items-end sm:items-center justify-center p-0 sm:p-4" style={{ zIndex: "var(--z-modal)" }}>
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div
         className={cn(
@@ -239,6 +243,7 @@ export function Modal({
         </div>
         <div className="p-5">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

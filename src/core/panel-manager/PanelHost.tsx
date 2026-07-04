@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils/cn";
 import { usePanelManager } from "./panel-manager.store";
 import type { PanelInstance } from "./types";
@@ -19,6 +20,9 @@ function RenderPanel({ panel }: { panel: PanelInstance }) {
 
 export function PanelHost() {
   const { stack, topPanel, closeTop } = usePanelManager();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     const shouldLock = stack.length > 0;
@@ -45,10 +49,10 @@ export function PanelHost() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [stack.length, closeTop]);
 
-  if (stack.length === 0) return null;
+  if (stack.length === 0 || !mounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-[80] pointer-events-none" aria-live="polite">
+  return createPortal(
+    <div className="fixed inset-0 pointer-events-none" style={{ zIndex: "var(--z-panel)" }} aria-live="polite">
       <button
         className="absolute inset-0 bg-slate-950/30 backdrop-blur-[1px] pointer-events-auto"
         onClick={closeTop}
@@ -77,6 +81,7 @@ export function PanelHost() {
           </section>
         );
       })}
-    </div>
+    </div>,
+    document.body
   );
 }
