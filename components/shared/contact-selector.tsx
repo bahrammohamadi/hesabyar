@@ -5,9 +5,9 @@ import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { Modal } from "@/components/shared/ui";
-import { Search, User, X, UserPlus, Loader2 } from "lucide-react";
+import { Search, User, X, UserPlus } from "lucide-react";
 import { PhoneLink } from "@/components/shared/phone-link";
-import { useCreateContact } from "@/src/core/services/contact-service";
+import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import type { ContactType } from "@/types/db";
 
 export interface SelectableContact {
@@ -33,8 +33,8 @@ export function ContactSelector({
   filterType?: "customer" | "supplier";
   title?: string;
 }) {
-  const { orgId, branchId } = useOrg();
-  const createContactMutation = useCreateContact();
+  const { orgId } = useOrg();
+  const { openEntityForResult } = usePanelManager();
   const [term, setTerm] = useState("");
   const [creating, setCreating] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -69,72 +69,32 @@ export function ContactSelector({
       .slice(0, 200);
   }, [contacts, term]);
 
-  // فرم ایجاد سریع
-  const [newName, setNewName] = useState("");
-  const [newPhone, setNewPhone] = useState("");
-  const [error, setError] = useState<string | null>(null);
-
-  async function createContact() {
-    setError(null);
-    if (!newName.trim()) {
-      setError("نام الزامی است.");
-      return;
-    }
+  // باز کردن فرم کامل ContactPanel و دریافت نتیجه بعد از ذخیره
+  async function openCreate() {
     if (!orgId) return;
-    try {
-      const created = await createContactMutation.mutateAsync({
-        org_id: orgId,
-        branch_id: branchId,
-        name: newName.trim(),
-        phone: newPhone.trim() || null,
-        type: filterType,
-      });
-      onSelect({ id: created.id, name: created.name, phone: created.phone, type: created.type });
-      setCreating(false);
-      setTerm("");
-      setNewName("");
-      setNewPhone("");
-    } catch (e) {
-      setError((e as Error).message);
-    }
-  }
-
-  // پیش‌پرکردن نام از عبارت جستجو
-  function openCreate() {
-    setNewName(term);
-    setNewPhone("");
     setCreating(true);
+    const result = await openEntityForResult("contact", {
+      mode: "create",
+      context: "picker",
+      title: filterType === "supplier" ? "تأمین‌کننده جدید" : "مشتری جدید",
+      props: { initialName: term, initialType: filterType },
+    });
+    setCreating(false);
+    if (result?.id) {
+      const data = result.data as { name?: string; phone?: string | null; type?: ContactType } | undefined;
+      onSelect({
+        id: result.id,
+        name: data?.name ?? result.title ?? "مخاطب جدید",
+        phone: data?.phone ?? null,
+        type: data?.type ?? filterType,
+      });
+      setTerm("");
+      onClose();
+    }
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={creating ? "مشتری جدید" : title} size="md" mobileFullscreen>
-      {creating ? (
-        <div className="space-y-4">
-          <div>
-            <label className="label">نام *</label>
-            <input className="input" autoFocus value={newName} onChange={(e) => setNewName(e.target.value)} />
-          </div>
-          <div>
-            <label className="label">شماره تماس</label>
-            <input
-              className="input text-left"
-              dir="ltr"
-              value={newPhone}
-              onChange={(e) => setNewPhone(e.target.value)}
-            />
-          </div>
-          {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
-          <div className="flex gap-2">
-            <button onClick={createContact} disabled={createContactMutation.isPending} className="btn-primary flex-1">
-              {createContactMutation.isPending && <Loader2 className="animate-spin" size={18} />}
-              ثبت و انتخاب
-            </button>
-            <button onClick={() => setCreating(false)} className="btn-secondary">
-              بازگشت
-            </button>
-          </div>
-        </div>
-      ) : (
+    <Modal open={open} onClose={onClose} title={title} size="md" mobileFullscreen>
         <div className="space-y-3">
           <div className="relative">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
@@ -189,7 +149,6 @@ export function ContactSelector({
             )}
           </div>
         </div>
-      )}
     </Modal>
   );
 }
