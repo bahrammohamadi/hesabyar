@@ -52,7 +52,7 @@ import Link from "next/link";
 
 export default function DashboardPage() {
   const { orgId, loading: orgLoading } = useOrg();
-  const { openDocument } = usePanelManager();
+  const { openDocument, openEntity } = usePanelManager();
   const [quickSaleOpen, setQuickSaleOpen] = useState(false);
   const [quickExpenseOpen, setQuickExpenseOpen] = useState(false);
   const [quickReceiptOpen, setQuickReceiptOpen] = useState(false);
@@ -210,14 +210,14 @@ export default function DashboardPage() {
             description="افزودن محصول"
             icon={Package2} 
             color="bg-slate-600" 
-            href="/products?action=new" 
+            onClick={() => openEntity("product", undefined, { mode: "create", context: "dashboard", title: "کالای جدید" })} 
           />
           <QuickActionButton 
             label="مشتری جدید" 
             description="ثبت مخاطب"
             icon={UserPlus} 
             color="bg-cyan-600" 
-            href="/contacts?action=new&type=customer" 
+            onClick={() => openEntity("contact", undefined, { mode: "create", context: "dashboard", title: "مشتری جدید" })} 
           />
           <QuickActionButton 
             label="گزارشات" 
