@@ -26,17 +26,17 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={client}>
       <ThemeProvider>
-        <PanelManagerProvider>
-          <ToastProvider>
-            <ConfirmProvider>
+        <ToastProvider>
+          <ConfirmProvider>
+            <PanelManagerProvider>
               <PickerProvider>
                 {children}
                 <PickerHost />
                 <CoreRuntimeDevButton />
               </PickerProvider>
-            </ConfirmProvider>
-          </ToastProvider>
-        </PanelManagerProvider>
+            </PanelManagerProvider>
+          </ConfirmProvider>
+        </ToastProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
