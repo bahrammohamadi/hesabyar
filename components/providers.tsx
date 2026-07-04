@@ -7,7 +7,7 @@ import { PanelManagerProvider } from "@/src/core/panel-manager/PanelManagerProvi
 import { PickerHost } from "@/src/core/picker/PickerHost";
 import { PickerProvider } from "@/src/core/picker/usePicker";
 import { CoreRuntimeDevButton } from "@/src/core/panel-manager/CoreRuntimeDevButton";
-import { ToastProvider } from "@/src/shared/ui";
+import { ConfirmProvider, ToastProvider } from "@/src/shared/ui";
 
 export function Providers({ children }: { children: ReactNode }) {
   const [client] = useState(
@@ -28,11 +28,13 @@ export function Providers({ children }: { children: ReactNode }) {
       <ThemeProvider>
         <PanelManagerProvider>
           <ToastProvider>
-            <PickerProvider>
-              {children}
-              <PickerHost />
-              <CoreRuntimeDevButton />
-            </PickerProvider>
+            <ConfirmProvider>
+              <PickerProvider>
+                {children}
+                <PickerHost />
+                <CoreRuntimeDevButton />
+              </PickerProvider>
+            </ConfirmProvider>
           </ToastProvider>
         </PanelManagerProvider>
       </ThemeProvider>

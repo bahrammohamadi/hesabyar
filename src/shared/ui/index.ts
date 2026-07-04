@@ -8,3 +8,4 @@ export * from "./PanelShell";
 export * from "./Tabs";
 export * from "./Feedback";
 export * from "./Toast";
+export * from "./ConfirmDialog";
