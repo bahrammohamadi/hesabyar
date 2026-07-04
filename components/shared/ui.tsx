@@ -15,12 +15,15 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="mb-5 flex items-start justify-between gap-3 sm:mb-6">
-      <div className="min-w-0">
-        <h1 className="truncate text-lg font-extrabold text-slate-800 sm:text-2xl">{title}</h1>
-        {subtitle && <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500 sm:text-sm">{subtitle}</p>}
+    <div className="mb-6 rounded-[24px] border border-white/70 bg-white/85 p-4 shadow-sm shadow-slate-900/[0.03] backdrop-blur sm:p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="mb-2 h-1 w-12 rounded-full bg-primary/70" />
+          <h1 className="truncate text-lg font-extrabold tracking-tight text-slate-800 sm:text-2xl">{title}</h1>
+          {subtitle && <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500 sm:text-sm">{subtitle}</p>}
+        </div>
+        {action && <div className="shrink-0">{action}</div>}
       </div>
-      {action && <div className="shrink-0">{action}</div>}
     </div>
   );
 }
