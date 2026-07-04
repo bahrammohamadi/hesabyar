@@ -116,7 +116,7 @@ export default function SalesPage() {
                   onClick={(event) => handleSaleRowClick(event, s.id)}
                   onAuxClick={(event) => handleSaleRowAuxClick(event, s.id)}
                   onKeyDown={(event) => { if (event.key === "Enter") openSale(s.id); }}
-                  className="cursor-pointer hover:bg-slate-50"
+                  className="cursor-pointer odd:bg-white even:bg-slate-50/60 transition hover:bg-primary/[0.06] hover:shadow-sm"
                 >
                   <td>
                     <Link
@@ -143,7 +143,7 @@ export default function SalesPage() {
                       <span className="text-slate-400">مشتری نقدی</span>
                     )}
                   </td>
-                  <td className="font-medium">{formatToman(s.total)}</td>
+                  <td className="text-left font-semibold tabular-nums">{formatToman(s.total)}</td>
                   <td>
                     {s.paid_credit > 0 ? (
                       <span className="text-rose-600">{formatToman(s.paid_credit, false)}</span>
@@ -152,7 +152,7 @@ export default function SalesPage() {
                     )}
                   </td>
                   <td>
-                    <span className="badge bg-emerald-100 text-emerald-700">ثبت‌شده</span>
+                    <span className="badge bg-info-soft text-info border border-info/20">{s.status === "settled" ? "تسویه‌شده" : s.status === "reversed" ? "برگشت‌خورده" : "ثبت‌شده"}</span>
                   </td>
                 </tr>
               ))}

@@ -119,7 +119,7 @@ export default function PurchasesPage() {
                   onClick={(event) => handlePurchaseRowClick(event, p.id)}
                   onAuxClick={(event) => handlePurchaseRowAuxClick(event, p.id)}
                   onKeyDown={(event) => { if (event.key === "Enter") openPurchase(p.id); }}
-                  className="cursor-pointer hover:bg-slate-50"
+                  className="cursor-pointer odd:bg-white even:bg-slate-50/60 transition hover:bg-primary/[0.06] hover:shadow-sm"
                 >
                   <td>
                     <Link
@@ -146,8 +146,8 @@ export default function PurchasesPage() {
                       <span className="text-slate-400">—</span>
                     )}
                   </td>
-                  <td className="font-medium">{formatToman(p.total)}</td>
-                  <td>{formatToman(p.paid)}</td>
+                  <td className="text-left font-semibold tabular-nums">{formatToman(p.total)}</td>
+                  <td className="text-left tabular-nums">{formatToman(p.paid)}</td>
                 </tr>
               ))}
             </tbody>
