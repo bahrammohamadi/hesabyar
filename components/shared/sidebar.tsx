@@ -106,6 +106,7 @@ const NAV = [
     label: "گزارش‌ها",
     icon: BarChart3,
     children: [
+      { href: "/reports/overview-v2", label: "گزارش‌های جدید", icon: BarChart2 },
       { href: "/reports/sales", label: "فروش", icon: TrendingUp },
       { href: "/reports/products", label: "کالا", icon: Package },
       { href: "/reports/profitability", label: "سود کالا/فاکتور", icon: TrendingUp },

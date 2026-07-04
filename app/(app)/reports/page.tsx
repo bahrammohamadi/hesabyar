@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
@@ -653,6 +654,21 @@ export function ReportsPageContent({ forcedTab }: { forcedTab?: TabId }) {
           </div>
         }
       />
+
+      <div className="mb-6 rounded-2xl border border-primary/20 bg-primary/[0.04] p-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="font-extrabold text-slate-800">گزارش‌های جدید در دسترس است</h2>
+              <span className="badge bg-primary/10 text-primary">جدید</span>
+            </div>
+            <p className="mt-1 text-sm text-slate-500">نمای بدهکاران، سودآوری کالا و فروش روزانه با طراحی تازه و اتصال به پنل‌های جدید.</p>
+          </div>
+          <Link href="/reports/overview-v2" className="btn-primary shrink-0 text-sm">
+            مشاهده
+          </Link>
+        </div>
+      </div>
 
       {/* تب‌ها */}
       <div className="flex gap-2 overflow-x-auto pb-2 mb-6 -mx-4 px-4">
