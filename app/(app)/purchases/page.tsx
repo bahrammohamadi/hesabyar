@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
+import { DataTable, type Column } from "@/src/shared/ui";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
 import { EntityLink } from "@/components/shared/entity-link";
@@ -99,60 +100,52 @@ export default function PurchasesPage() {
           }
         />
       ) : (
-        <div className="card overflow-x-auto">
-          <table className="table-base">
-            <thead>
-              <tr>
-                <th>شماره</th>
-                <th>تاریخ</th>
-                <th>تامین‌کننده</th>
-                <th>مبلغ</th>
-                <th>پرداخت‌شده</th>
-              </tr>
-            </thead>
-            <tbody>
-              {purchases.map((p) => (
-                <tr
-                  key={p.id}
-                  role="link"
-                  tabIndex={0}
-                  onClick={(event) => handlePurchaseRowClick(event, p.id)}
-                  onAuxClick={(event) => handlePurchaseRowAuxClick(event, p.id)}
-                  onKeyDown={(event) => { if (event.key === "Enter") openPurchase(p.id); }}
-                  className="cursor-pointer odd:bg-white even:bg-slate-50/60 transition hover:bg-primary/[0.06] hover:shadow-sm"
+        <DataTable
+          rows={purchases}
+          keyExtractor={(p) => p.id}
+          className="bg-white/90"
+          getRowProps={(p) => ({
+            role: "link",
+            tabIndex: 0,
+            onClick: (event) => handlePurchaseRowClick(event, p.id),
+            onAuxClick: (event) => handlePurchaseRowAuxClick(event, p.id),
+            onKeyDown: (event) => { if (event.key === "Enter") openPurchase(p.id); },
+            className: "cursor-pointer odd:bg-white even:bg-slate-50/60 hover:bg-primary/[0.06] hover:shadow-sm",
+          })}
+          columns={[
+            {
+              key: "invoice_no",
+              header: "شماره",
+              render: (p) => (
+                <Link
+                  href={`/purchases/${p.id}`}
+                  className="font-medium text-primary hover:underline"
+                  onClick={(event) => {
+                    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1) return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    openPurchase(p.id);
+                  }}
                 >
-                  <td>
-                    <Link
-                      href={`/purchases/${p.id}`}
-                      className="font-medium text-primary hover:underline"
-                      onClick={(event) => {
-                        if (event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1) return;
-                        event.preventDefault();
-                        event.stopPropagation();
-                        openPurchase(p.id);
-                      }}
-                    >
-                      {p.invoice_no}
-                    </Link>
-                  </td>
-                  <td className="text-slate-500">{toJalali(p.date)}</td>
-                  <td>
-                    {p.supplier_id ? (
-                      <div className="flex items-center gap-2">
-                        <EntityLink type="contact" id={p.supplier_id}>{p.supplier?.name ?? "تامین‌کننده"}</EntityLink>
-                        <span onClick={(event) => event.stopPropagation()}><EntityActionMenu type="contact" id={p.supplier_id} label={p.supplier?.name ?? "تامین‌کننده"} /></span>
-                      </div>
-                    ) : (
-                      <span className="text-slate-400">—</span>
-                    )}
-                  </td>
-                  <td className="text-left font-semibold tabular-nums">{formatToman(p.total)}</td>
-                  <td className="text-left tabular-nums">{formatToman(p.paid)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  {p.invoice_no}
+                </Link>
+              ),
+            },
+            { key: "date", header: "تاریخ", render: (p) => <span className="text-slate-500">{toJalali(p.date)}</span> },
+            {
+              key: "supplier",
+              header: "تامین‌کننده",
+              render: (p) => p.supplier_id ? (
+                <div className="flex items-center gap-2">
+                  <EntityLink type="contact" id={p.supplier_id}>{p.supplier?.name ?? "تامین‌کننده"}</EntityLink>
+                  <span onClick={(event) => event.stopPropagation()}><EntityActionMenu type="contact" id={p.supplier_id} label={p.supplier?.name ?? "تامین‌کننده"} /></span>
+                </div>
+              ) : <span className="text-slate-400">—</span>,
+            },
+            { key: "total", header: "مبلغ", align: "left", render: (p) => <span className="font-semibold tabular-nums">{formatToman(p.total)}</span> },
+            { key: "paid", header: "پرداخت‌شده", align: "left", render: (p) => <span className="tabular-nums">{formatToman(p.paid)}</span> },
+          ] satisfies Column<(typeof purchases)[number]>[]}
+        />
       )}
 
       {open && (

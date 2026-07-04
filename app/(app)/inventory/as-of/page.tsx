@@ -6,6 +6,7 @@ import { CalendarDays, Download, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { EmptyState, PageHeader, Spinner } from "@/components/shared/ui";
+import { DataTable } from "@/src/shared/ui";
 import { DatePicker } from "@/components/shared/date-picker";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { EntityLink } from "@/components/shared/entity-link";
@@ -130,24 +131,20 @@ export default function InventoryAsOfPage() {
       </div>
 
       {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-rose-50 text-rose-700 text-sm p-4">{(error as Error).message}</div> : rows.length === 0 ? <EmptyState icon={CalendarDays} title="موجودی برای نمایش وجود ندارد" /> : (
-        <div className="card overflow-x-auto">
-          <table className="table-base">
-            <thead><tr><th>کالا</th><th>تنوع</th><th>کد/SKU</th><th>موجودی</th><th>قیمت خرید</th><th>ارزش</th><th>عملیات</th></tr></thead>
-            <tbody>
-              {rows.map((row: any) => (
-                <tr key={row.variant_id} className="hover:bg-slate-50">
-                  <td><EntityLink type="product" id={row.product_id}>{row.product_name}</EntityLink></td>
-                  <td className="text-slate-500">{[row.color, row.size].filter(Boolean).join(" / ") || "ساده"}</td>
-                  <td className="font-mono text-xs text-slate-400">{row.sku || row.product_code || row.barcode || "—"}</td>
-                  <td className={row.stock_qty <= row.low_stock_threshold ? "font-bold text-amber-600" : "font-bold text-slate-800"}>{toFaDigits(row.stock_qty)}</td>
-                  <td>{formatToman(row.purchase_price, false)}</td>
-                  <td>{formatToman(row.stock_qty * row.purchase_price, false)}</td>
-                  <td><EntityActionMenu type="product" id={row.product_id} label={row.product_name} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          rows={rows}
+          keyExtractor={(row: any) => row.variant_id}
+          className="bg-white/90"
+          columns={[
+            { key: "product", header: "کالا", render: (row: any) => <EntityLink type="product" id={row.product_id}>{row.product_name}</EntityLink> },
+            { key: "variant", header: "تنوع", render: (row: any) => <span className="text-slate-500">{[row.color, row.size].filter(Boolean).join(" / ") || "ساده"}</span> },
+            { key: "code", header: "کد/SKU", render: (row: any) => <span className="font-mono text-xs text-slate-400">{row.sku || row.product_code || row.barcode || "—"}</span> },
+            { key: "stock", header: "موجودی", render: (row: any) => <span className={row.stock_qty <= row.low_stock_threshold ? "font-bold text-amber-600" : "font-bold text-slate-800"}>{toFaDigits(row.stock_qty)}</span> },
+            { key: "purchase", header: "قیمت خرید", render: (row: any) => formatToman(row.purchase_price, false) },
+            { key: "value", header: "ارزش", render: (row: any) => formatToman(row.stock_qty * row.purchase_price, false) },
+            { key: "actions", header: "عملیات", render: (row: any) => <EntityActionMenu type="product" id={row.product_id} label={row.product_name} /> },
+          ]}
+        />
       )}
     </div>
   );

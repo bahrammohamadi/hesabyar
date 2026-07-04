@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Download, Printer, UserCheck } from "lucide-react";
 import { EmptyState, PageHeader, Spinner } from "@/components/shared/ui";
+import { DataTable } from "@/src/shared/ui";
 import { DatePicker } from "@/components/shared/date-picker";
 import { formatToman, toFaDigits, toJalali } from "@/lib/utils/format";
 
@@ -87,24 +88,20 @@ export default function SellerReportPage() {
       </div>
 
       {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-rose-50 text-rose-700 text-sm p-4">{(error as Error).message}</div> : !data?.sellers?.length ? <EmptyState icon={UserCheck} title="داده‌ای برای این بازه وجود ندارد" /> : (
-        <div className="card overflow-x-auto">
-          <table className="table-base">
-            <thead><tr><th>فروشنده</th><th>فاکتور</th><th>مبلغ فروش</th><th>نسیه</th><th>میانگین فاکتور</th><th>فعالیت‌ها</th><th>آخرین فروش</th></tr></thead>
-            <tbody>
-              {data.sellers.map((seller) => (
-                <tr key={seller.user_id ?? "unknown"} className="hover:bg-slate-50">
-                  <td><div className="font-medium text-slate-800">{seller.user?.name ?? "نامشخص"}</div><div className="text-xs text-slate-400" dir="ltr">{seller.user?.email ?? ""}</div></td>
-                  <td>{toFaDigits(seller.invoice_count)}</td>
-                  <td className="font-bold text-emerald-600">{formatToman(seller.sales_total, false)}</td>
-                  <td className="text-rose-600">{formatToman(seller.credit_total, false)}</td>
-                  <td>{formatToman(seller.average_invoice, false)}</td>
-                  <td>{toFaDigits(seller.activity_count)}</td>
-                  <td>{seller.last_sale_at ? toJalali(seller.last_sale_at) : "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          rows={data.sellers}
+          keyExtractor={(seller) => seller.user_id ?? "unknown"}
+          className="bg-white/90"
+          columns={[
+            { key: "seller", header: "فروشنده", render: (seller) => <><div className="font-medium text-slate-800">{seller.user?.name ?? "نامشخص"}</div><div className="text-xs text-slate-400" dir="ltr">{seller.user?.email ?? ""}</div></> },
+            { key: "invoice_count", header: "فاکتور", render: (seller) => toFaDigits(seller.invoice_count) },
+            { key: "sales_total", header: "مبلغ فروش", render: (seller) => <span className="font-bold text-emerald-600">{formatToman(seller.sales_total, false)}</span> },
+            { key: "credit_total", header: "نسیه", render: (seller) => <span className="text-rose-600">{formatToman(seller.credit_total, false)}</span> },
+            { key: "average_invoice", header: "میانگین فاکتور", render: (seller) => formatToman(seller.average_invoice, false) },
+            { key: "activity_count", header: "فعالیت‌ها", render: (seller) => toFaDigits(seller.activity_count) },
+            { key: "last_sale_at", header: "آخرین فروش", render: (seller) => seller.last_sale_at ? toJalali(seller.last_sale_at) : "—" },
+          ]}
+        />
       )}
     </div>
   );
