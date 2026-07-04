@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { MoreVertical, Receipt } from "lucide-react";
+import { Receipt } from "lucide-react";
 import type { PanelInstance } from "@/src/core/panel-manager/types";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { EntityLink } from "@/src/core/panel-manager/EntityLink";
 import { useDocumentEntity, useRegisterPayment, useTransitionDocument, type DocumentLine, type DocumentTransitionStatus, type InvoiceDocType, type PaymentMethod } from "@/src/core/services/invoice-service";
-import { Badge, Button, DataTable, EmptyState, Field, IconButton, NumberInput, PanelShell, Section, Select, Spinner, StatusPill, Tabs, useConfirm, type Column } from "@/src/shared/ui";
+import { Badge, Button, DataTable, EmptyState, Field, NumberInput, PanelShell, Section, Select, Spinner, StatusPill, Tabs, useConfirm, type Column } from "@/src/shared/ui";
 import { Money, PersianDate, toPersianDigits } from "@/src/shared/format";
 import { rialToToman, tomanToRial } from "@/lib/utils/format";
 
@@ -126,7 +126,6 @@ export function InvoicePanel({ panel }: { panel: PanelInstance }) {
       subtitle={<span className="inline-flex items-center gap-2"><Badge tone={docTone(document.doc_type)}>{docTypeLabel(document.doc_type)}</Badge><StatusPill status={document.status} /></span>}
       icon={<Receipt size={20} />}
       onClose={closeTop}
-      actions={<IconButton aria-label="گزینه‌های سند"><MoreVertical size={18} /></IconButton>}
     >
       <div className="space-y-4">
         <Section title="دسترسی کامل" description="برای ویرایش اقلام، چاپ، CSV و عملیات legacy از صفحه کامل استفاده کنید.">

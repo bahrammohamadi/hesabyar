@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { MoreVertical, X } from "lucide-react";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { IconButton } from "./IconButton";
 
@@ -17,7 +17,7 @@ export function PanelShell({ title, subtitle, icon, onClose, actions, footer, ch
           </div>
         </div>
         <div className="flex items-center gap-1">
-          {actions ?? <IconButton aria-label="گزینه‌ها"><MoreVertical size={18} /></IconButton>}
+          {actions}
           <IconButton onClick={onClose} aria-label="بستن پنل"><X size={20} /></IconButton>
         </div>
       </header>

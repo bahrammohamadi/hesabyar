@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { MoreVertical, Package, Plus, Trash2 } from "lucide-react";
+import { Package, Plus, Trash2 } from "lucide-react";
 import type { PanelInstance, PanelMode } from "@/src/core/panel-manager/types";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { useOrg } from "@/lib/hooks/useOrg";
@@ -25,7 +25,7 @@ import {
   type ProductPriceHistoryEntry,
   type ProductVariantEntity,
 } from "@/src/core/services/product-service";
-import { Badge, Button, DataTable, EmptyState, Field, IconButton, Input, NumberInput, PanelShell, Section, Select, Spinner, Tabs, useToast, type Column } from "@/src/shared/ui";
+import { Badge, Button, DataTable, EmptyState, Field, Input, NumberInput, PanelShell, Section, Select, Spinner, Tabs, useToast, type Column } from "@/src/shared/ui";
 import { Money, PersianDate, toPersianDigits } from "@/src/shared/format";
 
 function stockTone(stock: number) {
@@ -517,7 +517,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
   }
 
   return (
-    <PanelShell title={product!.name} subtitle={product!.code ? `کد: ${product!.code}` : "کالا"} icon={<Package size={20} />} onClose={closeTop} actions={<IconButton aria-label="گزینه‌های کالا"><MoreVertical size={18} /></IconButton>}>
+    <PanelShell title={product!.name} subtitle={product!.code ? `کد: ${product!.code}` : "کالا"} icon={<Package size={20} />} onClose={closeTop}>
       <div className="space-y-4">
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone={product!.is_active ? "success" : "neutral"}>{product!.is_active ? "فعال" : "غیرفعال"}</Badge>

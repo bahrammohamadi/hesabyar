@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { FileText, MoreVertical, Phone, User } from "lucide-react";
+import { FileText, Phone, User } from "lucide-react";
 import type { PanelInstance, PanelMode } from "@/src/core/panel-manager/types";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { EntityLink } from "@/src/core/panel-manager/EntityLink";
@@ -18,7 +18,7 @@ import {
 } from "@/src/core/services/contact-service";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { DatePicker } from "@/components/shared/date-picker";
-import { Badge, Button, DataTable, EmptyState, Field, IconButton, Input, PanelShell, Section, Select, Spinner, StatusPill, Tabs, Textarea, type Column } from "@/src/shared/ui";
+import { Badge, Button, DataTable, EmptyState, Field, Input, PanelShell, Section, Select, Spinner, StatusPill, Tabs, Textarea, type Column } from "@/src/shared/ui";
 import { Money, PersianDate } from "@/src/shared/format";
 
 const TYPE_LABEL: Record<ContactType, string> = {
@@ -279,7 +279,6 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
       subtitle={contact!.code ? `کد: ${contact!.code}` : TYPE_LABEL[contact!.type]}
       icon={<User size={20} />}
       onClose={closeTop}
-      actions={<IconButton aria-label="گزینه‌های مخاطب"><MoreVertical size={18} /></IconButton>}
     >
       <div className="space-y-4">
         <div className="flex flex-wrap items-center gap-2">
