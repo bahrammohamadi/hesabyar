@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
+import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import {
   useProducts,
   useCategories,
@@ -12,7 +14,6 @@ import {
   type ProductWithVariants,
 } from "@/lib/hooks/useProducts";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
-import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { formatToman, toFaDigits, toEnDigits, formatNumber } from "@/lib/utils/format";
 import { tomanToRial, rialToToman } from "@/lib/utils/format";
@@ -41,6 +42,7 @@ const emptyVariant = (): VariantForm => ({
 
 export default function ProductsPage() {
   const { orgId, branchId } = useOrg();
+  const { openEntity } = usePanelManager();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "name_asc" | "name_desc" | "stock_high" | "stock_low" | "price_high" | "price_low">("newest");
@@ -75,16 +77,43 @@ export default function ProductsPage() {
     if (searchParams.get("action") === "new") openNew();
   }, [searchParams]);
 
+  function openProduct(id: string, name?: string | null) {
+    openEntity("product", id, { mode: "view", context: "workspace", title: name ?? undefined });
+  }
+
+  function handleProductRowClick(event: MouseEvent<HTMLElement>, id: string, name?: string | null) {
+    if (event.defaultPrevented) return;
+    const href = `/products/${id}`;
+    if (event.metaKey || event.ctrlKey) {
+      window.open(href, "_blank", "noopener,noreferrer");
+      return;
+    }
+    openProduct(id, name);
+  }
+
+  function handleProductRowAuxClick(event: MouseEvent<HTMLElement>, id: string) {
+    if (event.button === 1) {
+      event.preventDefault();
+      window.open(`/products/${id}`, "_blank", "noopener,noreferrer");
+    }
+  }
+
   return (
     <div>
       <PageHeader
         title="کالا و انبار"
         subtitle="مدیریت محصولات، تنوع‌ها (رنگ/سایز) و موجودی"
         action={
-          <button onClick={openNew} className="btn-primary">
-            <Plus size={18} />
-            <span className="hidden sm:inline">کالای جدید</span>
-          </button>
+          <div className="flex gap-2">
+            <button onClick={() => openEntity("product", undefined, { mode: "create", context: "workspace", title: "کالای جدید" })} className="btn-primary">
+              <Plus size={18} />
+              <span className="hidden sm:inline">پنل جدید</span>
+            </button>
+            <button onClick={openNew} className="btn-secondary" title="مسیر قدیمی ایجاد کالا">
+              <Plus size={18} />
+              <span className="hidden sm:inline">فرم قدیمی</span>
+            </button>
+          </div>
         }
       />
 
@@ -116,9 +145,14 @@ export default function ProductsPage() {
           title="هنوز کالایی ثبت نشده"
           description="اولین کالای خود را اضافه کنید یا از فایل اکسل وارد کنید."
           action={
-            <button onClick={openNew} className="btn-primary">
-              <Plus size={18} /> افزودن کالا
-            </button>
+            <div className="flex gap-2">
+              <button onClick={() => openEntity("product", undefined, { mode: "create", context: "workspace", title: "کالای جدید" })} className="btn-primary">
+                <Plus size={18} /> پنل جدید
+              </button>
+              <button onClick={openNew} className="btn-secondary">
+                فرم قدیمی
+              </button>
+            </div>
           }
         />
       ) : (
@@ -127,14 +161,35 @@ export default function ProductsPage() {
             const totalStock = p.product_variants.reduce((s, v) => s + v.stock_qty, 0);
             const low = totalStock <= p.low_stock_threshold;
             return (
-              <div key={p.id} className="card p-4">
+              <div
+                key={p.id}
+                role="link"
+                tabIndex={0}
+                onClick={(event) => handleProductRowClick(event, p.id, p.name)}
+                onAuxClick={(event) => handleProductRowAuxClick(event, p.id)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") openProduct(p.id, p.name);
+                }}
+                className="card p-4 cursor-pointer transition hover:border-primary/30 hover:shadow-md"
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3 min-w-0">
                     <div className="w-11 h-11 rounded-xl bg-primary/[0.06] text-primary flex items-center justify-center shrink-0">
                       <Package size={20} />
                     </div>
                     <div className="min-w-0">
-                      <EntityLink type="product" id={p.id} className="block truncate font-semibold">{p.name}</EntityLink>
+                      <Link
+                        href={`/products/${p.id}`}
+                        className="block truncate font-semibold text-primary hover:underline"
+                        onClick={(event) => {
+                          if (event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1) return;
+                          event.preventDefault();
+                          event.stopPropagation();
+                          openProduct(p.id, p.name);
+                        }}
+                      >
+                        {p.name}
+                      </Link>
                       <div className="text-xs text-slate-400 mt-0.5 flex flex-wrap gap-x-2">
                         {p.code && <span className="font-mono text-primary">{p.code}</span>}
                         {p.brand?.name && <span>برند: {p.brand.name}</span>}
@@ -151,9 +206,14 @@ export default function ProductsPage() {
                     >
                       موجودی: {toFaDigits(totalStock)}
                     </span>
-                    <EntityActionMenu type="product" id={p.id} label={p.name} />
+                    <div onClick={(event) => event.stopPropagation()}>
+                      <EntityActionMenu type="product" id={p.id} label={p.name} />
+                    </div>
                     <button
-                      onClick={() => openEdit(p)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        openEdit(p);
+                      }}
                       className="text-slate-400 hover:text-primary p-1"
                     >
                       <Pencil size={17} />

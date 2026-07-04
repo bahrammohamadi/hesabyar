@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { MoreVertical, Package } from "lucide-react";
 import type { PanelInstance, PanelMode } from "@/src/core/panel-manager/types";
@@ -271,6 +272,9 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
           <Badge tone={stockTone(totalStock)}>موجودی کل: {toPersianDigits(totalStock)}</Badge>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Link href={`/products/${product!.id}`} className="btn-secondary min-h-9 rounded-xl px-3 py-1.5 text-xs">
+            مشاهده صفحه کامل
+          </Link>
           <Button size="sm" variant="secondary" onClick={() => setMode("edit")}>ویرایش</Button>
           <Button size="sm" variant="danger" loading={deactivateProduct.isPending} onClick={handleDeactivate}>غیرفعال‌سازی</Button>
         </div>
