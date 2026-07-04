@@ -172,13 +172,15 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
   return (
     <>
       {open && (
-        <div className="fixed inset-0 bg-black/40 z-30 lg:hidden" onClick={onClose} />
+        <div className="fixed inset-0 bg-black/40 lg:hidden" style={{ zIndex: "calc(var(--z-sidebar) - 10)" }} onClick={onClose} />
       )}
 
       <aside className={cn(
-        "fixed lg:sticky top-0 right-0 z-40 h-screen w-64 bg-white border-l border-slate-200 flex flex-col transition-transform duration-200",
+        "fixed lg:sticky top-0 right-0 h-screen w-64 bg-white border-l border-slate-200 flex flex-col transition-transform duration-200",
         open ? "translate-x-0" : "translate-x-full lg:translate-x-0"
-      )}>
+      )}
+        style={{ zIndex: "var(--z-sidebar)" }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-100">
           <div className="flex items-center gap-2">

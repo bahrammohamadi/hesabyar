@@ -31,7 +31,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   }
 
   return (
-    <header className="sticky top-0 z-20 border-b border-white/70 bg-white/85 shadow-sm shadow-slate-900/[0.03] backdrop-blur-xl">
+    <header className="sticky top-0 border-b border-white/70 bg-white/85 shadow-sm shadow-slate-900/[0.03] backdrop-blur-xl" style={{ zIndex: "var(--z-header)" }}>
       <div className="flex h-16 items-center justify-between gap-3 px-3 sm:px-5 lg:px-6">
         <div className="flex min-w-0 items-center gap-3">
           <button

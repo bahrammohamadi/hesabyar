@@ -51,6 +51,14 @@
     --finance-debt: 346 77% 50%;
     --finance-credit: 38 92% 50%;
     --shadow-panel: 0 24px 60px rgb(15 23 42 / 0.16);
+    --z-base: 0;
+    --z-header: 30;
+    --z-sidebar: 40;
+    --z-modal: 1000;
+    --z-panel: 1100;
+    --z-picker: 1200;
+    --z-confirm: 1300;
+    --z-toast: 1400;
 
     /* Brand Scale (kept for compatibility with legacy code) */
     --brand-50: 233 244 240;

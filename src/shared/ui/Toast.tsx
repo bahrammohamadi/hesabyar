@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { CheckCircle2, Info, TriangleAlert, X, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
@@ -19,6 +20,7 @@ function createToastId() {
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<ToastItem[]>([]);
+  const [mounted, setMounted] = useState(false);
 
   const remove = useCallback((id: string) => setItems((prev) => prev.filter((item) => item.id !== id)), []);
 
@@ -28,14 +30,20 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     window.setTimeout(() => remove(id), item.tone === "error" ? 7000 : 4000);
   }, [remove]);
 
+  useEffect(() => setMounted(true), []);
+
   const value = useMemo(() => ({ toast }), [toast]);
+
+  const toastLayer = (
+    <div className="fixed left-4 top-4 flex w-[min(420px,calc(100vw-2rem))] flex-col gap-2" style={{ zIndex: "var(--z-toast)" }} dir="rtl">
+      {items.map((item) => <ToastCard key={item.id} item={item} onClose={() => remove(item.id)} />)}
+    </div>
+  );
 
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed left-4 top-4 z-[150] flex w-[min(420px,calc(100vw-2rem))] flex-col gap-2" dir="rtl">
-        {items.map((item) => <ToastCard key={item.id} item={item} onClose={() => remove(item.id)} />)}
-      </div>
+      {mounted && createPortal(toastLayer, document.body)}
     </ToastContext.Provider>
   );
 }

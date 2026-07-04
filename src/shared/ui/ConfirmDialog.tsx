@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { AlertTriangle, Info, X } from "lucide-react";
 import { Button } from "./Button";
 import { IconButton } from "./IconButton";
@@ -24,6 +25,7 @@ const ConfirmContext = createContext<ConfirmApi | null>(null);
 
 export function ConfirmProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<ConfirmState | null>(null);
+  const [mounted, setMounted] = useState(false);
   const resolverRef = useRef<Resolver | null>(null);
 
   const close = useCallback((result: boolean) => {
@@ -39,12 +41,14 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  useEffect(() => setMounted(true), []);
+
   const value = useMemo(() => confirm, [confirm]);
 
   return (
     <ConfirmContext.Provider value={value}>
       {children}
-      <ConfirmDialog state={state} onCancel={() => close(false)} onConfirm={() => close(true)} />
+      {mounted && createPortal(<ConfirmDialog state={state} onCancel={() => close(false)} onConfirm={() => close(true)} />, document.body)}
     </ConfirmContext.Provider>
   );
 }
@@ -54,7 +58,7 @@ function ConfirmDialog({ state, onCancel, onConfirm }: { state: ConfirmState | n
   const tone = state.tone ?? "default";
   const isDanger = tone === "danger";
   return (
-    <div className="fixed inset-0 z-[170] flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm" dir="rtl" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+    <div className="fixed inset-0 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm" style={{ zIndex: "var(--z-confirm)" }} dir="rtl" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
       <div className="w-full max-w-md overflow-hidden rounded-3xl border border-white/70 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
         <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
           <div className="flex items-start gap-3">
