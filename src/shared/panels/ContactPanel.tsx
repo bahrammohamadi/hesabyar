@@ -17,6 +17,7 @@ import {
   type ContactType,
 } from "@/src/core/services/contact-service";
 import { useOrg } from "@/lib/hooks/useOrg";
+import { DatePicker } from "@/components/shared/date-picker";
 import { Badge, Button, DataTable, EmptyState, Field, IconButton, Input, PanelShell, Section, Select, Spinner, StatusPill, Tabs, Textarea, type Column } from "@/src/shared/ui";
 import { Money, PersianDate } from "@/src/shared/format";
 
@@ -31,15 +32,22 @@ function documentLabel(type: ContactDocument["doc_type"]) {
 }
 
 type ContactFormState = {
+  firstName: string;
+  lastName: string;
   name: string;
   phone: string;
   type: ContactType;
+  email: string;
+  birthDate: string;
+  nationalCode: string;
+  jobTitle: string;
+  gender: string;
   address: string;
   description: string;
 };
 
 function emptyForm(): ContactFormState {
-  return { name: "", phone: "", type: "customer", address: "", description: "" };
+  return { firstName: "", lastName: "", name: "", phone: "", type: "customer", email: "", birthDate: "", nationalCode: "", jobTitle: "", gender: "", address: "", description: "" };
 }
 
 export function ContactPanel({ panel }: { panel: PanelInstance }) {
@@ -68,9 +76,16 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
     }
     if (contact) {
       setForm({
+        firstName: typeof contact.meta.first_name === "string" ? contact.meta.first_name : "",
+        lastName: typeof contact.meta.last_name === "string" ? contact.meta.last_name : "",
         name: contact.name,
         phone: contact.phone ?? "",
         type: contact.type,
+        email: typeof contact.meta.email === "string" ? contact.meta.email : "",
+        birthDate: typeof contact.meta.birth_date === "string" ? contact.meta.birth_date : "",
+        nationalCode: typeof contact.meta.national_code === "string" ? contact.meta.national_code : "",
+        jobTitle: typeof contact.meta.job_title === "string" ? contact.meta.job_title : "",
+        gender: typeof contact.meta.gender === "string" ? contact.meta.gender : "",
         address: contact.address ?? "",
         description: contact.description ?? "",
       });
@@ -97,6 +112,13 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
           phone: form.phone,
           address: form.address,
           description: form.description,
+          first_name: form.firstName,
+          last_name: form.lastName,
+          email: form.email,
+          birth_date: form.birthDate,
+          national_code: form.nationalCode,
+          job_title: form.jobTitle,
+          gender: form.gender,
         });
         if (typeof panel.props?.resultRequestId === "string") {
           resolveTop({ id: created.id, type: "contact", title: created.name, data: created });
@@ -112,6 +134,13 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
             phone: form.phone,
             address: form.address,
             description: form.description,
+            first_name: form.firstName,
+            last_name: form.lastName,
+            email: form.email,
+            birth_date: form.birthDate,
+            national_code: form.nationalCode,
+            job_title: form.jobTitle,
+            gender: form.gender,
           },
         });
         setMode("view");
@@ -176,6 +205,18 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
     <div className="space-y-4">
       <Section title={isCreate ? "مخاطب جدید" : "ویرایش مخاطب"} description="کد مخاطب در صورت خالی بودن توسط دیتابیس تولید می‌شود.">
         <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="نام">
+            <Input value={form.firstName} onChange={(event) => {
+              const firstName = event.target.value;
+              setForm((prev) => ({ ...prev, firstName, name: [firstName, prev.lastName].filter(Boolean).join(" ") || prev.name }));
+            }} />
+          </Field>
+          <Field label="نام خانوادگی">
+            <Input value={form.lastName} onChange={(event) => {
+              const lastName = event.target.value;
+              setForm((prev) => ({ ...prev, lastName, name: [prev.firstName, lastName].filter(Boolean).join(" ") || prev.name }));
+            }} />
+          </Field>
           <Field label="نام نمایشی" required error={formError && !form.name.trim() ? formError : null}>
             <Input value={form.name} onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))} />
           </Field>
@@ -191,6 +232,26 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
           </Field>
           <Field label="شماره تماس">
             <Input dir="ltr" className="text-left" value={form.phone} onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))} />
+          </Field>
+          <Field label="ایمیل">
+            <Input dir="ltr" className="text-left" value={form.email} onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))} />
+          </Field>
+          <Field label="تاریخ تولد">
+            <DatePicker value={form.birthDate} onChange={(value) => setForm((prev) => ({ ...prev, birthDate: value }))} />
+          </Field>
+          <Field label="کد ملی">
+            <Input dir="ltr" className="text-left" value={form.nationalCode} onChange={(event) => setForm((prev) => ({ ...prev, nationalCode: event.target.value }))} />
+          </Field>
+          <Field label="شغل / عنوان">
+            <Input value={form.jobTitle} onChange={(event) => setForm((prev) => ({ ...prev, jobTitle: event.target.value }))} />
+          </Field>
+          <Field label="جنسیت">
+            <Select value={form.gender} onChange={(event) => setForm((prev) => ({ ...prev, gender: event.target.value }))}>
+              <option value="">—</option>
+              <option value="female">خانم</option>
+              <option value="male">آقا</option>
+              <option value="other">سایر</option>
+            </Select>
           </Field>
           <Field label="آدرس" className="sm:col-span-2">
             <Input value={form.address} onChange={(event) => setForm((prev) => ({ ...prev, address: event.target.value }))} />
