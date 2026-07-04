@@ -6,7 +6,7 @@ import type { PanelInstance } from "@/src/core/panel-manager/types";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { EntityLink } from "@/src/core/panel-manager/EntityLink";
 import { useDocumentEntity, useRegisterPayment, useTransitionDocument, type DocumentLine, type DocumentTransitionStatus, type InvoiceDocType, type PaymentMethod } from "@/src/core/services/invoice-service";
-import { Badge, Button, DataTable, EmptyState, Field, IconButton, NumberInput, PanelShell, Section, Select, Spinner, StatusPill, Tabs, type Column } from "@/src/shared/ui";
+import { Badge, Button, DataTable, EmptyState, Field, IconButton, NumberInput, PanelShell, Section, Select, Spinner, StatusPill, Tabs, useConfirm, type Column } from "@/src/shared/ui";
 import { Money, PersianDate, toPersianDigits } from "@/src/shared/format";
 import { rialToToman, tomanToRial } from "@/lib/utils/format";
 
@@ -20,6 +20,7 @@ function docTone(type: InvoiceDocType) {
 
 export function InvoicePanel({ panel }: { panel: PanelInstance }) {
   const { closeTop } = usePanelManager();
+  const confirm = useConfirm();
   const docType = panel.docType ?? "sale";
   const docId = panel.entityId;
   const invoiceQuery = useDocumentEntity(docType, docId);
@@ -73,7 +74,14 @@ export function InvoicePanel({ panel }: { panel: PanelInstance }) {
       : newStatus === "reversed"
         ? "⚠️ این عملیات موجودی را برمی‌گرداند و سند دیگر قابل ویرایش نیست. مطمئن هستید؟"
         : "سند به وضعیت تسویه‌شده تغییر کند؟";
-    if (!window.confirm(message)) return;
+    const ok = await confirm({
+      title: newStatus === "reversed" ? "برگشت سند" : newStatus === "confirmed" ? "تأیید سند" : "تسویه سند",
+      description: message,
+      tone: newStatus === "reversed" ? "danger" : "default",
+      confirmLabel: newStatus === "reversed" ? "برگشت سند" : "تأیید",
+      cancelLabel: "انصراف",
+    });
+    if (!ok) return;
     await transitionMutation.mutateAsync({ ...mutationContext, newStatus });
   }
 
@@ -83,7 +91,16 @@ export function InvoicePanel({ panel }: { panel: PanelInstance }) {
       window.alert("مبلغ پرداخت باید بزرگتر از صفر باشد.");
       return;
     }
-    if (amountRial > remaining && !window.confirm("مبلغ واردشده بیشتر از مانده سند است. ادامه می‌دهید؟")) return;
+    if (amountRial > remaining) {
+      const ok = await confirm({
+        title: "پرداخت بیشتر از مانده",
+        description: "مبلغ واردشده بیشتر از مانده سند است. ادامه می‌دهید؟",
+        tone: "default",
+        confirmLabel: "ادامه",
+        cancelLabel: "انصراف",
+      });
+      if (!ok) return;
+    }
     await paymentMutation.mutateAsync({ ...mutationContext, amountRial, method: paymentMethod });
   }
 

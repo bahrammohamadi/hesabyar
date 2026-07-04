@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { fullJalali } from "@/lib/utils/format";
 import { LogOut, UserCircle, Menu, Bell } from "lucide-react";
+import { GlobalSearchBar } from "@/src/shared/layout/GlobalSearchBar";
 
 export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const router = useRouter();
@@ -45,6 +46,8 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
             <div className="hidden text-sm text-slate-500 sm:block">{fullJalali()}</div>
           </div>
         </div>
+
+        <GlobalSearchBar />
 
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <button className="hidden h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-500 hover:text-primary sm:flex" aria-label="اعلان‌ها">
