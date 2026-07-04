@@ -48,6 +48,28 @@ export interface ProductStock {
   last_movement_at: string | null;
 }
 
+export interface ProductPriceHistoryEntry {
+  id: string;
+  org_id: string;
+  product_id: string;
+  variant_id: string | null;
+  old_purchase_price: number | null;
+  new_purchase_price: number | null;
+  old_sale_price: number | null;
+  new_sale_price: number | null;
+  reason: string | null;
+  created_at: string;
+  created_by: string | null;
+}
+
+export interface ProductPriceChangeInput {
+  product_id: string;
+  purchase_price_toman: number;
+  sale_price_toman: number;
+  apply_variants?: boolean;
+  reason?: string | null;
+}
+
 type ProductRow = Omit<ProductEntity, "variants" | "category" | "brand"> & {
   category: { name: string } | null;
   brand: { name: string } | null;
@@ -97,6 +119,40 @@ export async function getProductStock(id: string): Promise<ProductStock[]> {
     current_stock: Number(row.current_stock ?? 0),
     last_movement_at: row.last_movement_at,
   }));
+}
+
+export async function getPriceHistory(productId: string): Promise<ProductPriceHistoryEntry[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("product_price_history")
+    .select("id, org_id, product_id, variant_id, old_purchase_price, new_purchase_price, old_sale_price, new_sale_price, reason, created_at, created_by")
+    .eq("product_id", productId)
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (error) throw new Error("خطا در دریافت تاریخچه قیمت: " + error.message);
+  return (data ?? []) as ProductPriceHistoryEntry[];
+}
+
+export async function changePrice(input: ProductPriceChangeInput): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.rpc("change_product_price", {
+    p_product: input.product_id,
+    p_purchase_price: tomanToRial(input.purchase_price_toman || 0),
+    p_sale_price: tomanToRial(input.sale_price_toman || 0),
+    p_apply_variants: input.apply_variants ?? true,
+    p_reason: input.reason?.trim() || null,
+  });
+  if (error) throw new Error("خطا در تغییر قیمت: " + error.message);
+}
+
+export function useProductPriceHistory(id?: string | null) {
+  return useQuery({
+    queryKey: ["entity", "product", "price-history", id] as const,
+    enabled: !!id,
+    staleTime: 30_000,
+    queryFn: () => getPriceHistory(id!),
+  });
 }
 
 export function useProductEntity(id?: string | null) {
@@ -343,6 +399,20 @@ export function useCreateProduct() {
       toast({ title: "کالا ساخته شد", description: product.name, tone: "success" });
     },
     onError: (error) => toast({ title: "خطا در ساخت کالا", description: (error as Error).message, tone: "error" }),
+  });
+}
+
+export function useChangeProductPrice() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: changePrice,
+    onSuccess: (_, input) => {
+      invalidateProductQueries(queryClient, input.product_id);
+      queryClient.invalidateQueries({ queryKey: ["entity", "product", "price-history", input.product_id] });
+      toast({ title: "قیمت کالا ثبت شد", description: input.reason || "تاریخچه قیمت به‌روزرسانی شد", tone: "success" });
+    },
+    onError: (error) => toast({ title: "خطا در تغییر قیمت", description: (error as Error).message, tone: "error" }),
   });
 }
 
