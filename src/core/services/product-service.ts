@@ -70,6 +70,13 @@ export interface ProductPriceChangeInput {
   reason?: string | null;
 }
 
+export interface ProductStockAdjustInput {
+  product_id: string;
+  variant_id: string;
+  qty: number;
+  note?: string | null;
+}
+
 type ProductRow = Omit<ProductEntity, "variants" | "category" | "brand"> & {
   category: { name: string } | null;
   brand: { name: string } | null;
@@ -144,6 +151,23 @@ export async function changePrice(input: ProductPriceChangeInput): Promise<void>
     p_reason: input.reason?.trim() || null,
   });
   if (error) throw new Error("خطا در تغییر قیمت: " + error.message);
+}
+
+
+export async function adjustStock(input: ProductStockAdjustInput): Promise<void> {
+  if (input.qty !== Math.trunc(input.qty)) throw new Error("مقدار تعدیل باید عدد صحیح باشد.");
+  if (input.qty === 0) throw new Error("مقدار تعدیل صفر است.");
+  const supabase = createClient();
+  const { error } = await supabase.rpc("fn_add_stock_movement", {
+    p_product_id: input.product_id,
+    p_variant_id: input.variant_id,
+    p_type: "adjust",
+    p_qty: input.qty,
+    p_ref_type: null,
+    p_ref_id: null,
+    p_note: input.note?.trim() || "تعدیل موجودی از ProductPanel",
+  });
+  if (error) throw new Error("خطا در تعدیل موجودی: " + error.message);
 }
 
 export function useProductPriceHistory(id?: string | null) {
@@ -399,6 +423,19 @@ export function useCreateProduct() {
       toast({ title: "کالا ساخته شد", description: product.name, tone: "success" });
     },
     onError: (error) => toast({ title: "خطا در ساخت کالا", description: (error as Error).message, tone: "error" }),
+  });
+}
+
+export function useAdjustProductStock() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: adjustStock,
+    onSuccess: (_, input) => {
+      invalidateProductQueries(queryClient, input.product_id);
+      toast({ title: "موجودی تعدیل شد", description: input.note || "گردش انبار ثبت شد", tone: "success" });
+    },
+    onError: (error) => toast({ title: "خطا در تعدیل موجودی", description: (error as Error).message, tone: "error" }),
   });
 }
 

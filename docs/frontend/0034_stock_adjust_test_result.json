@@ -1,0 +1,79 @@
+{
+  "org_id": "f31d7b0e-3834-4af5-84a8-5a62c873b50c",
+  "branch_id": "d31236fa-eca6-415f-b7de-09915b8019d7",
+  "product": {
+    "id": "392a87e6-589a-45d8-be69-4c4db613ebf4",
+    "org_id": "f31d7b0e-3834-4af5-84a8-5a62c873b50c",
+    "branch_id": "d31236fa-eca6-415f-b7de-09915b8019d7",
+    "name": "تست تعدیل موجودی پنل 1783187348",
+    "category_id": null,
+    "brand_id": null,
+    "description": null,
+    "image_url": null,
+    "base_purchase_price": 1000000,
+    "base_sale_price": 1500000,
+    "low_stock_threshold": 1,
+    "is_active": true,
+    "created_at": "2026-07-04T17:49:09.058583+00:00",
+    "updated_at": "2026-07-04T17:49:09.058583+00:00",
+    "created_by": null,
+    "code": "TP-ADJ-1783187348",
+    "season": null,
+    "material": null
+  },
+  "variant": {
+    "id": "e33fa2dd-774f-451d-b3ff-a89c66d649df",
+    "org_id": "f31d7b0e-3834-4af5-84a8-5a62c873b50c",
+    "branch_id": "d31236fa-eca6-415f-b7de-09915b8019d7",
+    "product_id": "392a87e6-589a-45d8-be69-4c4db613ebf4",
+    "color": null,
+    "size": null,
+    "sku": "TP-ADJ-1783187348-01",
+    "barcode": null,
+    "purchase_price": 1000000,
+    "sale_price": 1500000,
+    "stock_qty": 0,
+    "is_active": true,
+    "created_at": "2026-07-04T17:49:09.320974+00:00",
+    "updated_at": "2026-07-04T17:49:09.320974+00:00",
+    "created_by": null,
+    "season": null,
+    "material": null,
+    "collection": null
+  },
+  "before": {
+    "product_id": "392a87e6-589a-45d8-be69-4c4db613ebf4",
+    "product_variant_id": "e33fa2dd-774f-451d-b3ff-a89c66d649df",
+    "current_stock": 5
+  },
+  "adjust_qty": 3,
+  "after": {
+    "product_id": "392a87e6-589a-45d8-be69-4c4db613ebf4",
+    "product_variant_id": "e33fa2dd-774f-451d-b3ff-a89c66d649df",
+    "current_stock": 8
+  },
+  "movements": [
+    {
+      "id": "f2344bb6-ccd0-420f-8527-07433694bf4a",
+      "type": "adjust",
+      "reason": "adjust",
+      "qty": 3,
+      "note": "تست تعدیل مستقیم ProductPanel",
+      "variant_id": "e33fa2dd-774f-451d-b3ff-a89c66d649df",
+      "created_at": "2026-07-04T17:49:10.067882+00:00"
+    },
+    {
+      "id": "e16e401b-3917-48fd-9c3a-e34259393830",
+      "type": "in",
+      "reason": "opening",
+      "qty": 5,
+      "note": "موجودی اولیه تست تعدیل",
+      "variant_id": "e33fa2dd-774f-451d-b3ff-a89c66d649df",
+      "created_at": "2026-07-04T17:49:09.568628+00:00"
+    }
+  ],
+  "deactivated": {
+    "id": "392a87e6-589a-45d8-be69-4c4db613ebf4",
+    "is_active": false
+  }
+}
