@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, type MouseEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
+import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { PageHeader, Spinner, Modal } from "@/components/shared/ui";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
@@ -19,6 +20,7 @@ import Link from "next/link";
 export default function SalesPage() {
   const { orgId } = useOrg();
   const qc = useQueryClient();
+  const { openDocument } = usePanelManager();
   const [posOpen, setPosOpen] = useState(false);
 
   const { data: sales, isLoading } = useQuery({
@@ -44,6 +46,27 @@ export default function SalesPage() {
       }[];
     },
   });
+
+  function openSale(id: string) {
+    openDocument("sale", id, { mode: "view", context: "workspace" });
+  }
+
+  function handleSaleRowClick(event: MouseEvent<HTMLElement>, id: string) {
+    if (event.defaultPrevented) return;
+    const href = `/sales/${id}`;
+    if (event.metaKey || event.ctrlKey) {
+      window.open(href, "_blank", "noopener,noreferrer");
+      return;
+    }
+    openSale(id);
+  }
+
+  function handleSaleRowAuxClick(event: MouseEvent<HTMLElement>, id: string) {
+    if (event.button === 1) {
+      event.preventDefault();
+      window.open(`/sales/${id}`, "_blank", "noopener,noreferrer");
+    }
+  }
 
   return (
     <div>
@@ -86,16 +109,35 @@ export default function SalesPage() {
             </thead>
             <tbody>
               {sales.map((s) => (
-                <tr key={s.id} className="hover:bg-slate-50">
+                <tr
+                  key={s.id}
+                  role="link"
+                  tabIndex={0}
+                  onClick={(event) => handleSaleRowClick(event, s.id)}
+                  onAuxClick={(event) => handleSaleRowAuxClick(event, s.id)}
+                  onKeyDown={(event) => { if (event.key === "Enter") openSale(s.id); }}
+                  className="cursor-pointer hover:bg-slate-50"
+                >
                   <td>
-                    <EntityLink type="sale" id={s.id}>{s.invoice_no}</EntityLink>
+                    <Link
+                      href={`/sales/${s.id}`}
+                      className="font-medium text-primary hover:underline"
+                      onClick={(event) => {
+                        if (event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1) return;
+                        event.preventDefault();
+                        event.stopPropagation();
+                        openSale(s.id);
+                      }}
+                    >
+                      {s.invoice_no}
+                    </Link>
                   </td>
                   <td className="text-slate-500">{toJalali(s.date)}</td>
                   <td>
                     {s.customer_id ? (
                       <div className="flex items-center gap-2">
                         <EntityLink type="contact" id={s.customer_id}>{s.customer?.name ?? "مشتری"}</EntityLink>
-                        <EntityActionMenu type="contact" id={s.customer_id} label={s.customer?.name ?? "مشتری"} />
+                        <span onClick={(event) => event.stopPropagation()}><EntityActionMenu type="contact" id={s.customer_id} label={s.customer?.name ?? "مشتری"} /></span>
                       </div>
                     ) : (
                       <span className="text-slate-400">مشتری نقدی</span>

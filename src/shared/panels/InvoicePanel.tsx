@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { MoreVertical, Receipt } from "lucide-react";
 import type { PanelInstance } from "@/src/core/panel-manager/types";
@@ -128,6 +129,12 @@ export function InvoicePanel({ panel }: { panel: PanelInstance }) {
       actions={<IconButton aria-label="گزینه‌های سند"><MoreVertical size={18} /></IconButton>}
     >
       <div className="space-y-4">
+        <Section title="دسترسی کامل" description="برای ویرایش اقلام، چاپ، CSV و عملیات legacy از صفحه کامل استفاده کنید.">
+          <Link href={`/${document.doc_type === "sale" ? "sales" : "purchases"}/${document.doc_id}`} className="btn-secondary inline-flex min-h-9 rounded-xl px-3 py-1.5 text-xs">
+            مشاهده/ویرایش کامل در صفحه اختصاصی
+          </Link>
+        </Section>
+
         <Section title="طرف حساب" description="از این لینک می‌توانید به ContactPanel برگردید.">
           {document.contact_id && contact ? (
             <div className="flex flex-wrap items-center gap-2">
