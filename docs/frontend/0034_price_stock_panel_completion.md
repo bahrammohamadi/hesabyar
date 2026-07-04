@@ -105,3 +105,100 @@ docs/frontend/0034_price_history_test_result.json
 next build: passed
 vitest: 2 files / 8 tests passed
 ```
+
+## بخش ۲ — تعدیل موجودی مستقیم در ProductPanel
+
+### گام صفر: رفتار AdjustModal قدیمی
+فایل بررسی‌شده:
+
+```text
+app/(app)/products/[id]/page.tsx
+```
+
+`AdjustModal` قدیمی:
+- لیست همه واریانت‌های محصول را نمایش می‌داد.
+- برای هر variant مقدار «موجودی فعلی» را در input قرار می‌داد.
+- کاربر مقدار جدید را وارد می‌کرد.
+- هنگام ذخیره، برای هر variant اختلاف زیر محاسبه می‌شد:
+
+```ts
+newStock - currentStock
+```
+
+- اگر اختلاف صفر نبود، مستقیم در `stock_movements` insert می‌کرد:
+
+```ts
+type: "adjust"
+reason: "count"
+qty: diff
+```
+
+نکته: طبق فاز A مسیر امن‌تر موجود `fn_add_stock_movement` است. در ProductPanel از همان RPC موجود استفاده شد و insert مستقیم `stock_movements` دوباره‌نویسی نشد.
+
+### تغییرات کد
+فایل:
+
+```text
+src/core/services/product-service.ts
+```
+
+اضافه شد:
+- `adjustStock(input)` که فقط RPC موجود `fn_add_stock_movement` را با `p_type='adjust'` صدا می‌زند.
+- `useAdjustProductStock()` برای invalidation و toast.
+
+فایل:
+
+```text
+src/shared/panels/ProductPanel.tsx
+```
+
+در تب «واریانت‌ها» اضافه شد:
+- دکمه «تعدیل موجودی» کنار هر variant
+- فرم مینیمال تعدیل با دو حالت:
+  - ثبت موجودی جدید
+  - افزایش/کاهش نسبت به موجودی فعلی
+- فیلد دلیل
+- ثبت از مسیر `fn_add_stock_movement`
+- refresh شدن queryهای product و stock بعد از ثبت
+
+### تست واقعی بخش ۲
+با حساب تست production و یک سازمان تست جدا، محصول و variant تستی ساخته شد. ابتدا موجودی اولیه ۵ ثبت شد، سپس تعدیل +۳ انجام شد و `v_product_stock` دوباره خوانده شد. در پایان محصول غیرفعال شد.
+
+محصول تست:
+
+```text
+id: 392a87e6-589a-45d8-be69-4c4db613ebf4
+code: TP-ADJ-1783187348
+name: تست تعدیل موجودی پنل 1783187348
+is_active نهایی: false
+```
+
+نتیجه موجودی:
+
+| مرحله | current_stock در v_product_stock |
+|---|---:|
+| قبل از تعدیل | 5 |
+| تعدیل | +3 |
+| بعد از تعدیل | 8 |
+
+رکورد `stock_movements` تعدیل:
+
+```text
+type: adjust
+reason: adjust
+qty: 3
+note: تست تعدیل مستقیم ProductPanel
+```
+
+فایل خام نتیجه تست:
+
+```text
+docs/frontend/0034_stock_adjust_test_result.json
+```
+
+### Build/Test بخش ۲
+
+```text
+next build: passed
+vitest: 2 files / 8 tests passed
+```

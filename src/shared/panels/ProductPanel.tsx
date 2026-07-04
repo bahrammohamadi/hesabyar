@@ -11,6 +11,7 @@ import { useBrands, useCategories } from "@/lib/hooks/useProducts";
 import {
   createVariant as createVariantRecord,
   productMoney,
+  useAdjustProductStock,
   useChangeProductPrice,
   useCreateProduct,
   useCreateVariant,
@@ -64,6 +65,17 @@ type PriceChangeFormState = {
   applyToVariants: boolean;
   reason: string;
 };
+
+type StockAdjustFormState = {
+  variantId: string;
+  mode: "new_stock" | "delta";
+  value: number | null;
+  reason: string;
+};
+
+function emptyStockAdjustForm(): StockAdjustFormState {
+  return { variantId: "", mode: "new_stock", value: null, reason: "" };
+}
 
 function emptyPriceChangeForm(): PriceChangeFormState {
   return { purchasePriceToman: null, salePriceToman: null, applyToVariants: true, reason: "" };
@@ -120,6 +132,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
   const priceHistoryQuery = useProductPriceHistory(productId);
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
+  const adjustProductStock = useAdjustProductStock();
   const changeProductPrice = useChangeProductPrice();
   const deactivateProduct = useDeactivateProduct();
   const createVariant = useCreateVariant(productId);
@@ -131,6 +144,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
   const [savingBatch, setSavingBatch] = useState(false);
   const [priceForm, setPriceForm] = useState<PriceChangeFormState>(emptyPriceChangeForm());
   const [priceFormOpen, setPriceFormOpen] = useState(false);
+  const [stockAdjustForm, setStockAdjustForm] = useState<StockAdjustFormState>(emptyStockAdjustForm());
   const [variantEdit, setVariantEdit] = useState<VariantFormState | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -153,6 +167,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
     setBatchVariantForms([emptyVariantForm(), emptyVariantForm()]);
     setBatchOpen(false);
     setSavingBatch(false);
+    setStockAdjustForm(emptyStockAdjustForm());
   }, [productId, mode]);
 
   const stockByVariant = useMemo(() => new Map((stockQuery.data ?? []).map((row) => [row.product_variant_id, row.current_stock])), [stockQuery.data]);
@@ -344,6 +359,34 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
     setPriceFormOpen(false);
   }
 
+
+  function openStockAdjust(row: ProductVariantEntity) {
+    const currentStock = stockByVariant.get(row.id) ?? row.stock_qty ?? 0;
+    setFormError(null);
+    setStockAdjustForm({ variantId: row.id, mode: "new_stock", value: currentStock, reason: "" });
+  }
+
+  async function handleAdjustStock() {
+    if (!productId || !stockAdjustForm.variantId) return;
+    const targetVariant = product?.variants.find((variant) => variant.id === stockAdjustForm.variantId);
+    if (!targetVariant) return;
+    const currentStock = stockByVariant.get(stockAdjustForm.variantId) ?? targetVariant.stock_qty ?? 0;
+    const value = stockAdjustForm.value ?? 0;
+    const diff = stockAdjustForm.mode === "new_stock" ? value - currentStock : value;
+    if (diff === 0) {
+      setFormError("تغییری برای ثبت وجود ندارد.");
+      return;
+    }
+    setFormError(null);
+    await adjustProductStock.mutateAsync({
+      product_id: productId,
+      variant_id: stockAdjustForm.variantId,
+      qty: diff,
+      note: stockAdjustForm.reason || "تعدیل موجودی از ProductPanel",
+    });
+    setStockAdjustForm(emptyStockAdjustForm());
+  }
+
   const isCreate = mode === "create";
   const savingProduct = createProduct.isPending || updateProduct.isPending;
 
@@ -423,7 +466,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
     { key: "stock", header: "موجودی", align: "center", render: (row) => <Badge tone={stockTone(stockByVariant.get(row.id) ?? row.stock_qty ?? 0)}>{toPersianDigits(stockByVariant.get(row.id) ?? row.stock_qty ?? 0)}</Badge> },
     { key: "purchase", header: "خرید", align: "left", render: (row) => <Money value={row.purchase_price ?? 0} /> },
     { key: "sale", header: "فروش", align: "left", render: (row) => <Money value={row.sale_price ?? 0} /> },
-    { key: "action", header: "", render: (row) => <Button size="sm" variant="ghost" onClick={() => setVariantEdit(formFromVariant(row))}>ویرایش</Button> },
+    { key: "action", header: "", render: (row) => <div className="flex gap-1"><Button size="sm" variant="ghost" onClick={() => setVariantEdit(formFromVariant(row))}>ویرایش</Button><Button size="sm" variant="secondary" onClick={() => openStockAdjust(row)}>تعدیل موجودی</Button></div> },
   ];
 
   const priceHistoryColumns: Column<ProductPriceHistoryEntry>[] = [
@@ -518,6 +561,24 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
               content: (
                 <div className="space-y-4">
                   <DataTable rows={product!.variants} columns={variantColumns} keyExtractor={(row) => row.id} empty={<EmptyState title="واریانتی برای این کالا ثبت نشده" />} />
+                  {stockAdjustForm.variantId && (
+                    <Section title="تعدیل موجودی" description="اختلاف موجودی از مسیر fn_add_stock_movement با type='adjust' ثبت می‌شود.">
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <Field label="حالت تعدیل">
+                          <Select value={stockAdjustForm.mode} onChange={(event) => setStockAdjustForm((prev) => ({ ...prev, mode: event.target.value as StockAdjustFormState["mode"] }))}>
+                            <option value="new_stock">ثبت موجودی جدید</option>
+                            <option value="delta">افزایش/کاهش نسبت به موجودی فعلی</option>
+                          </Select>
+                        </Field>
+                        <Field label={stockAdjustForm.mode === "new_stock" ? "موجودی جدید" : "مقدار تغییر (+/-)"}>
+                          <NumberInput value={stockAdjustForm.value} onValueChange={(value) => setStockAdjustForm((prev) => ({ ...prev, value }))} />
+                        </Field>
+                        <Field label="دلیل" className="sm:col-span-2"><Input value={stockAdjustForm.reason} onChange={(event) => setStockAdjustForm((prev) => ({ ...prev, reason: event.target.value }))} placeholder="مثلاً: انبارگردانی" /></Field>
+                      </div>
+                      {formError && <div className="mt-3 rounded-xl bg-rose-50 p-3 text-sm text-destructive">{formError}</div>}
+                      <div className="mt-4 flex gap-2"><Button loading={adjustProductStock.isPending} onClick={handleAdjustStock}>ثبت تعدیل</Button><Button variant="secondary" onClick={() => setStockAdjustForm(emptyStockAdjustForm())}>انصراف</Button></div>
+                    </Section>
+                  )}
                   <Section title="افزودن واریانت جدید" description="موجودی اولیه از مسیر fn_add_stock_movement ثبت می‌شود.">
                     <div className="mb-4 flex flex-wrap gap-2">
                       <Button size="sm" variant={!batchOpen ? "primary" : "secondary"} onClick={() => setBatchOpen(false)}>تکی</Button>
