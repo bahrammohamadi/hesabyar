@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { Modal } from "@/components/shared/ui";
 import { Search, User, X, UserPlus, Loader2 } from "lucide-react";
 import { PhoneLink } from "@/components/shared/phone-link";
+import { useCreateContact } from "@/src/core/services/contact-service";
 import type { ContactType } from "@/types/db";
 
 export interface SelectableContact {
@@ -33,7 +34,7 @@ export function ContactSelector({
   title?: string;
 }) {
   const { orgId, branchId } = useOrg();
-  const qc = useQueryClient();
+  const createContactMutation = useCreateContact();
   const [term, setTerm] = useState("");
   const [creating, setCreating] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -71,7 +72,6 @@ export function ContactSelector({
   // فرم ایجاد سریع
   const [newName, setNewName] = useState("");
   const [newPhone, setNewPhone] = useState("");
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function createContact() {
@@ -81,28 +81,22 @@ export function ContactSelector({
       return;
     }
     if (!orgId) return;
-    setSaving(true);
-    const supabase = createClient();
-    const { data, error: e } = await supabase
-      .from("contacts")
-      .insert({
+    try {
+      const created = await createContactMutation.mutateAsync({
         org_id: orgId,
         branch_id: branchId,
         name: newName.trim(),
         phone: newPhone.trim() || null,
         type: filterType,
-      })
-      .select("id, name, phone, type")
-      .single();
-    if (e) {
-      setError("خطا: " + e.message);
-      setSaving(false);
-      return;
+      });
+      onSelect({ id: created.id, name: created.name, phone: created.phone, type: created.type });
+      setCreating(false);
+      setTerm("");
+      setNewName("");
+      setNewPhone("");
+    } catch (e) {
+      setError((e as Error).message);
     }
-    await qc.invalidateQueries({ queryKey: ["all-contacts"] });
-    await qc.invalidateQueries({ queryKey: ["contacts"] });
-    setSaving(false);
-    onSelect(data as SelectableContact);
   }
 
   // پیش‌پرکردن نام از عبارت جستجو
@@ -131,8 +125,8 @@ export function ContactSelector({
           </div>
           {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
           <div className="flex gap-2">
-            <button onClick={createContact} disabled={saving} className="btn-primary flex-1">
-              {saving && <Loader2 className="animate-spin" size={18} />}
+            <button onClick={createContact} disabled={createContactMutation.isPending} className="btn-primary flex-1">
+              {createContactMutation.isPending && <Loader2 className="animate-spin" size={18} />}
               ثبت و انتخاب
             </button>
             <button onClick={() => setCreating(false)} className="btn-secondary">
