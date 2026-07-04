@@ -71,8 +71,12 @@ export function ContactSelector({
 
   // باز کردن فرم کامل ContactPanel و دریافت نتیجه بعد از ذخیره
   async function openCreate() {
-    if (!orgId) return;
+    if (!orgId || creating) return;
     setCreating(true);
+    // روی موبایل اگر انتخابگر زیر پنل باز بماند، می‌تواند فوکوس/لمس inputهای پنل را مختل کند.
+    // اول انتخابگر را می‌بندیم و سپس پنل کامل را برای نتیجه باز می‌کنیم.
+    onClose();
+    await new Promise((resolve) => window.setTimeout(resolve, 0));
     const result = await openEntityForResult("contact", {
       mode: "create",
       context: "picker",
@@ -95,7 +99,7 @@ export function ContactSelector({
 
   return (
     <Modal open={open} onClose={onClose} title={title} size="md" mobileFullscreen>
-        <div className="space-y-3">
+        <div className="flex h-full min-h-0 flex-col gap-3">
           <div className="relative">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
@@ -112,9 +116,9 @@ export function ContactSelector({
             )}
           </div>
 
-          <button onClick={openCreate} className="btn-secondary w-full justify-center border-dashed">
+          <button onClick={openCreate} disabled={creating} className="btn-secondary w-full justify-center border-dashed disabled:opacity-60">
             <UserPlus size={18} />
-            ایجاد {filterType === "customer" ? "مشتری" : "تامین‌کننده"} جدید
+            {creating ? "در حال باز کردن فرم..." : `ایجاد ${filterType === "customer" ? "مشتری" : "تامین‌کننده"} جدید`}
             {term && ` («${term}»)`}
           </button>
 
@@ -122,7 +126,7 @@ export function ContactSelector({
             {isLoading ? "در حال بارگذاری..." : `${filtered.length} مورد`}
           </div>
 
-          <div className="max-h-[45vh] overflow-y-auto space-y-1.5">
+          <div className="min-h-0 flex-1 overflow-y-auto space-y-1.5 pb-3">
             {filtered.map((c) => (
               <div
                 key={c.id}
