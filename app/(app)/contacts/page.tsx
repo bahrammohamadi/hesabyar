@@ -7,12 +7,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
-import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
-import { DatePicker } from "@/components/shared/date-picker";
+import { PageHeader, Spinner, EmptyState } from "@/components/shared/ui";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { PhoneLink } from "@/components/shared/phone-link";
 import { formatToman } from "@/lib/utils/format";
-import { Plus, Search, User, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Plus, Search, User, Pencil, Trash2 } from "lucide-react";
 import type { Contact, ContactType } from "@/types/db";
 
 const TYPE_LABEL: Record<ContactType, string> = {
@@ -107,27 +106,21 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
     return result;
   }, [contacts, search, typeFilter, balanceFilter, balances, sortBy]);
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<Contact | null>(null);
-  const [initialType, setInitialType] = useState<ContactType>("customer");
-
   useEffect(() => {
     const type = forcedType ?? (searchParams.get("type") as ContactType | null);
     const filter = forcedFilter ?? searchParams.get("filter");
     const action = forcedAction ?? searchParams.get("action");
     if (type === "customer" || type === "supplier" || type === "both") {
       setTypeFilter(type);
-      setInitialType(type);
     } else if (!forcedType) {
       setTypeFilter("");
     }
     if (filter === "debtors" || filter === "creditors") setBalanceFilter(filter);
     else setBalanceFilter("");
     if (action === "new") {
-      setEditing(null);
-      setModalOpen(true);
+      openEntity("contact", undefined, { mode: "create", context: "workspace", title: "شخص جدید", props: { initialType: type === "supplier" || type === "both" ? type : "customer" } });
     }
-  }, [searchParams, forcedType, forcedFilter, forcedAction]);
+  }, [searchParams, forcedType, forcedFilter, forcedAction, openEntity]);
 
   function openContact(id: string, name?: string | null) {
     openEntity("contact", id, { mode: "view", context: "workspace", title: name ?? undefined });
@@ -158,23 +151,11 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
         action={
           <div className="flex gap-2">
             <button
-              onClick={() => openEntity("contact", undefined, { mode: "create", context: "workspace", title: "شخص جدید" })}
+              onClick={() => openEntity("contact", undefined, { mode: "create", context: "workspace", title: "شخص جدید", props: { initialType: typeFilter || "customer" } })}
               className="btn-primary"
             >
               <Plus size={18} />
-              <span className="hidden sm:inline">پنل جدید</span>
-            </button>
-            <button
-              onClick={() => {
-                setEditing(null);
-                setInitialType(typeFilter || "customer");
-                setModalOpen(true);
-              }}
-              className="btn-secondary"
-              title="مسیر قدیمی ایجاد شخص"
-            >
-              <Plus size={18} />
-              <span className="hidden sm:inline">فرم قدیمی</span>
+              <span className="hidden sm:inline">شخص جدید</span>
             </button>
           </div>
         }
@@ -275,8 +256,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
                   <button
                     onClick={(event) => {
                       event.stopPropagation();
-                      setEditing(c);
-                      setModalOpen(true);
+                      openEntity("contact", c.id, { mode: "edit", context: "workspace", title: c.name });
                     }}
                     className="text-slate-400 hover:text-primary p-1"
                   >
@@ -298,153 +278,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
         </div>
       )}
 
-      {modalOpen && (
-        <ContactModal
-          orgId={orgId}
-          branchId={branchId}
-          editing={editing}
-          initialType={initialType}
-          onClose={() => {
-            setModalOpen(false);
-            qc.invalidateQueries({ queryKey: ["contacts"] });
-          }}
-        />
-      )}
     </div>
-  );
-}
-
-function ContactModal({
-  orgId,
-  branchId,
-  editing,
-  initialType = "customer",
-  onClose,
-}: {
-  orgId: string | null;
-  branchId: string | null;
-  editing: Contact | null;
-  initialType?: ContactType;
-  onClose: () => void;
-}) {
-  const meta = (editing?.meta ?? {}) as Record<string, string>;
-  const [firstName, setFirstName] = useState(meta.first_name ?? "");
-  const [lastName, setLastName] = useState(meta.last_name ?? "");
-  const [name, setName] = useState(editing?.name ?? [meta.first_name, meta.last_name].filter(Boolean).join(" "));
-  const [type, setType] = useState<ContactType>(editing?.type ?? initialType);
-  const [phone, setPhone] = useState(editing?.phone ?? "");
-  const [email, setEmail] = useState(meta.email ?? "");
-  const [birthDate, setBirthDate] = useState(meta.birth_date ?? "");
-  const [nationalCode, setNationalCode] = useState(meta.national_code ?? "");
-  const [jobTitle, setJobTitle] = useState(meta.job_title ?? "");
-  const [gender, setGender] = useState(meta.gender ?? "");
-  const [address, setAddress] = useState(editing?.address ?? "");
-  const [description, setDescription] = useState(editing?.description ?? "");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSave() {
-    setError(null);
-    const displayName = name.trim() || [firstName.trim(), lastName.trim()].filter(Boolean).join(" ");
-    if (!displayName) {
-      setError("نام یا نام خانوادگی الزامی است.");
-      return;
-    }
-    if (!orgId) return;
-    setSaving(true);
-    const supabase = createClient();
-    const payload = {
-      name: displayName,
-      type,
-      phone: phone.trim() || null,
-      address: address.trim() || null,
-      description: description.trim() || null,
-      meta: {
-        ...(editing?.meta as Record<string, unknown> | undefined),
-        first_name: firstName.trim() || null,
-        last_name: lastName.trim() || null,
-        email: email.trim() || null,
-        birth_date: birthDate || null,
-        national_code: nationalCode.trim() || null,
-        job_title: jobTitle.trim() || null,
-        gender: gender || null,
-      },
-    };
-    try {
-      if (editing) {
-        const { error: e } = await supabase.from("contacts").update(payload).eq("id", editing.id);
-        if (e) throw e;
-      } else {
-        const { error: e } = await supabase
-          .from("contacts")
-          .insert({ ...payload, org_id: orgId, branch_id: branchId });
-        if (e) throw e;
-      }
-      onClose();
-    } catch (e) {
-      setError("خطا: " + (e as Error).message);
-      setSaving(false);
-    }
-  }
-
-  return (
-    <Modal open onClose={onClose} title={editing ? "ویرایش شخص" : "شخص جدید"}>
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div><label className="label">نام</label><input className="input" value={firstName} onChange={(e) => { setFirstName(e.target.value); setName([e.target.value, lastName].filter(Boolean).join(" ")); }} /></div>
-          <div><label className="label">نام خانوادگی</label><input className="input" value={lastName} onChange={(e) => { setLastName(e.target.value); setName([firstName, e.target.value].filter(Boolean).join(" ")); }} /></div>
-        </div>
-        <div>
-          <label className="label">نام نمایشی *</label>
-          <input className="input" value={name} onChange={(e) => setName(e.target.value)} />
-        </div>
-        <div>
-          <label className="label">نوع</label>
-          <select
-            className="input"
-            value={type}
-            onChange={(e) => setType(e.target.value as ContactType)}
-          >
-            <option value="customer">مشتری</option>
-            <option value="supplier">تامین‌کننده</option>
-            <option value="both">هر دو</option>
-          </select>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div><label className="label">شماره تماس</label><input className="input text-left" dir="ltr" value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
-          <div><label className="label">ایمیل</label><input className="input text-left" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-          <div><label className="label">تاریخ تولد</label><DatePicker value={birthDate} onChange={setBirthDate} /></div>
-          <div><label className="label">کد ملی</label><input className="input text-left" dir="ltr" value={nationalCode} onChange={(e) => setNationalCode(e.target.value)} /></div>
-          <div><label className="label">شغل / عنوان</label><input className="input" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} /></div>
-          <div><label className="label">جنسیت</label><select className="input" value={gender} onChange={(e) => setGender(e.target.value)}><option value="">—</option><option value="female">خانم</option><option value="male">آقا</option><option value="other">سایر</option></select></div>
-        </div>
-        <div>
-          <label className="label">آدرس</label>
-          <input className="input" value={address} onChange={(e) => setAddress(e.target.value)} />
-        </div>
-        <div>
-          <label className="label">توضیحات</label>
-          <textarea
-            className="input"
-            rows={2}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
-        {error && (
-          <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>
-        )}
-        <div className="flex gap-2">
-          <button onClick={handleSave} disabled={saving} className="btn-primary flex-1">
-            {saving && <Loader2 className="animate-spin" size={18} />}
-            ذخیره
-          </button>
-          <button onClick={onClose} className="btn-secondary">
-            انصراف
-          </button>
-        </div>
-      </div>
-    </Modal>
   );
 }
 
