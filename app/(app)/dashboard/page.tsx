@@ -681,7 +681,7 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
 
   return (
     <>
-      <Modal open onClose={onClose} title="فروش جدید" size="lg">
+      <Modal open onClose={onClose} title="فروش جدید" size="xl">
         <div className="space-y-4">
           <div>
             <label className="label">مشتری</label>
@@ -705,30 +705,25 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
           {cart.length === 0 ? (
             <div className="text-center text-sm text-slate-400 py-6 border border-dashed border-slate-200 rounded-xl">کالایی انتخاب نشده است.</div>
           ) : (
-            <div className="space-y-2 max-h-[30vh] overflow-y-auto">
-              {cart.map((c) => (
-                <div key={c.variant_id} className="rounded-xl border border-slate-100 p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <EntityLink type="product" id={c.product_id} className="truncate text-sm">{c.product_name}</EntityLink>
-                        <EntityActionMenu type="product" id={c.product_id} label={c.product_name} />
-                      </div>
-                      <div className="text-xs text-slate-400">{c.variant_label || "ساده"}</div>
+            <div className="max-h-[42vh] overflow-y-auto rounded-2xl border border-slate-100 bg-white">
+              <div className="hidden grid-cols-[minmax(220px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_140px_minmax(120px,1fr)_44px] gap-2 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-500 md:grid">
+                <span>کالا</span><span>تنوع/SKU</span><span>قیمت واحد</span><span className="text-center">تعداد</span><span className="text-left">جمع</span><span />
+              </div>
+              <div className="divide-y divide-slate-100">
+                {cart.map((c) => (
+                  <div key={c.variant_id} className="p-3">
+                    <div className="hidden grid-cols-[minmax(220px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_140px_minmax(120px,1fr)_44px] items-center gap-2 md:grid">
+                      <div className="min-w-0"><div className="flex items-center gap-2"><EntityLink type="product" id={c.product_id} className="truncate text-sm font-semibold">{c.product_name}</EntityLink><EntityActionMenu type="product" id={c.product_id} label={c.product_name} /></div></div>
+                      <div className="truncate text-xs text-slate-500" title={c.variant_label || "ساده"}>{c.variant_label || "ساده"}</div>
+                      <input className="input h-10 min-h-10 text-left text-sm" inputMode="numeric" value={String(rialToToman(c.unit_price))} onChange={(e) => updatePrice(c.variant_id, e.target.value)} />
+                      <div className="mx-auto flex h-10 items-center rounded-xl border border-slate-200 bg-white"><button onClick={() => updateQty(c.variant_id, c.qty - 1)} className="px-2.5 text-slate-500">−</button><span className="min-w-8 text-center text-sm font-bold">{toFaDigits(c.qty)}</span><button onClick={() => updateQty(c.variant_id, c.qty + 1)} className="px-2.5 text-slate-500">+</button></div>
+                      <div className="text-left text-sm font-black text-slate-800 tabular-nums">{formatToman(c.unit_price * c.qty - c.discount, false)}</div>
+                      <button onClick={() => updateQty(c.variant_id, 0)} className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-rose-400 hover:bg-rose-50 hover:text-rose-600"><Trash2 size={16} /></button>
                     </div>
-                    <button onClick={() => updateQty(c.variant_id, 0)} className="text-rose-400 hover:text-rose-600 p-1 shrink-0"><Trash2 size={16} /></button>
+                    <div className="md:hidden"><div className="flex items-start justify-between gap-2"><div className="min-w-0"><EntityLink type="product" id={c.product_id} className="truncate text-sm font-semibold">{c.product_name}</EntityLink><div className="text-xs text-slate-400">{c.variant_label || "ساده"}</div></div><button onClick={() => updateQty(c.variant_id, 0)} className="text-rose-400"><Trash2 size={16} /></button></div><div className="mt-2 flex items-center justify-between gap-2 text-sm"><span>{formatToman(c.unit_price, false)} × {toFaDigits(c.qty)}</span><strong>{formatToman(c.unit_price * c.qty - c.discount, false)}</strong></div></div>
                   </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <div className="flex items-center border border-slate-200 rounded-lg">
-                      <button onClick={() => updateQty(c.variant_id, c.qty - 1)} className="px-2.5 py-1 text-slate-500">−</button>
-                      <span className="px-3 text-sm font-medium">{toFaDigits(c.qty)}</span>
-                      <button onClick={() => updateQty(c.variant_id, c.qty + 1)} className="px-2.5 py-1 text-slate-500">+</button>
-                    </div>
-                    <input className="input flex-1 text-sm" inputMode="numeric" value={String(rialToToman(c.unit_price))} onChange={(e) => updatePrice(c.variant_id, e.target.value)} />
-                    <div className="text-sm font-medium text-slate-700 w-28 text-left shrink-0">{formatToman(c.unit_price * c.qty - c.discount, false)}</div>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
           <div className="grid grid-cols-2 gap-3">
