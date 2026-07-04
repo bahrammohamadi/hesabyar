@@ -6,6 +6,7 @@ import { MoreVertical, Package } from "lucide-react";
 import type { PanelInstance, PanelMode } from "@/src/core/panel-manager/types";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { useOrg } from "@/lib/hooks/useOrg";
+import { useBrands, useCategories } from "@/lib/hooks/useProducts";
 import {
   productMoney,
   useCreateProduct,
@@ -18,7 +19,7 @@ import {
   type ProductEntity,
   type ProductVariantEntity,
 } from "@/src/core/services/product-service";
-import { Badge, Button, DataTable, EmptyState, Field, IconButton, Input, NumberInput, PanelShell, Section, Spinner, Tabs, type Column } from "@/src/shared/ui";
+import { Badge, Button, DataTable, EmptyState, Field, IconButton, Input, NumberInput, PanelShell, Section, Select, Spinner, Tabs, type Column } from "@/src/shared/ui";
 import { Money, PersianDate, toPersianDigits } from "@/src/shared/format";
 
 function stockTone(stock: number) {
@@ -32,6 +33,9 @@ type ProductFormState = {
   code: string;
   season: string;
   material: string;
+  imageUrl: string;
+  categoryId: string;
+  brandId: string;
   basePurchasePriceToman: number | null;
   baseSalePriceToman: number | null;
   lowStockThreshold: number | null;
@@ -50,7 +54,7 @@ type VariantFormState = {
 };
 
 function emptyProductForm(): ProductFormState {
-  return { name: "", code: "", season: "", material: "", basePurchasePriceToman: null, baseSalePriceToman: null, lowStockThreshold: 3, description: "" };
+  return { name: "", code: "", season: "", material: "", imageUrl: "", categoryId: "", brandId: "", basePurchasePriceToman: null, baseSalePriceToman: null, lowStockThreshold: 3, description: "" };
 }
 
 function emptyVariantForm(): VariantFormState {
@@ -63,6 +67,9 @@ function formFromProduct(product: ProductEntity): ProductFormState {
     code: product.code ?? "",
     season: product.season ?? "",
     material: product.material ?? "",
+    imageUrl: product.image_url ?? "",
+    categoryId: product.category_id ?? "",
+    brandId: product.brand_id ?? "",
     basePurchasePriceToman: productMoney.rialToTomanNumber(product.base_purchase_price),
     baseSalePriceToman: productMoney.rialToTomanNumber(product.base_sale_price),
     lowStockThreshold: product.low_stock_threshold,
@@ -86,6 +93,8 @@ function formFromVariant(variant: ProductVariantEntity): VariantFormState {
 export function ProductPanel({ panel }: { panel: PanelInstance }) {
   const { closeTop, replaceTop } = usePanelManager();
   const { orgId, branchId } = useOrg();
+  const { data: categories } = useCategories(orgId);
+  const { data: brands } = useBrands(orgId);
   const productId = panel.entityId;
   const [mode, setMode] = useState<PanelMode>(panel.mode);
   const productQuery = useProductEntity(productId);
@@ -130,6 +139,9 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
           season: productForm.season,
           material: productForm.material,
           description: productForm.description,
+          image_url: productForm.imageUrl,
+          category_id: productForm.categoryId,
+          brand_id: productForm.brandId,
           base_purchase_price_toman: productForm.basePurchasePriceToman,
           base_sale_price_toman: productForm.baseSalePriceToman,
           low_stock_threshold: productForm.lowStockThreshold ?? 3,
@@ -144,6 +156,9 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
             season: productForm.season,
             material: productForm.material,
             description: productForm.description,
+            image_url: productForm.imageUrl,
+            category_id: productForm.categoryId,
+            brand_id: productForm.brandId,
             base_purchase_price_toman: productForm.basePurchasePriceToman,
             base_sale_price_toman: productForm.baseSalePriceToman,
             low_stock_threshold: productForm.lowStockThreshold ?? 3,
@@ -222,8 +237,21 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
         <Field label="کد کالا">
           <Input dir="ltr" className="text-left" value={productForm.code} onChange={(event) => setProductForm((prev) => ({ ...prev, code: event.target.value }))} placeholder="خالی = تولید خودکار" />
         </Field>
+        <Field label="دسته‌بندی">
+          <Select value={productForm.categoryId} onChange={(event) => setProductForm((prev) => ({ ...prev, categoryId: event.target.value }))}>
+            <option value="">—</option>
+            {categories?.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+          </Select>
+        </Field>
+        <Field label="برند">
+          <Select value={productForm.brandId} onChange={(event) => setProductForm((prev) => ({ ...prev, brandId: event.target.value }))}>
+            <option value="">—</option>
+            {brands?.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}
+          </Select>
+        </Field>
         <Field label="فصل"><Input value={productForm.season} onChange={(event) => setProductForm((prev) => ({ ...prev, season: event.target.value }))} /></Field>
         <Field label="جنس"><Input value={productForm.material} onChange={(event) => setProductForm((prev) => ({ ...prev, material: event.target.value }))} /></Field>
+        <Field label="آدرس تصویر" className="sm:col-span-2"><Input dir="ltr" className="text-left" value={productForm.imageUrl} onChange={(event) => setProductForm((prev) => ({ ...prev, imageUrl: event.target.value }))} placeholder="https://..." /></Field>
         <Field label="قیمت خرید پایه (تومان)"><NumberInput value={productForm.basePurchasePriceToman} onValueChange={(value) => setProductForm((prev) => ({ ...prev, basePurchasePriceToman: value }))} /></Field>
         <Field label="قیمت فروش پایه (تومان)"><NumberInput value={productForm.baseSalePriceToman} onValueChange={(value) => setProductForm((prev) => ({ ...prev, baseSalePriceToman: value }))} /></Field>
         <Field label="حداقل موجودی"><NumberInput value={productForm.lowStockThreshold} onValueChange={(value) => setProductForm((prev) => ({ ...prev, lowStockThreshold: value }))} /></Field>
