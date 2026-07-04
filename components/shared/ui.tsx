@@ -115,7 +115,7 @@ export function StatCard({
     }
 
     return (
-      <div className={cn("w-11 h-11 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105", colors.bg, colors.text)}>
+      <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-105", colors.bg, colors.text)}>
         {iconNode}
       </div>
     );
@@ -123,9 +123,9 @@ export function StatCard({
 
   const cardInner = (
     <div className={cn(
-      "relative overflow-hidden rounded-[20px] bg-card border border-border p-4 sm:p-5 transition-all duration-200",
-      "hover:shadow-lg hover:shadow-slate-200/50 hover:-translate-y-0.5",
-      "hover:border-slate-300",
+      "relative overflow-hidden rounded-[24px] bg-white/90 border border-white/80 p-4 sm:p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition-all duration-200",
+      "hover:shadow-xl hover:shadow-slate-900/[0.08] hover:-translate-y-0.5",
+      "hover:border-primary/25",
       href && "cursor-pointer group"
     )}>
       {/* نوار رنگی بالا - theme aware */}
@@ -134,7 +134,7 @@ export function StatCard({
       <div className="flex items-start justify-between mb-3 pt-1">
         <div className="flex-1 min-w-0">
           <div className="text-[13px] font-medium text-muted-foreground mb-1">{displayTitle}</div>
-          <div className="text-xl sm:text-[22px] font-extrabold text-slate-800 tracking-tight leading-tight">
+          <div className="text-2xl sm:text-[26px] font-black text-slate-900 tracking-tight leading-tight tabular-nums">
             {value ?? "—"}
           </div>
         </div>
