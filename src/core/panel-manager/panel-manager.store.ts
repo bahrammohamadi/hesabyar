@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useMemo, useReducer, type ReactNode } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, type ReactNode } from "react";
 import type {
   DocumentType,
   EntityPanelType,
@@ -8,8 +8,12 @@ import type {
   PanelAction,
   PanelInstance,
   PanelManagerApi,
+  PanelMode,
   PanelType,
 } from "./types";
+
+const PANELS_PARAM = "panels";
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function createPanelId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
@@ -18,6 +22,82 @@ function createPanelId() {
 
 function normalizeStack(stack: Omit<PanelInstance, "stackIndex">[]): PanelInstance[] {
   return stack.map((panel, index) => ({ ...panel, stackIndex: index }));
+}
+
+function stripStack(stack: PanelInstance[]): Omit<PanelInstance, "stackIndex">[] {
+  return stack.map(({ stackIndex: _stackIndex, ...panel }) => panel);
+}
+
+function isPanelMode(value: string): value is PanelMode {
+  return value === "view" || value === "edit" || value === "create";
+}
+
+function isDocumentType(value: string): value is DocumentType {
+  return value === "sale" || value === "purchase";
+}
+
+function isSerializableId(id?: string) {
+  return !id || id === "new" || UUID_RE.test(id);
+}
+
+function encodePanel(panel: PanelInstance) {
+  const mode = panel.mode;
+  const id = panel.entityId ?? "new";
+  if (!isSerializableId(id)) return null;
+  if (panel.type === "contact" || panel.type === "product" || panel.type === "payment") {
+    return [panel.type, mode, id].map(encodeURIComponent).join(":");
+  }
+  if (panel.type === "invoice") {
+    return ["invoice", panel.docType ?? "sale", mode, id].map(encodeURIComponent).join(":");
+  }
+  return null;
+}
+
+function serializePanels(stack: PanelInstance[]) {
+  return stack.map(encodePanel).filter((value): value is string => !!value).join(",");
+}
+
+function panelFromSegment(segment: string): Omit<PanelInstance, "stackIndex"> | null {
+  const parts = segment.split(":").map((part) => decodeURIComponent(part));
+  const type = parts[0];
+  if (type === "contact" || type === "product" || type === "payment") {
+    const mode = parts[1];
+    const id = parts[2];
+    if (!isPanelMode(mode) || !isSerializableId(id)) return null;
+    return { id: createPanelId(), type, mode, entityId: id === "new" ? undefined : id, context: "workspace" };
+  }
+  if (type === "invoice") {
+    const docType = parts[1];
+    const mode = parts[2];
+    const id = parts[3];
+    if (!isDocumentType(docType) || !isPanelMode(mode) || !isSerializableId(id)) return null;
+    return { id: createPanelId(), type: "invoice", docType, mode, entityId: id === "new" ? undefined : id, context: "workspace" };
+  }
+  return null;
+}
+
+function parsePanelsFromUrl(): PanelInstance[] {
+  if (typeof window === "undefined") return [];
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get(PANELS_PARAM);
+  if (!raw) return [];
+  const panels = raw.split(",").map(panelFromSegment).filter((panel): panel is Omit<PanelInstance, "stackIndex"> => !!panel);
+  const normalized = normalizeStack(panels);
+  if (serializePanels(normalized) !== raw) syncUrl(normalized, "replace");
+  return normalized;
+}
+
+function syncUrl(stack: PanelInstance[], mode: "push" | "replace") {
+  if (typeof window === "undefined") return;
+  const url = new URL(window.location.href);
+  const serialized = serializePanels(stack);
+  if (serialized) url.searchParams.set(PANELS_PARAM, serialized);
+  else url.searchParams.delete(PANELS_PARAM);
+  const next = `${url.pathname}${url.search}${url.hash}`;
+  const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  if (next === current) return;
+  if (mode === "push") window.history.pushState({ panels: serialized }, "", next);
+  else window.history.replaceState({ panels: serialized }, "", next);
 }
 
 function panelReducer(state: PanelInstance[], action: PanelAction): PanelInstance[] {
@@ -32,6 +112,8 @@ function panelReducer(state: PanelInstance[], action: PanelAction): PanelInstanc
       return normalizeStack(state.slice(0, -1));
     case "CLOSE_ALL":
       return [];
+    case "SET_STACK":
+      return normalizeStack(stripStack(action.stack));
     default:
       return state;
   }
@@ -40,7 +122,21 @@ function panelReducer(state: PanelInstance[], action: PanelAction): PanelInstanc
 const PanelManagerContext = createContext<PanelManagerApi | null>(null);
 
 export function PanelManagerStoreProvider({ children }: { children: ReactNode }) {
-  const [stack, dispatch] = useReducer(panelReducer, []);
+  const [stack, dispatch] = useReducer(panelReducer, undefined, parsePanelsFromUrl);
+
+  useEffect(() => {
+    function handlePopState() {
+      dispatch({ type: "SET_STACK", stack: parsePanelsFromUrl() });
+    }
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const setStack = useCallback((nextStack: PanelInstance[], urlMode: "push" | "replace") => {
+    const normalized = normalizeStack(stripStack(nextStack));
+    syncUrl(normalized, urlMode);
+    dispatch({ type: "SET_STACK", stack: normalized });
+  }, []);
 
   const openPanel = useCallback(
     (type: PanelType, opts?: OpenPanelOptions & { entityId?: string; docType?: DocumentType }) => {
@@ -56,10 +152,13 @@ export function PanelManagerStoreProvider({ children }: { children: ReactNode })
         props: opts?.props,
       } satisfies Omit<PanelInstance, "stackIndex">;
 
-      dispatch(opts?.replace ? { type: "REPLACE_TOP", panel } : { type: "PUSH", panel });
+      const next = opts?.replace
+        ? normalizeStack([...(stack.length ? stripStack(stack.slice(0, -1)) : []), panel])
+        : normalizeStack([...stripStack(stack), panel]);
+      setStack(next, opts?.replace ? "replace" : "push");
       return id;
     },
-    []
+    [setStack, stack]
   );
 
   const openEntity = useCallback(
@@ -79,14 +178,16 @@ export function PanelManagerStoreProvider({ children }: { children: ReactNode })
     [openPanel]
   );
 
-  const closeTop = useCallback(() => dispatch({ type: "CLOSE_TOP" }), []);
-  const closeAll = useCallback(() => dispatch({ type: "CLOSE_ALL" }), []);
+  const closeTop = useCallback(() => setStack(stack.slice(0, -1), "replace"), [setStack, stack]);
+  const closeAll = useCallback(() => setStack([], "replace"), [setStack]);
 
   const replaceTop = useCallback((panel: Omit<PanelInstance, "id" | "stackIndex"> & { id?: string }) => {
     const id = panel.id ?? createPanelId();
-    dispatch({ type: "REPLACE_TOP", panel: { ...panel, id } });
+    const nextPanel = { ...panel, id } satisfies Omit<PanelInstance, "stackIndex">;
+    const next = normalizeStack([...(stack.length ? stripStack(stack.slice(0, -1)) : []), nextPanel]);
+    setStack(next, "replace");
     return id;
-  }, []);
+  }, [setStack, stack]);
 
   const value = useMemo<PanelManagerApi>(
     () => ({

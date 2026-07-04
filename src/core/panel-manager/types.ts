@@ -39,7 +39,8 @@ export type PanelAction =
   | { type: "PUSH"; panel: Omit<PanelInstance, "stackIndex"> }
   | { type: "REPLACE_TOP"; panel: Omit<PanelInstance, "stackIndex"> }
   | { type: "CLOSE_TOP" }
-  | { type: "CLOSE_ALL" };
+  | { type: "CLOSE_ALL" }
+  | { type: "SET_STACK"; stack: PanelInstance[] };
 
 export interface PanelManagerApi {
   stack: PanelInstance[];
