@@ -1,31 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
-import { useOrg } from "@/lib/hooks/useOrg";
-import { Spinner, Modal, EmptyState } from "@/components/shared/ui";
+import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
+import { Spinner, EmptyState } from "@/components/shared/ui";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
-import { formatToman, toFaDigits, toJalali, toEnDigits, rialToToman, tomanToRial } from "@/lib/utils/format";
+import { formatToman, toFaDigits, toJalali } from "@/lib/utils/format";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
-  ArrowRight, Package, Pencil, Loader2, Tag,
-  ArrowDownCircle, ArrowUpCircle, ShoppingBag, Truck, ArrowLeftRight,
-  X, Plus
+  ArrowRight, Package, Pencil, Tag,
+  ArrowDownCircle, ShoppingBag, Truck, ArrowLeftRight,
 } from "lucide-react";
 import { getActionParam } from "@/lib/entities/action-router";
-import { logActivity } from "@/lib/utils/activity-log";
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
   const { id } = params;
-  const qc = useQueryClient();
+  const { openEntity } = usePanelManager();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<"info" | "movements" | "sales" | "purchases">("info");
-  const [editOpen, setEditOpen] = useState(false);
-  const [adjustOpen, setAdjustOpen] = useState(false);
-  const [priceOpen, setPriceOpen] = useState(false);
 
   // اطلاعات محصول
   const { data: product, isLoading } = useQuery({
@@ -97,9 +92,9 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
     const action = getActionParam(searchParams);
     const tab = searchParams.get("tab");
     if (tab === "movements") setActiveTab("movements");
-    if (action === "edit") setEditOpen(true);
-    if (action === "price") setPriceOpen(true);
-    if (action === "adjust-stock") setAdjustOpen(true);
+    if (action === "edit") openEntity("product", id, { mode: "edit", context: "workspace" });
+    if (action === "price") openEntity("product", id, { mode: "view", context: "workspace", props: { initialTab: "price-history" } });
+    if (action === "adjust-stock") openEntity("product", id, { mode: "view", context: "workspace", props: { initialTab: "variants" } });
     if (action === "movements" || action === "stock-history") setActiveTab("movements");
   }, [searchParams]);
 
@@ -113,6 +108,10 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   const profit = totalSales - totalCost;
   const low = totalStock <= (product.low_stock_threshold ?? 3);
 
+  function openProductPanel(mode: "view" | "edit", initialTab?: string) {
+    openEntity("product", product.id, { mode, context: "workspace", title: product.name, props: initialTab ? { initialTab } : undefined });
+  }
+
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-4">
@@ -121,10 +120,10 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
         </Link>
         <div className="flex gap-2">
           <EntityActionMenu type="product" id={product.id} label={product.name} />
-          <button onClick={() => setEditOpen(true)} className="btn-secondary flex items-center gap-2 text-sm">
+          <button onClick={() => openProductPanel("edit")} className="btn-secondary flex items-center gap-2 text-sm">
             <Pencil size={16} /> ویرایش
           </button>
-          <button onClick={() => setAdjustOpen(true)} className="btn-primary flex items-center gap-2 text-sm">
+          <button onClick={() => openProductPanel("view", "variants")} className="btn-primary flex items-center gap-2 text-sm">
             <ArrowDownCircle size={16} /> تعدیل موجودی
           </button>
         </div>
@@ -188,15 +187,11 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
       {/* محتوای تب‌ها */}
       {activeTab === "info" && (
-        <ProductInfo product={product} variants={variants} onEdit={() => setEditOpen(true)} />
+        <ProductInfo product={product} variants={variants} onEdit={() => openProductPanel("edit")} />
       )}
       {activeTab === "movements" && <MovementsList movements={movements ?? []} />}
       {activeTab === "sales" && <SalesList items={saleItems ?? []} />}
       {activeTab === "purchases" && <PurchasesList items={purchaseItems ?? []} />}
-
-      {editOpen && <ProductEditModal product={product} onClose={() => setEditOpen(false)} onSaved={() => { setEditOpen(false); qc.invalidateQueries({ queryKey: ["product-detail", id] }); qc.invalidateQueries({ queryKey: ["products"] }); qc.invalidateQueries({ queryKey: ["entity", "product"] }); }} />}
-      {priceOpen && <PriceChangeModal product={product} variants={variants} onClose={() => setPriceOpen(false)} onSaved={() => { setPriceOpen(false); qc.invalidateQueries({ queryKey: ["product-detail", id] }); qc.invalidateQueries({ queryKey: ["products"] }); qc.invalidateQueries({ queryKey: ["entity", "product"] }); }} />}
-      {adjustOpen && <AdjustModal product={product} variants={variants} onClose={() => setAdjustOpen(false)} onSaved={() => { setAdjustOpen(false); qc.invalidateQueries({ queryKey: ["product-detail", id] }); qc.invalidateQueries({ queryKey: ["products"] }); qc.invalidateQueries({ queryKey: ["entity", "product"] }); }} />}
     </div>
   );
 }
@@ -358,138 +353,5 @@ function PurchasesList({ items }: { items: any[] }) {
         )}
       </div>
     </div>
-  );
-}
-
-// مودال تغییر قیمت
-function PriceChangeModal({ product, variants, onClose, onSaved }: { product: any; variants: any[]; onClose: () => void; onSaved: () => void }) {
-  const [purchasePrice, setPurchasePrice] = useState(String(rialToToman(product.base_purchase_price ?? variants[0]?.purchase_price ?? 0)));
-  const [salePrice, setSalePrice] = useState(String(rialToToman(product.base_sale_price ?? variants[0]?.sale_price ?? 0)));
-  const [applyToVariants, setApplyToVariants] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function save() {
-    const purchaseRial = tomanToRial(Number(toEnDigits(purchasePrice)) || 0);
-    const saleRial = tomanToRial(Number(toEnDigits(salePrice)) || 0);
-    setSaving(true);
-    const supabase = createClient();
-    try {
-      const { error: priceError } = await supabase.rpc("change_product_price", {
-        p_product: product.id,
-        p_purchase_price: purchaseRial,
-        p_sale_price: saleRial,
-        p_apply_variants: applyToVariants,
-        p_reason: "تغییر قیمت از جزئیات کالا",
-      });
-      if (priceError) throw priceError;
-      await logActivity({ orgId: product.org_id, action: "price_change", entityType: "product", entityId: product.id, newData: { purchase_price: purchaseRial, sale_price: saleRial, apply_variants: applyToVariants } });
-      onSaved();
-    } catch (err) {
-      setError("خطا: " + (err as Error).message);
-      setSaving(false);
-    }
-  }
-
-  return (
-    <Modal open onClose={onClose} title="تغییر قیمت کالا" size="md">
-      <div className="space-y-4">
-        <div className="rounded-xl bg-slate-50 p-3">
-          <div className="font-medium text-slate-800">{product.name}</div>
-          <div className="text-xs text-slate-400 mt-1">{toFaDigits(variants.length)} تنوع فعال/ثبت‌شده</div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div><label className="label">قیمت خرید (تومان)</label><input className="input" inputMode="numeric" value={purchasePrice} onChange={(e) => setPurchasePrice(e.target.value)} /></div>
-          <div><label className="label">قیمت فروش (تومان)</label><input className="input" inputMode="numeric" value={salePrice} onChange={(e) => setSalePrice(e.target.value)} /></div>
-        </div>
-        <label className="flex items-center gap-2 text-sm text-slate-600">
-          <input type="checkbox" checked={applyToVariants} onChange={(e) => setApplyToVariants(e.target.checked)} />
-          اعمال قیمت روی همه تنوع‌های فعال کالا
-        </label>
-        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
-        <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving&&<Loader2 className="animate-spin" size={18}/>} ذخیره قیمت</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
-      </div>
-    </Modal>
-  );
-}
-
-// مودال ویرایش
-function ProductEditModal({ product, onClose, onSaved }: { product: any; onClose: () => void; onSaved: () => void }) {
-  const { data: categories } = useQuery({ queryKey: ["m-cats"], queryFn: async () => { const s = createClient(); const { data } = await s.from("categories").select("id,name").eq("is_active",true).order("name"); return data ?? []; } });
-  const { data: brands } = useQuery({ queryKey: ["m-brands"], queryFn: async () => { const s = createClient(); const { data } = await s.from("brands").select("id,name").eq("is_active",true).order("name"); return data ?? []; } });
-  const [name, setName] = useState(product.name); const [code, setCode] = useState(product.code ?? "");
-  const [season, setSeason] = useState(product.season ?? ""); const [material, setMaterial] = useState(product.material ?? "");
-  const [desc, setDesc] = useState(product.description ?? ""); const [catId, setCatId] = useState(product.category_id ?? "");
-  const [brId, setBrId] = useState(product.brand_id ?? ""); const [low, setLow] = useState(String(product.low_stock_threshold ?? 3));
-  const [saving, setSaving] = useState(false); const [error, setError] = useState<string|null>(null);
-
-  async function save() {
-    if (!name.trim()) { setError("نام الزامی است."); return; }
-    setSaving(true); const supabase = createClient();
-    try { await supabase.from("products").update({ name: name.trim(), code: code.trim()||null, season: season.trim()||null, material: material.trim()||null, description: desc.trim()||null, category_id: catId||null, brand_id: brId||null, low_stock_threshold: Number(toEnDigits(low))||0 }).eq("id", product.id); onSaved(); }
-    catch (err) { setError("خطا: " + (err as Error).message); setSaving(false); }
-  }
-
-  return (
-    <Modal open onClose={onClose} title="ویرایش کالا" size="lg">
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <div><label className="label">نام *</label><input className="input" value={name} onChange={e=>setName(e.target.value)} /></div>
-          <div><label className="label">کد</label><input className="input text-left" dir="ltr" value={code} onChange={e=>setCode(e.target.value)} /></div>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div><label className="label">دسته</label><select className="input" value={catId} onChange={e=>setCatId(e.target.value)}><option value="">—</option>{categories?.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
-          <div><label className="label">برند</label><select className="input" value={brId} onChange={e=>setBrId(e.target.value)}><option value="">—</option>{brands?.map(b=><option key={b.id} value={b.id}>{b.name}</option>)}</select></div>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div><label className="label">فصل</label><select className="input" value={season} onChange={e=>setSeason(e.target.value)}><option value="">—</option><option value="بهار">بهار</option><option value="تابستان">تابستان</option><option value="پاییز">پاییز</option><option value="زمستان">زمستان</option><option value="چهارفصل">چهارفصل</option></select></div>
-          <div><label className="label">جنس</label><input className="input" value={material} onChange={e=>setMaterial(e.target.value)} /></div>
-        </div>
-        <div><label className="label">حد کم‌موجودی</label><input className="input" inputMode="numeric" value={low} onChange={e=>setLow(e.target.value)} /></div>
-        <div><label className="label">توضیحات</label><textarea className="input" rows={2} value={desc} onChange={e=>setDesc(e.target.value)} /></div>
-        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
-        <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving&&<Loader2 className="animate-spin" size={18}/>} ذخیره</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
-      </div>
-    </Modal>
-  );
-}
-
-// مودال تعدیل موجودی
-function AdjustModal({ product, variants, onClose, onSaved }: { product: any; variants: any[]; onClose: () => void; onSaved: () => void }) {
-  const { orgId, branchId } = useOrg();
-  const [vals, setVals] = useState<Record<string,string>>(Object.fromEntries(variants.map((v:any) => [v.id, String(v.stock_qty)])));
-  const [note, setNote] = useState(""); const [saving, setSaving] = useState(false); const [error, setError] = useState<string|null>(null);
-
-  async function save() {
-    if (!orgId) return;
-    setSaving(true); const supabase = createClient();
-    try {
-      for (const v of variants) {
-        const diff = (Number(toEnDigits(vals[v.id])) || 0) - (v.stock_qty ?? 0);
-        if (diff !== 0) {
-          const { error: movementError } = await supabase.from("stock_movements").insert({ org_id: orgId, branch_id: branchId, variant_id: v.id, type: "adjust", reason: "count", qty: diff, note: note.trim() || "تعدیل" });
-          if (movementError) throw movementError;
-          await logActivity({ orgId, action: "stock_adjust", entityType: "product", entityId: product.id, newData: { variant_id: v.id, qty: diff, note: note.trim() || "تعدیل" } });
-        }
-      }
-      onSaved();
-    } catch (err) { setError("خطا: " + (err as Error).message); setSaving(false); }
-  }
-
-  return (
-    <Modal open onClose={onClose} title="تعدیل موجودی" size="lg">
-      <div className="space-y-4">
-        <div className="text-sm text-slate-500">مقدار فعلی را تغییر دهید:</div>
-        {variants.map((v: any) => (
-          <div key={v.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-            <div className="flex-1"><div className="font-medium text-sm">{[v.color, v.size].filter(Boolean).join(" / ") || "ساده"}</div><div className="text-xs text-slate-400">فعلی: {toFaDigits(v.stock_qty)}</div></div>
-            <input className="input w-24 text-center" inputMode="numeric" value={vals[v.id] ?? "0"} onChange={e=>setVals(p=>({...p,[v.id]:e.target.value}))} />
-          </div>
-        ))}
-        <div><label className="label">توضیح</label><input className="input" value={note} onChange={e=>setNote(e.target.value)} placeholder="مثلاً: انبارگردانی" /></div>
-        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
-        <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving&&<Loader2 className="animate-spin" size={18}/>} ثبت تعدیل</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
-      </div>
-    </Modal>
   );
 }
