@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, type MouseEvent } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
+import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
 import { DatePicker } from "@/components/shared/date-picker";
-import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { PhoneLink } from "@/components/shared/phone-link";
 import { formatToman } from "@/lib/utils/format";
@@ -28,6 +29,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
   const [balanceFilter, setBalanceFilter] = useState<"" | "debtors" | "creditors">("");
   const [sortBy, setSortBy] = useState<"name_asc" | "name_desc" | "balance_high" | "balance_low" | "newest">("name_asc");
   const qc = useQueryClient();
+  const { openEntity } = usePanelManager();
 
   const { data: contacts, isLoading } = useQuery({
     queryKey: ["contacts", orgId, search, typeFilter],
@@ -127,23 +129,54 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
     }
   }, [searchParams, forcedType, forcedFilter, forcedAction]);
 
+  function openContact(id: string, name?: string | null) {
+    openEntity("contact", id, { mode: "view", context: "workspace", title: name ?? undefined });
+  }
+
+  function handleContactRowClick(event: MouseEvent<HTMLElement>, id: string, name?: string | null) {
+    if (event.defaultPrevented) return;
+    const href = `/contacts/${id}`;
+    if (event.metaKey || event.ctrlKey) {
+      window.open(href, "_blank", "noopener,noreferrer");
+      return;
+    }
+    openContact(id, name);
+  }
+
+  function handleContactRowAuxClick(event: MouseEvent<HTMLElement>, id: string) {
+    if (event.button === 1) {
+      event.preventDefault();
+      window.open(`/contacts/${id}`, "_blank", "noopener,noreferrer");
+    }
+  }
+
   return (
     <div>
       <PageHeader
         title="اشخاص"
         subtitle="مشتری‌ها و تامین‌کننده‌ها"
         action={
-          <button
-            onClick={() => {
-              setEditing(null);
-              setInitialType(typeFilter || "customer");
-              setModalOpen(true);
-            }}
-            className="btn-primary"
-          >
-            <Plus size={18} />
-            <span className="hidden sm:inline">شخص جدید</span>
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => openEntity("contact", undefined, { mode: "create", context: "workspace", title: "شخص جدید" })}
+              className="btn-primary"
+            >
+              <Plus size={18} />
+              <span className="hidden sm:inline">پنل جدید</span>
+            </button>
+            <button
+              onClick={() => {
+                setEditing(null);
+                setInitialType(typeFilter || "customer");
+                setModalOpen(true);
+              }}
+              className="btn-secondary"
+              title="مسیر قدیمی ایجاد شخص"
+            >
+              <Plus size={18} />
+              <span className="hidden sm:inline">فرم قدیمی</span>
+            </button>
+          </div>
         }
       />
 
@@ -188,19 +221,38 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
           {filtered.map((c) => {
             const bal = balances?.[c.id] ?? 0;
             return (
-              <div key={c.id} className="card p-4 flex items-center justify-between gap-3">
+              <div
+                key={c.id}
+                role="link"
+                tabIndex={0}
+                onClick={(event) => handleContactRowClick(event, c.id, c.name)}
+                onAuxClick={(event) => handleContactRowAuxClick(event, c.id)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") openContact(c.id, c.name);
+                }}
+                className="card p-4 flex items-center justify-between gap-3 cursor-pointer transition hover:border-primary/30 hover:shadow-md"
+              >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center shrink-0">
                     <User size={18} />
                   </div>
                   <div className="min-w-0">
-                    <EntityLink type="contact" id={c.id} className="block truncate" fallbackClassName="block truncate font-medium text-slate-800">
+                    <Link
+                      href={`/contacts/${c.id}`}
+                      className="block truncate font-semibold text-primary hover:underline"
+                      onClick={(event) => {
+                        if (event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1) return;
+                        event.preventDefault();
+                        event.stopPropagation();
+                        openContact(c.id, c.name);
+                      }}
+                    >
                       {c.name || "بدون نام"}
-                    </EntityLink>
+                    </Link>
                     <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5 flex-wrap">
                       {(c as any).code && <span className="font-mono text-primary">{(c as any).code}</span>}
                       <span className="badge bg-slate-100 text-slate-500">{TYPE_LABEL[c.type]}</span>
-                      {c.phone && <PhoneLink phone={c.phone} className="text-xs" />}
+                      {c.phone && <span onClick={(event) => event.stopPropagation()}><PhoneLink phone={c.phone} className="text-xs" /></span>}
                     </div>
                   </div>
                 </div>
@@ -217,9 +269,12 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
                       </span>
                     )}
                   </div>
-                  <EntityActionMenu type="contact" id={c.id} label={c.name} phone={c.phone} />
+                  <div onClick={(event) => event.stopPropagation()}>
+                    <EntityActionMenu type="contact" id={c.id} label={c.name} phone={c.phone} />
+                  </div>
                   <button
-                    onClick={() => {
+                    onClick={(event) => {
+                      event.stopPropagation();
                       setEditing(c);
                       setModalOpen(true);
                     }}
@@ -228,7 +283,10 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
                     <Pencil size={17} />
                   </button>
                   <button
-                    onClick={() => handleDelete(c.id)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleDelete(c.id);
+                    }}
                     className="text-slate-400 hover:text-rose-600 p-1"
                   >
                     <Trash2 size={17} />
