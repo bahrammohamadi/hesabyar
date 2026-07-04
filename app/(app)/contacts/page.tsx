@@ -230,11 +230,11 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
                 onKeyDown={(event) => {
                   if (event.key === "Enter") openContact(c.id, c.name);
                 }}
-                className="card p-4 flex items-center justify-between gap-3 cursor-pointer transition hover:border-primary/30 hover:shadow-md"
+                className="card p-4 flex items-center justify-between gap-3 cursor-pointer border-white/80 bg-white/90 shadow-sm shadow-slate-900/[0.03] transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-slate-900/[0.06]"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center shrink-0">
-                    <User size={18} />
+                  <div className="w-11 h-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 text-base font-black shadow-sm">
+                    {(c.name || "؟").trim().slice(0, 1)}
                   </div>
                   <div className="min-w-0">
                     <Link

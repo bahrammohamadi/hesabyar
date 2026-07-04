@@ -170,12 +170,12 @@ export default function ProductsPage() {
                 onKeyDown={(event) => {
                   if (event.key === "Enter") openProduct(p.id, p.name);
                 }}
-                className="card p-4 cursor-pointer transition hover:border-primary/30 hover:shadow-md"
+                className="card p-4 cursor-pointer border-white/80 bg-white/90 shadow-sm shadow-slate-900/[0.03] transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-slate-900/[0.06]"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3 min-w-0">
-                    <div className="w-11 h-11 rounded-xl bg-primary/[0.06] text-primary flex items-center justify-center shrink-0">
-                      <Package size={20} />
+                    <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-sm">
+                      <Package size={21} />
                     </div>
                     <div className="min-w-0">
                       <Link
