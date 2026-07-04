@@ -1,12 +1,14 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { MoreVertical, Receipt } from "lucide-react";
 import type { PanelInstance } from "@/src/core/panel-manager/types";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { EntityLink } from "@/src/core/panel-manager/EntityLink";
-import { useDocumentEntity, type DocumentLine, type InvoiceDocType } from "@/src/core/services/invoice-service";
-import { Badge, DataTable, EmptyState, IconButton, PanelShell, Section, Spinner, StatusPill, Tabs, type Column } from "@/src/shared/ui";
+import { useDocumentEntity, useRegisterPayment, useTransitionDocument, type DocumentLine, type DocumentTransitionStatus, type InvoiceDocType, type PaymentMethod } from "@/src/core/services/invoice-service";
+import { Badge, Button, DataTable, EmptyState, Field, IconButton, NumberInput, PanelShell, Section, Select, Spinner, StatusPill, Tabs, type Column } from "@/src/shared/ui";
 import { Money, PersianDate, toPersianDigits } from "@/src/shared/format";
+import { rialToToman, tomanToRial } from "@/lib/utils/format";
 
 function docTypeLabel(type: InvoiceDocType) {
   return type === "sale" ? "فروش" : "خرید";
@@ -21,6 +23,15 @@ export function InvoicePanel({ panel }: { panel: PanelInstance }) {
   const docType = panel.docType ?? "sale";
   const docId = panel.entityId;
   const invoiceQuery = useDocumentEntity(docType, docId);
+  const transitionMutation = useTransitionDocument();
+  const paymentMutation = useRegisterPayment();
+  const [paymentAmountToman, setPaymentAmountToman] = useState<number | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
+
+  useEffect(() => {
+    const remaining = invoiceQuery.data?.balance?.remaining ?? 0;
+    if (remaining > 0) setPaymentAmountToman(rialToToman(remaining));
+  }, [invoiceQuery.data?.balance?.remaining]);
 
   if (!docId) {
     return (
@@ -39,12 +50,42 @@ export function InvoicePanel({ panel }: { panel: PanelInstance }) {
   }
 
   const data = invoiceQuery.data;
+
   if (!data) {
     return <PanelShell title="سند یافت نشد" icon={<Receipt size={20} />} onClose={closeTop}><EmptyState title="سند مورد نظر یافت نشد" /></PanelShell>;
   }
 
   const { document, lines, balance, contact } = data;
   const displayNo = document.invoice_no ?? document.doc_id.slice(0, 8);
+  const affectedProductIds = Array.from(new Set(lines.map((line) => line.product_id).filter((id): id is string => !!id)));
+  const mutationContext = { docType: document.doc_type, docId: document.doc_id, affectedProductIds, contactId: document.contact_id };
+  const status = document.status;
+  const remaining = balance?.remaining ?? Math.max(0, document.total - document.paid_amount);
+  const canConfirm = status === "draft";
+  const canPay = remaining > 0 && (status === "confirmed" || status === "paid");
+  const canSettle = status === "confirmed" || status === "paid";
+  const canReverse = status === "confirmed" || status === "paid" || status === "settled";
+  const isBusy = transitionMutation.isPending || paymentMutation.isPending;
+
+  async function runTransition(newStatus: DocumentTransitionStatus) {
+    const message = newStatus === "confirmed"
+      ? "با تأیید سند، موجودی انبار کم/زیاد می‌شود. ادامه می‌دهید؟"
+      : newStatus === "reversed"
+        ? "⚠️ این عملیات موجودی را برمی‌گرداند و سند دیگر قابل ویرایش نیست. مطمئن هستید؟"
+        : "سند به وضعیت تسویه‌شده تغییر کند؟";
+    if (!window.confirm(message)) return;
+    await transitionMutation.mutateAsync({ ...mutationContext, newStatus });
+  }
+
+  async function submitPayment() {
+    const amountRial = tomanToRial(paymentAmountToman ?? 0);
+    if (amountRial <= 0) {
+      window.alert("مبلغ پرداخت باید بزرگتر از صفر باشد.");
+      return;
+    }
+    if (amountRial > remaining && !window.confirm("مبلغ واردشده بیشتر از مانده سند است. ادامه می‌دهید؟")) return;
+    await paymentMutation.mutateAsync({ ...mutationContext, amountRial, method: paymentMethod });
+  }
 
   const lineColumns: Column<DocumentLine>[] = [
     {
@@ -82,6 +123,17 @@ export function InvoicePanel({ panel }: { panel: PanelInstance }) {
           )}
         </Section>
 
+        {(canConfirm || canPay || canSettle || canReverse) && (
+          <Section title="اکشن‌های سند" description="هر اکشن حساس قبل از اجرا تأیید می‌خواهد و قوانین در RPC دیتابیس enforce می‌شود.">
+            <div className="flex flex-wrap gap-2">
+              {canConfirm && <Button loading={isBusy} onClick={() => runTransition("confirmed")}>تأیید سند</Button>}
+              {canPay && <Button variant="secondary" onClick={() => window.document.getElementById("invoice-payment-form")?.scrollIntoView({ behavior: "smooth", block: "center" })}>ثبت پرداخت</Button>}
+              {canSettle && <Button variant="secondary" loading={isBusy} onClick={() => runTransition("settled")}>تسویه</Button>}
+              {canReverse && <Button variant="danger" loading={isBusy} onClick={() => runTransition("reversed")}>برگشت سند</Button>}
+            </div>
+          </Section>
+        )}
+
         <Tabs
           items={[
             {
@@ -111,6 +163,29 @@ export function InvoicePanel({ panel }: { panel: PanelInstance }) {
                       <div className="rounded-xl border border-border p-3"><div className="text-sm text-muted-foreground">وضعیت پرداخت</div><div className="mt-1"><StatusPill kind="payment" status={balance?.payment_status ?? "unpaid"} /></div></div>
                     </div>
                   </Section>
+                  {canPay && (
+                    <Section title="ثبت پرداخت" description="پرداخت از مسیر fn_register_payment ثبت می‌شود و در صورت تسویه کامل، سند خودکار settled می‌شود." className="scroll-mt-24" >
+                      <div id="invoice-payment-form" className="grid gap-4 sm:grid-cols-2">
+                        <Field label="مبلغ پرداخت (تومان)">
+                          <NumberInput value={paymentAmountToman} onValueChange={setPaymentAmountToman} />
+                        </Field>
+                        <Field label="روش پرداخت">
+                          <Select value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value as PaymentMethod)}>
+                            <option value="cash">نقد</option>
+                            <option value="card">کارت</option>
+                            <option value="credit">اعتباری</option>
+                            <option value="transfer">انتقال</option>
+                          </Select>
+                        </Field>
+                      </div>
+                      {tomanToRial(paymentAmountToman ?? 0) > remaining && (
+                        <div className="mt-3 rounded-xl bg-warning-soft p-3 text-sm text-warning">مبلغ واردشده بیشتر از مانده سند است و قبل از ارسال دوباره تأیید می‌گیرد.</div>
+                      )}
+                      <div className="mt-4">
+                        <Button loading={paymentMutation.isPending} onClick={submitPayment}>ثبت پرداخت</Button>
+                      </div>
+                    </Section>
+                  )}
                 </div>
               ),
             },
