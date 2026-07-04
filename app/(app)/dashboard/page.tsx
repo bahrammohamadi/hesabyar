@@ -5,50 +5,23 @@ import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
-import { PageHeader, StatCard, Spinner, Modal } from "@/components/shared/ui";
+import { PageHeader, Spinner, Modal } from "@/components/shared/ui";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { PhoneLink } from "@/components/shared/phone-link";
-import { formatToman, formatNumber, toFaDigits, rialToToman, tomanToRial, toEnDigits, toJalali } from "@/lib/utils/format";
-import { cn } from "@/lib/utils/cn";
+import { formatToman, toFaDigits, rialToToman, tomanToRial, toEnDigits, toJalali } from "@/lib/utils/format";
 import type { DashboardSummary, CartItem } from "@/types/db";
 import { logActivity } from "@/lib/utils/activity-log";
-import {
-  TrendingUp,
-  Wallet,
-  Package,
-  AlertTriangle,
-  ShoppingBag,
-  Receipt,
-  ArrowDownCircle,
-  ArrowUpCircle,
-  Plus,
-  ShoppingCart,
-  ArrowDownToLine,
-  ArrowUpFromLine,
-  Users,
-  BarChart3,
-  Trash2,
-  Loader2,
-  X,
-  Package2,
-  UserPlus,
-  ArrowLeftRight,
-  CreditCard,
-  ChevronRight,
-} from "lucide-react";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
 import Link from "next/link";
+import { ArrowUpFromLine, Loader2, Package2, Plus, Receipt, Trash2, UserPlus, X } from "lucide-react";
+import {
+  DashboardQuickActions,
+  DashboardRecentInvoices,
+  DashboardSalesChart,
+  DashboardStats,
+} from "./components";
 
 export default function DashboardPage() {
   const { orgId, loading: orgLoading } = useOrg();
@@ -167,276 +140,22 @@ export default function DashboardPage() {
         }
       />
 
-      {/* بخش ۱: دسترسی‌های سریع - طراحی جدید */}
-      <section className="relative">
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <div className="w-1 h-6 bg-primary rounded-full shadow-sm shadow-primary/20" />
-            <div>
-              <h2 className="text-[15px] font-extrabold text-slate-800">عملیات سریع</h2>
-              <p className="text-[11px] text-slate-500 mt-0.5">دسترسی آنی به پرکاربردترین بخش‌ها</p>
-            </div>
-          </div>
-          <div className="hidden sm:flex items-center gap-1.5 text-[10px] text-slate-400">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            آنلاین
-          </div>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2.5 sm:gap-4">
-          <QuickActionButton 
-            label="فروش جدید" 
-            description="ثبت فاکتور سریع"
-            icon={Receipt} 
-            color="bg-primary"
-            badge="F2"
-            onClick={() => setQuickSaleOpen(true)} 
-          />
-          <QuickActionButton 
-            label="خرید کالا" 
-            description="ورود موجودی"
-            icon={ShoppingCart} 
-            color="bg-emerald-600" 
-            href="/purchases" 
-          />
-          <QuickActionButton 
-            label="تعدیل انبار" 
-            description="اصلاح موجودی"
-            icon={ArrowDownToLine} 
-            color="bg-blue-600" 
-            href="/inventory/adjust" 
-          />
-          <QuickActionButton 
-            label="کالای جدید" 
-            description="افزودن محصول"
-            icon={Package2} 
-            color="bg-slate-600" 
-            onClick={() => openEntity("product", undefined, { mode: "create", context: "dashboard", title: "کالای جدید" })} 
-          />
-          <QuickActionButton 
-            label="مشتری جدید" 
-            description="ثبت مخاطب"
-            icon={UserPlus} 
-            color="bg-cyan-600" 
-            onClick={() => openEntity("contact", undefined, { mode: "create", context: "dashboard", title: "مشتری جدید" })} 
-          />
-          <QuickActionButton 
-            label="گزارشات" 
-            description="تحلیل و آمار"
-            icon={BarChart3} 
-            color="bg-indigo-600" 
-            href="/reports/sales" 
-          />
-        </div>
-      </section>
+      <DashboardQuickActions
+        onOpenQuickSale={() => setQuickSaleOpen(true)}
+        onCreateProduct={() => openEntity("product", undefined, { mode: "create", context: "dashboard", title: "کالای جدید" })}
+        onCreateContact={() => openEntity("contact", undefined, { mode: "create", context: "dashboard", title: "مشتری جدید" })}
+      />
 
-      {/* بخش ۲: ویجت‌های آماری دسته‌بندی شده */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
-        
-        {/* ستون اول: مالیات (Finance) */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-1 h-5 bg-emerald-600 rounded-full" />
-            <h2 className="text-sm font-bold text-slate-800">وضعیت مالی</h2>
-          </div>
-          <div className="grid grid-cols-1 gap-3">
-            <StatCard
-              label="موجودی صندوق"
-              value={formatToman(s?.cash_total)}
-              icon={Wallet}
-              trend="neutral"
-              color="emerald"
-              href="/finance"
-            />
-            <StatCard
-              label="فروش امروز"
-              value={formatToman(s?.sales_today)}
-              subValue={`${toFaDigits(s?.sales_today_count ?? 0)} فاکتور`}
-              icon={TrendingUp}
-              trend="up"
-              color="primary"
-              href="/sales"
-            />
-            <button 
-              onClick={() => setQuickExpenseOpen(true)}
-              className="card p-4 text-right hover:bg-rose-50 transition-colors group flex items-center justify-between"
-            >
-              <div>
-                <div className="text-sm text-slate-500">هزینه‌های ماه</div>
-                <div className="text-lg font-bold text-slate-800">{formatToman(s?.expenses_month)}</div>
-              </div>
-              <ArrowUpCircle className="text-slate-300 group-hover:text-rose-500 transition-colors" size={24} />
-            </button>
-          </div>
-        </div>
+      <DashboardStats summary={s} lowStockItems={lowStockItems} onOpenExpense={() => setQuickExpenseOpen(true)} onOpenReceipt={() => setQuickReceiptOpen(true)} />
 
-        {/* ستون دوم: فروش و سود (Sales & Profit) */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-1 h-5 bg-primary rounded-full" />
-            <h2 className="text-sm font-bold text-slate-800">عملکرد فروش</h2>
-          </div>
-          <div className="grid grid-cols-1 gap-3">
-            <StatCard
-              label="فروش این ماه"
-              value={formatToman(s?.sales_month)}
-              subValue={`سود: ${formatToman(s?.profit_month, false)}`}
-              icon={ShoppingBag}
-              trend="up"
-              color="violet"
-              href="/sales"
-            />
-            <div className="grid grid-cols-2 gap-3">
-              <div className="card p-4 text-right group hover:border-rose-200 transition-colors">
-                <div className="text-[11px] text-slate-400 mb-1">طلب مشتریان</div>
-                <div className="text-sm font-bold text-rose-600">{formatToman(s?.customers_debt)}</div>
-              </div>
-              <div className="card p-4 text-right group hover:border-emerald-200 transition-colors">
-                <div className="text-[11px] text-slate-400 mb-1">طلب تأمین‌کننده</div>
-                <div className="text-sm font-bold text-emerald-600">{formatToman(s?.suppliers_credit)}</div>
-              </div>
-            </div>
-            <div className="card p-4 flex items-center justify-between hover:bg-slate-50 transition-colors cursor-pointer group" onClick={() => setQuickReceiptOpen(true)}>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                  <ArrowDownCircle size={16} />
-                </div>
-                <span className="text-sm font-medium text-slate-700">ثبت دریافت وجه</span>
-              </div>
-              <ChevronRight size={16} className="text-slate-300 group-hover:text-primary transition-colors" />
-            </div>
-          </div>
-        </div>
-
-        {/* ستون سوم: انبار (Inventory) */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-1 h-5 bg-blue-600 rounded-full" />
-            <h2 className="text-sm font-bold text-slate-800">مدیریت انبار</h2>
-          </div>
-          <div className="grid grid-cols-1 gap-3">
-            <StatCard
-              label="ارزش کل انبار"
-              value={formatToman(s?.inventory_value)}
-              icon={Package}
-              trend="neutral"
-              color="blue"
-              href="/products"
-            />
-            <div className={`card p-4 border-l-4 ${ (s?.low_stock_count ?? 0) > 0 ? "border-l-rose-400 bg-rose-50/30" : "border-l-slate-200" }`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm text-slate-500">کالاهای کم‌موجود</div>
-                  <div className="text-xl font-bold text-slate-800">{toFaDigits(s?.low_stock_count ?? 0)} مورد</div>
-                </div>
-                <AlertTriangle className={ (s?.low_stock_count ?? 0) > 0 ? "text-amber-500" : "text-slate-300" } size={24} />
-              </div>
-              {(s?.low_stock_count ?? 0) > 0 && (
-                <Link href="/inventory/movements" className="text-xs text-amber-600 font-medium mt-2 inline-block hover:underline">
-                  بررسی و سفارش کالا →
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* بخش ۳: تحلیلات و لیست‌ها */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-        {/* نمودار فروش - فضای بیشتر */}
-        <div className="lg:col-span-2 card p-4 sm:p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="font-bold text-slate-800 flex items-center gap-2">
-              <TrendingUp size={20} className="text-primary" />
-              روند فروش ۳۰ روز اخیر
-            </h3>
-            <Link href="/reports" className="text-xs text-primary hover:underline">گزارش تحلیل فروش</Link>
-          </div>
-          {chartQuery.isLoading ? (
-            <Spinner />
-          ) : !chartQuery.data || chartQuery.data.length === 0 ? (
-            <div className="text-center text-sm text-slate-400 py-16">داده‌ای برای نمایش در نمودار یافت نشد.</div>
-          ) : (
-            <div className="h-56 sm:h-72" dir="ltr">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartQuery.data}>
-                  <defs>
-                    <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                  <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis
-                    tick={{ fontSize: 11 }}
-                    stroke="hsl(var(--muted-foreground))"
-                    tickFormatter={(v) => (v >= 1000000 ? `${v / 1000000}M` : `${v / 1000}k`)}
-                  />
-                  <Tooltip
-                    formatter={(v: number) => [formatNumber(v) + " تومان", "فروش"]}
-                    contentStyle={{ fontFamily: "Vazirmatn", fontSize: 12, direction: "rtl", borderRadius: '12px' }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="total"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth={3}
-                    fill="url(#salesGradient)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </div>
-
-        {/* لیست آخرین فعالیت‌ها / فاکتورها */}
-        <div className="card p-4 sm:p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-slate-800 flex items-center gap-2">
-              <Receipt size={20} className="text-primary" />
-              آخرین فاکتورها
-            </h3>
-            <Link href="/sales" className="text-xs text-primary hover:underline">مشاهده همه</Link>
-          </div>
-          <div className="space-y-3">
-            {recentSales && recentSales.length > 0 ? (
-              recentSales.map((sale: any) => (
-                <div
-                  key={sale.id}
-                  role="link"
-                  tabIndex={0}
-                  onClick={(event) => handleRecentSaleClick(event, sale.id)}
-                  onAuxClick={(event) => handleRecentSaleAuxClick(event, sale.id)}
-                  onKeyDown={(event) => { if (event.key === "Enter") openRecentSale(sale.id); }}
-                  className="flex cursor-pointer items-center justify-between p-2 rounded-xl hover:bg-slate-50 transition-colors group border border-transparent hover:border-primary/30"
-                >
-                  <div className="min-w-0">
-                    <Link
-                      href={`/sales/${sale.id}`}
-                      className="text-sm font-medium block truncate text-primary hover:underline"
-                      onClick={(event) => {
-                        if (event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1) return;
-                        event.preventDefault();
-                        event.stopPropagation();
-                        openRecentSale(sale.id);
-                      }}
-                    >
-                      {sale.invoice_no}
-                    </Link>
-                    <div className="text-[11px] text-slate-400">
-                      {sale.customer_id ? (
-                        <EntityLink type="contact" id={sale.customer_id}>{sale.customer?.name ?? "مشتری"}</EntityLink>
-                      ) : "مشتری نقدی"} • {toJalali(sale.date)}
-                    </div>
-                  </div>
-                  <div className="text-sm font-bold text-slate-700 shrink-0">{formatToman(sale.total, false)}</div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center text-sm text-slate-400 py-8">فاکتوری یافت نشد.</div>
-            )}
-          </div>
-        </div>
+        <DashboardSalesChart isLoading={chartQuery.isLoading} data={chartQuery.data} />
+        <DashboardRecentInvoices
+          sales={recentSales}
+          onOpenSale={openRecentSale}
+          onSaleClick={handleRecentSaleClick}
+          onSaleAuxClick={handleRecentSaleAuxClick}
+        />
       </div>
 
       {/* مودال‌ها */}
@@ -446,106 +165,6 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-type QuickActionAccent = "primary" | "emerald" | "blue" | "amber" | "rose" | "violet" | "cyan" | "slate";
-
-function QuickActionButton({ 
-  label, 
-  icon: Icon, 
-  color, 
-  accent: accentProp,
-  onClick, 
-  href,
-  description,
-  badge
-}: { 
-  label: string; 
-  icon: any; 
-  color?: string;
-  accent?: QuickActionAccent;
-  onClick?: () => void; 
-  href?: string;
-  description?: string;
-  badge?: string;
-}) {
-  // map color string like "bg-primary" to accent name
-  const accentMap: Record<string, QuickActionAccent> = {
-    "bg-primary": "primary",
-    "bg-emerald-600": "emerald",
-    "bg-blue-600": "blue",
-    "bg-slate-600": "slate",
-    "bg-cyan-600": "cyan",
-    "bg-indigo-600": "violet",
-    "bg-rose-600": "rose",
-    "bg-amber-600": "amber",
-  };
-  const accent: QuickActionAccent = accentProp ?? accentMap[color || ""] ?? "primary";
-
-  const accentStyles: Record<QuickActionAccent, {bg:string;text:string;ring:string;hover:string;shadow:string}> = {
-    primary: { bg: "bg-primary/10", text: "text-primary", ring: "ring-primary/20", hover: "hover:bg-primary/10", shadow: "shadow-primary/10" },
-    emerald: { bg: "bg-emerald-50", text: "text-emerald-600", ring: "ring-emerald-200", hover: "hover:bg-emerald-100", shadow: "shadow-emerald-600/10" },
-    blue: { bg: "bg-blue-50", text: "text-blue-600", ring: "ring-blue-200", hover: "hover:bg-blue-100", shadow: "shadow-blue-600/10" },
-    amber: { bg: "bg-amber-50", text: "text-amber-600", ring: "ring-amber-200", hover: "hover:bg-amber-100", shadow: "shadow-amber-600/10" },
-    rose: { bg: "bg-rose-50", text: "text-rose-600", ring: "ring-rose-200", hover: "hover:bg-rose-100", shadow: "shadow-rose-600/10" },
-    violet: { bg: "bg-violet-50", text: "text-violet-600", ring: "ring-violet-200", hover: "hover:bg-violet-100", shadow: "shadow-violet-600/10" },
-    cyan: { bg: "bg-cyan-50", text: "text-cyan-600", ring: "ring-cyan-200", hover: "hover:bg-cyan-100", shadow: "shadow-cyan-600/10" },
-    slate: { bg: "bg-slate-100", text: "text-slate-700", ring: "ring-slate-200", hover: "hover:bg-slate-200", shadow: "shadow-slate-600/10" },
-  };
-
-  const style = accentStyles[accent];
-
-  const content = (
-    <div className={cn(
-      "relative group w-full rounded-[18px] sm:rounded-[20px] bg-card border border-border p-3 sm:p-4 transition-all duration-200",
-      "hover:shadow-lg hover:shadow-slate-200/60 hover:-translate-y-0.5 hover:border-slate-300",
-      "focus:outline-none focus:ring-2 focus:ring-primary/20",
-      "text-right"
-    )}>
-      {/* subtle top accent */}
-      <div className={cn("absolute top-0 right-4 left-4 h-[3px] rounded-b-full opacity-60", style.text.replace('text-', 'bg-'))} />
-      
-      <div className="flex items-start gap-3">
-        <div className={cn(
-          "w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 shadow-sm",
-          style.bg, style.text, style.shadow
-        )}>
-          <Icon className="h-5 w-5 sm:h-[22px] sm:w-[22px]" strokeWidth={2} />
-        </div>
-        <div className="flex-1 min-w-0 pt-0.5">
-          <div className="font-extrabold text-[12px] sm:text-[13px] text-slate-800 leading-tight">{label}</div>
-          {description && (
-            <div className="text-[11px] text-slate-500 mt-1 leading-snug">{description}</div>
-          )}
-          {badge && (
-            <div className={cn("inline-flex mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full", style.bg, style.text)}>
-              {badge}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* chevron hint */}
-      <div className="absolute left-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-slate-300">
-        <ChevronRight size={14} className="rotate-180" />
-      </div>
-    </div>
-  );
-
-  if (href) {
-    return (
-      <Link href={href} className="block no-underline">
-        {content}
-      </Link>
-    );
-  }
-  return (
-    <button onClick={onClick} className="w-full text-right">
-      {content}
-    </button>
-  );
-}
-
-// ... (The rest of the QuickSaleModal and QuickTxModal remain as they were, but I'll include them for completeness)
 
 function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () => void }) {
   const { branchId } = useOrg();
