@@ -21,13 +21,20 @@ export function PanelHost() {
   const { stack, topPanel, closeTop } = usePanelManager();
 
   useEffect(() => {
-    if (stack.length === 0) return;
-    const original = document.body.style.overflow;
+    const shouldLock = stack.length > 0;
+    if (!shouldLock) return;
+
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+
     document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
     return () => {
-      document.body.style.overflow = original;
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
     };
-  }, [stack.length]);
+  }, [stack.length > 0]);
 
   useEffect(() => {
     if (stack.length === 0) return;
