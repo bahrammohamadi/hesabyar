@@ -218,7 +218,7 @@ export function Modal({
   onClose: () => void;
   title: string;
   children: ReactNode;
-  size?: "md" | "lg";
+  size?: "md" | "lg" | "xl";
   mobileFullscreen?: boolean;
 }) {
   const [mounted, setMounted] = React.useState(false);
@@ -232,7 +232,7 @@ export function Modal({
         className={cn(
           "relative w-full overflow-y-auto rounded-t-[24px] bg-white shadow-2xl max-h-[92vh] sm:rounded-2xl",
           mobileFullscreen ? "h-[92vh] sm:h-auto" : "",
-          size === "lg" ? "sm:max-w-2xl" : "sm:max-w-md"
+          size === "xl" ? "sm:max-w-6xl" : size === "lg" ? "sm:max-w-2xl" : "sm:max-w-md"
         )}
       >
         <div className="sticky top-0 bg-white border-b border-slate-100 px-5 py-4 flex items-center justify-between">

@@ -247,7 +247,7 @@ function PurchaseModal({ orgId, onClose }: { orgId: string | null; onClose: () =
 
   return (
     <>
-      <Modal open onClose={onClose} title="خرید جدید" size="lg">
+      <Modal open onClose={onClose} title="خرید جدید" size="xl">
         <div className="space-y-4">
           {/* تامین‌کننده */}
           <div>
@@ -281,43 +281,24 @@ function PurchaseModal({ orgId, onClose }: { orgId: string | null; onClose: () =
               کالایی انتخاب نشده.
             </div>
           ) : (
-            <div className="space-y-2">
-              {items.map((it, idx) => (
-                <div key={it.variant_id} className="rounded-xl border border-slate-100 p-3">
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex min-w-0 items-center gap-2 text-sm font-medium">
-                      <EntityLink type="product" id={it.product_id} className="truncate">{it.label}</EntityLink>
-                      <EntityActionMenu type="product" id={it.product_id} label={it.label} />
-                    </span>
-                    <button onClick={() => setItems((p) => p.filter((_, i) => i !== idx))} className="text-rose-400 p-1">
-                      <Trash2 size={16} />
-                    </button>
+            <div className="max-h-[42vh] overflow-y-auto rounded-2xl border border-slate-100 bg-white">
+              <div className="hidden grid-cols-[minmax(240px,2fr)_minmax(140px,1fr)_120px_minmax(140px,1fr)_44px] gap-2 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-500 md:grid">
+                <span>کالا</span><span>قیمت خرید</span><span className="text-center">تعداد</span><span className="text-left">جمع</span><span />
+              </div>
+              <div className="divide-y divide-slate-100">
+                {items.map((it, idx) => (
+                  <div key={it.variant_id} className="p-3">
+                    <div className="hidden grid-cols-[minmax(240px,2fr)_minmax(140px,1fr)_120px_minmax(140px,1fr)_44px] items-center gap-2 md:grid">
+                      <div className="min-w-0"><span className="inline-flex min-w-0 items-center gap-2 text-sm font-semibold"><EntityLink type="product" id={it.product_id} className="truncate">{it.label}</EntityLink><EntityActionMenu type="product" id={it.product_id} label={it.label} /></span></div>
+                      <input className="input h-10 min-h-10 text-left text-sm" inputMode="numeric" value={String(rialToToman(it.unit_price))} onChange={(e) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, unit_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x)))} />
+                      <input className="input h-10 min-h-10 text-center text-sm" inputMode="numeric" value={String(it.qty)} onChange={(e) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, qty: Number(toEnDigits(e.target.value)) || 0 } : x)))} />
+                      <span className="text-left text-sm font-black text-slate-800 tabular-nums">{formatToman(it.unit_price * it.qty, false)}</span>
+                      <button onClick={() => setItems((p) => p.filter((_, i) => i !== idx))} className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-rose-400 hover:bg-rose-50 hover:text-rose-600"><Trash2 size={16} /></button>
+                    </div>
+                    <div className="md:hidden"><div className="flex items-center justify-between gap-2"><EntityLink type="product" id={it.product_id} className="truncate text-sm font-semibold">{it.label}</EntityLink><button onClick={() => setItems((p) => p.filter((_, i) => i !== idx))} className="text-rose-400"><Trash2 size={16} /></button></div><div className="mt-2 flex items-center justify-between text-sm"><span>{formatToman(it.unit_price, false)} × {toFaDigits(it.qty)}</span><strong>{formatToman(it.unit_price * it.qty, false)}</strong></div></div>
                   </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <input
-                      className="input w-20 text-sm"
-                      inputMode="numeric"
-                      value={String(it.qty)}
-                      onChange={(e) =>
-                        setItems((p) => p.map((x, i) => (i === idx ? { ...x, qty: Number(toEnDigits(e.target.value)) || 0 } : x)))
-                      }
-                      placeholder="تعداد"
-                    />
-                    <input
-                      className="input flex-1 text-sm"
-                      inputMode="numeric"
-                      value={String(rialToToman(it.unit_price))}
-                      onChange={(e) =>
-                        setItems((p) =>
-                          p.map((x, i) => (i === idx ? { ...x, unit_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x))
-                        )
-                      }
-                      placeholder="قیمت خرید"
-                    />
-                    <span className="text-sm w-28 text-left">{formatToman(it.unit_price * it.qty, false)}</span>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
 
