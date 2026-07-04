@@ -102,19 +102,19 @@ function SalesReport({ orgId }: { orgId: string }) {
     <div className="space-y-6">
       {/* خلاصه آمار */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="card p-4 text-center">
+        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
           <div className="text-2xl font-bold text-primary">{formatToman(summary?.sales_today ?? 0)}</div>
           <div className="text-xs text-slate-500 mt-1">فروش امروز</div>
         </div>
-        <div className="card p-4 text-center">
+        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
           <div className="text-2xl font-bold text-emerald-600">{formatToman(summary?.sales_month ?? 0)}</div>
           <div className="text-xs text-slate-500 mt-1">فروش ماه</div>
         </div>
-        <div className="card p-4 text-center">
+        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
           <div className="text-2xl font-bold text-slate-600">{toFaDigits(summary?.sales_today_count ?? 0)}</div>
           <div className="text-xs text-slate-500 mt-1">فاکتور امروز</div>
         </div>
-        <div className="card p-4 text-center">
+        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
           <div className="text-2xl font-bold text-amber-600">{formatToman(summary?.profit_month ?? 0)}</div>
           <div className="text-xs text-slate-500 mt-1">سود ماه</div>
         </div>
@@ -127,7 +127,7 @@ function SalesReport({ orgId }: { orgId: string }) {
             key={p}
             onClick={() => setPeriod(p)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-              period === p ? "bg-primary text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              period === p ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-primary/5"
             }`}
           >
             {p === "7d" ? "۷ روز" : p === "30d" ? "۳۰ روز" : p === "90d" ? "۹۰ روز" : "یک سال"}
@@ -136,7 +136,7 @@ function SalesReport({ orgId }: { orgId: string }) {
       </div>
 
       {/* نمودار */}
-      <div className="card p-4 sm:p-6">
+      <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur sm:p-6">
         <h3 className="font-semibold text-slate-800 mb-4">نمودار فروش</h3>
         {isLoading ? (
           <Spinner />
@@ -218,7 +218,7 @@ function ProductsReport({ orgId }: { orgId: string }) {
   return (
     <div className="space-y-6">
       {/* پرفروش‌ترین‌ها */}
-      <div className="card p-4 sm:p-6">
+      <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur sm:p-6">
         <h3 className="font-semibold text-slate-800 mb-4">پرفروش‌ترین محصولات (۳۰ روز)</h3>
         {isLoading ? (
           <Spinner />
@@ -243,7 +243,7 @@ function ProductsReport({ orgId }: { orgId: string }) {
       </div>
 
       {/* کالاهای کم‌موجود */}
-      <div className="card p-4 sm:p-6">
+      <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur sm:p-6">
         <h3 className="font-semibold text-slate-800 mb-4">کالاهای کم‌موجود</h3>
         {!lowStock?.length ? (
           <EmptyState icon={Package} message="همه کالاها موجودی کافی دارند" />
@@ -296,19 +296,19 @@ function FinancialReport({ orgId }: { orgId: string }) {
     <div className="space-y-6">
       {/* خلاصه مالی */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="card p-4 text-center">
+        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
           <div className="text-2xl font-bold text-emerald-600">{formatToman(summary?.cash_total ?? 0)}</div>
           <div className="text-xs text-slate-500 mt-1">موجودی صندوق و بانک</div>
         </div>
-        <div className="card p-4 text-center">
+        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
           <div className="text-2xl font-bold text-slate-600">{formatToman(summary?.customers_debt ?? 0)}</div>
           <div className="text-xs text-slate-500 mt-1">بدهی مشتریان</div>
         </div>
-        <div className="card p-4 text-center">
+        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
           <div className="text-2xl font-bold text-rose-600">{formatToman(summary?.suppliers_credit ?? 0)}</div>
           <div className="text-xs text-slate-500 mt-1">طلب از تأمین‌کنندگان</div>
         </div>
-        <div className="card p-4 text-center">
+        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
           <div className="text-2xl font-bold text-amber-600">{formatToman(summary?.inventory_value ?? 0)}</div>
           <div className="text-xs text-slate-500 mt-1">ارزش موجودی انبار</div>
         </div>
@@ -316,7 +316,7 @@ function FinancialReport({ orgId }: { orgId: string }) {
 
       {/* نمودار دایره‌ای */}
       {pieData.length > 0 && (
-        <div className="card p-4 sm:p-6">
+        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur sm:p-6">
           <h3 className="font-semibold text-slate-800 mb-4">توزیع حساب‌ها</h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -381,26 +381,26 @@ function ContactsReport({ orgId }: { orgId: string }) {
     <div className="space-y-6">
       {/* آمار */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="card p-4 text-center">
+        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
           <div className="text-2xl font-bold text-primary">{toFaDigits(stats.customers)}</div>
           <div className="text-xs text-slate-500 mt-1">مشتریان</div>
         </div>
-        <div className="card p-4 text-center">
+        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
           <div className="text-2xl font-bold text-emerald-600">{toFaDigits(stats.suppliers)}</div>
           <div className="text-xs text-slate-500 mt-1">تأمین‌کنندگان</div>
         </div>
-        <div className="card p-4 text-center">
+        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
           <div className="text-2xl font-bold text-rose-600">{formatToman(stats.totalDebt)}</div>
           <div className="text-xs text-slate-500 mt-1">کل بدهی</div>
         </div>
-        <div className="card p-4 text-center">
+        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
           <div className="text-2xl font-bold text-amber-600">{formatToman(stats.totalCredit)}</div>
           <div className="text-xs text-slate-500 mt-1">کل طلب</div>
         </div>
       </div>
 
       {/* نمودار دایره‌ای */}
-      <div className="card p-4 sm:p-6">
+      <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur sm:p-6">
         <h3 className="font-semibold text-slate-800 mb-4">توزیع اشخاص</h3>
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
@@ -426,7 +426,7 @@ function ContactsReport({ orgId }: { orgId: string }) {
       </div>
 
       {/* لیست اشخاص */}
-      <div className="card p-4 sm:p-6">
+      <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur sm:p-6">
         <h3 className="font-semibold text-slate-800 mb-4">لیست اشخاص</h3>
         {!contactBalances?.length ? (
           <EmptyState icon={Users} message="شخصی ثبت نشده است" />
@@ -504,7 +504,7 @@ function ProfitReport({ orgId }: { orgId: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="card p-4 sm:p-6">
+      <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur sm:p-6">
         <h3 className="font-semibold text-slate-800 mb-4">فروش بر اساس رنگ</h3>
         {(!salesByColor || !salesByColor.length) ? (
           <EmptyState icon={Package} message="داده‌ای موجود نیست" />
@@ -523,7 +523,7 @@ function ProfitReport({ orgId }: { orgId: string }) {
         )}
       </div>
 
-      <div className="card p-4 sm:p-6">
+      <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur sm:p-6">
         <h3 className="font-semibold text-slate-800 mb-4">فروش بر اساس سایز</h3>
         {!salesBySize || !salesBySize.length ? (
           <EmptyState icon={Package} message="داده‌ای موجود نیست" />
@@ -540,7 +540,7 @@ function ProfitReport({ orgId }: { orgId: string }) {
         )}
       </div>
 
-      <div className="card p-4 sm:p-6">
+      <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur sm:p-6">
         <h3 className="font-semibold text-slate-800 mb-4">پرفروش‌ترین محصولات</h3>
         {isLoading ? (
           <Spinner />
@@ -655,7 +655,7 @@ export function ReportsPageContent({ forcedTab }: { forcedTab?: TabId }) {
         }
       />
 
-      <div className="mb-6 rounded-2xl border border-primary/20 bg-primary/[0.04] p-4">
+      <div className="mb-6 overflow-hidden rounded-[24px] border border-primary/20 bg-gradient-to-l from-primary/[0.08] via-white/90 to-white/70 p-4 shadow-sm shadow-primary/10">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="flex items-center gap-2">
@@ -671,7 +671,7 @@ export function ReportsPageContent({ forcedTab }: { forcedTab?: TabId }) {
       </div>
 
       {/* تب‌ها */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-6 -mx-4 px-4">
+      <div className="mb-6 -mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:rounded-[22px] sm:border sm:border-white/70 sm:bg-white/70 sm:p-2 sm:shadow-sm">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -680,8 +680,8 @@ export function ReportsPageContent({ forcedTab }: { forcedTab?: TabId }) {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition ${
                 activeTab === tab.id
-                  ? "bg-primary text-white"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  ? "bg-primary text-white shadow-lg shadow-primary/20"
+                  : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-primary/5 hover:text-primary hover:ring-primary/20"
               }`}
             >
               <Icon size={16} />

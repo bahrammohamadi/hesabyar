@@ -129,11 +129,11 @@ export function FinanceOperationPage({ mode }: { mode: FinanceMode }) {
   }
 
   return (
-    <div>
+    <div className="space-y-5">
       <PageHeader title={MODE_LABEL[mode]} subtitle={MODE_HINT[mode]} />
 
       {mode !== "all" && (
-        <div className="card p-4 mb-5">
+        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div><label className="label">مبلغ (تومان)</label><input className="input" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} /></div>
             <div><label className="label">حساب مبدا</label><select className="input" value={accountId} onChange={(e) => setAccountId(e.target.value)}><option value="">انتخاب...</option>{accounts?.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
@@ -142,17 +142,17 @@ export function FinanceOperationPage({ mode }: { mode: FinanceMode }) {
             {mode === "expense" && <div><label className="label">دسته هزینه</label><select className="input" value={expenseCatId} onChange={(e) => setExpenseCatId(e.target.value)}><option value="">انتخاب...</option>{expenseCategories?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>}
             <div className="md:col-span-2"><label className="label">توضیحات</label><input className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
           </div>
-          {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3 mt-3">{error}</div>}
-          <button onClick={save} disabled={saving} className="btn-primary mt-4"><Plus size={16}/>{saving && <Loader2 className="animate-spin" size={16}/>} ثبت</button>
+          {error && <div className="mt-3 rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
+          <button onClick={save} disabled={saving} className="btn-primary mt-4 shadow-lg shadow-primary/20"><Plus size={16}/>{saving && <Loader2 className="animate-spin" size={16}/>} ثبت</button>
         </div>
       )}
 
-      <div className="card overflow-hidden">
-        <div className="p-4 border-b border-slate-100 font-semibold text-slate-700">آخرین موارد</div>
+      <div className="overflow-hidden rounded-[24px] border border-white/80 bg-white/90 shadow-sm shadow-slate-900/[0.04] backdrop-blur">
+        <div className="border-b border-slate-100 bg-slate-50/60 p-4 font-extrabold text-slate-800">آخرین موارد</div>
         {isLoading ? <Spinner /> : !transactions?.length ? <EmptyState title="موردی ثبت نشده" /> : (
           <div className="divide-y divide-slate-100">
             {transactions.map((t: any) => (
-              <div key={t.id} className="p-4 flex items-center justify-between gap-3">
+              <div key={t.id} className="flex items-center justify-between gap-3 p-4 transition hover:bg-primary/[0.03]">
                 <div className="min-w-0">
                   <div className="font-medium text-slate-800">{MODE_LABEL[t.type as FinanceMode] ?? t.type}</div>
                   <div className="text-xs text-slate-400 mt-1">
