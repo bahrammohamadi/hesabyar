@@ -58,7 +58,7 @@ export function PanelHost() {
         onClick={closeTop}
         aria-label="بستن پنل فعال"
       />
-      {stack.map((panel) => {
+      {stack.slice(-4).map((panel) => {
         const isTop = panel.id === topPanel?.id;
         const offset = Math.min(panel.stackIndex, 2) * 22;
         return (

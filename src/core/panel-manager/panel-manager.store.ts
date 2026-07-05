@@ -58,21 +58,46 @@ export function serializePanels(stack: PanelInstance[]) {
   return stack.map(encodePanel).filter((value): value is string => !!value).join(",");
 }
 
-export function isSamePanelIdentity(a?: Pick<PanelInstance, "type" | "mode" | "entityId" | "docType"> | null, b?: Pick<PanelInstance, "type" | "mode" | "entityId" | "docType"> | null) {
-  return Boolean(a && b && a.type === b.type && a.mode === b.mode && a.entityId === b.entityId && a.docType === b.docType);
+function resultRequestIdOf(panel?: { props?: Record<string, unknown> } | null) {
+  return typeof panel?.props?.resultRequestId === "string" ? panel.props.resultRequestId : null;
+}
+
+export function isSamePanelIdentity(
+  a?: (Pick<PanelInstance, "type" | "mode" | "entityId" | "docType"> & { props?: Record<string, unknown> }) | null,
+  b?: (Pick<PanelInstance, "type" | "mode" | "entityId" | "docType"> & { props?: Record<string, unknown> }) | null,
+) {
+  if (!a || !b) return false;
+  const sameEntity = a.type === b.type && a.mode === b.mode && a.entityId === b.entityId && a.docType === b.docType;
+  if (!sameEntity) return false;
+  const aRequestId = resultRequestIdOf(a);
+  const bRequestId = resultRequestIdOf(b);
+  // پنل‌های create-for-result باید مستقل بمانند؛ وگرنه promise انتخابگر به پنل موجود وصل نمی‌شود.
+  if (aRequestId || bRequestId) return aRequestId === bRequestId;
+  return true;
 }
 
 export function dedupeConsecutivePanelStack<T extends Pick<PanelInstance, "type" | "mode" | "entityId" | "docType">>(stack: T[]): T[] {
   return stack.filter((panel, index) => index === 0 || !isSamePanelIdentity(stack[index - 1], panel));
 }
 
-export function getNextPanelStack(currentStack: PanelInstance[], panel: Omit<PanelInstance, "stackIndex">, replace = false): { stack: PanelInstance[]; id: string; didPush: boolean } {
-  const top = currentStack.at(-1);
-  if (!replace && isSamePanelIdentity(top, panel)) {
-    return { stack: currentStack, id: top!.id, didPush: false };
+export function dedupePanelStackByIdentity<T extends Pick<PanelInstance, "type" | "mode" | "entityId" | "docType">>(stack: T[]): T[] {
+  const result: T[] = [];
+  for (const panel of stack) {
+    if (!result.some((item) => isSamePanelIdentity(item, panel))) result.push(panel);
+  }
+  return result;
+}
+
+export function getNextPanelStack(currentStack: PanelInstance[], panel: Omit<PanelInstance, "stackIndex">, replace = false): { stack: PanelInstance[]; id: string; didPush: boolean; didChange: boolean } {
+  if (!replace) {
+    const existingIndex = currentStack.findLastIndex((item) => isSamePanelIdentity(item, panel));
+    if (existingIndex >= 0) {
+      const next = normalizeStack(stripStack(currentStack.slice(0, existingIndex + 1)));
+      return { stack: next, id: currentStack[existingIndex].id, didPush: false, didChange: next.length !== currentStack.length };
+    }
   }
   const base = replace && currentStack.length ? stripStack(currentStack.slice(0, -1)) : stripStack(currentStack);
-  return { stack: normalizeStack([...base, panel]), id: panel.id, didPush: true };
+  return { stack: normalizeStack([...base, panel]), id: panel.id, didPush: true, didChange: true };
 }
 
 function panelFromSegment(segment: string): Omit<PanelInstance, "stackIndex"> | null {
@@ -100,7 +125,7 @@ function parsePanelsFromUrl(): PanelInstance[] {
   const raw = params.get(PANELS_PARAM);
   if (!raw) return [];
   const panels = raw.split(",").map(panelFromSegment).filter((panel): panel is Omit<PanelInstance, "stackIndex"> => !!panel);
-  const deduped = dedupeConsecutivePanelStack(panels);
+  const deduped = dedupePanelStackByIdentity(dedupeConsecutivePanelStack(panels));
   const normalized = normalizeStack(deduped);
   if (serializePanels(normalized) !== raw) syncUrl(normalized, "replace");
   return normalized;
@@ -173,7 +198,7 @@ export function PanelManagerStoreProvider({ children }: { children: ReactNode })
       } satisfies Omit<PanelInstance, "stackIndex">;
 
       const next = getNextPanelStack(stack, panel, Boolean(opts?.replace));
-      if (next.didPush) setStack(next.stack, opts?.replace ? "replace" : "push");
+      if (next.didChange) setStack(next.stack, next.didPush && !opts?.replace ? "push" : "replace");
       return next.id;
     },
     [setStack, stack]
