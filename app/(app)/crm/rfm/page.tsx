@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Download, Target } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { EmptyState, PageHeader, Spinner } from "@/components/shared/ui";
+import { DataTable } from "@/src/shared/ui";
 import { DatePicker } from "@/components/shared/date-picker";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { EntityLink } from "@/components/shared/entity-link";
@@ -140,24 +141,22 @@ export default function RfmPage() {
       </div>
 
       {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-rose-50 text-rose-700 p-4 text-sm">{(error as Error).message}</div> : rows.length === 0 ? <EmptyState icon={Target} title="داده‌ای برای تحلیل وجود ندارد" /> : (
-        <div className="card overflow-x-auto">
-          <table className="table-base">
-            <thead><tr><th>مشتری</th><th>آخرین خرید</th><th>R</th><th>F</th><th>M</th><th>کد RFM</th><th>گروه</th><th>اقدام پیشنهادی</th><th>عملیات</th></tr></thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.contact?.id} className="hover:bg-slate-50">
-                  <td><EntityLink type="contact" id={row.contact?.id}>{row.contact?.name ?? "مشتری"}</EntityLink>{row.contact?.phone && <div className="text-xs text-slate-400"><PhoneLink phone={row.contact.phone} /></div>}</td>
-                  <td>{row.lastDate ? toJalali(row.lastDate) : "—"}<div className="text-xs text-slate-400">{toFaDigits(row.recencyDays)} روز قبل</div></td>
-                  <td>{toFaDigits(row.rScore)}</td><td>{toFaDigits(row.fScore)}</td><td>{toFaDigits(row.mScore)}</td>
-                  <td className="font-bold text-slate-800">{toFaDigits(row.rfm)}</td>
-                  <td><span className={`badge ${row.segment.tone}`}>{row.segment.label}</span></td>
-                  <td className="text-slate-500 text-sm">{row.segment.hint}</td>
-                  <td><EntityActionMenu type="contact" id={row.contact?.id} label={row.contact?.name} phone={row.contact?.phone} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          rows={rows}
+          keyExtractor={(row) => row.contact?.id ?? row.contact?.name ?? "unknown"}
+          className="bg-white/90"
+          columns={[
+            { key: "contact", header: "مشتری", render: (row) => <><EntityLink type="contact" id={row.contact?.id}>{row.contact?.name ?? "مشتری"}</EntityLink>{row.contact?.phone && <div className="text-xs text-slate-400"><PhoneLink phone={row.contact.phone} /></div>}</> },
+            { key: "last", header: "آخرین خرید", render: (row) => <>{row.lastDate ? toJalali(row.lastDate) : "—"}<div className="text-xs text-slate-400">{toFaDigits(row.recencyDays)} روز قبل</div></> },
+            { key: "r", header: "R", render: (row) => toFaDigits(row.rScore) },
+            { key: "f", header: "F", render: (row) => toFaDigits(row.fScore) },
+            { key: "m", header: "M", render: (row) => toFaDigits(row.mScore) },
+            { key: "rfm", header: "کد RFM", render: (row) => <span className="font-bold text-slate-800">{toFaDigits(row.rfm)}</span> },
+            { key: "segment", header: "گروه", render: (row) => <span className={`badge ${row.segment.tone}`}>{row.segment.label}</span> },
+            { key: "hint", header: "اقدام پیشنهادی", render: (row) => <span className="text-slate-500 text-sm">{row.segment.hint}</span> },
+            { key: "action", header: "عملیات", render: (row) => <EntityActionMenu type="contact" id={row.contact?.id} label={row.contact?.name} phone={row.contact?.phone} /> },
+          ]}
+        />
       )}
     </div>
   );
