@@ -54,8 +54,25 @@ function encodePanel(panel: PanelInstance) {
   return null;
 }
 
-function serializePanels(stack: PanelInstance[]) {
+export function serializePanels(stack: PanelInstance[]) {
   return stack.map(encodePanel).filter((value): value is string => !!value).join(",");
+}
+
+export function isSamePanelIdentity(a?: Pick<PanelInstance, "type" | "mode" | "entityId" | "docType"> | null, b?: Pick<PanelInstance, "type" | "mode" | "entityId" | "docType"> | null) {
+  return Boolean(a && b && a.type === b.type && a.mode === b.mode && a.entityId === b.entityId && a.docType === b.docType);
+}
+
+export function dedupeConsecutivePanelStack<T extends Pick<PanelInstance, "type" | "mode" | "entityId" | "docType">>(stack: T[]): T[] {
+  return stack.filter((panel, index) => index === 0 || !isSamePanelIdentity(stack[index - 1], panel));
+}
+
+export function getNextPanelStack(currentStack: PanelInstance[], panel: Omit<PanelInstance, "stackIndex">, replace = false): { stack: PanelInstance[]; id: string; didPush: boolean } {
+  const top = currentStack.at(-1);
+  if (!replace && isSamePanelIdentity(top, panel)) {
+    return { stack: currentStack, id: top!.id, didPush: false };
+  }
+  const base = replace && currentStack.length ? stripStack(currentStack.slice(0, -1)) : stripStack(currentStack);
+  return { stack: normalizeStack([...base, panel]), id: panel.id, didPush: true };
 }
 
 function panelFromSegment(segment: string): Omit<PanelInstance, "stackIndex"> | null {
@@ -83,7 +100,8 @@ function parsePanelsFromUrl(): PanelInstance[] {
   const raw = params.get(PANELS_PARAM);
   if (!raw) return [];
   const panels = raw.split(",").map(panelFromSegment).filter((panel): panel is Omit<PanelInstance, "stackIndex"> => !!panel);
-  const normalized = normalizeStack(panels);
+  const deduped = dedupeConsecutivePanelStack(panels);
+  const normalized = normalizeStack(deduped);
   if (serializePanels(normalized) !== raw) syncUrl(normalized, "replace");
   return normalized;
 }
@@ -154,11 +172,9 @@ export function PanelManagerStoreProvider({ children }: { children: ReactNode })
         props: opts?.props,
       } satisfies Omit<PanelInstance, "stackIndex">;
 
-      const next = opts?.replace
-        ? normalizeStack([...(stack.length ? stripStack(stack.slice(0, -1)) : []), panel])
-        : normalizeStack([...stripStack(stack), panel]);
-      setStack(next, opts?.replace ? "replace" : "push");
-      return id;
+      const next = getNextPanelStack(stack, panel, Boolean(opts?.replace));
+      if (next.didPush) setStack(next.stack, opts?.replace ? "replace" : "push");
+      return next.id;
     },
     [setStack, stack]
   );
