@@ -124,7 +124,7 @@ export function CrmAutomationPage() {
   const ActiveIcon = activeDef.icon;
 
   return (
-    <div>
+    <div className="space-y-5">
       <PageHeader title="اتوماسیون کمپین‌ها" subtitle="لیست‌های هوشمند مشتریان برای پیامک، واتساپ و پیگیری فروش" />
       <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-5">
         {AUTOMATIONS.map((item) => {
