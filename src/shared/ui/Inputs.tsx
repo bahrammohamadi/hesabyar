@@ -35,12 +35,12 @@ export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTex
 
 export function Field({ label, required, error, hint, children, className }: { label: string; required?: boolean; error?: string | null; hint?: string; children: ReactNode; className?: string }) {
   return (
-    <label className={cn("block space-y-1.5", className)}>
+    <div className={cn("block space-y-1.5", className)}>
       <span className="block text-sm font-bold text-slate-700 dark:text-slate-200">
         {label} {required && <span className="text-destructive">*</span>}
       </span>
       {children}
       {error ? <span className="block text-xs leading-5 text-destructive">{error}</span> : hint ? <span className="block text-xs leading-5 text-muted-foreground">{hint}</span> : null}
-    </label>
+    </div>
   );
 }
