@@ -216,6 +216,7 @@ export interface ContactInteraction {
 
 export interface ContactTransaction {
   id: string;
+  contact_id: string;
   type: string;
   amount: number;
   date: string;
@@ -279,7 +280,7 @@ export async function getContactTransactions(contactId: string): Promise<Contact
   const supabase = createClient();
   const { data, error } = await supabase
     .from("transactions")
-    .select("id,type,amount,date,method,note,account_id,account:accounts!transactions_account_id_fkey(name)")
+    .select("id,contact_id,type,amount,date,method,note,account_id,account:accounts!transactions_account_id_fkey(name)")
     .eq("contact_id", contactId)
     .order("date", { ascending: false })
     .limit(100);
@@ -301,7 +302,7 @@ export async function createContactTransaction(input: CreateContactTransactionIn
       method: input.method || "cash",
       note: input.note?.trim() || null,
     })
-    .select("id,type,amount,date,method,note,account_id,account:accounts!transactions_account_id_fkey(name)")
+    .select("id,contact_id,type,amount,date,method,note,account_id,account:accounts!transactions_account_id_fkey(name)")
     .single();
   if (error) throw error;
   return data as unknown as ContactTransaction;

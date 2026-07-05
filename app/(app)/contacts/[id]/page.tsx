@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
-import { useOrg } from "@/lib/hooks/useOrg";
+import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { Spinner, Modal, EmptyState } from "@/components/shared/ui";
 import { DatePicker } from "@/components/shared/date-picker";
 import { EntityLink } from "@/components/shared/entity-link";
@@ -25,12 +25,10 @@ const TYPE_LABELS: Record<ContactType, string> = { customer: "مشتری", suppl
 export default function ContactDetailPage({ params }: { params: { id: string } }) {
   const { id } = params;
   const qc = useQueryClient();
+  const { openEntity } = usePanelManager();
   const [tab, setTab] = useState<"info"|"sales"|"purchases"|"tx">("info");
   const searchParams = useSearchParams();
   const [editOpen, setEditOpen] = useState(false);
-  const [payOpen, setPayOpen] = useState(false);
-  const [recvOpen, setRecvOpen] = useState(false);
-  const [interactionOpen, setInteractionOpen] = useState(false);
 
   // اطلاعات شخص
   const { data: contact, isLoading } = useQuery({
@@ -91,12 +89,11 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
     if (!contact) return;
     const action = getActionParam(searchParams);
     if (action === "edit") setEditOpen(true);
-    if (action === "interaction") setInteractionOpen(true);
-    if (action === "receipt") setRecvOpen(true);
-    if (action === "pay") setPayOpen(true);
+    if (action === "interaction") openEntity("contact", id, { mode: "view", context: "workspace", props: { initialTab: "interactions" } });
+    if (action === "receipt") openEntity("contact", id, { mode: "view", context: "workspace", props: { initialTab: "transactions", initialTxType: "receipt" } });
+    if (action === "pay") openEntity("contact", id, { mode: "view", context: "workspace", props: { initialTab: "transactions", initialTxType: "payment" } });
     if (action === "payment") {
-      if (contact.type === "supplier") setPayOpen(true);
-      else setRecvOpen(true);
+      openEntity("contact", id, { mode: "view", context: "workspace", props: { initialTab: "transactions", initialTxType: contact.type === "supplier" ? "payment" : "receipt" } });
     }
   }, [contact, searchParams]);
 
@@ -108,6 +105,10 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
   const totalSales = (sales ?? []).reduce((s: number, x: any) => s + (x.total ?? 0), 0);
   const totalPurchases = (purchases ?? []).reduce((s: number, x: any) => s + (x.total ?? 0), 0);
 
+  function openContactPanel(initialTab: "interactions" | "transactions", initialTxType?: "receipt" | "payment") {
+    openEntity("contact", id, { mode: "view", context: "workspace", title: contact.name, props: { initialTab, ...(initialTxType ? { initialTxType } : {}) } });
+  }
+
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-4">
@@ -116,12 +117,12 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
         </Link>
         <div className="flex gap-2 flex-wrap">
           {contact.type !== "supplier" && (
-            <button onClick={() => setRecvOpen(true)} className="btn btn-secondary flex items-center gap-2 text-sm">
+            <button onClick={() => openContactPanel("transactions", "receipt")} className="btn btn-secondary flex items-center gap-2 text-sm">
               <ArrowDownCircle size={16} /> دریافت
             </button>
           )}
           {contact.type !== "customer" && (
-            <button onClick={() => setPayOpen(true)} className="btn btn-secondary flex items-center gap-2 text-sm">
+            <button onClick={() => openContactPanel("transactions", "payment")} className="btn btn-secondary flex items-center gap-2 text-sm">
               <ArrowUpCircle size={16} /> پرداخت
             </button>
           )}
@@ -181,9 +182,6 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
       {tab === "tx" && <ContactTx txs={txs ?? []} />}
 
       {editOpen && <ContactEditModal contact={contact} onClose={() => setEditOpen(false)} onSaved={() => { setEditOpen(false); qc.invalidateQueries({ queryKey: ["contact-detail", id] }); qc.invalidateQueries({ queryKey: ["contacts"] }); }} />}
-      {payOpen && <TxModal orgId={contact.org_id} contactId={id} type="payment" label="پرداخت" onClose={() => { setPayOpen(false); qc.invalidateQueries({ queryKey: ["contact-txs", id] }); qc.invalidateQueries({ queryKey: ["contact-balance", id] }); qc.invalidateQueries({ queryKey: ["transactions"] }); qc.invalidateQueries({ queryKey: ["account-balances"] }); qc.invalidateQueries({ queryKey: ["entity", "contact"] }); }} />}
-      {recvOpen && <TxModal orgId={contact.org_id} contactId={id} type="receipt" label="دریافت" onClose={() => { setRecvOpen(false); qc.invalidateQueries({ queryKey: ["contact-txs", id] }); qc.invalidateQueries({ queryKey: ["contact-balance", id] }); qc.invalidateQueries({ queryKey: ["transactions"] }); qc.invalidateQueries({ queryKey: ["account-balances"] }); qc.invalidateQueries({ queryKey: ["entity", "contact"] }); }} />}
-      {interactionOpen && <InteractionModal orgId={contact.org_id} contactId={id} onClose={() => { setInteractionOpen(false); qc.invalidateQueries({ queryKey: ["entity", "contact"] }); }} />}
     </div>
   );
 }
@@ -361,88 +359,6 @@ function ContactEditModal({ contact, onClose, onSaved }: { contact: any; onClose
         <div><label className="label">توضیحات</label><textarea className="input" rows={2} value={desc} onChange={e=>setDesc(e.target.value)} /></div>
         {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
         <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving&&<Loader2 className="animate-spin" size={18}/>} ذخیره</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
-      </div>
-    </Modal>
-  );
-}
-
-// مودال ثبت تعامل CRM
-function InteractionModal({ orgId, contactId, onClose }: { orgId: string; contactId: string; onClose: () => void }) {
-  const [type, setType] = useState("note");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function save() {
-    if (!title.trim() && !description.trim()) { setError("عنوان یا توضیح را وارد کنید."); return; }
-    setSaving(true);
-    const supabase = createClient();
-    try {
-      const { error: e } = await supabase.from("contact_interactions").insert({
-        org_id: orgId,
-        contact_id: contactId,
-        type,
-        title: title.trim() || null,
-        description: description.trim() || null,
-      });
-      if (e) throw e;
-      onClose();
-    } catch (err) {
-      setError("خطا: " + (err as Error).message);
-      setSaving(false);
-    }
-  }
-
-  return (
-    <Modal open onClose={onClose} title="ثبت تعامل CRM" size="md">
-      <div className="space-y-4">
-        <div>
-          <label className="label">نوع تعامل</label>
-          <select className="input" value={type} onChange={(e) => setType(e.target.value)}>
-            <option value="note">یادداشت</option>
-            <option value="call">تماس</option>
-            <option value="followup">پیگیری</option>
-            <option value="meeting">جلسه</option>
-          </select>
-        </div>
-        <div><label className="label">عنوان</label><input className="input" value={title} onChange={(e) => setTitle(e.target.value)} /></div>
-        <div><label className="label">توضیح</label><textarea className="input" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} /></div>
-        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
-        <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving&&<Loader2 className="animate-spin" size={18}/>} ثبت تعامل</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
-      </div>
-    </Modal>
-  );
-}
-
-// مودال تراکنش
-function TxModal({ orgId, contactId, type, label, onClose }: { orgId: string; contactId: string; type: "receipt"|"payment"; label: string; onClose: () => void }) {
-  const { branchId } = useOrg();
-  const [amount, setAmount] = useState(""); const [accountId, setAccountId] = useState("");
-  const [note, setNote] = useState(""); const [saving, setSaving] = useState(false); const [error, setError] = useState<string|null>(null);
-
-  const { data: accounts } = useQuery({
-    queryKey: ["tx-accts", orgId],
-    enabled: !!orgId,
-    queryFn: async () => { const supabase = createClient(); const { data } = await supabase.from("accounts").select("id,name").eq("is_active",true).order("name"); return data ?? []; }
-  });
-
-  async function save() {
-    const amt = tomanToRial(Number(toEnDigits(amount)) || 0);
-    if (amt <= 0) { setError("مبلغ را وارد کنید."); return; }
-    setSaving(true); const supabase = createClient();
-    try { await supabase.from("transactions").insert({ org_id: orgId, branch_id: branchId, type, amount: amt, account_id: accountId||null, contact_id: contactId, method: "cash", note: note.trim()||null }); onClose(); }
-    catch (err) { setError("خطا: " + (err as Error).message); setSaving(false); }
-  }
-
-  return (
-    <Modal open onClose={onClose} title={type === "receipt" ? "دریافت از مشتری" : "پرداخت به تامین‌کننده"} size="md">
-      <div className="space-y-4">
-        <div><label className="label">مبلغ (تومان) *</label><input className="input" inputMode="numeric" autoFocus value={amount} onChange={e=>setAmount(e.target.value)} /></div>
-        <div><label className="label">حساب</label><select className="input" value={accountId} onChange={e=>setAccountId(e.target.value)}><option value="">انتخاب...</option>{accounts?.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
-        <div><label className="label">توضیحات</label><input className="input" value={note} onChange={e=>setNote(e.target.value)} placeholder="مثلاً: بابت فاکتور" /></div>
-        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
-        <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving&&<Loader2 className="animate-spin" size={18}/>} ثبت</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
       </div>
     </Modal>
   );
