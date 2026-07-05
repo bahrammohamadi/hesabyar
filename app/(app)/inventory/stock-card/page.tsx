@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Download, PackageSearch, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { EmptyState, PageHeader, Spinner } from "@/components/shared/ui";
+import { DataTable } from "@/src/shared/ui";
 import { DatePicker } from "@/components/shared/date-picker";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
@@ -137,27 +138,20 @@ export default function StockCardPage() {
       {!selected ? <EmptyState icon={PackageSearch} title="برای نمایش کاردکس، کالا را انتخاب کنید" /> : isLoading ? <Spinner /> : error ? (
         <div className="rounded-xl bg-rose-50 text-rose-700 p-4 text-sm">{(error as Error).message}</div>
       ) : !rows.length ? <EmptyState title="گردشی برای این کالا ثبت نشده" /> : (
-        <div className="card overflow-x-auto">
-          <table className="table-base">
-            <thead><tr><th>تاریخ</th><th>نوع</th><th>دلیل</th><th>تعداد</th><th>مانده</th><th>مرجع</th><th>توضیح</th></tr></thead>
-            <tbody>
-              {rows.map((row) => {
-                const href = refHref(row);
-                return (
-                  <tr key={row.id} className="hover:bg-slate-50">
-                    <td>{toJalali(row.created_at, true)}</td>
-                    <td><span className={`badge ${(row.qty ?? 0) >= 0 ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>{TYPE_LABEL[row.type] ?? row.type}</span></td>
-                    <td className="text-slate-500">{REASON_LABEL[row.reason] ?? row.reason}</td>
-                    <td className={(row.qty ?? 0) >= 0 ? "font-bold text-emerald-600" : "font-bold text-rose-600"}>{(row.qty ?? 0) >= 0 ? "+" : ""}{toFaDigits(row.qty ?? 0)}</td>
-                    <td className="font-bold text-slate-800">{toFaDigits(row.balance)}</td>
-                    <td>{href ? <Link href={href} className="text-primary hover:underline">مشاهده</Link> : <span className="text-slate-300">—</span>}</td>
-                    <td className="text-slate-400 max-w-[220px] truncate">{row.note ?? "—"}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          rows={rows}
+          keyExtractor={(row: any) => row.id}
+          className="bg-white/90"
+          columns={[
+            { key: "date", header: "تاریخ", render: (row: any) => toJalali(row.created_at, true) },
+            { key: "type", header: "نوع", render: (row: any) => <span className={`badge ${(row.qty ?? 0) >= 0 ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>{TYPE_LABEL[row.type] ?? row.type}</span> },
+            { key: "reason", header: "دلیل", render: (row: any) => <span className="text-slate-500">{REASON_LABEL[row.reason] ?? row.reason}</span> },
+            { key: "qty", header: "تعداد", render: (row: any) => <span className={(row.qty ?? 0) >= 0 ? "font-bold text-emerald-600" : "font-bold text-rose-600"}>{(row.qty ?? 0) >= 0 ? "+" : ""}{toFaDigits(row.qty ?? 0)}</span> },
+            { key: "balance", header: "مانده", render: (row: any) => <span className="font-bold text-slate-800">{toFaDigits(row.balance)}</span> },
+            { key: "ref", header: "مرجع", render: (row: any) => { const href = refHref(row); return href ? <Link href={href} className="text-primary hover:underline">مشاهده</Link> : <span className="text-slate-300">—</span>; } },
+            { key: "note", header: "توضیح", render: (row: any) => <span className="text-slate-400 max-w-[220px] truncate">{row.note ?? "—"}</span> },
+          ]}
+        />
       )}
 
       <ProductSelector open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={(variant) => { setSelected(variant); setPickerOpen(false); }} />
