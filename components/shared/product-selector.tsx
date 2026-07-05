@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
+import { flushSync } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
@@ -192,8 +193,9 @@ export function ProductSelector({
   async function openCreateProduct() {
     if (!orgId || creating) return;
     setCreating(true);
-    onClose();
-    await new Promise((resolve) => window.setTimeout(resolve, 0));
+    // اول selector را به‌صورت sync از DOM خارج می‌کنیم؛ سپس پنل را باز می‌کنیم.
+    flushSync(() => onClose());
+    await Promise.resolve();
     const result = await openEntityForResult("product", {
       mode: "create",
       context: "picker",
@@ -221,6 +223,8 @@ export function ProductSelector({
       });
     }
   }
+
+  if (!open) return null;
 
   return (
     <Modal open={open} onClose={onClose} title="انتخاب کالا" size="lg" mobileFullscreen>

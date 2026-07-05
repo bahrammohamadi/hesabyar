@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
+import { flushSync } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
@@ -73,10 +74,9 @@ export function ContactSelector({
   async function openCreate() {
     if (!orgId || creating) return;
     setCreating(true);
-    // روی موبایل اگر انتخابگر زیر پنل باز بماند، می‌تواند فوکوس/لمس inputهای پنل را مختل کند.
-    // اول انتخابگر را می‌بندیم و سپس پنل کامل را برای نتیجه باز می‌کنیم.
-    onClose();
-    await new Promise((resolve) => window.setTimeout(resolve, 0));
+    // اول selector را به‌صورت sync از DOM خارج می‌کنیم؛ سپس پنل را باز می‌کنیم.
+    flushSync(() => onClose());
+    await Promise.resolve();
     const result = await openEntityForResult("contact", {
       mode: "create",
       context: "picker",
@@ -96,6 +96,8 @@ export function ContactSelector({
       onClose();
     }
   }
+
+  if (!open) return null;
 
   return (
     <Modal open={open} onClose={onClose} title={title} size="md" mobileFullscreen>

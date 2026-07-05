@@ -49,10 +49,50 @@ export function PanelHost() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [stack.length, closeTop]);
 
+  useEffect(() => {
+    if (!mounted || stack.length === 0) return;
+
+    const previous = new Map<HTMLElement, { inert: boolean; ariaHidden: string | null }>();
+
+    function shouldSkip(element: HTMLElement, panelRoot: Element | null) {
+      if (panelRoot && element === panelRoot) return true;
+      if (panelRoot && panelRoot.contains(element)) return true;
+      const zIndex = element.style.zIndex;
+      return zIndex.includes("--z-confirm") || zIndex.includes("--z-toast");
+    }
+
+    function markInactiveSiblings() {
+      const panelRoot = document.querySelector("[data-panel-host-root='true']");
+      Array.from(document.body.children).forEach((child) => {
+        if (!(child instanceof HTMLElement)) return;
+        if (shouldSkip(child, panelRoot)) return;
+        if (!previous.has(child)) {
+          previous.set(child, { inert: child.hasAttribute("inert"), ariaHidden: child.getAttribute("aria-hidden") });
+        }
+        child.setAttribute("inert", "");
+        child.setAttribute("aria-hidden", "true");
+      });
+    }
+
+    markInactiveSiblings();
+    const observer = new MutationObserver(markInactiveSiblings);
+    observer.observe(document.body, { childList: true });
+
+    return () => {
+      observer.disconnect();
+      previous.forEach((state, element) => {
+        if (state.inert) element.setAttribute("inert", "");
+        else element.removeAttribute("inert");
+        if (state.ariaHidden === null) element.removeAttribute("aria-hidden");
+        else element.setAttribute("aria-hidden", state.ariaHidden);
+      });
+    };
+  }, [mounted, stack.length]);
+
   if (stack.length === 0 || !mounted) return null;
 
   return createPortal(
-    <div className="fixed inset-0 isolate pointer-events-none" style={{ zIndex: "var(--z-panel)" }} aria-live="polite">
+    <div data-panel-host-root="true" className="fixed inset-0 isolate pointer-events-none" style={{ zIndex: "var(--z-panel)" }} aria-live="polite">
       <button
         className="absolute inset-0 bg-slate-950/30 backdrop-blur-[1px] pointer-events-auto"
         style={{ zIndex: 0 }}
