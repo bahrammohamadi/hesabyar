@@ -2,23 +2,31 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { FileText, Phone, User } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { FileText, MessageCircle, Phone, ReceiptText, User } from "lucide-react";
 import type { PanelInstance, PanelMode } from "@/src/core/panel-manager/types";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { EntityLink } from "@/src/core/panel-manager/EntityLink";
 import {
   useContactDocuments,
   useContactEntity,
+  useContactInteractions,
+  useContactTransactions,
   useCreateContact,
+  useCreateContactTransaction,
+  useCreateInteraction,
   useDeactivateContact,
   useReactivateContact,
   useUpdateContact,
   type ContactDocument,
+  type ContactInteraction,
+  type ContactTransaction,
   type ContactType,
 } from "@/src/core/services/contact-service";
 import { useOrg } from "@/lib/hooks/useOrg";
+import { createClient } from "@/lib/supabase/client";
 import { DatePicker } from "@/components/shared/date-picker";
-import { Badge, Button, DataTable, EmptyState, Field, Input, PanelShell, Section, Select, Spinner, StatusPill, Tabs, Textarea, type Column } from "@/src/shared/ui";
+import { Badge, Button, DataTable, EmptyState, Field, Input, NumberInput, PanelShell, Section, Select, Spinner, StatusPill, Tabs, Textarea, type Column } from "@/src/shared/ui";
 import { Money, PersianDate } from "@/src/shared/format";
 
 const TYPE_LABEL: Record<ContactType, string> = {
@@ -50,6 +58,48 @@ function emptyForm(): ContactFormState {
   return { firstName: "", lastName: "", name: "", phone: "", type: "customer", email: "", birthDate: "", nationalCode: "", jobTitle: "", gender: "", address: "", description: "" };
 }
 
+type InteractionFormState = {
+  type: string;
+  title: string;
+  description: string;
+  nextFollowup: string;
+};
+
+function emptyInteractionForm(): InteractionFormState {
+  return { type: "note", title: "", description: "", nextFollowup: "" };
+}
+
+type TransactionFormState = {
+  type: "receipt" | "payment";
+  amountToman: number | null;
+  accountId: string;
+  method: string;
+  note: string;
+};
+
+function emptyTransactionForm(): TransactionFormState {
+  return { type: "receipt", amountToman: null, accountId: "", method: "cash", note: "" };
+}
+
+const INTERACTION_LABEL: Record<string, string> = {
+  note: "یادداشت",
+  call: "تماس",
+  follow_up: "پیگیری",
+  meeting: "جلسه",
+  visit: "بازدید",
+  email: "ایمیل",
+  sms: "پیامک",
+  complaint: "شکایت",
+};
+
+const TRANSACTION_LABEL: Record<string, string> = {
+  receipt: "دریافت",
+  payment: "پرداخت",
+  income: "درآمد",
+  expense: "هزینه",
+  transfer: "انتقال",
+};
+
 export function ContactPanel({ panel }: { panel: PanelInstance }) {
   const { closeTop, replaceTop, resolveTop } = usePanelManager();
   const { orgId, branchId } = useOrg();
@@ -57,15 +107,37 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
   const [mode, setMode] = useState<PanelMode>(panel.mode);
   const contactQuery = useContactEntity(contactId);
   const docsQuery = useContactDocuments(contactId);
+  const interactionsQuery = useContactInteractions(contactId);
+  const transactionsQuery = useContactTransactions(contactId);
   const createContact = useCreateContact();
   const updateContact = useUpdateContact();
+  const createInteractionMutation = useCreateInteraction();
+  const createTransactionMutation = useCreateContactTransaction();
   const deactivateContact = useDeactivateContact();
   const reactivateContact = useReactivateContact();
   const [form, setForm] = useState<ContactFormState>(emptyForm());
+  const [interactionForm, setInteractionForm] = useState<InteractionFormState>(emptyInteractionForm());
+  const [transactionForm, setTransactionForm] = useState<TransactionFormState>(emptyTransactionForm());
   const [formError, setFormError] = useState<string | null>(null);
+  const initialTab = typeof panel.props?.initialTab === "string" ? panel.props.initialTab : undefined;
 
   const data = contactQuery.data;
   const contact = data?.contact;
+  const accountsQuery = useQuery({
+    queryKey: ["contact-panel-accounts", orgId],
+    enabled: !!orgId && !!contactId,
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase.from("accounts").select("id,name").eq("is_active", true).order("name");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  useEffect(() => {
+    const initialTxType = panel.props?.initialTxType === "payment" ? "payment" : panel.props?.initialTxType === "receipt" ? "receipt" : null;
+    if (initialTxType) setTransactionForm((prev) => ({ ...prev, type: initialTxType }));
+  }, [panel.props?.initialTxType]);
 
   useEffect(() => {
     if (mode === "create") {
@@ -150,6 +222,44 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
     }
   }
 
+  async function handleCreateInteraction() {
+    setFormError(null);
+    if (!contactId || !orgId) return;
+    if (!interactionForm.title.trim() && !interactionForm.description.trim()) {
+      setFormError("برای تعامل، عنوان یا توضیح را وارد کنید.");
+      return;
+    }
+    await createInteractionMutation.mutateAsync({
+      org_id: orgId,
+      contact_id: contactId,
+      type: interactionForm.type,
+      title: interactionForm.title,
+      description: interactionForm.description,
+      next_followup: interactionForm.nextFollowup,
+    });
+    setInteractionForm(emptyInteractionForm());
+  }
+
+  async function handleCreateTransaction() {
+    setFormError(null);
+    if (!contactId || !orgId) return;
+    if (!transactionForm.amountToman || transactionForm.amountToman <= 0) {
+      setFormError("مبلغ تراکنش را وارد کنید.");
+      return;
+    }
+    await createTransactionMutation.mutateAsync({
+      org_id: orgId,
+      branch_id: branchId,
+      contact_id: contactId,
+      type: transactionForm.type,
+      amount_toman: transactionForm.amountToman,
+      account_id: transactionForm.accountId,
+      method: transactionForm.method,
+      note: transactionForm.note,
+    });
+    setTransactionForm(emptyTransactionForm());
+  }
+
   async function toggleActive() {
     if (!contactId || !contact) return;
     const ok = window.confirm(contact.is_active ? "مخاطب غیرفعال شود؟" : "مخاطب فعال شود؟");
@@ -199,6 +309,23 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
     { key: "date", header: "تاریخ", render: (row) => <PersianDate value={row.doc_date} /> },
     { key: "total", header: "مبلغ", align: "left", render: (row) => <Money value={row.total} /> },
     { key: "status", header: "وضعیت", render: (row) => <StatusPill status={row.status} /> },
+  ];
+
+  const interactionColumns: Column<ContactInteraction>[] = [
+    { key: "created_at", header: "تاریخ", render: (row) => <PersianDate value={row.created_at} /> },
+    { key: "type", header: "نوع", render: (row) => <Badge tone="info">{INTERACTION_LABEL[row.type] ?? row.type}</Badge> },
+    { key: "title", header: "عنوان", render: (row) => row.title ?? "—" },
+    { key: "description", header: "یادداشت", render: (row) => <span className="whitespace-normal">{row.description ?? "—"}</span> },
+    { key: "next", header: "پیگیری بعدی", render: (row) => row.next_followup ? <PersianDate value={row.next_followup} /> : "—" },
+  ];
+
+  const transactionColumns: Column<ContactTransaction>[] = [
+    { key: "date", header: "تاریخ", render: (row) => <PersianDate value={row.date} /> },
+    { key: "type", header: "نوع", render: (row) => <Badge tone={row.type === "receipt" || row.type === "income" ? "success" : "danger"}>{TRANSACTION_LABEL[row.type] ?? row.type}</Badge> },
+    { key: "amount", header: "مبلغ", align: "left", render: (row) => <Money value={row.amount} tone={row.type === "receipt" || row.type === "income" ? "positive" : "negative"} /> },
+    { key: "method", header: "روش", render: (row) => row.method ?? "—" },
+    { key: "account", header: "حساب", render: (row) => row.account?.name ?? "—" },
+    { key: "note", header: "یادداشت", render: (row) => <span className="whitespace-normal">{row.note ?? "—"}</span> },
   ];
 
   const formContent = (
@@ -295,6 +422,7 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
         </div>
 
         <Tabs
+          defaultValue={initialTab}
           items={[
             {
               value: "summary",
@@ -333,6 +461,47 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
                 <EmptyState title="خطا در دریافت اسناد" description={(docsQuery.error as Error).message} />
               ) : (
                 <DataTable rows={docsQuery.data ?? []} columns={documentColumns} keyExtractor={(row) => row.doc_id} empty={<EmptyState title="سندی برای این شخص یافت نشد" />} />
+              ),
+            },
+            {
+              value: "interactions",
+              label: "تعاملات",
+              content: (
+                <div className="space-y-4">
+                  <Section title="افزودن تعامل" description="ثبت یادداشت، تماس یا پیگیری برای این مخاطب">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Field label="نوع تعامل"><Select value={interactionForm.type} onChange={(e) => setInteractionForm((p) => ({ ...p, type: e.target.value }))}>
+                        <option value="note">یادداشت</option><option value="call">تماس</option><option value="follow_up">پیگیری</option><option value="meeting">جلسه</option><option value="visit">بازدید</option><option value="email">ایمیل</option><option value="sms">پیامک</option><option value="complaint">شکایت</option>
+                      </Select></Field>
+                      <Field label="پیگیری بعدی"><DatePicker value={interactionForm.nextFollowup} onChange={(value) => setInteractionForm((p) => ({ ...p, nextFollowup: value }))} /></Field>
+                      <Field label="عنوان" className="sm:col-span-2"><Input value={interactionForm.title} onChange={(e) => setInteractionForm((p) => ({ ...p, title: e.target.value }))} /></Field>
+                      <Field label="یادداشت" className="sm:col-span-2"><Textarea value={interactionForm.description} onChange={(e) => setInteractionForm((p) => ({ ...p, description: e.target.value }))} /></Field>
+                    </div>
+                    {formError && <div className="mt-3 rounded-xl bg-rose-50 p-3 text-sm text-destructive">{formError}</div>}
+                    <div className="mt-4"><Button loading={createInteractionMutation.isPending} onClick={handleCreateInteraction}>ثبت تعامل</Button></div>
+                  </Section>
+                  {interactionsQuery.isLoading ? <Spinner /> : interactionsQuery.error ? <EmptyState title="خطا در دریافت تعاملات" description={(interactionsQuery.error as Error).message} /> : <DataTable rows={interactionsQuery.data ?? []} columns={interactionColumns} keyExtractor={(row) => row.id} empty={<EmptyState title="تعاملی برای این مخاطب ثبت نشده" />} />}
+                </div>
+              ),
+            },
+            {
+              value: "transactions",
+              label: "تراکنش‌ها",
+              content: (
+                <div className="space-y-4">
+                  <Section title="ثبت تراکنش مستقل" description="برای دریافت/پرداخت خارج از فاکتور؛ مستقیم در transactions ثبت می‌شود.">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Field label="نوع"><Select value={transactionForm.type} onChange={(e) => setTransactionForm((p) => ({ ...p, type: e.target.value as TransactionFormState["type"] }))}><option value="receipt">دریافت</option><option value="payment">پرداخت</option></Select></Field>
+                      <Field label="مبلغ (تومان)"><NumberInput value={transactionForm.amountToman} onValueChange={(value) => setTransactionForm((p) => ({ ...p, amountToman: value }))} /></Field>
+                      <Field label="حساب"><Select value={transactionForm.accountId} onChange={(e) => setTransactionForm((p) => ({ ...p, accountId: e.target.value }))}><option value="">انتخاب...</option>{accountsQuery.data?.map((account) => <option key={account.id} value={account.id}>{account.name}</option>)}</Select></Field>
+                      <Field label="روش"><Select value={transactionForm.method} onChange={(e) => setTransactionForm((p) => ({ ...p, method: e.target.value }))}><option value="cash">نقد</option><option value="card">کارت</option><option value="transfer">انتقال</option><option value="cheque">چک</option><option value="other">سایر</option></Select></Field>
+                      <Field label="یادداشت" className="sm:col-span-2"><Input value={transactionForm.note} onChange={(e) => setTransactionForm((p) => ({ ...p, note: e.target.value }))} /></Field>
+                    </div>
+                    {formError && <div className="mt-3 rounded-xl bg-rose-50 p-3 text-sm text-destructive">{formError}</div>}
+                    <div className="mt-4"><Button loading={createTransactionMutation.isPending} onClick={handleCreateTransaction}>ثبت تراکنش</Button></div>
+                  </Section>
+                  {transactionsQuery.isLoading ? <Spinner /> : transactionsQuery.error ? <EmptyState title="خطا در دریافت تراکنش‌ها" description={(transactionsQuery.error as Error).message} /> : <DataTable rows={transactionsQuery.data ?? []} columns={transactionColumns} keyExtractor={(row) => row.id} empty={<EmptyState title="تراکنشی برای این مخاطب ثبت نشده" />} />}
+                </div>
               ),
             },
           ]}

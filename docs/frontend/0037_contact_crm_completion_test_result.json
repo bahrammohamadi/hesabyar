@@ -1,0 +1,24 @@
+{
+  "org_id": "f31d7b0e-3834-4af5-84a8-5a62c873b50c",
+  "branch_id": "d31236fa-eca6-415f-b7de-09915b8019d7",
+  "contact_id": "f7498a71-daf9-43b0-87ff-57c5ae51f12e",
+  "interaction_verified": [
+    {
+      "id": "2b31e719-b2f8-4bab-8964-9bee846f849a",
+      "type": "note",
+      "title": "تست تعامل ContactPanel",
+      "description": "یادداشت تستی برای ممیزی",
+      "contact_id": "f7498a71-daf9-43b0-87ff-57c5ae51f12e"
+    }
+  ],
+  "transaction_verified": [
+    {
+      "id": "650cb8c8-acc1-4696-8309-d720e81f3bce",
+      "type": "receipt",
+      "amount": 1234500,
+      "contact_id": "f7498a71-daf9-43b0-87ff-57c5ae51f12e",
+      "note": "تست تراکنش ContactPanel"
+    }
+  ],
+  "cleanup": "deleted interaction, transaction, contact"
+}
