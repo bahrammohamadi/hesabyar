@@ -203,6 +203,145 @@ export async function getContactDocuments(id: string): Promise<ContactDocument[]
   return documents.map((doc) => ({ ...doc, invoice_no: invoiceMap.get(doc.doc_id) ?? null }));
 }
 
+export interface ContactInteraction {
+  id: string;
+  contact_id: string;
+  type: string;
+  title: string | null;
+  description: string | null;
+  next_followup: string | null;
+  created_at: string;
+  created_by: string | null;
+}
+
+export interface ContactTransaction {
+  id: string;
+  type: string;
+  amount: number;
+  date: string;
+  method: string;
+  note: string | null;
+  account_id: string | null;
+  account: { name: string } | null;
+}
+
+export interface CreateInteractionInput {
+  org_id: string;
+  contact_id: string;
+  type: string;
+  title?: string | null;
+  description?: string | null;
+  next_followup?: string | null;
+}
+
+export interface CreateContactTransactionInput {
+  org_id: string;
+  branch_id?: string | null;
+  contact_id: string;
+  type: "receipt" | "payment";
+  amount_toman: number;
+  account_id?: string | null;
+  method?: string;
+  note?: string | null;
+}
+
+export async function getInteractions(contactId: string): Promise<ContactInteraction[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("contact_interactions")
+    .select("id,contact_id,type,title,description,next_followup,created_at,created_by")
+    .eq("contact_id", contactId)
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (error) throw error;
+  return (data ?? []) as ContactInteraction[];
+}
+
+export async function createInteraction(input: CreateInteractionInput): Promise<ContactInteraction> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("contact_interactions")
+    .insert({
+      org_id: input.org_id,
+      contact_id: input.contact_id,
+      type: input.type,
+      title: input.title?.trim() || null,
+      description: input.description?.trim() || null,
+      next_followup: input.next_followup || null,
+    })
+    .select("id,contact_id,type,title,description,next_followup,created_at,created_by")
+    .single();
+  if (error) throw error;
+  return data as ContactInteraction;
+}
+
+export async function getContactTransactions(contactId: string): Promise<ContactTransaction[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("id,type,amount,date,method,note,account_id,account:accounts!transactions_account_id_fkey(name)")
+    .eq("contact_id", contactId)
+    .order("date", { ascending: false })
+    .limit(100);
+  if (error) throw error;
+  return (data ?? []) as unknown as ContactTransaction[];
+}
+
+export async function createContactTransaction(input: CreateContactTransactionInput): Promise<ContactTransaction> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("transactions")
+    .insert({
+      org_id: input.org_id,
+      branch_id: input.branch_id ?? null,
+      contact_id: input.contact_id,
+      type: input.type,
+      amount: input.amount_toman * 10,
+      account_id: input.account_id || null,
+      method: input.method || "cash",
+      note: input.note?.trim() || null,
+    })
+    .select("id,type,amount,date,method,note,account_id,account:accounts!transactions_account_id_fkey(name)")
+    .single();
+  if (error) throw error;
+  return data as unknown as ContactTransaction;
+}
+
+export function useContactInteractions(id?: string | null) {
+  return useQuery({ queryKey: ["entity", "contact", "interactions", id] as const, enabled: !!id, queryFn: () => getInteractions(id!) });
+}
+
+export function useContactTransactions(id?: string | null) {
+  return useQuery({ queryKey: ["entity", "contact", "transactions", id] as const, enabled: !!id, queryFn: () => getContactTransactions(id!) });
+}
+
+export function useCreateInteraction() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: createInteraction,
+    onSuccess: (row) => {
+      queryClient.invalidateQueries({ queryKey: ["entity", "contact", "interactions", row.contact_id] });
+      toast({ title: "تعامل ثبت شد", description: row.title ?? row.description ?? "تعامل جدید", tone: "success" });
+    },
+    onError: (error) => toast({ title: "خطا در ثبت تعامل", description: (error as Error).message, tone: "error" }),
+  });
+}
+
+export function useCreateContactTransaction() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: createContactTransaction,
+    onSuccess: (row) => {
+      queryClient.invalidateQueries({ queryKey: ["entity", "contact", "transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["entity", "contact", "detail"] });
+      toast({ title: "تراکنش ثبت شد", description: row.note ?? "تراکنش مخاطب", tone: "success" });
+    },
+    onError: (error) => toast({ title: "خطا در ثبت تراکنش", description: (error as Error).message, tone: "error" }),
+  });
+}
+
 export function useContactEntity(id?: string | null) {
   return useQuery({
     queryKey: ["entity", "contact", "detail", id] as const,
