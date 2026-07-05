@@ -5,8 +5,9 @@ import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { Modal } from "@/components/shared/ui";
+import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { formatToman, toFaDigits } from "@/lib/utils/format";
-import { Search, Package, Barcode, X, Filter, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Search, Package, Barcode, X, Filter, PackagePlus } from "lucide-react";
 
 export interface SelectableVariant {
   variant_id: string;
@@ -60,7 +61,9 @@ export function ProductSelector({
   priceMode?: "sale" | "purchase";
 }) {
   const { orgId } = useOrg();
+  const { openEntityForResult } = usePanelManager();
   const [term, setTerm] = useState("");
+  const [creating, setCreating] = useState(false);
   const [categoryId, setCategoryId] = useState("");
   const [brandId, setBrandId] = useState("");
   const [color, setColor] = useState("");
@@ -186,6 +189,39 @@ export function ProductSelector({
     setMaxPrice("");
   }
 
+  async function openCreateProduct() {
+    if (!orgId || creating) return;
+    setCreating(true);
+    onClose();
+    await new Promise((resolve) => window.setTimeout(resolve, 0));
+    const result = await openEntityForResult("product", {
+      mode: "create",
+      context: "picker",
+      title: "کالای جدید",
+      props: { initialName: term },
+    });
+    setCreating(false);
+    const data = result?.data as { name?: string; base_sale_price?: number; base_purchase_price?: number; variants?: Array<{ id: string; product_id: string; color: string | null; size: string | null; sku: string | null; barcode: string | null; sale_price: number | null; purchase_price: number | null; stock_qty: number }> } | undefined;
+    const firstVariant = data?.variants?.[0];
+    if (result?.id && firstVariant) {
+      onSelect({
+        variant_id: firstVariant.id,
+        product_id: result.id,
+        product_name: data?.name ?? result.title ?? "کالای جدید",
+        product_code: null,
+        color: firstVariant.color,
+        size: firstVariant.size,
+        sku: firstVariant.sku,
+        barcode: firstVariant.barcode,
+        sale_price: firstVariant.sale_price ?? data?.base_sale_price ?? 0,
+        purchase_price: firstVariant.purchase_price ?? data?.base_purchase_price ?? 0,
+        stock_qty: firstVariant.stock_qty ?? 0,
+        category_id: null,
+        brand_id: null,
+      });
+    }
+  }
+
   return (
     <Modal open={open} onClose={onClose} title="انتخاب کالا" size="lg" mobileFullscreen>
       <div className="flex h-full min-h-0 flex-col gap-3">
@@ -205,6 +241,12 @@ export function ProductSelector({
             </button>
           )}
         </div>
+
+        <button onClick={openCreateProduct} disabled={creating} className="btn-secondary w-full justify-center border-dashed disabled:opacity-60">
+          <PackagePlus size={18} />
+          {creating ? "در حال باز کردن فرم..." : "افزودن کالای جدید"}
+          {term && ` («${term}»)`}
+        </button>
 
         {/* دکمه فیلتر و مرتب‌سازی */}
         <div className="flex items-center justify-between">
