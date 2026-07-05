@@ -4,15 +4,23 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { LockKeyhole, Mail, ShieldCheck, Sparkles, Store } from "lucide-react";
+import { Eye, EyeOff, LockKeyhole, Mail, ShieldCheck, Sparkles, Store } from "lucide-react";
 import { Button, Field, Input } from "@/src/shared/ui";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  function normalizeLoginId(value: string) {
+    const clean = value.trim().toLowerCase();
+    if (clean.includes("@")) return clean;
+    const digits = clean.replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit))).replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit))).replace(/[^0-9]/g, "");
+    return digits ? `${digits}@hesabyar.app` : clean;
+  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -20,7 +28,7 @@ export default function LoginPage() {
     setLoading(true);
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email: normalizeLoginId(loginId), password });
 
     if (error) {
       setError("ایمیل یا رمز عبور اشتباه است.");
@@ -87,35 +95,48 @@ export default function LoginPage() {
             <div className="mb-7">
               <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary"><LockKeyhole size={22} /></div>
               <h2 className="mt-4 text-2xl font-black text-slate-800">ورود به حساب</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-500">ایمیل و رمز عبور خود را وارد کنید تا وارد داشبورد شوید.</p>
+              <p className="mt-2 text-sm leading-6 text-slate-500">شماره موبایل یا ایمیل و رمز عبور خود را وارد کنید تا وارد داشبورد شوید.</p>
             </div>
 
             <div className="space-y-4">
-              <Field label="ایمیل" required>
+              <Field label="شماره موبایل یا ایمیل" required>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                   <Input
-                    type="email"
+                    type="text"
                     required
                     dir="ltr"
+                    inputMode="email"
+                    autoComplete="username"
                     className="text-left pl-10"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="09111558263"
+                    value={loginId}
+                    onChange={(e) => setLoginId(e.target.value)}
                   />
                 </div>
               </Field>
 
               <Field label="رمز عبور" required>
-                <Input
-                  type="password"
-                  required
-                  dir="ltr"
-                  className="text-left"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    dir="ltr"
+                    autoComplete="current-password"
+                    className="text-left pl-12"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((value) => !value)}
+                    className="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                    aria-label={showPassword ? "پنهان کردن رمز عبور" : "نمایش رمز عبور"}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </Field>
 
               {error && (
