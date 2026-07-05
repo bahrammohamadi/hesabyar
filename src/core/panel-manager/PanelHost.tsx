@@ -52,9 +52,10 @@ export function PanelHost() {
   if (stack.length === 0 || !mounted) return null;
 
   return createPortal(
-    <div className="fixed inset-0 pointer-events-none" style={{ zIndex: "var(--z-panel)" }} aria-live="polite">
+    <div className="fixed inset-0 isolate pointer-events-none" style={{ zIndex: "var(--z-panel)" }} aria-live="polite">
       <button
         className="absolute inset-0 bg-slate-950/30 backdrop-blur-[1px] pointer-events-auto"
+        style={{ zIndex: 0 }}
         onClick={closeTop}
         aria-label="بستن پنل فعال"
       />
@@ -68,11 +69,11 @@ export function PanelHost() {
             aria-modal={isTop}
             aria-hidden={!isTop}
             className={cn(
-              "pointer-events-auto fixed bottom-0 top-0 right-0 w-full overflow-hidden border-l border-slate-200 bg-white shadow-2xl transition-all duration-200 ease-out sm:w-[min(92vw,560px)]",
+              "pointer-events-auto fixed bottom-0 top-0 right-0 w-full overflow-hidden border-l border-slate-200 bg-white shadow-2xl transition-all duration-200 ease-out sm:w-[560px] sm:max-w-[92vw]",
               isTop ? "translate-x-0 opacity-100" : "translate-x-6 opacity-75 pointer-events-none"
             )}
             style={{
-              zIndex: 90 + panel.stackIndex,
+              zIndex: 10 + panel.stackIndex,
               right: `${offset}px`,
               transform: isTop ? `translateX(0)` : `translateX(${offset + 12}px)`,
             }}
