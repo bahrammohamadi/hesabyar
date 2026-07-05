@@ -19,7 +19,8 @@ export default function LoginPage() {
     const clean = value.trim().toLowerCase();
     if (clean.includes("@")) return clean;
     const digits = clean.replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit))).replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit))).replace(/[^0-9]/g, "");
-    return digits ? `${digits}@hesabyar.app` : clean;
+    if (digits && digits.length >= 7) return `${digits}@hesabyar.app`;
+    return clean ? `${clean}@hesabyar.app` : clean;
   }
 
   async function handleLogin(e: React.FormEvent) {
