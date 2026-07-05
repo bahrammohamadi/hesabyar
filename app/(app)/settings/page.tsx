@@ -12,7 +12,7 @@ export function SettingsContent({ section = "all" }: { section?: "all" | "catalo
   const { orgId, branchId } = useOrg();
 
   return (
-    <div>
+    <div className="space-y-5">
       <PageHeader
         title="تنظیمات"
         subtitle="مدیریت دسته‌بندی‌ها، برندها، حساب‌ها و دسته هزینه‌ها"
@@ -56,7 +56,7 @@ function ThemeSettings() {
   }
 
   return (
-    <div className="card p-5">
+    <div className="rounded-[24px] border border-white/80 bg-white/90 p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur">
       <div className="flex items-center gap-2 mb-4 font-semibold text-slate-800">
         <Palette size={18} /> تم رنگی نرم‌افزار
       </div>
@@ -150,7 +150,7 @@ function ManageableList({
   }
 
   return (
-    <div className="card p-5">
+    <div className="rounded-[24px] border border-white/80 bg-white/90 p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur">
       <div className="flex items-center gap-2 mb-4 font-semibold text-slate-800">
         {icon} {title}
       </div>
@@ -259,7 +259,7 @@ function AccountsManager({ orgId, branchId }: { orgId: string | null; branchId: 
   }
 
   return (
-    <div className="card p-5">
+    <div className="rounded-[24px] border border-white/80 bg-white/90 p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2 font-semibold text-slate-800">
           <Landmark size={18} /> صندوق و حساب‌های بانکی
@@ -471,7 +471,7 @@ function UsersAccessManager() {
   }
 
   return (
-    <div className="card p-5">
+    <div className="rounded-[24px] border border-white/80 bg-white/90 p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2 font-semibold text-slate-800">
           <Users size={18} /> کاربران و دسترسی‌ها

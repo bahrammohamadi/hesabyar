@@ -137,14 +137,14 @@ export function LoyaltyPage({ mode }: { mode: LoyaltyMode }) {
   ] : [];
 
   return (
-    <div>
+    <div className="space-y-5">
       <PageHeader title={MODE[mode].title} subtitle={MODE[mode].subtitle} />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-        <div className="card p-4"><div className="text-xs text-slate-500">اعضا</div><div className="text-xl font-bold text-slate-800 mt-1">{toFaDigits(rows.length)}</div></div>
-        <div className="card p-4"><div className="text-xs text-slate-500">امتیاز کل</div><div className="text-xl font-bold text-primary mt-1">{toFaDigits(totalPoints)}</div></div>
-        <div className="card p-4"><div className="text-xs text-slate-500">اعتبار کل</div><div className="text-xl font-bold text-emerald-600 mt-1">{formatToman(totalWallet, false)}</div></div>
-        <div className="card p-4"><div className="text-xs text-slate-500">VIP</div><div className="text-xl font-bold text-amber-600 mt-1">{toFaDigits(vipRows.length)}</div></div>
+        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"><div className="text-xs text-slate-500">اعضا</div><div className="text-xl font-bold text-slate-800 mt-1">{toFaDigits(rows.length)}</div></div>
+        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"><div className="text-xs text-slate-500">امتیاز کل</div><div className="text-xl font-bold text-primary mt-1">{toFaDigits(totalPoints)}</div></div>
+        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"><div className="text-xs text-slate-500">اعتبار کل</div><div className="text-xl font-bold text-emerald-600 mt-1">{formatToman(totalWallet, false)}</div></div>
+        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"><div className="text-xs text-slate-500">VIP</div><div className="text-xl font-bold text-amber-600 mt-1">{toFaDigits(vipRows.length)}</div></div>
       </div>
 
       <div className="relative mb-4">
@@ -155,7 +155,7 @@ export function LoyaltyPage({ mode }: { mode: LoyaltyMode }) {
       {mode === "campaigns" ? (
         <div className="space-y-4">
           {campaignRows.map((campaign) => (
-            <div key={campaign.title} className="card p-4">
+            <div key={campaign.title} className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg">
               <div className="flex items-center gap-2 mb-3"><MessageCircle size={17} className="text-primary" /><div><h3 className="font-bold text-slate-800">{campaign.title}</h3><p className="text-xs text-slate-400">{campaign.hint}</p></div></div>
               {!campaign.rows.length ? <EmptyState title="موردی وجود ندارد" /> : <CustomerRows rows={campaign.rows} onWallet={setWalletContact} />}
             </div>
@@ -200,9 +200,9 @@ function LoyaltySettingsPage({ settings, orgId }: { settings: LoyaltySettings; o
   }
 
   return (
-    <div>
+    <div className="space-y-5">
       <PageHeader title={MODE.settings.title} subtitle={MODE.settings.subtitle} />
-      <div className="card p-5">
+      <div className="rounded-[24px] border border-white/80 bg-white/90 p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div><label className="label">بازه محاسبه خریدها (روز)</label><input className="input" inputMode="numeric" value={periodDays} onChange={(e) => setPeriodDays(e.target.value)} /><p className="text-xs text-slate-400 mt-1">مثلاً 365 یعنی خریدهای یک سال اخیر</p></div>
           <div><label className="label">حداقل خرید VIP (تومان)</label><input className="input" inputMode="numeric" value={vipAmount} onChange={(e) => setVipAmount(e.target.value)} /></div>
@@ -221,7 +221,7 @@ function CustomerRows({ rows, onWallet }: { rows: LoyaltyRow[]; onWallet: (row: 
   return (
     <div className="space-y-2">
       {rows.map((row) => (
-        <div key={row.contact.id} className="card p-4 flex items-center justify-between gap-3">
+        <div key={row.contact.id} className="flex items-center justify-between gap-3 rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:bg-primary/[0.03]">
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <EntityLink type="contact" id={row.contact.id}>{row.contact.name}</EntityLink>

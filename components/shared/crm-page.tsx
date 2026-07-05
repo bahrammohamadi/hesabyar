@@ -83,7 +83,7 @@ export function CrmPage({ mode }: { mode: CrmMode }) {
   const totalValue = rows.reduce((sum, row) => sum + row.total, 0);
 
   return (
-    <div>
+    <div className="space-y-5">
       <PageHeader
         title={MODE[mode].title}
         subtitle={MODE[mode].subtitle}
@@ -91,10 +91,10 @@ export function CrmPage({ mode }: { mode: CrmMode }) {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-        <div className="card p-4"><div className="text-xs text-slate-500">کل مشتریان</div><div className="text-xl font-bold text-slate-800 mt-1">{toFaDigits(rows.length)}</div></div>
-        <div className="card p-4"><div className="text-xs text-slate-500">مشتریان VIP</div><div className="text-xl font-bold text-primary mt-1">{toFaDigits(vipCount)}</div></div>
-        <div className="card p-4"><div className="text-xs text-slate-500">غیرفعال</div><div className="text-xl font-bold text-rose-600 mt-1">{toFaDigits(inactiveCount)}</div></div>
-        <div className="card p-4"><div className="text-xs text-slate-500">ارزش خرید</div><div className="text-xl font-bold text-emerald-600 mt-1">{formatToman(totalValue, false)}</div></div>
+        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"><div className="text-xs text-slate-500">کل مشتریان</div><div className="text-xl font-bold text-slate-800 mt-1">{toFaDigits(rows.length)}</div></div>
+        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"><div className="text-xs text-slate-500">مشتریان VIP</div><div className="text-xl font-bold text-primary mt-1">{toFaDigits(vipCount)}</div></div>
+        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"><div className="text-xs text-slate-500">غیرفعال</div><div className="text-xl font-bold text-rose-600 mt-1">{toFaDigits(inactiveCount)}</div></div>
+        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"><div className="text-xs text-slate-500">ارزش خرید</div><div className="text-xl font-bold text-emerald-600 mt-1">{formatToman(totalValue, false)}</div></div>
       </div>
 
       <div className="relative mb-4">
@@ -107,7 +107,7 @@ export function CrmPage({ mode }: { mode: CrmMode }) {
       ) : (
         <div className="space-y-2">
           {rows.length === 0 ? <EmptyState icon={Users} title="مشتری یافت نشد" /> : rows.map((row) => (
-            <div key={row.contact.id} className="card p-4 flex items-center justify-between gap-3">
+            <div key={row.contact.id} className="flex items-center justify-between gap-3 rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:bg-primary/[0.03]">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <EntityLink type="contact" id={row.contact.id}>{row.contact.name}</EntityLink>
@@ -144,7 +144,7 @@ function InteractionsList({ interactions, contacts }: { interactions: any[]; con
       {interactions.map((interaction) => {
         const contact = contactMap.get(interaction.contact_id);
         return (
-          <div key={interaction.id} className="card p-4 flex items-center justify-between gap-3">
+          <div key={interaction.id} className="flex items-center justify-between gap-3 rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:bg-primary/[0.03]">
             <div>
               <div className="font-medium text-slate-800">{interaction.title || interaction.type}</div>
               <div className="text-xs text-slate-400 mt-1">{contact ? <EntityLink type="contact" id={contact.id}>{contact.name}</EntityLink> : "—"} • {toJalali(interaction.created_at, true)}</div>
