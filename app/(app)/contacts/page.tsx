@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect, type MouseEvent } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef, type MouseEvent } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -29,6 +29,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
   const [sortBy, setSortBy] = useState<"name_asc" | "name_desc" | "balance_high" | "balance_low" | "newest">("name_asc");
   const qc = useQueryClient();
   const { openEntity } = usePanelManager();
+  const autoOpenCreateRef = useRef(false);
 
   const { data: contacts, isLoading } = useQuery({
     queryKey: ["contacts", orgId, search, typeFilter],
@@ -117,9 +118,11 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
     }
     if (filter === "debtors" || filter === "creditors") setBalanceFilter(filter);
     else setBalanceFilter("");
-    if (action === "new") {
+    if (action === "new" && !autoOpenCreateRef.current) {
+      autoOpenCreateRef.current = true;
       openEntity("contact", undefined, { mode: "create", context: "workspace", title: "شخص جدید", props: { initialType: type === "supplier" || type === "both" ? type : "customer" } });
     }
+    if (action !== "new") autoOpenCreateRef.current = false;
   }, [searchParams, forcedType, forcedFilter, forcedAction, openEntity]);
 
   function openContact(id: string, name?: string | null) {

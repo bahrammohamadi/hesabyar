@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useOrg } from "@/lib/hooks/useOrg";
@@ -16,6 +16,7 @@ export default function ProductsPage() {
   const { orgId } = useOrg();
   const { openEntity } = usePanelManager();
   const searchParams = useSearchParams();
+  const autoOpenCreateRef = useRef(false);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "name_asc" | "name_desc" | "stock_high" | "stock_low" | "price_high" | "price_low">("newest");
   const { data: products, isLoading } = useProducts(orgId, search);
@@ -41,7 +42,12 @@ export default function ProductsPage() {
   }
 
   useEffect(() => {
-    if (searchParams.get("action") === "new") openNew();
+    const action = searchParams.get("action");
+    if (action === "new" && !autoOpenCreateRef.current) {
+      autoOpenCreateRef.current = true;
+      openNew();
+    }
+    if (action !== "new") autoOpenCreateRef.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
