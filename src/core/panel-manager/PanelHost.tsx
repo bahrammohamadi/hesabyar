@@ -92,7 +92,7 @@ export function PanelHost() {
   if (stack.length === 0 || !mounted) return null;
 
   return createPortal(
-    <div data-panel-host-root="true" className="fixed inset-0 isolate pointer-events-none" style={{ zIndex: "var(--z-panel)" }} aria-live="polite">
+    <div data-panel-host-root="true" className="fixed inset-0 isolate" style={{ zIndex: "var(--z-panel)" }} aria-live="polite">
       <button
         className="absolute inset-0 bg-slate-950/30 backdrop-blur-[1px] pointer-events-auto"
         style={{ zIndex: 0 }}
