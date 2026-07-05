@@ -119,7 +119,7 @@ function formFromVariant(variant: ProductVariantEntity): VariantFormState {
 }
 
 export function ProductPanel({ panel }: { panel: PanelInstance }) {
-  const { closeTop, replaceTop } = usePanelManager();
+  const { closeTop, replaceTop, resolveTop } = usePanelManager();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { orgId, branchId } = useOrg();
@@ -204,9 +204,9 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
 
   async function saveVariantRows(targetProductId: string, rows: VariantFormState[]) {
     if (!orgId) throw new Error("سازمان فعال یافت نشد.");
-    let savedCount = 0;
+    const savedVariants: ProductVariantEntity[] = [];
     for (const row of rows) {
-      await createVariantRecord(targetProductId, {
+      const savedVariant = await createVariantRecord(targetProductId, {
         org_id: orgId,
         branch_id: branchId,
         color: row.color,
@@ -217,13 +217,13 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
         sale_price_toman: row.salePriceToman,
         initial_stock: row.initialStock,
       });
-      savedCount += 1;
+      savedVariants.push(savedVariant);
     }
     await queryClient.invalidateQueries({ queryKey: ["products"] });
     await queryClient.invalidateQueries({ queryKey: ["entity", "product"] });
     await queryClient.invalidateQueries({ queryKey: ["entity", "product", "detail", targetProductId] });
     await queryClient.invalidateQueries({ queryKey: ["entity", "product", "stock", targetProductId] });
-    return savedCount;
+    return savedVariants;
   }
 
   async function handleSaveBatchVariants() {
@@ -236,10 +236,10 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
     setFormError(null);
     setSavingBatch(true);
     try {
-      const savedCount = await saveVariantRows(productId, rows);
+      const savedVariants = await saveVariantRows(productId, rows);
       setBatchVariantForms([emptyVariantForm(), emptyVariantForm()]);
       setBatchOpen(false);
-      toast({ title: `${toPersianDigits(savedCount)} واریانت اضافه شد`, tone: "success" });
+      toast({ title: `${toPersianDigits(savedVariants.length)} واریانت اضافه شد`, tone: "success" });
     } catch (error) {
       setFormError((error as Error).message);
     } finally {
@@ -275,11 +275,15 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
           base_sale_price_toman: productForm.baseSalePriceToman,
           low_stock_threshold: productForm.lowStockThreshold ?? 3,
         });
-        if (variantRows.length > 0) {
-          const savedCount = await saveVariantRows(created.id, variantRows);
-          toast({ title: `${toPersianDigits(savedCount)} واریانت اضافه شد`, tone: "success" });
+        const savedVariants = variantRows.length > 0 ? await saveVariantRows(created.id, variantRows) : [];
+        if (savedVariants.length > 0) {
+          toast({ title: `${toPersianDigits(savedVariants.length)} واریانت اضافه شد`, tone: "success" });
         }
-        replaceTop({ type: "product", entityId: created.id, mode: "view", title: created.name, context: panel.context });
+        if (typeof panel.props?.resultRequestId === "string") {
+          resolveTop({ id: created.id, type: "product", title: created.name, data: { ...created, variants: savedVariants } });
+        } else {
+          replaceTop({ type: "product", entityId: created.id, mode: "view", title: created.name, context: panel.context });
+        }
       } else if (productId) {
         await updateProduct.mutateAsync({
           id: productId,
