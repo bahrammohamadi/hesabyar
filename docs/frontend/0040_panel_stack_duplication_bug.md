@@ -190,3 +190,26 @@ npm run build: passed
 
 - هر route آینده که در `useEffect` با dependency شامل `openEntity/openDocument` پنل باز کند.
 - هر deep-link جدید که از `?panels=` استفاده کند و ممکن است segment تکراری بسازد.
+
+## اصلاح تکمیلی پس از تست کاربر
+
+پس از گزارش ادامه‌دار کاربر، محافظت مرکزی سخت‌گیرانه‌تر شد:
+
+- duplicate فقط در top بررسی نمی‌شود؛ اگر همان panel identity هر جای stack باشد، stack تا همان panel کوتاه می‌شود و push جدید انجام نمی‌شود.
+- برای URL، dedupe فقط consecutive نیست؛ duplicateهای غیرمجاور هم حذف می‌شوند.
+- `openEntityForResult` از این dedupe عمومی مستثنیِ منطقی شد: اگر panel جدید `resultRequestId` داشته باشد، با create panel معمولی یکی حساب نمی‌شود؛ وگرنه promise انتخابگر به پنل قبلی وصل نمی‌شد.
+- `PanelHost` برای محافظت در برابر stackهای آلوده قدیمی فقط آخرین ۴ panel را render می‌کند.
+
+تست‌های اضافه‌شده:
+
+```text
+- duplicate غیرمجاور در URL dedupe می‌شود.
+- create-for-result با create معمولی یکی حساب نمی‌شود.
+```
+
+نتیجه نهایی:
+
+```text
+Test Files: 3 passed
+Tests: 14 passed
+```
