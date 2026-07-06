@@ -87,3 +87,34 @@ Sidebar به حداکثر دو سطح محدود شد: گروه اصلی → آ�
 - شماره‌ها با الگوی `09...` نرمال می‌شوند.
 
 طبق داده بررسی‌شده قبلی، wallet_credit فعلاً برای همه صفر است؛ بنابراین کارت اعتبار خالی نمی‌شود یا کرش نمی‌کند، بلکه پیام «داده‌ای یافت نشد» نشان می‌دهد.
+
+## نتیجه واقعی سگمنت‌ها روی داده فعلی org اصلی
+
+بر اساس داده production مزون پوشاک:
+
+```text
+total active contacts: 534
+birthday within 30 days: 29
+inactive without confirmed purchase in 90 days: 519
+wallet/credit near depletion: 0
+```
+
+نمونه خروجی تولد نزدیک:
+
+```csv
+name,phone
+مرضیه طالبی,09xxxxxxxxx
+نرگس موسوی,09xxxxxxxxx
+رشیدی,09xxxxxxxxx
+```
+
+نمونه خروجی مشتریان غیرفعال:
+
+```csv
+name,phone
+روشنک جعفری,09xxxxxxxxx
+الارا فقانی,09xxxxxxxxx
+لیلا شکری,09xxxxxxxxx
+```
+
+کارت اعتبار/کیف پول طبق انتظار پیام «داده‌ای یافت نشد» نشان می‌دهد، چون wallet_credit فعلاً برای همه صفر است.
