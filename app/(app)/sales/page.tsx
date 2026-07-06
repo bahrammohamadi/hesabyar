@@ -13,7 +13,7 @@ import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { PhoneLink } from "@/components/shared/phone-link";
 import { formatToman, toFaDigits, toEnDigits, rialToToman, tomanToRial, toJalali } from "@/lib/utils/format";
-import { Plus, Trash2, Receipt, Loader2, ShoppingCart, Package, UserPlus, X } from "lucide-react";
+import { Plus, Trash2, Receipt, Loader2, ShoppingCart, Package, UserPlus, X, Send } from "lucide-react";
 import type { CartItem } from "@/types/db";
 import { logActivity } from "@/lib/utils/activity-log";
 import Link from "next/link";
@@ -277,6 +277,21 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
   const paidWalletRial = Math.min(requestedWalletRial, walletCredit ?? 0, Math.max(0, total - paidCashRial - paidCardRial));
   const credit = Math.max(0, total - paidCashRial - paidCardRial - paidWalletRial);
 
+  function resetForNextSale() {
+    setCart([]);
+    setCustomer(null);
+    setDiscount("0");
+    setDiscountType("fixed");
+    setPaidCash("");
+    setPaidCard("");
+    setPaidWallet("");
+    setAccountId("");
+    setPriceListId("");
+    setSaving(false);
+    setError(null);
+    setDone(null);
+  }
+
   async function handleSubmit() {
     setError(null);
     if (cart.length === 0) {
@@ -339,11 +354,17 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
           </div>
           <h3 className="font-bold text-slate-800 text-lg">فاکتور با موفقیت ثبت شد ✅</h3>
           <p className="text-sm text-slate-500 mt-2">مبلغ کل: {formatToman(total)}</p>
-          <div className="flex gap-2 mt-6">
-            <Link href={`/sales/${done}`} className="btn-primary flex-1">
+          <div className="mt-6 grid gap-2 sm:grid-cols-2">
+            <Link href={`/sales/${done}`} className="btn-primary">
               مشاهده و چاپ فاکتور
             </Link>
-            <button onClick={onClose} className="btn-secondary">
+            <button type="button" disabled title="به‌زودی - نیاز به اتصال سرویس پیامک" className="btn-secondary cursor-not-allowed opacity-60">
+              <Send size={16} /> ارسال برای مشتری
+            </button>
+            <button onClick={resetForNextSale} className="btn-primary sm:col-span-2">
+              فاکتور جدید
+            </button>
+            <button onClick={onClose} className="btn-secondary sm:col-span-2">
               بستن
             </button>
           </div>

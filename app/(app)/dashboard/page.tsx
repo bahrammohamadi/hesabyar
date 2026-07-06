@@ -15,7 +15,7 @@ import { formatToman, toFaDigits, rialToToman, tomanToRial, toEnDigits, toJalali
 import type { DashboardSummary, CartItem } from "@/types/db";
 import { logActivity } from "@/lib/utils/activity-log";
 import Link from "next/link";
-import { ArrowUpFromLine, Loader2, Package2, Plus, Receipt, Trash2, UserPlus, X } from "lucide-react";
+import { ArrowUpFromLine, Loader2, Package2, Plus, Receipt, Send, Trash2, UserPlus, X } from "lucide-react";
 import {
   DashboardQuickActions,
   DashboardRecentInvoices,
@@ -239,6 +239,20 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
   const paidWalletRial = Math.min(requestedWalletRial, walletCredit ?? 0, Math.max(0, total - paidCashRial - paidCardRial));
   const credit = Math.max(0, total - paidCashRial - paidCardRial - paidWalletRial);
 
+  function resetForNextSale() {
+    setCart([]);
+    setCustomer(null);
+    setDiscount("0");
+    setDiscountType("fixed");
+    setPaidCash("");
+    setPaidCard("");
+    setPaidWallet("");
+    setAccountId("");
+    setSaving(false);
+    setError(null);
+    setDone(null);
+  }
+
   async function handleSubmit() {
     setError(null);
     if (cart.length === 0) { setError("سبد فروش خالی است."); return; }
@@ -289,9 +303,11 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
           </div>
           <h3 className="font-bold text-slate-800 text-lg">فاکتور با موفقیت ثبت شد ✅</h3>
           <p className="text-sm text-slate-500 mt-2">مبلغ کل: {formatToman(total)}</p>
-          <div className="flex gap-2 mt-6">
-            <Link href={`/sales/${done}`} className="btn-primary flex-1">مشاهده و چاپ فاکتور</Link>
-            <button onClick={onClose} className="btn-secondary">بستن</button>
+          <div className="mt-6 grid gap-2 sm:grid-cols-2">
+            <Link href={`/sales/${done}`} className="btn-primary">مشاهده و چاپ فاکتور</Link>
+            <button type="button" disabled title="به‌زودی - نیاز به اتصال سرویس پیامک" className="btn-secondary cursor-not-allowed opacity-60"><Send size={16} /> ارسال برای مشتری</button>
+            <button onClick={resetForNextSale} className="btn-primary sm:col-span-2">فاکتور جدید</button>
+            <button onClick={onClose} className="btn-secondary sm:col-span-2">بستن</button>
           </div>
         </div>
       </Modal>
