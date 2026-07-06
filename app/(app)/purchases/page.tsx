@@ -22,6 +22,7 @@ interface PItem {
   label: string;
   qty: number;
   unit_price: number; // ریال
+  sale_price: number; // ریال
 }
 
 export default function PurchasesPage() {
@@ -196,6 +197,7 @@ function PurchaseModal({ orgId, onClose }: { orgId: string | null; onClose: () =
           label: `${v.product_name} ${[v.color, v.size].filter(Boolean).join(" / ")}`.trim(),
           qty: 1,
           unit_price: v.purchase_price,
+          sale_price: v.sale_price,
         },
       ];
     });
@@ -230,6 +232,11 @@ function PurchaseModal({ orgId, onClose }: { orgId: string | null; onClose: () =
         p_note: null,
       });
       if (e) throw e;
+      await Promise.all(items.map((item) => supabase
+        .from("product_variants")
+        .update({ purchase_price: item.unit_price, sale_price: item.sale_price })
+        .eq("id", item.variant_id)
+      ));
       await logActivity({ orgId, action: "create", entityType: "purchase", entityId: purchaseId as string, newData: { total, supplier_id: supplier?.id ?? null, items_count: items.length } });
       onClose();
     } catch (e) {
@@ -275,20 +282,22 @@ function PurchaseModal({ orgId, onClose }: { orgId: string | null; onClose: () =
             </div>
           ) : (
             <div className="max-h-[42vh] overflow-y-auto rounded-2xl border border-slate-100 bg-white">
-              <div className="hidden grid-cols-[minmax(240px,2fr)_minmax(140px,1fr)_120px_minmax(140px,1fr)_44px] gap-2 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-500 md:grid">
-                <span>کالا</span><span>قیمت خرید</span><span className="text-center">تعداد</span><span className="text-left">جمع</span><span />
+              <div className="hidden grid-cols-[minmax(220px,1.6fr)_120px_120px_88px_120px_120px_44px] gap-2 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-500 md:grid">
+                <span>کالا</span><span>قیمت خرید</span><span>قیمت فروش</span><span className="text-center">سود٪</span><span className="text-center">تعداد</span><span className="text-left">جمع خرید</span><span />
               </div>
               <div className="divide-y divide-slate-100">
                 {items.map((it, idx) => (
                   <div key={it.variant_id} className="p-3">
-                    <div className="hidden grid-cols-[minmax(240px,2fr)_minmax(140px,1fr)_120px_minmax(140px,1fr)_44px] items-center gap-2 md:grid">
+                    <div className="hidden grid-cols-[minmax(220px,1.6fr)_120px_120px_88px_120px_120px_44px] items-center gap-2 md:grid">
                       <div className="min-w-0"><span className="inline-flex min-w-0 items-center gap-2 text-sm font-semibold"><EntityLink type="product" id={it.product_id} className="truncate">{it.label}</EntityLink><EntityActionMenu type="product" id={it.product_id} label={it.label} /></span></div>
                       <input className="input h-10 min-h-10 text-left text-sm" inputMode="numeric" value={String(rialToToman(it.unit_price))} onChange={(e) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, unit_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x)))} />
+                      <input className="input h-10 min-h-10 text-left text-sm" inputMode="numeric" value={String(rialToToman(it.sale_price))} onChange={(e) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, sale_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x)))} />
+                      <span className={(it.sale_price - it.unit_price) >= 0 ? "text-center text-xs font-bold text-emerald-600" : "text-center text-xs font-bold text-rose-600"}>{it.unit_price > 0 ? toFaDigits(Math.round(((it.sale_price - it.unit_price) / it.unit_price) * 100)) : "۰"}٪</span>
                       <input className="input h-10 min-h-10 text-center text-sm" inputMode="numeric" value={String(it.qty)} onChange={(e) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, qty: Number(toEnDigits(e.target.value)) || 0 } : x)))} />
                       <span className="text-left text-sm font-black text-slate-800 tabular-nums">{formatToman(it.unit_price * it.qty, false)}</span>
                       <button onClick={() => setItems((p) => p.filter((_, i) => i !== idx))} className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-rose-400 hover:bg-rose-50 hover:text-rose-600"><Trash2 size={16} /></button>
                     </div>
-                    <div className="md:hidden"><div className="flex items-center justify-between gap-2"><EntityLink type="product" id={it.product_id} className="truncate text-sm font-semibold">{it.label}</EntityLink><button onClick={() => setItems((p) => p.filter((_, i) => i !== idx))} className="text-rose-400"><Trash2 size={16} /></button></div><div className="mt-2 flex items-center justify-between text-sm"><span>{formatToman(it.unit_price, false)} × {toFaDigits(it.qty)}</span><strong>{formatToman(it.unit_price * it.qty, false)}</strong></div></div>
+                    <div className="md:hidden"><div className="flex items-center justify-between gap-2"><EntityLink type="product" id={it.product_id} className="truncate text-sm font-semibold">{it.label}</EntityLink><button onClick={() => setItems((p) => p.filter((_, i) => i !== idx))} className="text-rose-400"><Trash2 size={16} /></button></div><div className="mt-2 grid grid-cols-2 gap-2 text-sm"><div><span className="text-xs text-slate-400">خرید</span><input className="input h-10 min-h-10 text-left text-sm" inputMode="numeric" value={String(rialToToman(it.unit_price))} onChange={(e) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, unit_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x)))} /></div><div><span className="text-xs text-slate-400">فروش</span><input className="input h-10 min-h-10 text-left text-sm" inputMode="numeric" value={String(rialToToman(it.sale_price))} onChange={(e) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, sale_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x)))} /></div></div><div className="mt-2 flex items-center justify-between text-sm"><span>سود: {it.unit_price > 0 ? toFaDigits(Math.round(((it.sale_price - it.unit_price) / it.unit_price) * 100)) : "۰"}٪</span><strong>{formatToman(it.unit_price * it.qty, false)}</strong></div></div>
                   </div>
                 ))}
               </div>
