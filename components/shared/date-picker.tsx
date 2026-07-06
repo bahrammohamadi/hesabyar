@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import dayjs from "dayjs";
 import jalaliday from "jalaliday";
 import { toEnDigits, toFaDigits } from "@/lib/utils/format";
@@ -14,58 +14,51 @@ interface DatePickerProps {
   placeholder?: string;
 }
 
-function toJalaliInput(value: string) {
-  return value ? toFaDigits(dayjs(value).calendar("jalali").format("YYYY/MM/DD")) : "";
+function jalaliToGregorianInput(value: string) {
+  const normalized = toEnDigits(value).replace(/[^0-9/]/g, "");
+  if (!/^\d{4}\/\d{2}\/\d{2}$/.test(normalized)) return "";
+  const [year, month, date] = normalized.split("/").map(Number);
+  try {
+    // @ts-ignore - jalaliday calendar typing is incomplete
+    return (dayjs() as any).calendar("jalali").set("year", year).set("month", month - 1).set("date", date).calendar("gregorian").format("YYYY-MM-DD");
+  } catch {
+    return "";
+  }
 }
 
-export function DatePicker({ value, onChange, label, placeholder = "۱۴۰۲/۰۱/۰۱" }: DatePickerProps) {
-  const [draft, setDraft] = useState(() => toJalaliInput(value));
+function toNativeDateValue(value: string) {
+  if (!value) return "";
+  if (/^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
+  if (/^\d{4}\/\d{2}\/\d{2}$/.test(toEnDigits(value))) return jalaliToGregorianInput(value);
+  const parsed = dayjs(value);
+  return parsed.isValid() ? parsed.format("YYYY-MM-DD") : "";
+}
 
-  useEffect(() => {
-    setDraft(toJalaliInput(value));
-  }, [value]);
+function toJalaliDisplay(value: string) {
+  if (!value) return "";
+  if (/^\d{4}\/\d{2}\/\d{2}$/.test(toEnDigits(value))) return toFaDigits(value);
+  const parsed = dayjs(value);
+  return parsed.isValid() ? toFaDigits(parsed.calendar("jalali").format("YYYY/MM/DD")) : "";
+}
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const nextDraft = e.target.value;
-    setDraft(nextDraft);
-
-    const normalized = toEnDigits(nextDraft).replace(/[^0-9/]/g, "");
-    if (!normalized.trim()) {
-      onChange("");
-      return;
-    }
-
-    if (/^\d{4}\/\d{2}\/\d{2}$/.test(normalized)) {
-      const [year, month, date] = normalized.split("/").map(Number);
-      // @ts-ignore - jalaliday calendar typing is incomplete
-      const gDate = (dayjs() as any)
-        .calendar("jalali")
-        .set("year", year)
-        .set("month", month - 1)
-        .set("date", date)
-        .calendar("gregorian");
-      onChange(gDate.toISOString());
-    }
-  };
+export function DatePicker({ value, onChange, label, placeholder = "YYYY-MM-DD" }: DatePickerProps) {
+  const nativeValue = toNativeDateValue(value);
+  const jalaliDisplay = toJalaliDisplay(value);
 
   return (
     <div className="w-full">
       {label && <label className="label">{label}</label>}
-      <div className="relative">
-        <input
-          type="text"
-          inputMode="numeric"
-          dir="ltr"
-          className="input text-left pr-10"
-          value={draft}
-          onChange={handleInputChange}
-          placeholder={placeholder}
-        />
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-          📅
-        </div>
-      </div>
-      <p className="text-[10px] text-slate-400 mt-1">فرمت: سال/ماه/روز (شمسی)</p>
+      <input
+        type="date"
+        dir="ltr"
+        className="input text-left"
+        value={nativeValue}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+      />
+      <p className="text-[10px] text-slate-400 mt-1">
+        {jalaliDisplay ? `نمایش شمسی: ${jalaliDisplay}` : "برای انتخاب تاریخ، روی آیکون تقویم فیلد کلیک کنید."}
+      </p>
     </div>
   );
 }
