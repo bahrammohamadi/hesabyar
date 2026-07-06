@@ -14,7 +14,7 @@ export function SettingsContent({ section = "all" }: { section?: "all" | "catalo
 
   if (section === "all") {
     const cards = [
-      { title: "عمومی", desc: "اطلاعات کسب‌وکار، ظاهر برنامه و تنظیمات عمومی فاکتور", href: "/settings/catalog", icon: Building2, tone: "bg-primary/10 text-primary" },
+      { title: "عمومی", desc: "اطلاعات کسب‌وکار، ظاهر برنامه و تنظیمات عمومی فاکتور", href: "/settings/general", icon: Building2, tone: "bg-primary/10 text-primary" },
       { title: "کاربران و دسترسی‌ها", desc: "ساخت کاربر، نقش‌ها و سطح دسترسی", href: "/settings/users", icon: Shield, tone: "bg-violet-50 text-violet-600" },
       { title: "مالی", desc: "حساب‌ها، دسته‌بندی هزینه و روش‌های پرداخت", href: "/settings/accounts", icon: Landmark, tone: "bg-emerald-50 text-emerald-600" },
       { title: "کاتالوگ", desc: "دسته‌بندی کالا، برندها و لیست قیمت‌ها", href: "/settings/catalog", icon: FolderTree, tone: "bg-amber-50 text-amber-600" },
