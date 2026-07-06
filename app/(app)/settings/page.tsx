@@ -1,15 +1,47 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, Modal, Spinner } from "@/components/shared/ui";
-import { Plus, Loader2, Tag, Landmark, FolderTree, Trash2, Pencil, Check, X, Users, Shield, Palette } from "lucide-react";
+import { Plus, Loader2, Tag, Landmark, FolderTree, Trash2, Pencil, Check, X, Users, Shield, Palette, Building2, SlidersHorizontal, Sparkles } from "lucide-react";
 import { applyTheme, DEFAULT_THEME, THEMES, THEME_STORAGE_KEY, type ThemeId } from "@/lib/theme";
 
 export function SettingsContent({ section = "all" }: { section?: "all" | "catalog" | "accounts" | "users" }) {
   const { orgId, branchId } = useOrg();
+
+  if (section === "all") {
+    const cards = [
+      { title: "عمومی", desc: "اطلاعات کسب‌وکار، ظاهر برنامه و تنظیمات عمومی فاکتور", href: "/settings/catalog", icon: Building2, tone: "bg-primary/10 text-primary" },
+      { title: "کاربران و دسترسی‌ها", desc: "ساخت کاربر، نقش‌ها و سطح دسترسی", href: "/settings/users", icon: Shield, tone: "bg-violet-50 text-violet-600" },
+      { title: "مالی", desc: "حساب‌ها، دسته‌بندی هزینه و روش‌های پرداخت", href: "/settings/accounts", icon: Landmark, tone: "bg-emerald-50 text-emerald-600" },
+      { title: "کاتالوگ", desc: "دسته‌بندی کالا، برندها و لیست قیمت‌ها", href: "/settings/catalog", icon: FolderTree, tone: "bg-amber-50 text-amber-600" },
+      { title: "پیشرفته", desc: "گزارش فعالیت، تنظیمات باشگاه و امکانات مدیریتی", href: "/activity", icon: SlidersHorizontal, tone: "bg-slate-100 text-slate-700" },
+    ];
+    return (
+      <div className="space-y-5">
+        <PageHeader title="تنظیمات" subtitle="داشبورد تنظیمات سیستم؛ برای ویرایش جزئیات وارد هر بخش شوید" />
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+          {cards.map((card) => {
+            const Icon = card.icon;
+            return (
+              <Link key={card.title} href={card.href} className="group rounded-[26px] border border-white/80 bg-white/90 p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/[0.08]">
+                <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-2xl ${card.tone}`}><Icon size={22} /></div>
+                <h2 className="text-base font-black text-slate-800 group-hover:text-primary">{card.title}</h2>
+                <p className="mt-2 text-xs leading-6 text-slate-500">{card.desc}</p>
+              </Link>
+            );
+          })}
+        </div>
+        <div className="rounded-[24px] border border-primary/15 bg-primary/[0.04] p-4 text-sm text-slate-600">
+          <div className="mb-1 flex items-center gap-2 font-extrabold text-primary"><Sparkles size={16} /> راهنما</div>
+          مسیرهای زیرین حذف نشده‌اند؛ این صفحه فقط نقطه ورود تنظیمات را ساده‌تر می‌کند.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
@@ -17,7 +49,7 @@ export function SettingsContent({ section = "all" }: { section?: "all" | "catalo
         title="تنظیمات"
         subtitle="مدیریت دسته‌بندی‌ها، برندها، حساب‌ها و دسته هزینه‌ها"
       />
-      {(section === "all" || section === "catalog") && (
+      {section === "catalog" && (
         <div className="space-y-4">
           <ThemeSettings />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -27,18 +59,11 @@ export function SettingsContent({ section = "all" }: { section?: "all" | "catalo
           </div>
         </div>
       )}
-      {(section === "all" || section === "accounts") && (
-        <div className={section === "all" ? "mt-4" : ""}>
-          <AccountsManager orgId={orgId} branchId={branchId} />
-        </div>
-      )}
-      {(section === "all" || section === "users") && (
-        <div id="users" className="mt-4 scroll-mt-24">
-          <UsersAccessManager />
-        </div>
-      )}
+      {section === "accounts" && <AccountsManager orgId={orgId} branchId={branchId} />}
+      {section === "users" && <div id="users" className="scroll-mt-24"><UsersAccessManager /></div>}
     </div>
   );
+
 }
 
 
