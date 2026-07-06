@@ -60,6 +60,7 @@ export function DatePicker({ value, onChange, label, placeholder = "انتخاب
 
   const selected = gregorianToJalali(value);
   const days = daysInJalaliMonth(viewYear, viewMonth);
+  const firstDayOffset = (dayjs(jalaliToGregorian({ year: viewYear, month: viewMonth, day: 1 })).day() + 1) % 7;
   const years = useMemo(() => Array.from({ length: 101 }, (_, index) => viewYear - 50 + index), [viewYear]);
   const display = selected ? `${toFaDigits(selected.year)}/${toFaDigits(String(selected.month + 1).padStart(2, "0"))}/${toFaDigits(String(selected.day).padStart(2, "0"))}` : "";
 
@@ -106,12 +107,14 @@ export function DatePicker({ value, onChange, label, placeholder = "انتخاب
             {WEEKDAYS.map((day) => <div key={day}>{day}</div>)}
           </div>
           <div className="grid grid-cols-7 gap-1">
+            {Array.from({ length: firstDayOffset }, (_, index) => <div key={`empty-${index}`} className="h-9" />)}
             {Array.from({ length: days }, (_, index) => index + 1).map((day) => {
               const active = selected?.year === viewYear && selected?.month === viewMonth && selected?.day === day;
               return <button key={day} type="button" onClick={() => choose(day)} className={`h-9 rounded-xl text-sm font-bold transition ${active ? "bg-primary text-white" : "text-slate-700 hover:bg-primary/10 hover:text-primary"}`}>{toFaDigits(day)}</button>;
             })}
           </div>
           <div className="mt-3 flex gap-2 border-t border-slate-100 pt-3">
+            <button type="button" className="btn-secondary h-10 min-h-10 flex-1 text-xs" onClick={() => { const today = gregorianToJalali(dayjs().format("YYYY-MM-DD")); if (today) { setViewYear(today.year); setViewMonth(today.month); onChange(jalaliToGregorian(today)); } setOpen(false); }}>امروز</button>
             <button type="button" className="btn-secondary h-10 min-h-10 flex-1 text-xs" onClick={() => { onChange(""); setOpen(false); }}>پاک کردن</button>
             <button type="button" className="btn-secondary h-10 min-h-10 flex-1 text-xs" onClick={() => setOpen(false)}>بستن</button>
           </div>

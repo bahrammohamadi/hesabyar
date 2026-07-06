@@ -26,7 +26,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<"" | ContactType>("");
   const [balanceFilter, setBalanceFilter] = useState<"" | "debtors" | "creditors">("");
-  const [sortBy, setSortBy] = useState<"name_asc" | "name_desc" | "balance_high" | "balance_low" | "newest">("name_asc");
+  const [sortBy, setSortBy] = useState<"name_asc" | "name_desc" | "balance_high" | "balance_low" | "newest">("newest");
   const qc = useQueryClient();
   const { openEntity } = usePanelManager();
   const autoOpenCreateRef = useRef(false);
@@ -188,11 +188,11 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
         >
+          <option value="newest">جدیدترین</option>
           <option value="name_asc">نام A-Z</option>
           <option value="name_desc">نام Z-A</option>
           <option value="balance_high">مانده بیشتر</option>
           <option value="balance_low">مانده کمتر</option>
-          <option value="newest">جدیدترین</option>
         </select>
       </div>
 
