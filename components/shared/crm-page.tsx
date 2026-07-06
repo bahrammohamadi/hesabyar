@@ -26,8 +26,7 @@ const MODE: Record<CrmMode, { title: string; subtitle: string }> = {
 
 function downloadCsv(filename: string, rows: { name: string; phone: string | null }[]) {
   const csvRows = ["name,phone", ...rows.map((row) => `"${String(row.name ?? "").replace(/"/g, '""')}","${String(row.phone ?? "").replace(/"/g, '""')}"`)];
-  const blob = new Blob(["﻿" + csvRows.join("
-")], { type: "text/csv;charset=utf-8" });
+  const blob = new Blob(["\ufeff" + csvRows.join("\n")], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
