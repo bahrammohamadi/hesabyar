@@ -10,7 +10,7 @@ import { DataTable } from "@/src/shared/ui";
 import { DatePicker } from "@/components/shared/date-picker";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { EntityLink } from "@/components/shared/entity-link";
-import { formatToman, toFaDigits } from "@/lib/utils/format";
+import { formatToman, normalizeSearchText, toFaDigits } from "@/lib/utils/format";
 
 function csvEscape(value: unknown) {
   const text = value == null ? "" : String(value);
@@ -78,7 +78,7 @@ export default function InventoryAsOfPage() {
   });
 
   const rows = useMemo(() => {
-    const term = search.trim().toLowerCase();
+    const term = normalizeSearchText(search);
     return (data ?? [])
       .filter((row: any) => !onlyPositive || row.stock_qty > 0)
       .filter((row: any) => {

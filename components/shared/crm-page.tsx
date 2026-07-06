@@ -11,7 +11,7 @@ import { EmptyState, Modal, PageHeader, Spinner } from "@/components/shared/ui";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { EntityLink } from "@/components/shared/entity-link";
 import { PhoneLink } from "@/components/shared/phone-link";
-import { formatToman, toFaDigits, toJalali } from "@/lib/utils/format";
+import { formatToman, normalizeSearchText, toFaDigits, toJalali } from "@/lib/utils/format";
 
 dayjs.extend(jalaliday);
 
@@ -117,7 +117,7 @@ export function CrmPage({ mode }: { mode: CrmMode }) {
     }).filter((row) => {
       const t = search.trim().toLowerCase();
       if (!t) return true;
-      return `${row.contact.name} ${row.contact.phone ?? ""}`.toLowerCase().includes(t);
+      return normalizeSearchText(`${row.contact.name} ${row.contact.phone ?? ""}`).includes(t);
     }).sort((a, b) => b.total - a.total);
   }, [data, search]);
 

@@ -28,6 +28,11 @@ export function toEnDigits(input: string): string {
     .replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
 }
 
+/** نرمال‌سازی متن جستجو: اعداد فارسی/عربی و انگلیسی یکسان دیده شوند. */
+export function normalizeSearchText(input: string | number | null | undefined): string {
+  return toEnDigits(String(input ?? "")).trim().toLowerCase();
+}
+
 /**
  * نمایش مبلغ. در دیتابیس مبالغ به ریال ذخیره می‌شوند.
  * این تابع ریال را به تومان تبدیل و با جداکننده هزارگان فارسی نمایش می‌دهد.

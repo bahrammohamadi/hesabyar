@@ -10,7 +10,7 @@ import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { PageHeader, Spinner, EmptyState } from "@/components/shared/ui";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { PhoneLink } from "@/components/shared/phone-link";
-import { formatToman } from "@/lib/utils/format";
+import { formatToman, normalizeSearchText } from "@/lib/utils/format";
 import { Plus, Search, User, Pencil, Trash2 } from "lucide-react";
 import type { Contact, ContactType } from "@/types/db";
 
@@ -42,7 +42,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
         .eq("is_active", true)
         .order("name");
       if (search.trim()) {
-        const t = search.trim();
+        const t = normalizeSearchText(search);
         q = q.or(`name.ilike.%${t}%,phone.ilike.%${t}%,code.ilike.%${t}%`);
       }
       if (typeFilter) q = q.in("type", typeFilter === "both" ? ["both"] : [typeFilter, "both"]);
@@ -80,10 +80,10 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
 
   const filtered = useMemo(() => {
     let result = contacts ?? [];
-    const t = search.trim().toLowerCase();
+    const t = normalizeSearchText(search);
     if (t) {
       result = result.filter((c) =>
-        `${c.name} ${c.phone ?? ""} ${(c as any).code ?? ""}`.toLowerCase().includes(t)
+        normalizeSearchText(`${c.name} ${c.phone ?? ""} ${(c as any).code ?? ""}`).includes(t)
       );
     }
     if (typeFilter) {

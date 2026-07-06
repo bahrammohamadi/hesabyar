@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { Modal } from "@/components/shared/ui";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
-import { formatToman, toFaDigits } from "@/lib/utils/format";
+import { formatToman, normalizeSearchText, toFaDigits } from "@/lib/utils/format";
 import { Search, Package, Barcode, X, Filter, PackagePlus } from "lucide-react";
 
 export interface SelectableVariant {
@@ -146,12 +146,12 @@ export function ProductSelector({
   // فیلتر و مرتب‌سازی لحظه‌ای
   const filtered = useMemo(() => {
     if (!variants) return [];
-    const t = term.trim().toLowerCase();
+    const t = normalizeSearchText(term);
     const max = maxPrice ? Number(maxPrice.replace(/[^\d]/g, "")) * 10 : Infinity;
 
     let result = variants.filter((v) => {
       if (t) {
-        const hay = `${v.product_name} ${v.product_code ?? ""} ${v.sku ?? ""} ${v.barcode ?? ""} ${v.color ?? ""} ${v.size ?? ""}`.toLowerCase();
+        const hay = normalizeSearchText(`${v.product_name} ${v.product_code ?? ""} ${v.sku ?? ""} ${v.barcode ?? ""} ${v.color ?? ""} ${v.size ?? ""}`);
         if (!hay.includes(t)) return false;
       }
       if (categoryId && v.category_id !== categoryId) return false;
