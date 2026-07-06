@@ -135,7 +135,7 @@ export default function DashboardPage() {
           <button onClick={() => setQuickSaleOpen(true)} className="btn-primary shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-shadow">
             <Plus size={18} />
             <span className="hidden sm:inline">فروش جدید</span>
-            <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded hidden sm:inline">F2</span>
+            <span className="hidden rounded bg-white/20 px-1.5 py-0.5 text-[10px] lg:inline">F2</span>
           </button>
         }
       />

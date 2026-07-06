@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
 import { BottomNav } from "./bottom-nav";
-import { MobileFab } from "./mobile-fab";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -27,7 +26,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <BottomNav onMoreClick={() => setIsSidebarOpen(true)} />
-      <MobileFab />
     </div>
   );
 }

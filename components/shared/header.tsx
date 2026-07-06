@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { fullJalali } from "@/lib/utils/format";
-import { LogOut, UserCircle, Menu, Bell } from "lucide-react";
+import { LogOut, UserCircle, Bell } from "lucide-react";
 import { GlobalSearchBar } from "@/src/shared/layout/GlobalSearchBar";
 
 export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
@@ -34,13 +34,6 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
     <header className="sticky top-0 border-b border-white/70 bg-white/85 shadow-sm shadow-slate-900/[0.03] backdrop-blur-xl" style={{ zIndex: "var(--z-header)" }}>
       <div className="flex h-16 items-center justify-between gap-3 px-3 sm:px-5 lg:px-6">
         <div className="flex min-w-0 items-center gap-3">
-          <button
-            onClick={onMenuClick}
-            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 transition-colors hover:bg-slate-200 lg:hidden"
-            aria-label="باز کردن منو"
-          >
-            <Menu size={22} />
-          </button>
           <div className="min-w-0">
             <div className="text-sm font-extrabold text-slate-800 lg:hidden">مهرجامه</div>
             <div className="hidden text-sm text-slate-500 sm:block">{fullJalali()}</div>
