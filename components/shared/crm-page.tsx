@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import dayjs from "dayjs";
+import jalaliday from "jalaliday";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Activity, Gift, Plus, Search, Users } from "lucide-react";
+import { Activity, Download, Gift, Plus, Search, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { EmptyState, Modal, PageHeader, Spinner } from "@/components/shared/ui";
@@ -10,6 +12,8 @@ import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { EntityLink } from "@/components/shared/entity-link";
 import { PhoneLink } from "@/components/shared/phone-link";
 import { formatToman, toFaDigits, toJalali } from "@/lib/utils/format";
+
+dayjs.extend(jalaliday);
 
 type CrmMode = "overview" | "interactions" | "segments" | "loyalty";
 
@@ -20,10 +24,53 @@ const MODE: Record<CrmMode, { title: string; subtitle: string }> = {
   loyalty: { title: "باشگاه مشتریان", subtitle: "امتیاز خرید و ارزش مشتری بر اساس فاکتورهای ثبت‌شده" },
 };
 
+function downloadCsv(filename: string, rows: { name: string; phone: string | null }[]) {
+  const csvRows = ["name,phone", ...rows.map((row) => `"${String(row.name ?? "").replace(/"/g, '""')}","${String(row.phone ?? "").replace(/"/g, '""')}"`)];
+  const blob = new Blob(["﻿" + csvRows.join("
+")], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function normalizePhone(phone?: string | null) {
+  const digits = String(phone ?? "").replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit))).replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit))).replace(/[^0-9]/g, "");
+  if (!digits) return null;
+  if (digits.startsWith("9") && digits.length === 10) return `0${digits}`;
+  return digits;
+}
+
+function daysUntilJalaliBirthday(birthDate?: string | null) {
+  if (!birthDate) return null;
+  const normalized = String(birthDate).replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit))).replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)));
+  const match = normalized.match(/^(13|14)\d{2}[/-](\d{2})[/-](\d{2})$/);
+  if (!match) return null;
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  // @ts-ignore - jalaliday calendar typing is incomplete
+  const today = (dayjs() as any).calendar("jalali");
+  const thisYear = today.year();
+  const make = (year: number) => {
+    // @ts-ignore
+    return (dayjs() as any).calendar("jalali").set("year", year).set("month", month - 1).set("date", day).startOf("day");
+  };
+  let next = make(thisYear);
+  if (next.diff(today.startOf("day"), "day") < 0) next = make(thisYear + 1);
+  return next.diff(today.startOf("day"), "day");
+}
+
 export function CrmPage({ mode }: { mode: CrmMode }) {
   const { orgId } = useOrg();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [birthdayDays, setBirthdayDays] = useState(30);
+  const [inactiveDays, setInactiveDays] = useState(90);
+  const [walletThresholdToman, setWalletThresholdToman] = useState(50000);
   const [interactionOpen, setInteractionOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<any | null>(null);
 
@@ -81,6 +128,15 @@ export function CrmPage({ mode }: { mode: CrmMode }) {
   const vipCount = rows.filter((r) => r.segment === "VIP").length;
   const inactiveCount = rows.filter((r) => r.segment === "غیرفعال").length;
   const totalValue = rows.reduce((sum, row) => sum + row.total, 0);
+  const birthdaySegment = rows.filter((row) => {
+    const days = daysUntilJalaliBirthday(row.contact.meta?.birth_date);
+    return days !== null && days >= 0 && days <= birthdayDays && normalizePhone(row.contact.phone);
+  });
+  const inactiveSegment = rows.filter((row) => (!row.lastDate || new Date(row.lastDate).getTime() < Date.now() - inactiveDays * 86400000) && normalizePhone(row.contact.phone));
+  const walletSegment = rows.filter((row) => {
+    const credit = Number(row.contact.meta?.wallet_credit ?? 0) || 0;
+    return credit > 0 && credit <= walletThresholdToman * 10 && normalizePhone(row.contact.phone);
+  });
 
   return (
     <div className="space-y-5">
@@ -102,7 +158,13 @@ export function CrmPage({ mode }: { mode: CrmMode }) {
         <input className="input pr-10" placeholder="جستجوی نام یا تلفن مشتری..." value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
 
-      {mode === "interactions" ? (
+      {mode === "segments" ? (
+        <div className="grid gap-4 lg:grid-cols-3">
+          <SegmentExportCard title="مشتریانی که تولدشان نزدیک است" value={birthdayDays} options={[7,14,30,60]} onChange={setBirthdayDays} rows={birthdaySegment.map((row) => ({ name: row.contact.name, phone: normalizePhone(row.contact.phone) }))} filename="birthday-segment.csv" emptyText="مشتری با تولد نزدیک یافت نشد" />
+          <SegmentExportCard title="مشتریان غیرفعال / بدون خرید اخیر" value={inactiveDays} options={[30,60,90,180]} onChange={setInactiveDays} rows={inactiveSegment.map((row) => ({ name: row.contact.name, phone: normalizePhone(row.contact.phone) }))} filename="inactive-customers.csv" emptyText="مشتری غیرفعال در این بازه یافت نشد" />
+          <SegmentExportCard title="اعتبار/کیف پول رو به اتمام" value={walletThresholdToman} options={[50000,100000,250000,500000]} onChange={setWalletThresholdToman} rows={walletSegment.map((row) => ({ name: row.contact.name, phone: normalizePhone(row.contact.phone) }))} filename="wallet-low-credit.csv" emptyText="داده‌ای یافت نشد" suffix="تومان" />
+        </div>
+      ) : mode === "interactions" ? (
         <InteractionsList interactions={data?.interactions ?? []} contacts={data?.contacts ?? []} />
       ) : (
         <div className="space-y-2">
@@ -132,6 +194,30 @@ export function CrmPage({ mode }: { mode: CrmMode }) {
       )}
 
       {interactionOpen && <InteractionModal contact={selectedContact} contacts={data?.contacts ?? []} onClose={() => { setInteractionOpen(false); setSelectedContact(null); qc.invalidateQueries({ queryKey: ["crm-overview"] }); }} />}
+    </div>
+  );
+}
+
+function SegmentExportCard({ title, value, options, onChange, rows, filename, emptyText, suffix = "روز" }: { title: string; value: number; options: number[]; onChange: (value: number) => void; rows: { name: string; phone: string | null }[]; filename: string; emptyText: string; suffix?: string }) {
+  const exportRows = rows.filter((row) => row.phone);
+  return (
+    <div className="rounded-[24px] border border-white/80 bg-white/90 p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h3 className="font-black text-slate-800">{title}</h3>
+          <p className="mt-1 text-xs text-slate-500">{toFaDigits(exportRows.length)} مشتری یافت شد</p>
+        </div>
+        <Download className="text-primary" size={20} />
+      </div>
+      <select className="input mb-3" value={value} onChange={(event) => onChange(Number(event.target.value))}>
+        {options.map((option) => <option key={option} value={option}>{toFaDigits(option)} {suffix}</option>)}
+      </select>
+      {exportRows.length === 0 ? <div className="rounded-2xl border border-dashed border-slate-200 p-4 text-center text-sm text-slate-400">{emptyText}</div> : (
+        <div className="mb-3 rounded-2xl bg-slate-50 p-3 text-xs text-slate-500">
+          نمونه: {exportRows.slice(0, 3).map((row) => `${row.name} (${row.phone})`).join("، ")}
+        </div>
+      )}
+      <button className="btn-primary w-full" disabled={exportRows.length === 0} onClick={() => downloadCsv(filename, exportRows)}>دانلود CSV</button>
     </div>
   );
 }
