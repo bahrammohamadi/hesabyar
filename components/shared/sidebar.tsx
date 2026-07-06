@@ -18,9 +18,20 @@ import {
   ArrowRightLeft, History, PiggyBank, Banknote, Coins, Gift, MessageCircle, Calendar, Target, Bell,
 } from "lucide-react";
 
-const NAV = [
-  { href: "/dashboard", label: "داشبورد", icon: LayoutDashboard },
-  { href: "/sales", label: "فروش", icon: ShoppingBag, highlight: true },
+export const NAV = [
+  { href: "/dashboard", label: "داشبورد", icon: LayoutDashboard, showInMobileBottomNav: true },
+  {
+    label: "فروش",
+    icon: ShoppingBag,
+    highlight: true,
+    showInMobileBottomNav: true,
+    mobileHref: "/sales",
+    children: [
+      { href: "/sales", label: "فاکتورهای فروش / POS", icon: ShoppingBag },
+      { href: "/sales/orders", label: "سفارش فروش", icon: ClipboardList },
+      { href: "/sales/returns", label: "مرجوعی فروش", icon: ArrowLeftRight },
+    ],
+  },
   {
     label: "خرید",
     icon: ShoppingBasket,
@@ -30,30 +41,29 @@ const NAV = [
     ],
   },
   {
-    label: "کالا و انبار",
-    icon: Package,
-    children: [
-      { href: "/products", label: "کالاها", icon: PackageSearch },
-      { href: "/products?action=new", label: "کالای جدید", icon: PlusIcon },
-      { href: "/settings/price-lists", label: "لیست قیمت‌ها", icon: Tags },
-      { href: "/inventory/movements", label: "گردش انبار", icon: ClipboardList },
-      { href: "/inventory/stock-card", label: "کاردکس کالا", icon: History },
-      { href: "/inventory/as-of", label: "موجودی به تاریخ", icon: Calendar },
-      { href: "/inventory/adjust", label: "تعدیل موجودی", icon: ArrowLeftRight },
-      { href: "/inventory/in", label: "ورود کالا", icon: ArrowDownToLine },
-      { href: "/inventory/out", label: "خروج کالا", icon: ArrowUpFromLine },
-      { href: "/inventory/waste", label: "ضایعات", icon: AlertCircle },
-    ],
-  },
-  {
     label: "اشخاص",
     icon: Users,
+    showInMobileBottomNav: true,
     children: [
       { href: "/contacts", label: "همه اشخاص", icon: Scale },
       { href: "/contacts/customers", label: "مشتریان", icon: ShoppingBag },
       { href: "/contacts/suppliers", label: "تأمین‌کنندگان", icon: Truck },
-      { href: "/contacts/new-customer", label: "مشتری جدید", icon: UserPlus },
-      { href: "/contacts/debtors", label: "بدهکاران", icon: ArrowDownCircle },
+      { href: "/contacts/debtors", label: "بدهکاران / بستانکاران", icon: ArrowDownCircle },
+    ],
+  },
+  {
+    label: "کالا و انبار",
+    icon: Package,
+    showInMobileBottomNav: true,
+    children: [
+      { href: "/products", label: "کالاها", icon: PackageSearch },
+      { href: "/inventory/movements", label: "گردش انبار", icon: ClipboardList },
+      { href: "/inventory/stock-card", label: "کاردکس کالا", icon: History },
+      { href: "/inventory/as-of", label: "موجودی به تاریخ", icon: Calendar },
+      { href: "/inventory/in", label: "ورود کالا", icon: ArrowDownToLine },
+      { href: "/inventory/out", label: "خروج کالا", icon: ArrowUpFromLine },
+      { href: "/inventory/adjust", label: "تعدیل موجودی", icon: ArrowLeftRight },
+      { href: "/inventory/waste", label: "ضایعات", icon: AlertCircle },
     ],
   },
   {
@@ -70,50 +80,23 @@ const NAV = [
     ],
   },
   {
-    label: "فروش پیشرفته",
-    icon: FileText,
-    children: [
-      { href: "/sales/orders", label: "سفارش فروش", icon: ClipboardList },
-      { href: "/sales/returns", label: "مرجوعی فروش", icon: ArrowLeftRight },
-    ],
-  },
-
-  {
-    label: "CRM و باشگاه مشتریان",
-    icon: Gift,
-    children: [
-      { href: "/crm", label: "نمای کلی CRM", icon: Users },
-      { href: "/crm/interactions", label: "تعاملات", icon: Activity },
-      { href: "/crm/segments", label: "گروه‌بندی", icon: Tags },
-      { href: "/crm/rfm", label: "تحلیل RFM", icon: Target },
-      { href: "/crm/automation", label: "اتوماسیون کمپین", icon: Bell },
-      { href: "/crm/loyalty", label: "امتیاز و وفاداری", icon: Gift },
-    ],
-  },
-
-  {
     label: "باشگاه مشتریان",
     icon: Gift,
     children: [
-      { href: "/loyalty", label: "نمای کلی باشگاه", icon: Gift },
-      { href: "/loyalty/points", label: "امتیاز مشتریان", icon: Percent },
-      { href: "/loyalty/wallet", label: "کیف پول و اعتبار", icon: PiggyBank },
+      { href: "/loyalty", label: "نمای کلی", icon: Gift },
+      { href: "/crm/segments", label: "سگمنت‌ها", icon: Tags },
+      { href: "/loyalty/points", label: "امتیاز و کیف‌پول", icon: Percent },
       { href: "/loyalty/campaigns", label: "کمپین‌ها", icon: MessageCircle },
-      { href: "/loyalty/settings", label: "تنظیمات باشگاه", icon: Settings },
     ],
   },
   {
     label: "گزارش‌ها",
     icon: BarChart3,
     children: [
-      { href: "/reports/overview-v2", label: "گزارش‌های جدید", icon: BarChart2 },
-      { href: "/reports/sales", label: "فروش", icon: TrendingUp },
-      { href: "/reports/products", label: "کالا", icon: Package },
+      { href: "/reports/overview-v2", label: "نمای کلی گزارش‌ها", icon: BarChart2 },
+      { href: "/reports/sellers", label: "عملکرد فروشندگان", icon: UserCheck },
       { href: "/reports/profitability", label: "سود کالا/فاکتور", icon: TrendingUp },
       { href: "/reports/customer-profitability", label: "مشتریان سودآور", icon: Users },
-      { href: "/reports/financial", label: "مالی", icon: Wallet },
-      { href: "/reports/contacts", label: "اشخاص", icon: Users },
-      { href: "/reports/sellers", label: "عملکرد فروشنده", icon: UserCheck },
       { href: "/activity", label: "فعالیت کاربران", icon: Activity },
     ],
   },
@@ -121,9 +104,11 @@ const NAV = [
     label: "تنظیمات",
     icon: Settings,
     children: [
-      { href: "/settings/catalog", label: "تنظیمات پایه", icon: Layers },
+      { href: "/settings", label: "داشبورد تنظیمات", icon: Settings },
       { href: "/settings/users", label: "کاربران و دسترسی‌ها", icon: UserCheck },
-      { href: "/settings/accounts", label: "حساب‌ها و دسته‌ها", icon: Landmark },
+      { href: "/settings/accounts", label: "مالی و حساب‌ها", icon: Landmark },
+      { href: "/settings/catalog", label: "کاتالوگ", icon: Layers },
+      { href: "/settings/price-lists", label: "لیست قیمت‌ها", icon: Tags },
     ],
   },
 ];
