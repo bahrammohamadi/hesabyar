@@ -78,7 +78,7 @@ function QuickActionButton({
         <div className="flex-1 min-w-0 pt-0.5">
           <div className="font-extrabold text-[12px] sm:text-[13px] text-slate-800 leading-tight">{label}</div>
           {description && <div className="text-[11px] text-slate-500 mt-1 leading-snug">{description}</div>}
-          {badge && <div className={cn("inline-flex mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full", style.bg, style.text)}>{badge}</div>}
+          {badge && <div className={cn("mt-1.5 hidden rounded-full px-2 py-0.5 text-[10px] font-bold lg:inline-flex", style.bg, style.text)}>{badge}</div>}
         </div>
       </div>
 
