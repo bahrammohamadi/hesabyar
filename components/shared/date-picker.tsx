@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useMemo, useState } from "react";
 import dayjs from "dayjs";
 import jalaliday from "jalaliday";
+import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { toEnDigits, toFaDigits } from "@/lib/utils/format";
 
 dayjs.extend(jalaliday);
@@ -14,51 +15,108 @@ interface DatePickerProps {
   placeholder?: string;
 }
 
-function jalaliToGregorianInput(value: string) {
-  const normalized = toEnDigits(value).replace(/[^0-9/]/g, "");
-  if (!/^\d{4}\/\d{2}\/\d{2}$/.test(normalized)) return "";
-  const [year, month, date] = normalized.split("/").map(Number);
-  try {
-    // @ts-ignore - jalaliday calendar typing is incomplete
-    return (dayjs() as any).calendar("jalali").set("year", year).set("month", month - 1).set("date", date).calendar("gregorian").format("YYYY-MM-DD");
-  } catch {
-    return "";
+const JALALI_MONTHS = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
+const WEEKDAYS = ["ش", "ی", "د", "س", "چ", "پ", "ج"];
+
+function parseJalaliText(value: string) {
+  const normalized = toEnDigits(value).replace(/-/g, "/");
+  const match = normalized.match(/^((?:13|14)\d{2})\/(\d{1,2})\/(\d{1,2})$/);
+  if (!match) return null;
+  return { year: Number(match[1]), month: Number(match[2]) - 1, day: Number(match[3]) };
+}
+
+function gregorianToJalali(value: string) {
+  if (!value) return null;
+  const parsedJalali = parseJalaliText(value);
+  if (parsedJalali) return parsedJalali;
+  const parsed = dayjs(value);
+  if (!parsed.isValid()) return null;
+  // @ts-ignore jalaliday calendar typing is incomplete
+  const j = parsed.calendar("jalali");
+  return { year: Number(j.format("YYYY")), month: j.month(), day: Number(j.format("D")) };
+}
+
+function jalaliToGregorian({ year, month, day }: { year: number; month: number; day: number }) {
+  // @ts-ignore jalaliday calendar typing is incomplete
+  return (dayjs() as any).calendar("jalali").set("year", year).set("month", month).set("date", day).calendar("gregorian").format("YYYY-MM-DD");
+}
+
+function daysInJalaliMonth(year: number, month: number) {
+  if (month <= 5) return 31;
+  if (month <= 10) return 30;
+  // نگه‌داشتن ۳۰ برای سال‌های کبیسه/غیرکبیسه باعث جلوگیری از حذف انتخاب کاربر می‌شود؛ تبدیل dayjs تاریخ نامعتبر را نرمال می‌کند.
+  return 30;
+}
+
+export function DatePicker({ value, onChange, label, placeholder = "انتخاب تاریخ" }: DatePickerProps) {
+  const initial = gregorianToJalali(value) ?? (() => {
+    // @ts-ignore
+    const today = (dayjs() as any).calendar("jalali");
+    return { year: Number(today.format("YYYY")), month: today.month(), day: Number(today.format("D")) };
+  })();
+  const [open, setOpen] = useState(false);
+  const [viewYear, setViewYear] = useState(initial.year);
+  const [viewMonth, setViewMonth] = useState(initial.month);
+
+  const selected = gregorianToJalali(value);
+  const days = daysInJalaliMonth(viewYear, viewMonth);
+  const years = useMemo(() => Array.from({ length: 101 }, (_, index) => viewYear - 50 + index), [viewYear]);
+  const display = selected ? `${toFaDigits(selected.year)}/${toFaDigits(String(selected.month + 1).padStart(2, "0"))}/${toFaDigits(String(selected.day).padStart(2, "0"))}` : "";
+
+  function choose(day: number) {
+    onChange(jalaliToGregorian({ year: viewYear, month: viewMonth, day }));
+    setOpen(false);
   }
-}
 
-function toNativeDateValue(value: string) {
-  if (!value) return "";
-  if (/^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
-  if (/^\d{4}\/\d{2}\/\d{2}$/.test(toEnDigits(value))) return jalaliToGregorianInput(value);
-  const parsed = dayjs(value);
-  return parsed.isValid() ? parsed.format("YYYY-MM-DD") : "";
-}
-
-function toJalaliDisplay(value: string) {
-  if (!value) return "";
-  if (/^\d{4}\/\d{2}\/\d{2}$/.test(toEnDigits(value))) return toFaDigits(value);
-  const parsed = dayjs(value);
-  return parsed.isValid() ? toFaDigits(parsed.calendar("jalali").format("YYYY/MM/DD")) : "";
-}
-
-export function DatePicker({ value, onChange, label, placeholder = "YYYY-MM-DD" }: DatePickerProps) {
-  const nativeValue = toNativeDateValue(value);
-  const jalaliDisplay = toJalaliDisplay(value);
+  function shiftMonth(delta: number) {
+    const nextMonth = viewMonth + delta;
+    if (nextMonth < 0) {
+      setViewYear((year) => year - 1);
+      setViewMonth(11);
+    } else if (nextMonth > 11) {
+      setViewYear((year) => year + 1);
+      setViewMonth(0);
+    } else {
+      setViewMonth(nextMonth);
+    }
+  }
 
   return (
-    <div className="w-full">
+    <div className="relative w-full">
       {label && <label className="label">{label}</label>}
-      <input
-        type="date"
-        dir="ltr"
-        className="input text-left"
-        value={nativeValue}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-      />
-      <p className="text-[10px] text-slate-400 mt-1">
-        {jalaliDisplay ? `نمایش شمسی: ${jalaliDisplay}` : "برای انتخاب تاریخ، روی آیکون تقویم فیلد کلیک کنید."}
-      </p>
+      <button type="button" className="input flex items-center justify-between text-right" onClick={() => setOpen((state) => !state)}>
+        <span className={display ? "font-medium text-slate-800" : "text-slate-400"}>{display || placeholder}</span>
+        <CalendarDays size={18} className="text-slate-400" />
+      </button>
+      {open && (
+        <div className="absolute z-[1500] mt-2 w-full min-w-[280px] rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl" dir="rtl">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <button type="button" onClick={() => shiftMonth(-1)} className="rounded-xl p-2 text-slate-500 hover:bg-slate-50"><ChevronRight size={18} /></button>
+            <div className="flex flex-1 gap-2">
+              <select className="input h-10 min-h-10 py-1 text-sm" value={viewMonth} onChange={(event) => setViewMonth(Number(event.target.value))}>
+                {JALALI_MONTHS.map((month, index) => <option key={month} value={index}>{month}</option>)}
+              </select>
+              <select className="input h-10 min-h-10 py-1 text-sm" value={viewYear} onChange={(event) => setViewYear(Number(event.target.value))}>
+                {years.map((year) => <option key={year} value={year}>{toFaDigits(year)}</option>)}
+              </select>
+            </div>
+            <button type="button" onClick={() => shiftMonth(1)} className="rounded-xl p-2 text-slate-500 hover:bg-slate-50"><ChevronLeft size={18} /></button>
+          </div>
+          <div className="mb-1 grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-slate-400">
+            {WEEKDAYS.map((day) => <div key={day}>{day}</div>)}
+          </div>
+          <div className="grid grid-cols-7 gap-1">
+            {Array.from({ length: days }, (_, index) => index + 1).map((day) => {
+              const active = selected?.year === viewYear && selected?.month === viewMonth && selected?.day === day;
+              return <button key={day} type="button" onClick={() => choose(day)} className={`h-9 rounded-xl text-sm font-bold transition ${active ? "bg-primary text-white" : "text-slate-700 hover:bg-primary/10 hover:text-primary"}`}>{toFaDigits(day)}</button>;
+            })}
+          </div>
+          <div className="mt-3 flex gap-2 border-t border-slate-100 pt-3">
+            <button type="button" className="btn-secondary h-10 min-h-10 flex-1 text-xs" onClick={() => { onChange(""); setOpen(false); }}>پاک کردن</button>
+            <button type="button" className="btn-secondary h-10 min-h-10 flex-1 text-xs" onClick={() => setOpen(false)}>بستن</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
