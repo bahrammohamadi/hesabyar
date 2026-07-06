@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
+import { normalizeSearchText } from "@/lib/utils/format";
 
 export interface ProductWithVariants {
   id: string;
@@ -52,7 +53,7 @@ export function useProducts(orgId: string | null, search = "") {
       const { data, error } = await query;
       if (error) throw error;
       const rows = (data as unknown as ProductWithVariants[]) ?? [];
-      const term = search.trim().toLowerCase();
+      const term = normalizeSearchText(search);
       if (!term) return rows;
       return rows.filter((product) => {
         const haystack = [
@@ -63,8 +64,8 @@ export function useProducts(orgId: string | null, search = "") {
           product.category?.name,
           product.brand?.name,
           ...product.product_variants.flatMap((variant) => [variant.sku, variant.barcode, variant.color, variant.size]),
-        ].filter(Boolean).join(" ").toLowerCase();
-        return haystack.includes(term);
+        ].filter(Boolean).join(" ");
+        return normalizeSearchText(haystack).includes(term);
       });
     },
   });

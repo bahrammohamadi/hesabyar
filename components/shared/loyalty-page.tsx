@@ -9,7 +9,7 @@ import { EmptyState, Modal, PageHeader, Spinner } from "@/components/shared/ui";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { EntityLink } from "@/components/shared/entity-link";
 import { PhoneLink } from "@/components/shared/phone-link";
-import { formatToman, toEnDigits, toFaDigits, toJalali, tomanToRial } from "@/lib/utils/format";
+import { formatToman, normalizeSearchText, toEnDigits, toFaDigits, toJalali, tomanToRial } from "@/lib/utils/format";
 import { logActivity } from "@/lib/utils/activity-log";
 
 type LoyaltyMode = "overview" | "points" | "wallet" | "campaigns" | "settings";
@@ -108,9 +108,9 @@ export function LoyaltyPage({ mode }: { mode: LoyaltyMode }) {
         };
       })
       .filter((row) => {
-        const t = search.trim().toLowerCase();
+        const t = normalizeSearchText(search);
         if (!t) return true;
-        return `${row.contact.name} ${row.contact.phone ?? ""}`.toLowerCase().includes(t);
+        return normalizeSearchText(`${row.contact.name} ${row.contact.phone ?? ""}`).includes(t);
       })
       .sort((a, b) => (mode === "wallet" ? b.walletCredit - a.walletCredit : b.points - a.points));
   }, [data, search, mode]);

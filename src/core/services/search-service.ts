@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
+import { normalizeSearchText } from "@/lib/utils/format";
 
 export type GlobalSearchResultType = "contact" | "product" | "document";
 
@@ -14,7 +15,7 @@ export interface GlobalSearchResult {
 }
 
 export async function globalSearch(query: string, limit = 20): Promise<GlobalSearchResult[]> {
-  const term = query.trim();
+  const term = normalizeSearchText(query);
   if (!term) return [];
 
   const supabase = createClient();

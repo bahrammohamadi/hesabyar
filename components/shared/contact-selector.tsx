@@ -10,6 +10,7 @@ import { Search, User, X, UserPlus } from "lucide-react";
 import { PhoneLink } from "@/components/shared/phone-link";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import type { ContactType } from "@/types/db";
+import { normalizeSearchText } from "@/lib/utils/format";
 
 export interface SelectableContact {
   id: string;
@@ -63,10 +64,10 @@ export function ContactSelector({
 
   const filtered = useMemo(() => {
     if (!contacts) return [];
-    const t = term.trim().toLowerCase();
+    const t = normalizeSearchText(term);
     if (!t) return contacts.slice(0, 200);
     return contacts
-      .filter((c) => `${c.name} ${c.phone ?? ""}`.toLowerCase().includes(t))
+      .filter((c) => normalizeSearchText(`${c.name} ${c.phone ?? ""}`).includes(t))
       .slice(0, 200);
   }, [contacts, term]);
 
