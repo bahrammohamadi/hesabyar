@@ -18,7 +18,7 @@ export default function ProductsPage() {
   const searchParams = useSearchParams();
   const autoOpenCreateRef = useRef(false);
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState<"newest" | "name_asc" | "name_desc" | "code_asc" | "code_desc" | "stock_high" | "stock_low" | "price_high" | "price_low">("newest");
+  const [sortBy, setSortBy] = useState<"newest" | "name_asc" | "name_desc" | "code_asc" | "code_desc" | "stock_high" | "stock_low" | "price_high" | "price_low">("code_desc");
   const { data: products, isLoading } = useProducts(orgId, search);
   const sortedProducts = [...(products ?? [])].sort((a, b) => {
     const stockA = a.product_variants.reduce((sum, variant) => sum + variant.stock_qty, 0);
@@ -98,11 +98,11 @@ export default function ProductsPage() {
           />
         </div>
         <select className="input sm:w-48" value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)}>
-          <option value="newest">جدیدترین</option>
+          <option value="code_desc">جدیدترین بر اساس کد کالا</option>
+          <option value="code_asc">قدیمی‌ترین بر اساس کد کالا</option>
+          <option value="newest">جدیدترین بر اساس تاریخ ثبت</option>
           <option value="name_asc">نام A-Z</option>
           <option value="name_desc">نام Z-A</option>
-          <option value="code_asc">کد کالا صعودی</option>
-          <option value="code_desc">کد کالا نزولی</option>
           <option value="stock_high">موجودی بیشتر</option>
           <option value="stock_low">موجودی کمتر</option>
           <option value="price_high">قیمت بیشتر</option>
@@ -127,6 +127,7 @@ export default function ProductsPage() {
           {sortedProducts.map((p) => {
             const totalStock = p.product_variants.reduce((s, v) => s + v.stock_qty, 0);
             const low = totalStock <= p.low_stock_threshold;
+            const displaySalePrice = p.base_sale_price || p.product_variants.find((variant) => variant.sale_price)?.sale_price || 0;
             return (
               <div
                 key={p.id}
@@ -166,6 +167,9 @@ export default function ProductsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
+                    <span className="badge bg-primary/10 text-primary">
+                      قیمت فروش: {displaySalePrice ? formatToman(displaySalePrice, false) : "—"}
+                    </span>
                     <span
                       className={`badge ${
                         low ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"
