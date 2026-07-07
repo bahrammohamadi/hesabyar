@@ -12,6 +12,7 @@ import { EntityLink } from "@/components/shared/entity-link";
 import { toEnDigits, toFaDigits, toJalali } from "@/lib/utils/format";
 import { Loader2, Package, Plus } from "lucide-react";
 import { logActivity } from "@/lib/utils/activity-log";
+import { QuantityStepper } from "@/components/shared/quantity-stepper";
 
 type InventoryMode = "movements" | "in" | "out" | "adjust" | "waste";
 
@@ -145,7 +146,7 @@ export function InventoryOperationPage({ mode }: { mode: InventoryMode }) {
                 <EntityActionMenu type="product" id={selected.product_id} label={selected.product_name} />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div><label className="label">{mode === "adjust" ? "موجودی واقعی" : "تعداد"}</label><input className="input" inputMode="numeric" value={qty} onChange={(e) => setQty(e.target.value)} /></div>
+                <div><label className="label">{mode === "adjust" ? "موجودی واقعی" : "تعداد"}</label><QuantityStepper value={qty || 1} min={mode === "adjust" ? 0 : 1} onChange={(value) => setQty(String(value))} /></div>
                 <div><label className="label">توضیح</label><input className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
               </div>
               {error && <div className="rounded-2xl border border-rose-100 bg-rose-50 p-3 text-sm text-rose-700">{error}</div>}

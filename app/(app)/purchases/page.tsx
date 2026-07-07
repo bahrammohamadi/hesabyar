@@ -9,6 +9,7 @@ import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
 import { DataTable, type Column } from "@/src/shared/ui";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
+import { QuantityStepper } from "@/components/shared/quantity-stepper";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { formatToman, toFaDigits, toEnDigits, tomanToRial, rialToToman, toJalali } from "@/lib/utils/format";
@@ -293,7 +294,7 @@ function PurchaseModal({ orgId, onClose }: { orgId: string | null; onClose: () =
                       <input className="input h-10 min-h-10 text-left text-sm" inputMode="numeric" value={String(rialToToman(it.unit_price))} onChange={(e) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, unit_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x)))} />
                       <input className="input h-10 min-h-10 text-left text-sm" inputMode="numeric" value={String(rialToToman(it.sale_price))} onChange={(e) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, sale_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x)))} />
                       <span className={(it.sale_price - it.unit_price) >= 0 ? "text-center text-xs font-bold text-emerald-600" : "text-center text-xs font-bold text-rose-600"}>{it.unit_price > 0 ? toFaDigits(Math.round(((it.sale_price - it.unit_price) / it.unit_price) * 100)) : "۰"}٪</span>
-                      <input className="input h-10 min-h-10 text-center text-sm" inputMode="numeric" value={String(it.qty)} onChange={(e) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, qty: Number(toEnDigits(e.target.value)) || 0 } : x)))} />
+                      <QuantityStepper value={it.qty} onChange={(qty) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, qty } : x)))} />
                       <span className="text-left text-sm font-black text-slate-800 tabular-nums">{formatToman(it.unit_price * it.qty, false)}</span>
                       <button onClick={() => setItems((p) => p.filter((_, i) => i !== idx))} className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-rose-400 hover:bg-rose-50 hover:text-rose-600"><Trash2 size={16} /></button>
                     </div>
