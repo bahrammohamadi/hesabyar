@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
@@ -8,6 +8,7 @@ import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, Modal, Spinner } from "@/components/shared/ui";
 import { Plus, Loader2, Tag, Landmark, FolderTree, Trash2, Pencil, Check, X, Users, Shield, Palette, Building2, SlidersHorizontal, Sparkles } from "lucide-react";
 import { applyTheme, DEFAULT_THEME, THEMES, THEME_STORAGE_KEY, type ThemeId } from "@/lib/theme";
+import { PERMISSION_TREE, uniquePermissions, type PermissionTreeItem } from "@/lib/access/permission-tree";
 
 export function SettingsContent({ section = "all" }: { section?: "all" | "catalog" | "accounts" | "users" }) {
   const { orgId, branchId } = useOrg();
@@ -418,16 +419,7 @@ function AccountModal({
 // ==============================================================
 // مدیریت کاربران و دسترسی‌ها
 // ==============================================================
-const PERMISSION_GROUPS = [
-  { key: "sales", label: "فروش", permissions: ["sales.view", "sales.create"] },
-  { key: "purchases", label: "خرید", permissions: ["purchases.view", "purchases.create"] },
-  { key: "inventory", label: "انبار", permissions: ["inventory.view", "inventory.adjust"] },
-  { key: "contacts", label: "مشتری", permissions: ["contacts.view", "contacts.edit", "contacts.call", "crm.create"] },
-  { key: "products", label: "کالا", permissions: ["products.view", "products.edit", "products.update_price"] },
-  { key: "finance", label: "مالی", permissions: ["finance.view", "finance.create"] },
-  { key: "reports", label: "گزارش", permissions: ["reports.view"] },
-  { key: "settings", label: "تنظیمات", permissions: ["settings.manage"] },
-];
+const PERMISSION_GROUPS = PERMISSION_TREE.map((group) => ({ key: group.key, label: group.label, permissions: group.permissions }));
 
 const ROLE_LABELS: Record<string, string> = {
   owner: "مدیر کل",
@@ -449,11 +441,69 @@ type ManagedUser = {
 
 function defaultPermissions(role: string) {
   if (role === "owner") return ["*"];
-  if (role === "manager") return PERMISSION_GROUPS.flatMap((g) => g.permissions);
+  if (role === "manager") return uniquePermissions();
   if (role === "cashier") return ["contacts.view", "contacts.call", "sales.view", "sales.create", "products.view", "finance.create"];
   if (role === "inventory") return ["products.view", "products.edit", "inventory.view", "inventory.adjust"];
   if (role === "accountant") return ["contacts.view", "sales.view", "purchases.view", "finance.view", "finance.create", "reports.view"];
   return [];
+}
+
+
+function TreeCheckbox({ checked, indeterminate, disabled, onChange }: { checked: boolean; indeterminate?: boolean; disabled?: boolean; onChange: (checked: boolean) => void }) {
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (ref.current) ref.current.indeterminate = Boolean(indeterminate && !checked);
+  }, [checked, indeterminate]);
+  return <input ref={ref} type="checkbox" checked={checked} disabled={disabled} onChange={(event) => onChange(event.target.checked)} />;
+}
+
+function hasAll(perms: string[], required: string[]) {
+  return required.length === 0 || required.every((permission) => perms.includes("*") || perms.includes(permission));
+}
+
+function togglePermissions(current: string[], permissions: string[], checked: boolean) {
+  const next = new Set(current.filter((permission) => permission !== "*"));
+  permissions.forEach((permission) => checked ? next.add(permission) : next.delete(permission));
+  return Array.from(next);
+}
+
+function PermissionTreeEditor({ value, disabled, onChange }: { value: string[]; disabled?: boolean; onChange: (next: string[]) => void }) {
+  const effective = value.includes("*") ? uniquePermissions() : value;
+  function renderGroup(group: PermissionTreeItem) {
+    const childPermissions = uniquePermissions(group.children ?? []);
+    const groupPermissions = Array.from(new Set([...group.permissions, ...childPermissions]));
+    const checkedChildren = (group.children ?? []).filter((child) => hasAll(effective, child.permissions)).length;
+    const checked = hasAll(effective, groupPermissions);
+    const indeterminate = checkedChildren > 0 && !checked;
+    return (
+      <div key={group.key} className="rounded-2xl border border-slate-100 bg-white p-3">
+        <label className="flex cursor-pointer items-center justify-between gap-3">
+          <span className="font-extrabold text-slate-800">{group.label}</span>
+          <TreeCheckbox checked={checked} indeterminate={indeterminate} disabled={disabled} onChange={(nextChecked) => onChange(togglePermissions(effective, groupPermissions, nextChecked))} />
+        </label>
+        {group.warning && <div className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-700">⚠️ {group.warning}</div>}
+        {group.recommendedWith?.length ? <div className="mt-2 text-[11px] text-slate-400">پیشنهاد پیش‌نیاز: {group.recommendedWith.join("، ")}</div> : null}
+        {group.children?.length ? (
+          <div className="mt-3 grid gap-2 md:grid-cols-2">
+            {group.children.map((child) => {
+              const childChecked = hasAll(effective, child.permissions);
+              return (
+                <label key={child.key} className="flex cursor-pointer items-start gap-2 rounded-xl bg-slate-50 px-3 py-2 text-sm">
+                  <TreeCheckbox checked={childChecked} disabled={disabled} onChange={(nextChecked) => onChange(togglePermissions(effective, child.permissions, nextChecked))} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-medium text-slate-700">{child.label}</span>
+                    {child.warning && <span className="mt-1 block text-[11px] leading-5 text-amber-700">⚠️ {child.warning}</span>}
+                    {child.recommendedWith?.length ? <span className="mt-1 block text-[11px] text-slate-400">پیشنهاد: {child.recommendedWith.join("، ")}</span> : null}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+  return <div className="space-y-3">{PERMISSION_TREE.map(renderGroup)}</div>;
 }
 
 function UsersAccessManager() {
@@ -528,27 +578,7 @@ function UsersAccessManager() {
                     </button>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {PERMISSION_GROUPS.map((group) => {
-                    const checked = group.permissions.every((permission) => perms.includes(permission) || perms.includes("*"));
-                    return (
-                      <label key={group.key} className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-sm cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          disabled={savingId === u.id || u.role === "owner"}
-                          onChange={(e) => {
-                            const next = new Set(perms.filter((p) => p !== "*"));
-                            group.permissions.forEach((permission) => e.target.checked ? next.add(permission) : next.delete(permission));
-                            updateUser(u, { permissions: Array.from(next) });
-                          }}
-                        />
-                        <Shield size={14} className="text-slate-400" />
-                        {group.label}
-                      </label>
-                    );
-                  })}
-                </div>
+                <PermissionTreeEditor value={perms} disabled={savingId === u.id || u.role === "owner"} onChange={(permissions) => updateUser(u, { permissions })} />
               </div>
             );
           })}
@@ -598,26 +628,7 @@ function CreateUserModal({ onClose }: { onClose: () => void }) {
         </div>
         <div>
           <div className="text-sm font-medium text-slate-700 mb-2">دسترسی‌ها</div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {PERMISSION_GROUPS.map((group) => {
-              const checked = group.permissions.every((permission) => permissions.includes(permission) || permissions.includes("*"));
-              return (
-                <label key={group.key} className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-sm cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    disabled={role === "owner"}
-                    onChange={(e) => {
-                      const next = new Set(permissions.filter((p) => p !== "*"));
-                      group.permissions.forEach((permission) => e.target.checked ? next.add(permission) : next.delete(permission));
-                      setPermissions(Array.from(next));
-                    }}
-                  />
-                  {group.label}
-                </label>
-              );
-            })}
-          </div>
+          <PermissionTreeEditor value={permissions} disabled={role === "owner"} onChange={setPermissions} />
         </div>
         {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
         <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving && <Loader2 className="animate-spin" size={18} />} ساخت کاربر</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
