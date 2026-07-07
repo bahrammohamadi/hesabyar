@@ -278,6 +278,14 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
   const paidWalletRial = Math.min(requestedWalletRial, walletCredit ?? 0, Math.max(0, total - paidCashRial - paidCardRial));
   const credit = Math.max(0, total - paidCashRial - paidCardRial - paidWalletRial);
 
+  useEffect(() => {
+    if (!isCreditSale) {
+      setPaidCash(String(rialToToman(total)));
+      setPaidCard("");
+      setPaidWallet("");
+    }
+  }, [isCreditSale, total]);
+
   function resetForNextSale() {
     setCart([]);
     setCustomer(null);
@@ -486,6 +494,10 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
               </div>
               {discountRial > 0 && <div className="text-xs text-slate-400 mt-1">معادل تخفیف: {formatToman(discountRial)}</div>}
             </div>
+            <label className="sm:col-span-2 flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+              <input type="checkbox" checked={isCreditSale} onChange={(e) => setIsCreditSale(e.target.checked)} />
+              این فروش نسیه است / پرداخت خودکار نقدی را غیرفعال کن
+            </label>
             <div>
               <label className="label">دریافت نقدی (تومان)</label>
               <input className="input" inputMode="numeric" value={paidCash} onChange={(e) => setPaidCash(e.target.value)} />

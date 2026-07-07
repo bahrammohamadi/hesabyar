@@ -240,6 +240,14 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
   const paidWalletRial = Math.min(requestedWalletRial, walletCredit ?? 0, Math.max(0, total - paidCashRial - paidCardRial));
   const credit = Math.max(0, total - paidCashRial - paidCardRial - paidWalletRial);
 
+  useEffect(() => {
+    if (!isCreditSale) {
+      setPaidCash(String(rialToToman(total)));
+      setPaidCard("");
+      setPaidWallet("");
+    }
+  }, [isCreditSale, total]);
+
   function resetForNextSale() {
     setCart([]);
     setCustomer(null);
