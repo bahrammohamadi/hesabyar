@@ -123,7 +123,7 @@ export default function ProductsPage() {
           }
         />
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-1.5 md:space-y-1">
           {sortedProducts.map((p) => {
             const totalStock = p.product_variants.reduce((s, v) => s + v.stock_qty, 0);
             const low = totalStock <= p.low_stock_threshold;
@@ -138,12 +138,12 @@ export default function ProductsPage() {
                 onKeyDown={(event) => {
                   if (event.key === "Enter") openProduct(p.id, p.name);
                 }}
-                className="card p-4 cursor-pointer border-white/80 bg-white/90 shadow-sm shadow-slate-900/[0.03] transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-slate-900/[0.06]"
+                className="card cursor-pointer border-white/80 bg-white/90 p-3 shadow-sm shadow-slate-900/[0.03] transition hover:border-primary/30 hover:bg-primary/[0.02] md:min-h-[62px] md:px-3 md:py-2"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3 min-w-0">
-                    <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-sm">
-                      <Package size={21} />
+                <div className="flex items-start justify-between gap-3 md:items-center">
+                  <div className="flex min-w-0 items-start gap-3 md:items-center">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-sm md:h-9 md:w-9">
+                      <Package size={19} />
                     </div>
                     <div className="min-w-0">
                       <Link
@@ -158,7 +158,7 @@ export default function ProductsPage() {
                       >
                         {p.name}
                       </Link>
-                      <div className="text-xs text-slate-400 mt-0.5 flex flex-wrap gap-x-2">
+                      <div className="mt-0.5 flex gap-x-2 truncate text-xs text-slate-400 md:flex-nowrap">
                         {p.code && <span className="font-mono text-primary">{p.code}</span>}
                         {p.brand?.name && <span>برند: {p.brand.name}</span>}
                         {p.category?.name && <span>دسته: {p.category.name}</span>}
@@ -166,7 +166,7 @@ export default function ProductsPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex shrink-0 items-center gap-2">
                     <span className="badge bg-primary/10 text-primary">
                       قیمت فروش: {displaySalePrice ? formatToman(displaySalePrice, false) : "—"}
                     </span>
@@ -193,12 +193,9 @@ export default function ProductsPage() {
                 </div>
 
                 {p.product_variants.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2">
+                  <div className="mt-2 flex flex-wrap gap-2 md:hidden">
                     {p.product_variants.map((v) => (
-                      <span
-                        key={v.id}
-                        className="text-xs bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1 text-slate-600"
-                      >
+                      <span key={v.id} className="rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-1 text-xs text-slate-600">
                         {[v.color, v.size].filter(Boolean).join(" / ") || "ساده"}
                         {" — "}
                         {toFaDigits(v.stock_qty)} عدد

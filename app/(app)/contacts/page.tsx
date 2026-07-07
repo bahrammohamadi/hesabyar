@@ -205,7 +205,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
       ) : !contacts || contacts.length === 0 ? (
         <EmptyState title="هنوز شخصی ثبت نشده" description="مشتری یا تامین‌کننده اضافه کنید." />
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-1.5 md:space-y-1">
           {filtered.map((c) => {
             const bal = balances?.[c.id] ?? 0;
             return (
@@ -218,10 +218,10 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
                 onKeyDown={(event) => {
                   if (event.key === "Enter") openContact(c.id, c.name);
                 }}
-                className="card p-4 flex items-center justify-between gap-3 cursor-pointer border-white/80 bg-white/90 shadow-sm shadow-slate-900/[0.03] transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-slate-900/[0.06]"
+                className="card flex cursor-pointer items-center justify-between gap-3 border-white/80 bg-white/90 p-3 shadow-sm shadow-slate-900/[0.03] transition hover:border-primary/30 hover:bg-primary/[0.02] md:min-h-[58px] md:px-3 md:py-2"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-11 h-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 text-base font-black shadow-sm">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-sm font-black text-primary shadow-sm md:h-9 md:w-9">
                     {(c.name || "؟").trim().slice(0, 1)}
                   </div>
                   <div className="min-w-0">
@@ -237,14 +237,14 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
                     >
                       {c.name || "بدون نام"}
                     </Link>
-                    <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5 flex-wrap">
+                    <div className="mt-0.5 flex items-center gap-2 text-xs text-slate-400 md:flex-nowrap md:truncate">
                       {(c as any).code && <span className="font-mono text-primary">{(c as any).code}</span>}
                       <span className="badge bg-slate-100 text-slate-500">{TYPE_LABEL[c.type]}</span>
                       {c.phone && <span onClick={(event) => event.stopPropagation()}><PhoneLink phone={c.phone} className="text-xs" /></span>}
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 shrink-0">
+                <div className="flex shrink-0 items-center gap-2 md:gap-2">
                   <div className="text-left">
                     {bal !== 0 && (
                       <span
@@ -265,7 +265,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
                       event.stopPropagation();
                       openEntity("contact", c.id, { mode: "edit", context: "workspace", title: c.name });
                     }}
-                    className="text-slate-400 hover:text-primary p-1"
+                    className="p-1 text-slate-400 hover:text-primary"
                   >
                     <Pencil size={17} />
                   </button>
@@ -274,7 +274,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
                       event.stopPropagation();
                       handleDelete(c.id);
                     }}
-                    className="text-slate-400 hover:text-rose-600 p-1"
+                    className="p-1 text-slate-400 hover:text-rose-600"
                   >
                     <Trash2 size={17} />
                   </button>
