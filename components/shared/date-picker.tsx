@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import jalaliday from "jalaliday";
 import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
@@ -55,6 +55,7 @@ export function DatePicker({ value, onChange, label, placeholder = "انتخاب
     return { year: Number(today.format("YYYY")), month: today.month(), day: Number(today.format("D")) };
   })();
   const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState("");
   const [viewYear, setViewYear] = useState(initial.year);
   const [viewMonth, setViewMonth] = useState(initial.month);
 
@@ -63,6 +64,18 @@ export function DatePicker({ value, onChange, label, placeholder = "انتخاب
   const firstDayOffset = (dayjs(jalaliToGregorian({ year: viewYear, month: viewMonth, day: 1 })).day() + 1) % 7;
   const years = useMemo(() => Array.from({ length: 101 }, (_, index) => viewYear - 50 + index), [viewYear]);
   const display = selected ? `${toFaDigits(selected.year)}/${toFaDigits(String(selected.month + 1).padStart(2, "0"))}/${toFaDigits(String(selected.day).padStart(2, "0"))}` : "";
+
+  useEffect(() => {
+    if (open) setDraft(display);
+  }, [open, display]);
+
+  function applyTypedDate(text: string) {
+    const parsed = parseJalaliText(text);
+    if (!parsed) return;
+    setViewYear(parsed.year);
+    setViewMonth(parsed.month);
+    onChange(jalaliToGregorian(parsed));
+  }
 
   function choose(day: number) {
     onChange(jalaliToGregorian({ year: viewYear, month: viewMonth, day }));
@@ -91,6 +104,19 @@ export function DatePicker({ value, onChange, label, placeholder = "انتخاب
       </button>
       {open && (
         <div className="absolute z-[1500] mt-2 w-full min-w-[280px] rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl" dir="rtl">
+          <div className="mb-3">
+            <input
+              className="input h-10 min-h-10 text-center text-sm"
+              dir="ltr"
+              placeholder="۱۴۰۲/۰۱/۰۱"
+              value={draft}
+              onChange={(event) => {
+                setDraft(event.target.value);
+                applyTypedDate(event.target.value);
+              }}
+            />
+            <div className="mt-1 text-[10px] text-slate-400">تاریخ را می‌توانید تایپ کنید یا از تقویم انتخاب کنید.</div>
+          </div>
           <div className="mb-3 flex items-center justify-between gap-2">
             <button type="button" onClick={() => shiftMonth(-1)} className="rounded-xl p-2 text-slate-500 hover:bg-slate-50"><ChevronRight size={18} /></button>
             <div className="flex flex-1 gap-2">
