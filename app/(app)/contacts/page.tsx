@@ -26,7 +26,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<"" | ContactType>("");
   const [balanceFilter, setBalanceFilter] = useState<"" | "debtors" | "creditors">("");
-  const [sortBy, setSortBy] = useState<"name_asc" | "name_desc" | "balance_high" | "balance_low" | "newest">("newest");
+  const [sortBy, setSortBy] = useState<"name_asc" | "name_desc" | "code_asc" | "code_desc" | "balance_high" | "balance_low" | "newest">("newest");
   const qc = useQueryClient();
   const { openEntity } = usePanelManager();
   const autoOpenCreateRef = useRef(false);
@@ -99,6 +99,8 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
       const balA = balances?.[a.id] ?? 0;
       const balB = balances?.[b.id] ?? 0;
       if (sortBy === "name_desc") return (b.name || "").localeCompare(a.name || "", "fa");
+      if (sortBy === "code_asc") return String((a as any).code ?? "").localeCompare(String((b as any).code ?? ""), "fa", { numeric: true });
+      if (sortBy === "code_desc") return String((b as any).code ?? "").localeCompare(String((a as any).code ?? ""), "fa", { numeric: true });
       if (sortBy === "balance_high") return Math.abs(balB) - Math.abs(balA);
       if (sortBy === "balance_low") return Math.abs(balA) - Math.abs(balB);
       if (sortBy === "newest") return new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime();
@@ -191,6 +193,8 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
           <option value="newest">جدیدترین</option>
           <option value="name_asc">نام A-Z</option>
           <option value="name_desc">نام Z-A</option>
+          <option value="code_asc">کد صعودی</option>
+          <option value="code_desc">کد نزولی</option>
           <option value="balance_high">مانده بیشتر</option>
           <option value="balance_low">مانده کمتر</option>
         </select>
