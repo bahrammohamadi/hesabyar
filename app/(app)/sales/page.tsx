@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, type MouseEvent } from "react";
+import { useEffect, useState, useMemo, type MouseEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
@@ -168,6 +168,7 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
   const [paidCash, setPaidCash] = useState("");
   const [paidCard, setPaidCard] = useState("");
   const [paidWallet, setPaidWallet] = useState("");
+  const [isCreditSale, setIsCreditSale] = useState(false);
   const [accountId, setAccountId] = useState("");
   const [priceListId, setPriceListId] = useState("");
   const [saving, setSaving] = useState(false);
@@ -285,6 +286,7 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
     setPaidCash("");
     setPaidCard("");
     setPaidWallet("");
+    setIsCreditSale(false);
     setAccountId("");
     setPriceListId("");
     setSaving(false);
