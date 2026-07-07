@@ -152,7 +152,10 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
   const initialTab = typeof panel.props?.initialTab === "string" ? panel.props.initialTab : undefined;
 
   useEffect(() => {
-    if (mode === "create") setProductForm(emptyProductForm());
+    if (mode === "create") {
+      const initialName = typeof panel.props?.initialName === "string" ? panel.props.initialName : "";
+      setProductForm({ ...emptyProductForm(), name: initialName });
+    }
     else if (product) {
       setProductForm(formFromProduct(product));
       setPriceForm({
@@ -162,7 +165,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
         reason: "",
       });
     }
-  }, [mode, product]);
+  }, [mode, product, panel.props?.initialName]);
 
   useEffect(() => {
     setBatchVariantForms([emptyVariantForm(), emptyVariantForm()]);
@@ -259,7 +262,12 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
           setFormError("سازمان فعال یافت نشد.");
           return;
         }
-        const variantRows = batchRowsToSave();
+        const meaningfulVariantRows = batchRowsToSave();
+        const variantRows = meaningfulVariantRows.length > 0 ? meaningfulVariantRows : [{
+          ...emptyVariantForm(),
+          purchasePriceToman: productForm.basePurchasePriceToman,
+          salePriceToman: productForm.baseSalePriceToman,
+        }];
         const created = await createProduct.mutateAsync({
           org_id: orgId,
           branch_id: branchId,
@@ -275,8 +283,8 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
           base_sale_price_toman: productForm.baseSalePriceToman,
           low_stock_threshold: productForm.lowStockThreshold ?? 3,
         });
-        const savedVariants = variantRows.length > 0 ? await saveVariantRows(created.id, variantRows) : [];
-        if (savedVariants.length > 0) {
+        const savedVariants = await saveVariantRows(created.id, variantRows);
+        if (savedVariants.length > 0 && meaningfulVariantRows.length > 0) {
           toast({ title: `${toPersianDigits(savedVariants.length)} واریانت اضافه شد`, tone: "success" });
         }
         if (typeof panel.props?.resultRequestId === "string") {
