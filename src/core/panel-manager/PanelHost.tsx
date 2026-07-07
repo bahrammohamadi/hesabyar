@@ -30,13 +30,24 @@ export function PanelHost() {
 
     const originalBodyOverflow = document.body.style.overflow;
     const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalBodyPosition = document.body.style.position;
+    const originalBodyTop = document.body.style.top;
+    const originalBodyWidth = document.body.style.width;
+    const scrollY = window.scrollY;
 
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
 
     return () => {
       document.body.style.overflow = originalBodyOverflow;
       document.documentElement.style.overflow = originalHtmlOverflow;
+      document.body.style.position = originalBodyPosition;
+      document.body.style.top = originalBodyTop;
+      document.body.style.width = originalBodyWidth;
+      window.scrollTo(0, scrollY);
     };
   }, [stack.length > 0]);
 
@@ -92,7 +103,7 @@ export function PanelHost() {
   if (stack.length === 0 || !mounted) return null;
 
   return createPortal(
-    <div data-panel-host-root="true" className="fixed inset-0 isolate" style={{ zIndex: "var(--z-panel)" }} aria-live="polite">
+    <div data-panel-host-root="true" className="fixed inset-0 isolate overflow-hidden overscroll-contain" style={{ zIndex: "var(--z-panel)", height: "100dvh" }} aria-live="polite">
       <button
         className="absolute inset-0 bg-slate-950/30 backdrop-blur-[1px] pointer-events-auto"
         style={{ zIndex: 0 }}
@@ -108,8 +119,10 @@ export function PanelHost() {
             role="dialog"
             aria-modal={isTop}
             aria-hidden={!isTop}
+            onWheel={(event) => event.stopPropagation()}
+            onTouchMove={(event) => event.stopPropagation()}
             className={cn(
-              "pointer-events-auto fixed bottom-0 top-0 right-0 overflow-hidden border-l border-slate-200 bg-white shadow-2xl transition-all duration-200 ease-out",
+              "pointer-events-auto fixed bottom-0 top-0 right-0 overscroll-contain overflow-hidden border-l border-slate-200 bg-white shadow-2xl transition-all duration-200 ease-out",
               isTop ? "translate-x-0 opacity-100" : "translate-x-6 opacity-75 pointer-events-none"
             )}
             style={{
@@ -117,6 +130,8 @@ export function PanelHost() {
               right: `${offset}px`,
               width: "min(100vw, 560px)",
               maxWidth: "100vw",
+              height: "100dvh",
+              maxHeight: "100dvh",
               transform: isTop ? `translateX(0)` : `translateX(${offset + 12}px)`,
             }}
           >

@@ -7,8 +7,8 @@ import { IconButton } from "./IconButton";
 
 export function PanelShell({ title, subtitle, icon, onClose, actions, footer, children, className }: { title: string; subtitle?: ReactNode; icon?: ReactNode; onClose: () => void; actions?: ReactNode; footer?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <div className={cn("flex h-full flex-col bg-card text-card-foreground", className)} dir="rtl">
-      <header className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
+    <div className={cn("flex h-full min-h-0 flex-col bg-card text-card-foreground", className)} dir="rtl">
+      <header className="shrink-0 flex items-center justify-between gap-3 border-b border-border px-5 py-4">
         <div className="flex min-w-0 items-center gap-3">
           {icon && <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">{icon}</div>}
           <div className="min-w-0">
@@ -21,7 +21,7 @@ export function PanelShell({ title, subtitle, icon, onClose, actions, footer, ch
           <IconButton onClick={onClose} aria-label="بستن پنل"><X size={20} /></IconButton>
         </div>
       </header>
-      <main className="flex-1 overflow-y-auto p-5">{children}</main>
+      <main className="min-h-0 flex-1 overscroll-contain overflow-y-auto p-5" style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-y" }}>{children}</main>
       {footer && <footer className="border-t border-border bg-card/95 px-5 py-4 backdrop-blur">{footer}</footer>}
     </div>
   );
