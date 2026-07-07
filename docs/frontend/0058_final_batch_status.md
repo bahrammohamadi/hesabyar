@@ -16,3 +16,14 @@ components/shared/inventory-operation-page.tsx
 ```
 
 سبد فروش POS از قبل دکمه‌های + و - داشت و حفظ شد.
+
+## بخش ۵ — پیش‌فرض پرداخت نقدی
+
+در `PosModal` و `QuickSaleModal` پرداخت نقدی به‌صورت خودکار برابر مبلغ قابل پرداخت قرار می‌گیرد، مگر اینکه کاربر checkbox «این فروش نسیه است» را فعال کند.
+
+فایل‌ها:
+
+```text
+app/(app)/sales/page.tsx
+app/(app)/dashboard/page.tsx
+```
