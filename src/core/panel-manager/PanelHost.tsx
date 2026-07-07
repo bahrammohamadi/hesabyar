@@ -109,12 +109,14 @@ export function PanelHost() {
             aria-modal={isTop}
             aria-hidden={!isTop}
             className={cn(
-              "pointer-events-auto fixed bottom-0 top-0 right-0 w-full overflow-hidden border-l border-slate-200 bg-white shadow-2xl transition-all duration-200 ease-out sm:w-[560px] sm:max-w-[92vw]",
+              "pointer-events-auto fixed bottom-0 top-0 right-0 overflow-hidden border-l border-slate-200 bg-white shadow-2xl transition-all duration-200 ease-out",
               isTop ? "translate-x-0 opacity-100" : "translate-x-6 opacity-75 pointer-events-none"
             )}
             style={{
               zIndex: 10 + panel.stackIndex,
               right: `${offset}px`,
+              width: "min(100vw, 560px)",
+              maxWidth: "100vw",
               transform: isTop ? `translateX(0)` : `translateX(${offset + 12}px)`,
             }}
           >
