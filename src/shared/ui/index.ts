@@ -9,3 +9,4 @@ export * from "./Tabs";
 export * from "./Feedback";
 export * from "./Toast";
 export * from "./ConfirmDialog";
+export * from "./HelpTip";
