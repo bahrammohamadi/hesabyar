@@ -27,3 +27,13 @@ components/shared/inventory-operation-page.tsx
 app/(app)/sales/page.tsx
 app/(app)/dashboard/page.tsx
 ```
+
+## بخش ۶ — PortalMenu برای منوی سه‌نقطه
+
+کامپوننت مشترک اضافه شد:
+
+```text
+components/shared/portal-menu.tsx
+```
+
+`EntityActionMenu` دیگر منو را داخل stacking context ردیف/کارت render نمی‌کند و با `createPortal` به `document.body` منتقل می‌کند. موقعیت با `getBoundingClientRect` محاسبه می‌شود و به لبه‌های صفحه محدود می‌شود.
