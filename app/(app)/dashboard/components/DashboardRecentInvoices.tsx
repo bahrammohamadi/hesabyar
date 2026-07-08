@@ -32,52 +32,80 @@ export function DashboardRecentInvoices({
   onSaleAuxClick: (event: MouseEvent<HTMLElement>, id: string) => void;
 }) {
   return (
-    <div className="card p-4 sm:p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-bold text-slate-800 flex items-center gap-2">
-          <Receipt size={20} className="text-primary" />
-          آخرین فاکتورها
-        </h3>
-        <Link href="/sales" className="text-xs text-primary hover:underline">
-          مشاهده همه
+    <div className="rounded-2xl border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur sm:p-5">
+      {/* هدر */}
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Receipt size={16} strokeWidth={2.2} />
+          </div>
+          <div>
+            <h3 className="text-sm font-extrabold text-slate-800">فاکتورهای اخیر</h3>
+            <p className="text-[11px] text-slate-400">آخرین ۵ فاکتور</p>
+          </div>
+        </div>
+        <Link
+          href="/sales"
+          className="rounded-xl bg-slate-100 px-3 py-1.5 text-[11px] font-medium text-slate-500 transition hover:bg-primary/10 hover:text-primary"
+        >
+          همه فاکتورها
         </Link>
       </div>
-      <div className="space-y-3">
+
+      {/* لیست */}
+      <div className="space-y-1">
         {sales && sales.length > 0 ? (
-          sales.map((sale) => (
-            <div
-              key={sale.id}
-              role="link"
-              tabIndex={0}
-              onClick={(event) => onSaleClick(event, sale.id)}
-              onAuxClick={(event) => onSaleAuxClick(event, sale.id)}
-              onKeyDown={(event: KeyboardEvent<HTMLElement>) => {
-                if (event.key === "Enter") onOpenSale(sale.id);
-              }}
-              className="flex cursor-pointer items-center justify-between p-2 rounded-xl hover:bg-slate-50 transition-colors group border border-transparent hover:border-primary/30"
-            >
-              <div className="min-w-0">
-                <Link
-                  href={`/sales/${sale.id}`}
-                  className="text-sm font-medium block truncate text-primary hover:underline"
-                  onClick={(event) => {
-                    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1) return;
-                    event.preventDefault();
-                    event.stopPropagation();
-                    onOpenSale(sale.id);
-                  }}
-                >
-                  {sale.invoice_no}
-                </Link>
-                <div className="text-[11px] text-slate-400">
-                  {sale.customer_id ? <EntityLink type="contact" id={sale.customer_id}>{getCustomerName(sale.customer) ?? "مشتری"}</EntityLink> : "مشتری نقدی"} • {toJalali(sale.date)}
+          sales.map((sale) => {
+            const customerName = getCustomerName(sale.customer);
+            return (
+              <div
+                key={sale.id}
+                role="link"
+                tabIndex={0}
+                onClick={(event) => onSaleClick(event, sale.id)}
+                onAuxClick={(event) => onSaleAuxClick(event, sale.id)}
+                onKeyDown={(event: KeyboardEvent<HTMLElement>) => {
+                  if (event.key === "Enter") onOpenSale(sale.id);
+                }}
+                className="group flex cursor-pointer items-center justify-between gap-2 rounded-xl px-3 py-2.5 transition hover:bg-slate-50"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/sales/${sale.id}`}
+                      className="text-sm font-semibold text-primary hover:underline"
+                      onClick={(e) => {
+                        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onOpenSale(sale.id);
+                      }}
+                    >
+                      {sale.invoice_no}
+                    </Link>
+                    <span className="text-[10px] text-slate-300">{toJalali(sale.date)}</span>
+                  </div>
+                  <div className="mt-0.5 text-[11px] text-slate-400">
+                    {sale.customer_id ? (
+                      <EntityLink type="contact" id={sale.customer_id}>
+                        {customerName ?? "مشتری"}
+                      </EntityLink>
+                    ) : (
+                      "مشتری نقدی"
+                    )}
+                  </div>
                 </div>
+                <span className="shrink-0 text-sm font-extrabold text-slate-700 tabular-nums">
+                  {formatToman(sale.total, false)}
+                </span>
               </div>
-              <div className="text-sm font-bold text-slate-700 shrink-0">{formatToman(sale.total, false)}</div>
-            </div>
-          ))
+            );
+          })
         ) : (
-          <div className="text-center text-sm text-slate-400 py-8">فاکتوری یافت نشد.</div>
+          <div className="flex flex-col items-center justify-center gap-2 py-10">
+            <Receipt size={28} className="text-slate-200" />
+            <p className="text-sm text-slate-400">فاکتوری ثبت نشده</p>
+          </div>
         )}
       </div>
     </div>

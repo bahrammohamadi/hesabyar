@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
-import { PageHeader, Spinner, Modal } from "@/components/shared/ui";
+import { Spinner, Modal } from "@/components/shared/ui";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
 import { EntityLink } from "@/components/shared/entity-link";
@@ -127,18 +127,22 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-5 sm:space-y-8">
-      <PageHeader
-        title="داشبورد مدیریتی"
-        subtitle="مرکز کنترل و تحلیل لحظه‌ای کسب‌وکار"
-        action={
-          <button onClick={() => setQuickSaleOpen(true)} className="btn-primary shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-shadow">
-            <Plus size={18} />
-            <span className="hidden sm:inline">فروش جدید</span>
-            <span className="hidden rounded bg-white/20 px-1.5 py-0.5 text-[10px] lg:inline">F2</span>
-          </button>
-        }
-      />
+    <div className="space-y-5">
+      {/* هدر */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-extrabold tracking-tight text-slate-800 sm:text-2xl">داشبورد</h1>
+          <p className="mt-0.5 text-xs text-slate-400">مرکز کنترل و تحلیل لحظه‌ای کسب‌وکار</p>
+        </div>
+        <button
+          onClick={() => setQuickSaleOpen(true)}
+          className="btn-primary shadow-md shadow-primary/20 transition-shadow hover:shadow-primary/30"
+        >
+          <Plus size={18} />
+          <span className="hidden sm:inline">فروش جدید</span>
+          <span className="hidden rounded bg-white/20 px-1.5 py-0.5 text-[10px] lg:inline">F2</span>
+        </button>
+      </div>
 
       <DashboardQuickActions
         onOpenQuickSale={() => setQuickSaleOpen(true)}
