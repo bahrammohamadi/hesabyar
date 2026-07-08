@@ -2,105 +2,72 @@
 
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
-import { BarChart3, ChevronRight, Package2, Receipt, ShoppingCart, UserPlus, ArrowDownToLine } from "lucide-react";
+import {
+  ArrowDownToLine,
+  BarChart3,
+  Package2,
+  Receipt,
+  ShoppingCart,
+  UserPlus,
+} from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
-type QuickActionAccent = "primary" | "emerald" | "blue" | "amber" | "rose" | "violet" | "cyan" | "slate";
+type Accent = "primary" | "emerald" | "blue" | "slate" | "cyan" | "violet";
 
-function QuickActionButton({
+const ACCENT: Record<Accent, { icon: string; label: string; ring: string }> = {
+  primary: { icon: "bg-primary/10 text-primary",  label: "text-primary",  ring: "hover:ring-primary/20" },
+  emerald: { icon: "bg-emerald-100 text-emerald-600", label: "text-emerald-600", ring: "hover:ring-emerald-200" },
+  blue:    { icon: "bg-blue-100 text-blue-600",    label: "text-blue-600", ring: "hover:ring-blue-200" },
+  slate:   { icon: "bg-slate-100 text-slate-700",  label: "text-slate-700",ring: "hover:ring-slate-200" },
+  cyan:    { icon: "bg-cyan-100 text-cyan-600",    label: "text-cyan-600", ring: "hover:ring-cyan-200" },
+  violet:  { icon: "bg-violet-100 text-violet-600",label: "text-violet-600", ring: "hover:ring-violet-200" },
+};
+
+function QuickBtn({
   label,
   icon: Icon,
-  color,
-  accent: accentProp,
+  accent,
+  badge,
   onClick,
   href,
-  description,
-  badge,
 }: {
   label: string;
   icon: LucideIcon;
-  color?: string;
-  accent?: QuickActionAccent;
+  accent: Accent;
+  badge?: string;
   onClick?: () => void;
   href?: string;
-  description?: string;
-  badge?: string;
 }) {
-  // map color string like "bg-primary" to accent name
-  const accentMap: Record<string, QuickActionAccent> = {
-    "bg-primary": "primary",
-    "bg-emerald-600": "emerald",
-    "bg-blue-600": "blue",
-    "bg-slate-600": "slate",
-    "bg-cyan-600": "cyan",
-    "bg-indigo-600": "violet",
-    "bg-rose-600": "rose",
-    "bg-amber-600": "amber",
-  };
-  const accent: QuickActionAccent = accentProp ?? accentMap[color || ""] ?? "primary";
+  const a = ACCENT[accent];
 
-  const accentStyles: Record<QuickActionAccent, { bg: string; text: string; ring: string; hover: string; shadow: string }> = {
-    primary: { bg: "bg-primary/10", text: "text-primary", ring: "ring-primary/20", hover: "hover:bg-primary/10", shadow: "shadow-primary/10" },
-    emerald: { bg: "bg-emerald-50", text: "text-emerald-600", ring: "ring-emerald-200", hover: "hover:bg-emerald-100", shadow: "shadow-emerald-600/10" },
-    blue: { bg: "bg-blue-50", text: "text-blue-600", ring: "ring-blue-200", hover: "hover:bg-blue-100", shadow: "shadow-blue-600/10" },
-    amber: { bg: "bg-amber-50", text: "text-amber-600", ring: "ring-amber-200", hover: "hover:bg-amber-100", shadow: "shadow-amber-600/10" },
-    rose: { bg: "bg-rose-50", text: "text-rose-600", ring: "ring-rose-200", hover: "hover:bg-rose-100", shadow: "shadow-rose-600/10" },
-    violet: { bg: "bg-violet-50", text: "text-violet-600", ring: "ring-violet-200", hover: "hover:bg-violet-100", shadow: "shadow-violet-600/10" },
-    cyan: { bg: "bg-cyan-50", text: "text-cyan-600", ring: "ring-cyan-200", hover: "hover:bg-cyan-100", shadow: "shadow-cyan-600/10" },
-    slate: { bg: "bg-slate-100", text: "text-slate-700", ring: "ring-slate-200", hover: "hover:bg-slate-200", shadow: "shadow-slate-600/10" },
-  };
-
-  const style = accentStyles[accent];
-
-  const content = (
+  const inner = (
     <div
       className={cn(
-        "relative group w-full rounded-[18px] sm:rounded-[20px] bg-card border border-border p-3 sm:p-4 transition-all duration-200",
-        "hover:shadow-lg hover:shadow-slate-200/60 hover:-translate-y-0.5 hover:border-slate-300",
-        "focus:outline-none focus:ring-2 focus:ring-primary/20",
-        "text-right",
+        "group relative flex flex-col items-center gap-2 rounded-2xl border border-white/80 bg-white/90 py-4 px-3 shadow-sm shadow-slate-900/[0.03] backdrop-blur transition-all duration-150",
+        "hover:-translate-y-0.5 hover:shadow-md hover:shadow-slate-900/[0.07]",
+        "ring-2 ring-transparent",
+        a.ring,
       )}
     >
-      {/* subtle top accent */}
-      <div className={cn("absolute top-0 right-4 left-4 h-[3px] rounded-b-full opacity-60", style.text.replace("text-", "bg-"))} />
-
-      <div className="flex items-start gap-3">
-        <div
-          className={cn(
-            "w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 shadow-sm",
-            style.bg,
-            style.text,
-            style.shadow,
-          )}
-        >
-          <Icon className="h-5 w-5 sm:h-[22px] sm:w-[22px]" strokeWidth={2} />
-        </div>
-        <div className="flex-1 min-w-0 pt-0.5">
-          <div className="font-extrabold text-[12px] sm:text-[13px] text-slate-800 leading-tight">{label}</div>
-          {description && <div className="text-[11px] text-slate-500 mt-1 leading-snug">{description}</div>}
-          {badge && <div className={cn("mt-1.5 hidden rounded-full px-2 py-0.5 text-[10px] font-bold lg:inline-flex", style.bg, style.text)}>{badge}</div>}
-        </div>
+      {/* آیکون */}
+      <div className={cn("flex h-11 w-11 items-center justify-center rounded-2xl transition-transform duration-150 group-hover:scale-110", a.icon)}>
+        <Icon size={20} strokeWidth={2} />
       </div>
 
-      {/* chevron hint */}
-      <div className="absolute left-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-slate-300">
-        <ChevronRight size={14} className="rotate-180" />
-      </div>
+      {/* لیبل */}
+      <span className="text-center text-[12px] font-bold leading-tight text-slate-700">{label}</span>
+
+      {/* badge کیبورد */}
+      {badge && (
+        <span className="absolute left-2 top-2 hidden rounded-md bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-400 lg:block">
+          {badge}
+        </span>
+      )}
     </div>
   );
 
-  if (href) {
-    return (
-      <Link href={href} className="block no-underline">
-        {content}
-      </Link>
-    );
-  }
-  return (
-    <button onClick={onClick} className="w-full text-right">
-      {content}
-    </button>
-  );
+  if (href) return <Link href={href} className="block no-underline">{inner}</Link>;
+  return <button onClick={onClick} className="w-full">{inner}</button>;
 }
 
 export function DashboardQuickActions({
@@ -113,27 +80,18 @@ export function DashboardQuickActions({
   onCreateContact: () => void;
 }) {
   return (
-    <section className="relative">
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-3">
-          <div className="w-1 h-6 bg-primary rounded-full shadow-sm shadow-primary/20" />
-          <div>
-            <h2 className="text-[15px] font-extrabold text-slate-800">عملیات سریع</h2>
-            <p className="text-[11px] text-slate-500 mt-0.5">دسترسی آنی به پرکاربردترین بخش‌ها</p>
-          </div>
-        </div>
-        <div className="hidden sm:flex items-center gap-1.5 text-[10px] text-slate-400">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          آنلاین
-        </div>
+    <section>
+      <div className="mb-3 flex items-center gap-2">
+        <div className="h-4 w-1 rounded-full bg-primary" />
+        <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400">عملیات سریع</span>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2.5 sm:gap-4">
-        <QuickActionButton label="فروش جدید" description="ثبت فاکتور سریع" icon={Receipt} color="bg-primary" badge="F2" onClick={onOpenQuickSale} />
-        <QuickActionButton label="خرید کالا" description="ورود موجودی" icon={ShoppingCart} color="bg-emerald-600" href="/purchases" />
-        <QuickActionButton label="تعدیل انبار" description="اصلاح موجودی" icon={ArrowDownToLine} color="bg-blue-600" href="/inventory/adjust" />
-        <QuickActionButton label="کالای جدید" description="افزودن محصول" icon={Package2} color="bg-slate-600" onClick={onCreateProduct} />
-        <QuickActionButton label="مشتری جدید" description="ثبت مخاطب" icon={UserPlus} color="bg-cyan-600" onClick={onCreateContact} />
-        <QuickActionButton label="گزارشات" description="تحلیل و آمار" icon={BarChart3} color="bg-indigo-600" href="/reports/sales" />
+      <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-6">
+        <QuickBtn label="فروش جدید"   icon={Receipt}        accent="primary" badge="F2" onClick={onOpenQuickSale} />
+        <QuickBtn label="خرید کالا"   icon={ShoppingCart}   accent="emerald"            href="/purchases" />
+        <QuickBtn label="تعدیل انبار" icon={ArrowDownToLine} accent="blue"              href="/inventory/adjust" />
+        <QuickBtn label="کالای جدید"  icon={Package2}        accent="slate"             onClick={onCreateProduct} />
+        <QuickBtn label="مشتری جدید"  icon={UserPlus}        accent="cyan"              onClick={onCreateContact} />
+        <QuickBtn label="گزارشات"     icon={BarChart3}       accent="violet"            href="/reports/sales" />
       </div>
     </section>
   );
