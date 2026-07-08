@@ -158,7 +158,7 @@ export default function ProductsPage() {
                       >
                         {p.name}
                       </Link>
-                      <div className="mt-0.5 flex gap-x-2 truncate text-xs text-slate-400 md:flex-nowrap">
+                      <div className="mt-0.5 flex flex-wrap gap-x-2 text-xs text-slate-400 md:flex-nowrap md:overflow-hidden">
                         {p.code && <span className="font-mono text-primary">{p.code}</span>}
                         {p.brand?.name && <span>برند: {p.brand.name}</span>}
                         {p.category?.name && <span>دسته: {p.category.name}</span>}
@@ -167,7 +167,7 @@ export default function ProductsPage() {
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
-                    <span className="badge bg-primary/10 text-primary">
+                    <span className="badge hidden bg-primary/10 text-primary md:inline-flex">
                       قیمت فروش: {displaySalePrice ? formatToman(displaySalePrice, false) : "—"}
                     </span>
                     <span
@@ -175,7 +175,7 @@ export default function ProductsPage() {
                         low ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"
                       }`}
                     >
-                      موجودی: {toFaDigits(totalStock)}
+                      {toFaDigits(totalStock)} عدد
                     </span>
                     <div onClick={(event) => event.stopPropagation()}>
                       <EntityActionMenu type="product" id={p.id} label={p.name} />

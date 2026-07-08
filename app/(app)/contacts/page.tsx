@@ -237,7 +237,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
                     >
                       {c.name || "بدون نام"}
                     </Link>
-                    <div className="mt-0.5 flex items-center gap-2 text-xs text-slate-400 md:flex-nowrap md:truncate">
+                    <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-slate-400 md:flex-nowrap">
                       {(c as any).code && <span className="font-mono text-primary">{(c as any).code}</span>}
                       <span className="badge bg-slate-100 text-slate-500">{TYPE_LABEL[c.type]}</span>
                       {c.phone && <span onClick={(event) => event.stopPropagation()}><PhoneLink phone={c.phone} className="text-xs" /></span>}
@@ -248,11 +248,11 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
                   <div className="text-left">
                     {bal !== 0 && (
                       <span
-                        className={`text-sm font-medium ${
+                        className={`text-xs font-medium md:text-sm ${
                           bal > 0 ? "text-rose-600" : "text-emerald-600"
                         }`}
                       >
-                        {bal > 0 ? "بدهکار " : "بستانکار "}
+                        <span className="hidden md:inline">{bal > 0 ? "بدهکار " : "بستانکار "}</span>
                         {formatToman(Math.abs(bal), false)}
                       </span>
                     )}
