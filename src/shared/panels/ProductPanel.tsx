@@ -44,6 +44,7 @@ type ProductFormState = {
   brandId: string;
   basePurchasePriceToman: number | null;
   baseSalePriceToman: number | null;
+  baseProfitPercent: number | null;
   lowStockThreshold: number | null;
   description: string;
 };
@@ -56,12 +57,14 @@ type VariantFormState = {
   barcode: string;
   purchasePriceToman: number | null;
   salePriceToman: number | null;
+  profitPercent: number | null;
   initialStock: number | null;
 };
 
 type PriceChangeFormState = {
   purchasePriceToman: number | null;
   salePriceToman: number | null;
+  profitPercent: number | null;
   applyToVariants: boolean;
   reason: string;
 };
@@ -78,18 +81,32 @@ function emptyStockAdjustForm(): StockAdjustFormState {
 }
 
 function emptyPriceChangeForm(): PriceChangeFormState {
-  return { purchasePriceToman: null, salePriceToman: null, applyToVariants: true, reason: "" };
+  return { purchasePriceToman: null, salePriceToman: null, profitPercent: null, applyToVariants: true, reason: "" };
+}
+
+/** محاسبه درصد سود از قیمت خرید و فروش */
+function calcProfitPercent(purchaseToman: number | null, saleToman: number | null): number | null {
+  if (!purchaseToman || purchaseToman <= 0 || saleToman === null) return null;
+  return Math.round(((saleToman - purchaseToman) / purchaseToman) * 10000) / 100;
+}
+
+/** محاسبه قیمت فروش از قیمت خرید و درصد سود */
+function calcSaleFromProfit(purchaseToman: number | null, profitPercent: number | null): number | null {
+  if (!purchaseToman || purchaseToman <= 0 || profitPercent === null) return null;
+  return Math.round(purchaseToman * (1 + profitPercent / 100));
 }
 
 function emptyProductForm(): ProductFormState {
-  return { name: "", code: "", season: "", material: "", imageUrl: "", categoryId: "", brandId: "", basePurchasePriceToman: null, baseSalePriceToman: null, lowStockThreshold: 3, description: "" };
+  return { name: "", code: "", season: "", material: "", imageUrl: "", categoryId: "", brandId: "", basePurchasePriceToman: null, baseSalePriceToman: null, baseProfitPercent: null, lowStockThreshold: 3, description: "" };
 }
 
 function emptyVariantForm(): VariantFormState {
-  return { color: "", size: "", sku: "", barcode: "", purchasePriceToman: null, salePriceToman: null, initialStock: 0 };
+  return { color: "", size: "", sku: "", barcode: "", purchasePriceToman: null, salePriceToman: null, profitPercent: null, initialStock: 0 };
 }
 
 function formFromProduct(product: ProductEntity): ProductFormState {
+  const purchaseToman = productMoney.rialToTomanNumber(product.base_purchase_price);
+  const saleToman = productMoney.rialToTomanNumber(product.base_sale_price);
   return {
     name: product.name,
     code: product.code ?? "",
@@ -98,22 +115,26 @@ function formFromProduct(product: ProductEntity): ProductFormState {
     imageUrl: product.image_url ?? "",
     categoryId: product.category_id ?? "",
     brandId: product.brand_id ?? "",
-    basePurchasePriceToman: productMoney.rialToTomanNumber(product.base_purchase_price),
-    baseSalePriceToman: productMoney.rialToTomanNumber(product.base_sale_price),
+    basePurchasePriceToman: purchaseToman,
+    baseSalePriceToman: saleToman,
+    baseProfitPercent: calcProfitPercent(purchaseToman, saleToman),
     lowStockThreshold: product.low_stock_threshold,
     description: product.description ?? "",
   };
 }
 
 function formFromVariant(variant: ProductVariantEntity): VariantFormState {
+  const purchaseToman = productMoney.rialToTomanNumber(variant.purchase_price);
+  const saleToman = productMoney.rialToTomanNumber(variant.sale_price);
   return {
     id: variant.id,
     color: variant.color ?? "",
     size: variant.size ?? "",
     sku: variant.sku ?? "",
     barcode: variant.barcode ?? "",
-    purchasePriceToman: productMoney.rialToTomanNumber(variant.purchase_price),
-    salePriceToman: productMoney.rialToTomanNumber(variant.sale_price),
+    purchasePriceToman: purchaseToman,
+    salePriceToman: saleToman,
+    profitPercent: calcProfitPercent(purchaseToman, saleToman),
     initialStock: null,
   };
 }
@@ -158,9 +179,12 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
     }
     else if (product) {
       setProductForm(formFromProduct(product));
+      const purchaseToman = productMoney.rialToTomanNumber(product.base_purchase_price);
+      const saleToman = productMoney.rialToTomanNumber(product.base_sale_price);
       setPriceForm({
-        purchasePriceToman: productMoney.rialToTomanNumber(product.base_purchase_price),
-        salePriceToman: productMoney.rialToTomanNumber(product.base_sale_price),
+        purchasePriceToman: purchaseToman,
+        salePriceToman: saleToman,
+        profitPercent: calcProfitPercent(purchaseToman, saleToman),
         applyToVariants: true,
         reason: "",
       });
@@ -443,8 +467,43 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
         <Field label="فصل"><Input value={productForm.season} onChange={(event) => setProductForm((prev) => ({ ...prev, season: event.target.value }))} /></Field>
         <Field label="جنس"><Input value={productForm.material} onChange={(event) => setProductForm((prev) => ({ ...prev, material: event.target.value }))} /></Field>
         <Field label="آدرس تصویر" className="sm:col-span-2"><Input dir="ltr" className="text-left" value={productForm.imageUrl} onChange={(event) => setProductForm((prev) => ({ ...prev, imageUrl: event.target.value }))} placeholder="https://..." /></Field>
-        <Field label="قیمت خرید پایه (تومان)"><NumberInput value={productForm.basePurchasePriceToman} onValueChange={(value) => setProductForm((prev) => ({ ...prev, basePurchasePriceToman: value }))} /></Field>
-        <Field label="قیمت فروش پایه (تومان)"><NumberInput value={productForm.baseSalePriceToman} onValueChange={(value) => setProductForm((prev) => ({ ...prev, baseSalePriceToman: value }))} /></Field>
+        <Field label="قیمت خرید پایه (تومان)">
+          <NumberInput
+            value={productForm.basePurchasePriceToman}
+            onValueChange={(value) =>
+              setProductForm((prev) => ({
+                ...prev,
+                basePurchasePriceToman: value,
+                baseProfitPercent: calcProfitPercent(value, prev.baseSalePriceToman),
+              }))
+            }
+          />
+        </Field>
+        <Field label="درصد سود پایه (%)" hint="وارد کردن درصد، قیمت فروش را محاسبه می‌کند">
+          <NumberInput
+            value={productForm.baseProfitPercent}
+            onValueChange={(value) =>
+              setProductForm((prev) => ({
+                ...prev,
+                baseProfitPercent: value,
+                baseSalePriceToman: calcSaleFromProfit(prev.basePurchasePriceToman, value),
+              }))
+            }
+            placeholder="مثلاً ۲۰"
+          />
+        </Field>
+        <Field label="قیمت فروش پایه (تومان)">
+          <NumberInput
+            value={productForm.baseSalePriceToman}
+            onValueChange={(value) =>
+              setProductForm((prev) => ({
+                ...prev,
+                baseSalePriceToman: value,
+                baseProfitPercent: calcProfitPercent(prev.basePurchasePriceToman, value),
+              }))
+            }
+          />
+        </Field>
         <Field label="حداقل موجودی"><NumberInput value={productForm.lowStockThreshold} onValueChange={(value) => setProductForm((prev) => ({ ...prev, lowStockThreshold: value }))} /></Field>
         <Field label="توضیحات" className="sm:col-span-2"><Input value={productForm.description} onChange={(event) => setProductForm((prev) => ({ ...prev, description: event.target.value }))} /></Field>
       </div>
@@ -478,6 +537,22 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
     { key: "attrs", header: "تنوع", render: (row) => [row.color, row.size].filter(Boolean).join(" / ") || "ساده" },
     { key: "stock", header: "موجودی", align: "center", render: (row) => <Badge tone={stockTone(stockByVariant.get(row.id) ?? row.stock_qty ?? 0)}>{toPersianDigits(stockByVariant.get(row.id) ?? row.stock_qty ?? 0)}</Badge> },
     { key: "purchase", header: "خرید", align: "left", render: (row) => <Money value={row.purchase_price ?? 0} /> },
+    {
+      key: "profit",
+      header: "سود %",
+      align: "center",
+      render: (row) => {
+        const p = calcProfitPercent(
+          productMoney.rialToTomanNumber(row.purchase_price),
+          productMoney.rialToTomanNumber(row.sale_price),
+        );
+        return p !== null ? (
+          <span className="text-emerald-600 font-medium">{toPersianDigits(p)}٪</span>
+        ) : (
+          <span className="text-slate-300">—</span>
+        );
+      },
+    },
     { key: "sale", header: "فروش", align: "left", render: (row) => <Money value={row.sale_price ?? 0} /> },
     { key: "action", header: "", render: (row) => <div className="flex gap-1"><Button size="sm" variant="ghost" onClick={() => setVariantEdit(formFromVariant(row))}>ویرایش</Button><Button size="sm" variant="secondary" onClick={() => openStockAdjust(row)}>تعدیل موجودی</Button></div> },
   ];
@@ -497,8 +572,37 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
       <Field label="بارکد"><Input dir="ltr" className="text-left" value={state.barcode} onChange={(e) => setState((p) => ({ ...p, barcode: e.target.value }))} /></Field>
       <Field label="رنگ"><Input value={state.color} onChange={(e) => setState((p) => ({ ...p, color: e.target.value }))} /></Field>
       <Field label="سایز"><Input value={state.size} onChange={(e) => setState((p) => ({ ...p, size: e.target.value }))} /></Field>
-      <Field label="قیمت خرید (تومان)"><NumberInput value={state.purchasePriceToman} onValueChange={(v) => setState((p) => ({ ...p, purchasePriceToman: v }))} /></Field>
-      <Field label="قیمت فروش (تومان)"><NumberInput value={state.salePriceToman} onValueChange={(v) => setState((p) => ({ ...p, salePriceToman: v }))} /></Field>
+      <Field label="قیمت خرید (تومان)">
+        <NumberInput
+          value={state.purchasePriceToman}
+          onValueChange={(v) => setState((p) => ({
+            ...p,
+            purchasePriceToman: v,
+            profitPercent: calcProfitPercent(v, p.salePriceToman),
+          }))}
+        />
+      </Field>
+      <Field label="درصد سود (%)" hint="وارد کردن درصد، قیمت فروش را محاسبه می‌کند">
+        <NumberInput
+          value={state.profitPercent}
+          onValueChange={(v) => setState((p) => ({
+            ...p,
+            profitPercent: v,
+            salePriceToman: calcSaleFromProfit(p.purchasePriceToman, v),
+          }))}
+          placeholder="مثلاً ۲۰"
+        />
+      </Field>
+      <Field label="قیمت فروش (تومان)">
+        <NumberInput
+          value={state.salePriceToman}
+          onValueChange={(v) => setState((p) => ({
+            ...p,
+            salePriceToman: v,
+            profitPercent: calcProfitPercent(p.purchasePriceToman, v),
+          }))}
+        />
+      </Field>
       {includeStock && <Field label="موجودی اولیه"><NumberInput value={state.initialStock} onValueChange={(v) => setState((p) => ({ ...p, initialStock: v }))} /></Field>}
     </div>
   );
@@ -517,8 +621,37 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
               <Field label="بارکد"><Input dir="ltr" className="text-left" value={row.barcode} onChange={(e) => updateBatchVariant(index, (prev) => ({ ...prev, barcode: e.target.value }))} /></Field>
               <Field label="رنگ"><Input value={row.color} onChange={(e) => updateBatchVariant(index, (prev) => ({ ...prev, color: e.target.value }))} /></Field>
               <Field label="سایز"><Input value={row.size} onChange={(e) => updateBatchVariant(index, (prev) => ({ ...prev, size: e.target.value }))} /></Field>
-              <Field label="قیمت خرید (تومان)"><NumberInput value={row.purchasePriceToman} onValueChange={(value) => updateBatchVariant(index, (prev) => ({ ...prev, purchasePriceToman: value }))} /></Field>
-              <Field label="قیمت فروش (تومان)"><NumberInput value={row.salePriceToman} onValueChange={(value) => updateBatchVariant(index, (prev) => ({ ...prev, salePriceToman: value }))} /></Field>
+              <Field label="قیمت خرید (تومان)">
+                <NumberInput
+                  value={row.purchasePriceToman}
+                  onValueChange={(value) => updateBatchVariant(index, (prev) => ({
+                    ...prev,
+                    purchasePriceToman: value,
+                    profitPercent: calcProfitPercent(value, prev.salePriceToman),
+                  }))}
+                />
+              </Field>
+              <Field label="درصد سود (%)">
+                <NumberInput
+                  value={row.profitPercent}
+                  onValueChange={(value) => updateBatchVariant(index, (prev) => ({
+                    ...prev,
+                    profitPercent: value,
+                    salePriceToman: calcSaleFromProfit(prev.purchasePriceToman, value),
+                  }))}
+                  placeholder="مثلاً ۲۰"
+                />
+              </Field>
+              <Field label="قیمت فروش (تومان)">
+                <NumberInput
+                  value={row.salePriceToman}
+                  onValueChange={(value) => updateBatchVariant(index, (prev) => ({
+                    ...prev,
+                    salePriceToman: value,
+                    profitPercent: calcProfitPercent(prev.purchasePriceToman, value),
+                  }))}
+                />
+              </Field>
               <Field label="موجودی اولیه"><NumberInput value={row.initialStock} onValueChange={(value) => updateBatchVariant(index, (prev) => ({ ...prev, initialStock: value }))} /></Field>
             </div>
           </div>
@@ -561,9 +694,27 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
                     </dl>
                   </Section>
                   <Section title="قیمت‌های پایه">
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="rounded-xl border border-border p-3"><div className="text-sm text-muted-foreground">خرید پایه</div><Money value={product!.base_purchase_price} /></div>
-                      <div className="rounded-xl border border-border p-3"><div className="text-sm text-muted-foreground">فروش پایه</div><Money value={product!.base_sale_price} /></div>
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <div className="rounded-xl border border-border p-3">
+                        <div className="text-sm text-muted-foreground">خرید پایه</div>
+                        <Money value={product!.base_purchase_price} />
+                      </div>
+                      <div className="rounded-xl border border-border p-3">
+                        <div className="text-sm text-muted-foreground">درصد سود</div>
+                        <span className="font-bold text-emerald-600">
+                          {(() => {
+                            const p = calcProfitPercent(
+                              productMoney.rialToTomanNumber(product!.base_purchase_price),
+                              productMoney.rialToTomanNumber(product!.base_sale_price),
+                            );
+                            return p !== null ? `${toPersianDigits(p)}٪` : "—";
+                          })()}
+                        </span>
+                      </div>
+                      <div className="rounded-xl border border-border p-3">
+                        <div className="text-sm text-muted-foreground">فروش پایه</div>
+                        <Money value={product!.base_sale_price} />
+                      </div>
                     </div>
                   </Section>
                 </div>
@@ -630,8 +781,37 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
                     ) : (
                       <div className="space-y-4">
                         <div className="grid gap-3 sm:grid-cols-2">
-                          <Field label="قیمت خرید جدید (تومان)"><NumberInput value={priceForm.purchasePriceToman} onValueChange={(value) => setPriceForm((prev) => ({ ...prev, purchasePriceToman: value }))} /></Field>
-                          <Field label="قیمت فروش جدید (تومان)"><NumberInput value={priceForm.salePriceToman} onValueChange={(value) => setPriceForm((prev) => ({ ...prev, salePriceToman: value }))} /></Field>
+                          <Field label="قیمت خرید جدید (تومان)">
+                            <NumberInput
+                              value={priceForm.purchasePriceToman}
+                              onValueChange={(value) => setPriceForm((prev) => ({
+                                ...prev,
+                                purchasePriceToman: value,
+                                profitPercent: calcProfitPercent(value, prev.salePriceToman),
+                              }))}
+                            />
+                          </Field>
+                          <Field label="درصد سود (%)" hint="وارد کردن درصد، قیمت فروش را محاسبه می‌کند">
+                            <NumberInput
+                              value={priceForm.profitPercent}
+                              onValueChange={(value) => setPriceForm((prev) => ({
+                                ...prev,
+                                profitPercent: value,
+                                salePriceToman: calcSaleFromProfit(prev.purchasePriceToman, value),
+                              }))}
+                              placeholder="مثلاً ۲۰"
+                            />
+                          </Field>
+                          <Field label="قیمت فروش جدید (تومان)">
+                            <NumberInput
+                              value={priceForm.salePriceToman}
+                              onValueChange={(value) => setPriceForm((prev) => ({
+                                ...prev,
+                                salePriceToman: value,
+                                profitPercent: calcProfitPercent(prev.purchasePriceToman, value),
+                              }))}
+                            />
+                          </Field>
                           <Field label="دلیل تغییر" className="sm:col-span-2"><Input value={priceForm.reason} onChange={(event) => setPriceForm((prev) => ({ ...prev, reason: event.target.value }))} placeholder="مثلاً: بروزرسانی لیست قیمت" /></Field>
                         </div>
                         <label className="flex items-center gap-2 text-sm text-slate-600">
