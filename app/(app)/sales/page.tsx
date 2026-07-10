@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { PageHeader, Spinner, Modal } from "@/components/shared/ui";
+import { DatePicker } from "@/components/shared/date-picker";
 import { DataTable, type Column } from "@/src/shared/ui";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
@@ -171,6 +172,7 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
   const [isCreditSale, setIsCreditSale] = useState(false);
   const [accountId, setAccountId] = useState("");
   const [priceListId, setPriceListId] = useState("");
+  const [saleDate, setSaleDate] = useState(new Date().toISOString().slice(0, 10));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
@@ -320,6 +322,7 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
         p_org: orgId,
         p_branch: branchId,
         p_customer: customer?.id || null,
+        p_date: saleDate ? new Date(`${saleDate}T12:00:00`).toISOString() : new Date().toISOString(),
         p_items: cart.map((c) => ({
           variant_id: c.variant_id,
           qty: c.qty,
@@ -411,12 +414,15 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
             )}
           </div>
 
-          <div>
-            <label className="label">لیست قیمت</label>
-            <select className="input" value={priceListId} onChange={(e) => setPriceListId(e.target.value)}>
-              <option value="">قیمت عادی کالا</option>
-              {priceLists?.map((list: any) => <option key={list.id} value={list.id}>{list.name} {list.discount_percent ? `(${list.discount_percent}٪)` : ""}</option>)}
-            </select>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="label">لیست قیمت</label>
+              <select className="input" value={priceListId} onChange={(e) => setPriceListId(e.target.value)}>
+                <option value="">قیمت عادی کالا</option>
+                {priceLists?.map((list: any) => <option key={list.id} value={list.id}>{list.name} {list.discount_percent ? `(${list.discount_percent}٪)` : ""}</option>)}
+              </select>
+            </div>
+            <DatePicker label="تاریخ فاکتور" value={saleDate} onChange={setSaleDate} />
           </div>
 
           {/* دکمه افزودن کالا */}
