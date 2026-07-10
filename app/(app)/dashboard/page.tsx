@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { Spinner, Modal } from "@/components/shared/ui";
+import { DatePicker } from "@/components/shared/date-picker";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
 import { EntityLink } from "@/components/shared/entity-link";
@@ -181,6 +182,7 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
   const [paidWallet, setPaidWallet] = useState("");
   const [isCreditSale, setIsCreditSale] = useState(false);
   const [accountId, setAccountId] = useState("");
+  const [saleDate, setSaleDate] = useState(new Date().toISOString().slice(0, 10));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
@@ -279,6 +281,7 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
         p_org: orgId,
         p_branch: branchId,
         p_customer: customer?.id || null,
+        p_date: saleDate ? new Date(`${saleDate}T12:00:00`).toISOString() : new Date().toISOString(),
         p_items: cart.map((c) => ({ variant_id: c.variant_id, qty: c.qty, unit_price: c.unit_price, discount: c.discount, cost_price: c.cost_price })),
         p_discount: discountRial,
         p_discount_type: discountType,
@@ -383,6 +386,7 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
                 {accounts?.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}
               </select>
             </div>
+            <DatePicker label="تاریخ فاکتور" value={saleDate} onChange={setSaleDate} />
             <div>
               <label className="label">تخفیف</label>
               <div className="flex gap-2">
