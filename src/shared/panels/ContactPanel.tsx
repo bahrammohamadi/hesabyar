@@ -28,6 +28,7 @@ import { createClient } from "@/lib/supabase/client";
 import { DatePicker } from "@/components/shared/date-picker";
 import { Badge, Button, DataTable, EmptyState, Field, Input, NumberInput, PanelShell, Section, Select, Spinner, StatusPill, Tabs, Textarea, type Column } from "@/src/shared/ui";
 import { Money, PersianDate } from "@/src/shared/format";
+import { contactHelp } from "@/lib/help/contacts";
 
 const TYPE_LABEL: Record<ContactType, string> = {
   customer: "مشتری",
@@ -330,46 +331,46 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
 
   const formContent = (
     <div className="space-y-4">
-      <Section title={isCreate ? "مخاطب جدید" : "ویرایش مخاطب"} description="کد مخاطب در صورت خالی بودن توسط دیتابیس تولید می‌شود.">
+      <Section title={isCreate ? "مخاطب جدید" : "ویرایش مخاطب"} description={isCreate ? contactHelp.pageIntro : undefined}>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="نام">
+          <Field label="نام" hint={contactHelp.firstName}>
             <Input value={form.firstName} onChange={(event) => {
               const firstName = event.target.value;
               setForm((prev) => ({ ...prev, firstName, name: [firstName, prev.lastName].filter(Boolean).join(" ") || prev.name }));
             }} />
           </Field>
-          <Field label="نام خانوادگی">
+          <Field label="نام خانوادگی" hint={contactHelp.lastName}>
             <Input value={form.lastName} onChange={(event) => {
               const lastName = event.target.value;
               setForm((prev) => ({ ...prev, lastName, name: [prev.firstName, lastName].filter(Boolean).join(" ") || prev.name }));
             }} />
           </Field>
-          <Field label="نام نمایشی" required error={formError && !form.name.trim() ? formError : null}>
+          <Field label="نام نمایشی" required hint={contactHelp.displayName} error={formError && !form.name.trim() ? formError : null}>
             <Input value={form.name} onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))} />
           </Field>
-          <Field label="کد" hint="خواندنی / تولید خودکار">
+          <Field label="کد" hint={contactHelp.code}>
             <Input value={contact?.code ?? "تولید خودکار"} disabled />
           </Field>
-          <Field label="نوع">
+          <Field label="نوع" hint={contactHelp.type}>
             <Select value={form.type} onChange={(event) => setForm((prev) => ({ ...prev, type: event.target.value as ContactType }))}>
               <option value="customer">مشتری</option>
               <option value="supplier">تأمین‌کننده</option>
               <option value="both">هر دو</option>
             </Select>
           </Field>
-          <Field label="شماره تماس">
+          <Field label="شماره تماس" hint={contactHelp.phone}>
             <Input dir="ltr" className="text-left" value={form.phone} onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))} />
           </Field>
-          <Field label="ایمیل">
+          <Field label="ایمیل" hint={contactHelp.email}>
             <Input dir="ltr" className="text-left" value={form.email} onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))} />
           </Field>
-          <Field label="تاریخ تولد">
+          <Field label="تاریخ تولد" hint={contactHelp.birthDate}>
             <DatePicker value={form.birthDate} onChange={(value) => setForm((prev) => ({ ...prev, birthDate: value }))} />
           </Field>
-          <Field label="کد ملی">
+          <Field label="کد ملی" hint={contactHelp.nationalCode}>
             <Input dir="ltr" className="text-left" value={form.nationalCode} onChange={(event) => setForm((prev) => ({ ...prev, nationalCode: event.target.value }))} />
           </Field>
-          <Field label="شغل / عنوان">
+          <Field label="شغل / عنوان" hint={contactHelp.jobTitle}>
             <Input value={form.jobTitle} onChange={(event) => setForm((prev) => ({ ...prev, jobTitle: event.target.value }))} />
           </Field>
           <Field label="جنسیت">
@@ -380,10 +381,10 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
               <option value="other">سایر</option>
             </Select>
           </Field>
-          <Field label="آدرس" className="sm:col-span-2">
+          <Field label="آدرس" hint={contactHelp.address} className="sm:col-span-2">
             <Input value={form.address} onChange={(event) => setForm((prev) => ({ ...prev, address: event.target.value }))} />
           </Field>
-          <Field label="توضیحات" className="sm:col-span-2">
+          <Field label="توضیحات" hint={contactHelp.description} className="sm:col-span-2">
             <Textarea value={form.description} onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))} />
           </Field>
         </div>
@@ -439,7 +440,7 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
                     </dl>
                   </Section>
 
-                  <Section title="مانده حساب" description="قرارداد: مثبت = بدهکار، منفی = بستانکار">
+                  <Section title="مانده حساب" description={contactHelp.balance}>
                     <div className="flex items-center justify-between gap-3 rounded-2xl bg-muted p-4">
                       <span className="text-sm font-bold text-muted-foreground">مانده</span>
                       <Money value={balance?.balance ?? 0} tone={balanceTone} className="text-lg" />
@@ -468,7 +469,7 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
               label: "تعاملات",
               content: (
                 <div className="space-y-4">
-                  <Section title="افزودن تعامل" description="ثبت یادداشت، تماس یا پیگیری برای این مخاطب">
+                  <Section title="افزودن تعامل" description="ثبت یادداشت، تماس یا پیگیری. اطلاعات ذخیره می‌شود تا بعداً بدانید آخرین ارتباط شما با این مشتری چه بود.">
                     <div className="grid gap-3 sm:grid-cols-2">
                       <Field label="نوع تعامل"><Select value={interactionForm.type} onChange={(e) => setInteractionForm((p) => ({ ...p, type: e.target.value }))}>
                         <option value="note">یادداشت</option><option value="call">تماس</option><option value="follow_up">پیگیری</option><option value="meeting">جلسه</option><option value="visit">بازدید</option><option value="email">ایمیل</option><option value="sms">پیامک</option><option value="complaint">شکایت</option>
@@ -489,7 +490,7 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
               label: "تراکنش‌ها",
               content: (
                 <div className="space-y-4">
-                  <Section title="ثبت تراکنش مستقل" description="برای دریافت/پرداخت خارج از فاکتور؛ مستقیم در transactions ثبت می‌شود.">
+                  <Section title="ثبت تراکنش مستقل" description={contactHelp.directTransaction}>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <Field label="نوع"><Select value={transactionForm.type} onChange={(e) => setTransactionForm((p) => ({ ...p, type: e.target.value as TransactionFormState["type"] }))}><option value="receipt">دریافت</option><option value="payment">پرداخت</option></Select></Field>
                       <Field label="مبلغ (تومان)"><NumberInput value={transactionForm.amountToman} onValueChange={(value) => setTransactionForm((p) => ({ ...p, amountToman: value }))} /></Field>

@@ -27,6 +27,7 @@ import {
 } from "@/src/core/services/product-service";
 import { Badge, Button, DataTable, EmptyState, Field, Input, NumberInput, PanelShell, Section, Select, Spinner, Tabs, useToast, type Column } from "@/src/shared/ui";
 import { Money, PersianDate, toPersianDigits } from "@/src/shared/format";
+import { productHelp } from "@/lib/help/products";
 
 function stockTone(stock: number) {
   if (stock <= 0) return "danger" as const;
@@ -444,30 +445,30 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
   }
 
   const productFormContent = (
-    <Section title={isCreate ? "کالای جدید" : "ویرایش کالا"} description="کد کالا اگر خالی بماند توسط دیتابیس تولید می‌شود.">
+    <Section title={isCreate ? "کالای جدید" : "ویرایش کالا"} description={isCreate ? productHelp.pageIntro : undefined}>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="نام کالا" required error={formError && !productForm.name.trim() ? formError : null}>
+        <Field label="نام کالا" required hint={productHelp.name} error={formError && !productForm.name.trim() ? formError : null}>
           <Input value={productForm.name} onChange={(event) => setProductForm((prev) => ({ ...prev, name: event.target.value }))} />
         </Field>
-        <Field label="کد کالا">
+        <Field label="کد کالا" hint={productHelp.code}>
           <Input dir="ltr" className="text-left" value={productForm.code} onChange={(event) => setProductForm((prev) => ({ ...prev, code: event.target.value }))} placeholder="خالی = تولید خودکار" />
         </Field>
-        <Field label="دسته‌بندی">
+        <Field label="دسته‌بندی" hint={productHelp.category}>
           <Select value={productForm.categoryId} onChange={(event) => setProductForm((prev) => ({ ...prev, categoryId: event.target.value }))}>
             <option value="">—</option>
             {categories?.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
           </Select>
         </Field>
-        <Field label="برند">
+        <Field label="برند" hint={productHelp.brand}>
           <Select value={productForm.brandId} onChange={(event) => setProductForm((prev) => ({ ...prev, brandId: event.target.value }))}>
             <option value="">—</option>
             {brands?.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}
           </Select>
         </Field>
-        <Field label="فصل"><Input value={productForm.season} onChange={(event) => setProductForm((prev) => ({ ...prev, season: event.target.value }))} /></Field>
-        <Field label="جنس"><Input value={productForm.material} onChange={(event) => setProductForm((prev) => ({ ...prev, material: event.target.value }))} /></Field>
-        <Field label="آدرس تصویر" className="sm:col-span-2"><Input dir="ltr" className="text-left" value={productForm.imageUrl} onChange={(event) => setProductForm((prev) => ({ ...prev, imageUrl: event.target.value }))} placeholder="https://..." /></Field>
-        <Field label="قیمت خرید پایه (تومان)">
+        <Field label="فصل" hint={productHelp.season}><Input value={productForm.season} onChange={(event) => setProductForm((prev) => ({ ...prev, season: event.target.value }))} /></Field>
+        <Field label="جنس" hint={productHelp.material}><Input value={productForm.material} onChange={(event) => setProductForm((prev) => ({ ...prev, material: event.target.value }))} /></Field>
+        <Field label="آدرس تصویر" hint={productHelp.imageUrl} className="sm:col-span-2"><Input dir="ltr" className="text-left" value={productForm.imageUrl} onChange={(event) => setProductForm((prev) => ({ ...prev, imageUrl: event.target.value }))} placeholder="https://..." /></Field>
+        <Field label="قیمت خرید پایه (تومان)" hint={productHelp.basePurchasePrice}>
           <NumberInput
             value={productForm.basePurchasePriceToman}
             onValueChange={(value) =>
@@ -479,7 +480,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
             }
           />
         </Field>
-        <Field label="درصد سود پایه (%)" hint="وارد کردن درصد، قیمت فروش را محاسبه می‌کند">
+        <Field label="درصد سود پایه (%)" hint={productHelp.profitPercent}>
           <NumberInput
             value={productForm.baseProfitPercent}
             onValueChange={(value) =>
@@ -492,7 +493,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
             placeholder="مثلاً ۲۰"
           />
         </Field>
-        <Field label="قیمت فروش پایه (تومان)">
+        <Field label="قیمت فروش پایه (تومان)" hint={productHelp.baseSalePrice}>
           <NumberInput
             value={productForm.baseSalePriceToman}
             onValueChange={(value) =>
@@ -504,8 +505,8 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
             }
           />
         </Field>
-        <Field label="حداقل موجودی"><NumberInput value={productForm.lowStockThreshold} onValueChange={(value) => setProductForm((prev) => ({ ...prev, lowStockThreshold: value }))} /></Field>
-        <Field label="توضیحات" className="sm:col-span-2"><Input value={productForm.description} onChange={(event) => setProductForm((prev) => ({ ...prev, description: event.target.value }))} /></Field>
+        <Field label="حداقل موجودی" hint={productHelp.lowStockThreshold}><NumberInput value={productForm.lowStockThreshold} onValueChange={(value) => setProductForm((prev) => ({ ...prev, lowStockThreshold: value }))} /></Field>
+        <Field label="توضیحات" hint={productHelp.description} className="sm:col-span-2"><Input value={productForm.description} onChange={(event) => setProductForm((prev) => ({ ...prev, description: event.target.value }))} /></Field>
       </div>
       {isCreate && (
         <div className="mt-4 rounded-2xl border border-dashed border-primary/20 bg-primary/[0.03] p-3">
@@ -568,11 +569,11 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
 
   const variantFormView = (state: VariantFormState, setState: (updater: (prev: VariantFormState) => VariantFormState) => void, includeStock: boolean) => (
     <div className="grid gap-3 sm:grid-cols-2">
-      <Field label="SKU"><Input dir="ltr" className="text-left" value={state.sku} onChange={(e) => setState((p) => ({ ...p, sku: e.target.value }))} /></Field>
-      <Field label="بارکد"><Input dir="ltr" className="text-left" value={state.barcode} onChange={(e) => setState((p) => ({ ...p, barcode: e.target.value }))} /></Field>
-      <Field label="رنگ"><Input value={state.color} onChange={(e) => setState((p) => ({ ...p, color: e.target.value }))} /></Field>
-      <Field label="سایز"><Input value={state.size} onChange={(e) => setState((p) => ({ ...p, size: e.target.value }))} /></Field>
-      <Field label="قیمت خرید (تومان)">
+      <Field label="SKU" hint={productHelp.sku}><Input dir="ltr" className="text-left" value={state.sku} onChange={(e) => setState((p) => ({ ...p, sku: e.target.value }))} /></Field>
+      <Field label="بارکد" hint={productHelp.barcode}><Input dir="ltr" className="text-left" value={state.barcode} onChange={(e) => setState((p) => ({ ...p, barcode: e.target.value }))} /></Field>
+      <Field label="رنگ" hint={productHelp.variantColor}><Input value={state.color} onChange={(e) => setState((p) => ({ ...p, color: e.target.value }))} /></Field>
+      <Field label="سایز" hint={productHelp.variantSize}><Input value={state.size} onChange={(e) => setState((p) => ({ ...p, size: e.target.value }))} /></Field>
+      <Field label="قیمت خرید (تومان)" hint={productHelp.variantPurchasePrice}>
         <NumberInput
           value={state.purchasePriceToman}
           onValueChange={(v) => setState((p) => ({
@@ -582,7 +583,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
           }))}
         />
       </Field>
-      <Field label="درصد سود (%)" hint="وارد کردن درصد، قیمت فروش را محاسبه می‌کند">
+      <Field label="درصد سود (%)" hint={productHelp.profitPercent}>
         <NumberInput
           value={state.profitPercent}
           onValueChange={(v) => setState((p) => ({
@@ -593,7 +594,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
           placeholder="مثلاً ۲۰"
         />
       </Field>
-      <Field label="قیمت فروش (تومان)">
+      <Field label="قیمت فروش (تومان)" hint={productHelp.variantSalePrice}>
         <NumberInput
           value={state.salePriceToman}
           onValueChange={(v) => setState((p) => ({
@@ -603,7 +604,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
           }))}
         />
       </Field>
-      {includeStock && <Field label="موجودی اولیه"><NumberInput value={state.initialStock} onValueChange={(v) => setState((p) => ({ ...p, initialStock: v }))} /></Field>}
+      {includeStock && <Field label="موجودی اولیه" hint={productHelp.initialStock}><NumberInput value={state.initialStock} onValueChange={(v) => setState((p) => ({ ...p, initialStock: v }))} /></Field>}
     </div>
   );
 
@@ -727,7 +728,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
                 <div className="space-y-4">
                   <DataTable rows={product!.variants} columns={variantColumns} keyExtractor={(row) => row.id} empty={<EmptyState title="واریانتی برای این کالا ثبت نشده" />} />
                   {stockAdjustForm.variantId && (
-                    <Section title="تعدیل موجودی" description="اختلاف موجودی از مسیر fn_add_stock_movement با type='adjust' ثبت می‌شود.">
+                    <Section title="تعدیل موجودی" description="بعد از شمارش فیزیکی انبار، اگر تعداد واقعی با سیستم فرق دارد، اینجا تصحیح کنید.">
                       <div className="grid gap-3 sm:grid-cols-2">
                         <Field label="حالت تعدیل">
                           <Select value={stockAdjustForm.mode} onChange={(event) => setStockAdjustForm((prev) => ({ ...prev, mode: event.target.value as StockAdjustFormState["mode"] }))}>
@@ -735,7 +736,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
                             <option value="delta">افزایش/کاهش نسبت به موجودی فعلی</option>
                           </Select>
                         </Field>
-                        <Field label={stockAdjustForm.mode === "new_stock" ? "موجودی جدید" : "مقدار تغییر (+/-)"}>
+                        <Field label={stockAdjustForm.mode === "new_stock" ? "موجودی جدید" : "مقدار تغییر (+/-)"} hint={productHelp.stockAdjustMode}>
                           <NumberInput value={stockAdjustForm.value} onValueChange={(value) => setStockAdjustForm((prev) => ({ ...prev, value }))} />
                         </Field>
                         <Field label="دلیل" className="sm:col-span-2"><Input value={stockAdjustForm.reason} onChange={(event) => setStockAdjustForm((prev) => ({ ...prev, reason: event.target.value }))} placeholder="مثلاً: انبارگردانی" /></Field>
@@ -775,7 +776,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
               label: "تاریخچه قیمت",
               content: (
                 <div className="space-y-4">
-                  <Section title="تغییر قیمت" description="از RPC رسمی change_product_price استفاده می‌شود و در product_price_history ثبت می‌شود.">
+                  <Section title="تغییر قیمت" description="قیمت جدید در تاریخچه قیمت ثبت می‌شود تا بدانید چه زمانی قیمت تغییر کرده. قیمت قدیمی فاکتورهای ثبت‌شده تغییر نمی‌کند.">
                     {!priceFormOpen ? (
                       <Button onClick={() => setPriceFormOpen(true)}>تغییر قیمت</Button>
                     ) : (
@@ -812,7 +813,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
                               }))}
                             />
                           </Field>
-                          <Field label="دلیل تغییر" className="sm:col-span-2"><Input value={priceForm.reason} onChange={(event) => setPriceForm((prev) => ({ ...prev, reason: event.target.value }))} placeholder="مثلاً: بروزرسانی لیست قیمت" /></Field>
+                          <Field label="دلیل تغییر" hint={productHelp.priceChangeReason} className="sm:col-span-2"><Input value={priceForm.reason} onChange={(event) => setPriceForm((prev) => ({ ...prev, reason: event.target.value }))} placeholder="مثلاً: بروزرسانی لیست قیمت" /></Field>
                         </div>
                         <label className="flex items-center gap-2 text-sm text-slate-600">
                           <input type="checkbox" checked={priceForm.applyToVariants} onChange={(event) => setPriceForm((prev) => ({ ...prev, applyToVariants: event.target.checked }))} />
