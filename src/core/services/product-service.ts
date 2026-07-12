@@ -405,7 +405,10 @@ export async function updateVariant(id: string, patch: VariantUpdatePatch): Prom
 }
 
 function invalidateProductQueries(queryClient: ReturnType<typeof useQueryClient>, id?: string) {
+  // "products"، "all-variants" و "all-products" هر سه باید invalidate شوند.
+  // React Query v5: ["all-variants",...] با ["products"] prefix match نمی‌شود.
   queryClient.invalidateQueries({ queryKey: ["products"] });
+  queryClient.invalidateQueries({ queryKey: ["all-variants"] });
   queryClient.invalidateQueries({ queryKey: ["entity", "product"] });
   if (id) {
     queryClient.invalidateQueries({ queryKey: ["entity", "product", "detail", id] });
@@ -447,6 +450,8 @@ export function useChangeProductPrice() {
     onSuccess: (_, input) => {
       invalidateProductQueries(queryClient, input.product_id);
       queryClient.invalidateQueries({ queryKey: ["entity", "product", "price-history", input.product_id] });
+      // all-variants در ProductSelector باید بعد از تغییر قیمت هم stale شود
+      queryClient.invalidateQueries({ queryKey: ["all-variants"] });
       toast({ title: "قیمت کالا ثبت شد", description: input.reason || "تاریخچه قیمت به‌روزرسانی شد", tone: "success" });
     },
     onError: (error) => toast({ title: "خطا در تغییر قیمت", description: (error as Error).message, tone: "error" }),
