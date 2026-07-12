@@ -55,7 +55,7 @@ export function ContactSelector({
         .select("id, name, phone, type")
         .eq("is_active", true)
         .in("type", [filterType, "both"])
-        .order("name")
+        .order("created_at", { ascending: false })
         .limit(5000);
       if (error) throw error;
       return (data as SelectableContact[]) ?? [];

@@ -457,7 +457,10 @@ export async function reactivateContact(id: string) {
 }
 
 function invalidateContactQueries(queryClient: ReturnType<typeof useQueryClient>, id?: string) {
+  // "contacts" و "all-contacts" هر دو باید invalidate شوند.
+  // React Query v5 فقط prefix match می‌کند — ["all-contacts",...] با ["contacts"] match نمی‌شود.
   queryClient.invalidateQueries({ queryKey: ["contacts"] });
+  queryClient.invalidateQueries({ queryKey: ["all-contacts"] });
   queryClient.invalidateQueries({ queryKey: ["contact-balances"] });
   queryClient.invalidateQueries({ queryKey: ["entity", "contact"] });
   if (id) {
