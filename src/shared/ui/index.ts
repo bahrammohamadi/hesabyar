@@ -1,5 +1,7 @@
 export * from "./Button";
 export * from "./IconButton";
+export * from "./PageHeader";
+export * from "./StatCard";
 export * from "./Inputs";
 export * from "./Badge";
 export * from "./Card";
