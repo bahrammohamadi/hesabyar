@@ -1,195 +1,177 @@
 # MIGRATION NOTES — یکپارچه‌سازی سیستم کامپوننت UI
 
-> وضعیت: **در حال بررسی** · برنچ: `design/stitch-refresh` · تاریخ: ۱۴۰۵/۰۵/۰۶
-> این سند فقط یادداشت تصمیم است. تا این لحظه **هیچ کدی تغییر نکرده**.
+> برنچ: `design/stitch-refresh` · آخرین به‌روزرسانی: ۱۴۰۵/۰۵/۰۶
+> وضعیت: **فاز ۱ اجرا شد.** هیچ تغییری در ظاهر صفحات یا منطق کسب‌وکار داده نشده.
 
 ---
 
-## ۱) مسئله
+## ۱) تصمیم نهایی (بازنگری‌شده)
 
-در پروژه دو سیستم کامپوننت UI به‌صورت موازی وجود دارد:
+پس از بررسی محتوایی دو سیستم، تصمیم اولیه **برعکس شد**:
 
-| سیستم | تعداد فایل مصرف‌کننده | تعداد export |
-|---|---|---|
-| `components/shared/ui.tsx` | ۳۲ | ۵ |
-| `src/shared/ui/*` | ۱۹ | ۳۰ (در ۱۲ فایل) |
+| | سیستم |
+|---|---|
+| ✅ **باقی‌مانده / اصلی** | `src/shared/ui/*` |
+| ⏳ **منسوخ، حذف تدریجی** | `components/shared/ui.tsx` |
 
-۶ فایل **همزمان از هر دو** import می‌کنند:
+### چرا برعکس شد؟
 
-```
-app/(app)/crm/rfm/page.tsx
-app/(app)/inventory/as-of/page.tsx
-app/(app)/inventory/stock-card/page.tsx
-app/(app)/purchases/page.tsx
-app/(app)/reports/sellers/page.tsx
-app/(app)/sales/page.tsx
-```
-
-این وضعیت نتیجه‌ی یک مهاجرت نیمه‌تمام از `components/` به `src/` است.
-
----
-
-## ۲) ⚠️ نکته مهم: عدد «۳۲ در برابر ۱۶» گمراه‌کننده است
-
-تصمیم اولیه («`components/shared/ui.tsx` سیستم اصلی بماند») بر پایه‌ی تعداد فایل‌های مصرف‌کننده گرفته شد. اما بررسی محتوا نشان می‌دهد **این دو فایل هم‌وزن نیستند**:
-
-### الف) پوشش کامپوننتی
-
-`components/shared/ui.tsx` فقط **۵ کامپوننت** دارد:
-
-```
-PageHeader · StatCard · Spinner · EmptyState · Modal
-```
-
-`src/shared/ui/*` **۳۰ export** دارد، شامل کل لایه‌ی فرم و داده:
-
-```
-Button · IconButton · Input · NumberInput · Select · Textarea · Field
-DataTable + Column<T> · Badge · StatusPill · Card · Section
-PanelShell · Tabs · Toast · ConfirmDialog · HelpTip · Skeleton
-```
-
-یعنی ۳۲ فایلی که از `components/shared/ui.tsx` استفاده می‌کنند، عمدتاً فقط `PageHeader` و `Modal` می‌گیرند — نه یک سیستم طراحی کامل.
-
-### ب) پشتیبانی از تم و دارک‌مود ← تعیین‌کننده
+تصمیم اولیه بر پایه‌ی «۳۲ فایل در برابر ۱۹ فایل» بود — یعنی تعداد *مصرف‌کننده*، نه وزن سیستم. بررسی محتوا نشان داد این معیار گمراه‌کننده است:
 
 | معیار | `components/shared/ui.tsx` | `src/shared/ui/*` |
 |---|---|---|
-| توکن معنایی (`bg-card`, `text-muted-foreground`) | **۰ مورد** | **۴۹ مورد** |
-| رنگ هاردکد (`slate-*`) | **۲۵ مورد** | کم |
+| تعداد export | ۵ | ۳۰ |
+| توکن معنایی (`bg-card`, `text-muted-foreground`) | **۰** | **۴۹** |
+| رنگ هاردکد (`slate-*`) | **۲۵** | کم |
 | واریانت `dark:` | **۰** | **۱۳** |
+| پوشش | فقط چیدمان صفحه | فرم، جدول، بازخورد، پنل، تم |
 
-پروژه یک سیستم تم کامل دارد:
-- `app/globals.css` → متغیرهای HSL برای light + بلوک `.dark` (خط ۸۴)
-- `tailwind.config.ts` → نگاشت `card`, `muted`, `primary`, `border`, `destructive`, `success`, `warning`, `info`
-- `lib/theme.ts` + `components/shared/theme-provider.tsx` → تعویض تم و مود
-
-**`components/shared/ui.tsx` از این سیستم استفاده نمی‌کند.** رنگ‌هایش (`slate-900`, `slate-400`, …) ثابت‌اند و به دارک‌مود واکنش نشان نمی‌دهند.
-
-### نتیجه
-
-اگر `components/shared/ui.tsx` مبنا شود، بازطراحی UI عملاً یعنی **بازنویسی آن با توکن‌های معنایی** — یعنی همان کاری که در `src/shared/ui/*` قبلاً انجام شده.
-
-📌 **پیشنهاد:** پیش از شروع بازطراحی، این تصمیم بازبینی شود. گزینه‌ها در بخش ۵.
+پروژه یک سیستم تم کامل دارد (`app/globals.css` با بلوک `.dark` در خط ۸۴ + نگاشت در `tailwind.config.ts` + `lib/theme.ts`). `components/shared/ui.tsx` از آن استفاده نمی‌کند و به دارک‌مود واکنش نشان نمی‌دهد. تثبیت آن یعنی بازنویسی چیزی که در سیستم دیگر از قبل درست کار می‌کند.
 
 ---
 
-## ۳) exportهای موجود در `src/shared/ui/*` که معادلی در `components/shared/ui.tsx` ندارند
+## ۲) فاز ۱ — آنچه انجام شد ✅
 
-**۲۷ مورد از ۳۰ export بدون معادل‌اند.** فقط `Spinner` و `EmptyState` در هر دو وجود دارند.
+### الف) انتقال دو کامپوننت به سیستم اصلی
 
-### فرم و ورودی — بدون معادل
-| Export | فایل |
+| کامپوننت | مقصد جدید |
 |---|---|
-| `Input` | `Inputs.tsx` |
-| `NumberInput` | `Inputs.tsx` |
-| `Select` | `Inputs.tsx` |
-| `Textarea` | `Inputs.tsx` |
-| `Field` | `Inputs.tsx` |
+| `PageHeader` (+ helper داخلی `HeaderHelpTip`) | `src/shared/ui/PageHeader.tsx` |
+| `StatCard` | `src/shared/ui/StatCard.tsx` |
 
-### اکشن — بدون معادل
-| Export | فایل |
-|---|---|
-| `Button` + `ButtonProps` / `ButtonVariant` / `ButtonSize` | `Button.tsx` |
-| `IconButton` | `IconButton.tsx` |
+کد **عیناً** منتقل شد. با `diff` تأیید شد که بدنه‌ی هر سه (`PageHeader`, `StatCard`, `HeaderHelpTip`) بایت‌به‌بایت با نسخه‌ی اصلی یکسان است. بازنویسی با توکن‌های معنایی **انجام نشد** — فاز بعدی.
 
-### نمایش داده — بدون معادل
-| Export | فایل |
-|---|---|
-| `DataTable` | `Table.tsx` |
-| `Column<T>` (type) | `Table.tsx` |
-| `Badge` + `BadgeTone` | `Badge.tsx` |
-| `StatusPill` | `Badge.tsx` |
-| `Card` | `Card.tsx` |
-| `Section` | `Card.tsx` |
+هر دو به `src/shared/ui/index.ts` اضافه شدند.
 
-### چیدمان و ناوبری — بدون معادل
-| Export | فایل |
-|---|---|
-| `PanelShell` | `PanelShell.tsx` |
-| `Tabs` + `TabItem` | `Tabs.tsx` |
+> نکته: `HeaderHelpTip` عمداً با `HelpTip` موجود ادغام **نشد**. ابعادشان فرق دارد (`h-6/w-6` + آیکون ۱۴ + عرض `w-72` در برابر `h-5/w-5` + آیکون ۱۳ + عرض `w-64`). ادغام یک تغییر بصری است.
 
-### بازخورد و سرویس‌های سراسری — بدون معادل
-| Export | فایل | نکته |
+### ب) حذف کد مرده
+
+`components/ui/tabs.tsx` حذف شد. با سه الگوی جستجوی مستقل تأیید شد که هیچ فایلی آن را import نمی‌کند (تنها ارجاعات، تعاریف خودش بودند). پوشه‌ی `components/ui/` اکنون خالی است.
+
+### ج) تبدیل `components/shared/ui.tsx` به shim موقت
+
+فایل حذف نشد تا ۳۰ فایل مصرف‌کننده بدون تغییر کار کنند:
+
+```ts
+export { PageHeader, StatCard } from "@/src/shared/ui";  // منتقل‌شده
+export function Spinner(...)      // هنوز اینجا — به بخش ۳ مراجعه کنید
+export function EmptyState(...)   // هنوز اینجا
+export function Modal(...)        // هنوز اینجا
+```
+
+**هیچ فایل مصرف‌کننده‌ای تغییر نکرد.** فقط ۴ فایل لمس شد.
+
+### د) تأیید سلامت
+
+```
+npx tsc --noEmit   → صفر خطا
+npx vitest run     → ۱۴/۱۴ سبز
+npm run build      → موفق، ۶۹/۶۹ صفحه
+```
+
+---
+
+## ۳) 🔴 سه موردی که عمداً منتقل نشدند — نیازمند تصمیم شما
+
+### `EmptyState` — بلوکه‌کننده‌ی واقعی
+
+نسخه‌ی `src` این دو پراپ را **ندارد**:
+
+| پراپ | تعداد استفاده | نسخه `src` |
 |---|---|---|
-| `ToastProvider` | `Toast.tsx` | 🔴 در `components/providers.tsx` استفاده شده |
-| `useToast` | `Toast.tsx` | در ۵ فایل + سرویس‌های core |
-| `ConfirmProvider` | `ConfirmDialog.tsx` | 🔴 در `components/providers.tsx` استفاده شده |
-| `useConfirm` + `ConfirmOptions` / `ConfirmTone` | `ConfirmDialog.tsx` | |
-| `Skeleton` | `Feedback.tsx` | |
-| `HelpTip` | `HelpTip.tsx` | |
+| `icon` | ۲۵ مورد | ❌ ندارد |
+| `message` | ۹ مورد | ❌ ندارد |
 
-### دارای معادل (نیازمند یکسان‌سازی، نه حذف)
-| Export | تفاوت |
-|---|---|
-| `Spinner` | امضای متفاوت: نسخه `src` مقدار پیش‌فرض `"در حال بارگذاری..."` دارد، نسخه `components` ندارد |
-| `EmptyState` | نسخه `components` پراپ‌های اضافی `icon` و `message` دارد؛ نسخه `src` ندارد |
+جمعاً **۳۴ محل در ۱۷ فایل**. re-export ساده ⇒ ۳۴ خطای TypeScript + ناپدید شدن آیکون‌ها.
 
-### فقط در `components/shared/ui.tsx` (بدون معادل در `src`)
-`PageHeader` · `StatCard` · `Modal`
+تفاوت بصری هم هست: نسخه `components` بدون کادر است (`py-16`)، نسخه `src` کادر خط‌چین دارد (`border-dashed` + `p-8`).
 
----
-
-## ۴) 🔴 وابستگی بحرانی: `src/shared/ui` قابل حذف ساده نیست
-
-`src/shared/ui/*` صرفاً توسط صفحات مصرف نمی‌شود؛ **زیرساخت runtime به آن وابسته است**:
+<details>
+<summary>۱۷ فایل متأثر</summary>
 
 ```
-components/providers.tsx          → ToastProvider, ConfirmProvider  ← ریشه‌ی درخت اپ
-src/core/picker/PickerHost.tsx    → UI
-src/core/services/contact-service.ts   → useToast
-src/core/services/invoice-service.ts   → useToast
-src/core/services/product-service.ts   → useToast
-src/shared/panels/ContactPanel.tsx     → PanelShell و…
-src/shared/panels/InvoicePanel.tsx
-src/shared/panels/ProductPanel.tsx
-src/shared/panels/PlaceholderPanels.tsx
+app/(app)/activity/page.tsx
+app/(app)/checks/page.tsx
+app/(app)/crm/rfm/page.tsx
+app/(app)/inventory/as-of/page.tsx
+app/(app)/inventory/stock-card/page.tsx
+app/(app)/products/[id]/page.tsx
+app/(app)/purchases/returns/page.tsx
+app/(app)/reports/customer-profitability/page.tsx
+app/(app)/reports/page.tsx            ← ۷ محل، بیشترین
+app/(app)/reports/profitability/page.tsx
+app/(app)/reports/sellers/page.tsx
+app/(app)/sales/orders/page.tsx
+app/(app)/sales/returns/page.tsx
+app/(app)/settings/price-lists/page.tsx
+components/shared/crm-automation-page.tsx
+components/shared/crm-page.tsx
+components/shared/loyalty-page.tsx
+```
+</details>
+
+**گزینه‌ها:** (الف) افزودن `icon` و `message` به نسخه `src` به‌عنوان پراپ اختیاری — سازگار با گذشته، کم‌ریسک · (ب) بازنویسی ۳۴ محل · (ج) فعلاً بماند.
+
+### `Spinner` — تفاوت ظاهری خاموش
+
+| | `components` | `src` |
+|---|---|---|
+| `label` پیش‌فرض | ندارد | `"در حال بارگذاری..."` |
+| فاصله | `py-12` | `py-8` |
+| رنگ | `text-slate-400` | `text-muted-foreground` |
+
+۳۰ محل `<Spinner />` بدون پراپ است. با سوییچ، **در هر ۳۰ محل ناگهان متن «در حال بارگذاری...» ظاهر می‌شود** و ارتفاع تغییر می‌کند. خطای تایپ نمی‌دهد — یعنی بی‌صدا رخ می‌دهد.
+
+**گزینه‌ها:** (الف) `label` را در نسخه `src` اختیاری بدون پیش‌فرض کن · (ب) پذیرش تغییر ظاهر · (ج) فعلاً بماند.
+
+### `Modal` — معادلی وجود ندارد
+
+در `src/shared/ui` هیچ `Modal` نیست. `PanelShell` جایگزین نیست:
+
+| | `Modal` | `PanelShell` |
+|---|---|---|
+| نمایش | overlay + backdrop از طریق `createPortal` | پنل کشویی درون `PanelHost` |
+| backdrop | `bg-black/40` دارد | ندارد |
+| کنترل | `open` / `onClose` | فقط `onClose` |
+| اندازه | `md` / `lg` / `xl` | ندارد |
+| موبایل | `mobileFullscreen` | ندارد |
+
+در ۱۶ فایل استفاده می‌شود. **گزینه‌ها:** (الف) انتقال عیناً به `src/shared/ui/Modal.tsx` — ساده و بی‌ریسک · (ب) ادغام با معماری Panel Manager — تغییر رفتاری، فاز جدا.
+
+---
+
+## ۴) وابستگی بحرانی که ترتیب کار را تعیین می‌کند
+
+`src/shared/ui` فقط توسط صفحات مصرف نمی‌شود؛ زیرساخت runtime به آن وابسته است:
+
+```
+components/providers.tsx              → ToastProvider, ConfirmProvider  ← ریشه‌ی درخت اپ
+src/core/picker/PickerHost.tsx
+src/core/services/{contact,invoice,product}-service.ts  → useToast
+src/shared/panels/{Contact,Invoice,Product,Placeholder}Panel.tsx
 ```
 
-`ToastProvider` و `ConfirmProvider` در `components/providers.tsx` کل اپ را می‌پوشانند. حذف `src/shared/ui` بدون جایگزینی این دو، **کل اپلیکیشن را می‌شکند**.
-
-بنابراین «حذف تدریجی» باید با این ترتیب انجام شود و نه هیچ ترتیب دیگری:
-
-1. کامپوننت‌های برگ (`Badge`, `Skeleton`, `HelpTip`)
-2. فرم‌ها (`Input`, `Select`, `Field`, …)
-3. داده (`DataTable`, `Card`, `Section`)
-4. چیدمان (`PanelShell`, `Tabs`)
-5. **آخر از همه:** `ToastProvider` / `ConfirmProvider` — نیازمند مهاجرت هم‌زمان `providers.tsx` + ۳ سرویس core + ۴ پنل
+چون **جهت مهاجرت اکنون به‌سمت `src` است**، این وابستگی دیگر خطر نیست — بلکه تأییدی بر درستی تصمیم است. `src/shared/ui` هیچ import ای از `components/` ندارد (بررسی شد) پس ریسک import حلقوی صفر است.
 
 ---
 
-## ۵) گزینه‌های پیش‌رو
+## ۵) نقشه‌ی فازهای بعدی
 
-### گزینه A — تثبیت `components/shared/ui.tsx` (تصمیم فعلی)
-- باید ۲۷ کامپوننت به آن اضافه شود
-- باید ۲۵ رنگ هاردکد با توکن معنایی جایگزین شود تا دارک‌مود کار کند
-- ۱۹ فایل باید import عوض کنند
-- ریسک: بازنویسی چیزی که کار می‌کند
-
-### گزینه B — تثبیت `src/shared/ui/*` ✅ پیشنهادی
-- فقط ۳ کامپوننت (`PageHeader`, `StatCard`, `Modal`) باید منتقل شود
-- سازگاری با تم/دارک‌مود از پیش موجود است
-- ۳۲ فایل باید import عوض کنند (تغییر مکانیکی مسیر، نه بازنویسی)
-- زیرساخت core دست‌نخورده می‌ماند
-
-### گزینه C — سیستم سوم بر پایه‌ی `DESIGN.md`
-- منطقی اگر بازطراحی عمیق باشد
-- هر دو سیستم قدیمی به‌تدریج بازنشسته می‌شوند
-- پرهزینه‌ترین گزینه
-
-**توصیه:** اگر بازطراحی شامل دارک‌مود یا تعویض تم است → گزینه B یا C. گزینه A فقط وقتی منطقی است که دارک‌مود کنار گذاشته شود.
+| فاز | کار | وضعیت |
+|---|---|---|
+| ۱ | انتقال `PageHeader` + `StatCard`، حذف `tabs.tsx`، ساخت shim | ✅ انجام شد |
+| ۲ | تصمیم درباره `EmptyState` / `Spinner` / `Modal` (بخش ۳) | ⏳ منتظر شما |
+| ۳ | تغییر import در ۳۰ فایل از `@/components/shared/ui` به `@/src/shared/ui` | ⏳ |
+| ۴ | حذف کامل `components/shared/ui.tsx` | ⏳ |
+| ۵ | بازنویسی `PageHeader` و `StatCard` با توکن معنایی + پشتیبانی dark | ⏳ |
 
 ---
 
-## ۶) یادداشت جانبی: سیستم سوم Tabs
+## ۶) قوانین در حین بازطراحی
 
-`components/ui/tabs.tsx` وجود دارد (`Tabs`, `TabsList`, `TabsTrigger`, `TabsContent`) اما **هیچ فایلی آن را import نمی‌کند**. کد مرده است و می‌تواند بدون ریسک حذف شود.
-
----
-
-## ۷) قوانین در حین بازطراحی
-
-- ❌ import جدید از `src/shared/ui` در فایل‌های تازه اضافه نکنید تا تصمیم بخش ۵ نهایی شود
-- ❌ منطق کسب‌وکار و کوئری‌های Supabase در جریان این مهاجرت تغییر نکند
+- ✅ در فایل‌های **جدید** فقط از `@/src/shared/ui` import کنید
+- ❌ به `components/shared/ui.tsx` چیزی اضافه نکنید — این فایل فقط کوچک می‌شود
+- ❌ منطق کسب‌وکار و کوئری‌های Supabase در جریان مهاجرت تغییر نکند
 - ✅ هر تغییر با `npx tsc --noEmit` و `npx vitest run` تأیید شود
-- ✅ ۶ فایلی که از هر دو سیستم import می‌کنند، اولویت پاک‌سازی‌اند
+- ⚠️ مراقب تغییرات بصری خاموش باشید (مثل `Spinner`) که کامپایلر آن‌ها را نمی‌گیرد
