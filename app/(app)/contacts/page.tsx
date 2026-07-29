@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
+import { useDemoGuard } from "@/lib/hooks/useDemoGuard";
 import { PageHeader, Spinner, EmptyState } from "@/components/shared/ui";
 import { Button, Card, Select } from "@/src/shared/ui";
 import { CrmKpiCard, CustomerTierBadge } from "./components/ContactsPieces";
@@ -31,6 +32,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
   const [sortBy, setSortBy] = useState<"name_asc" | "name_desc" | "code_asc" | "code_desc" | "balance_high" | "balance_low" | "newest">("code_desc");
   const qc = useQueryClient();
   const { openEntity } = usePanelManager();
+  const { guard: demoGuard } = useDemoGuard();
   const autoOpenCreateRef = useRef(false);
 
   const { data: contacts, isLoading } = useQuery({
@@ -73,12 +75,13 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
   });
 
   const handleDelete = useCallback(async (id: string) => {
+    if (demoGuard("حذف مخاطب")) return;
     if (!confirm("آیا از حذف این شخص مطمئن هستید؟")) return;
     const supabase = createClient();
     await supabase.from("contacts").update({ is_active: false }).eq("id", id);
     qc.invalidateQueries({ queryKey: ["contacts"] });
     qc.invalidateQueries({ queryKey: ["contact-balances"] });
-  }, [qc]);
+  }, [qc, demoGuard]);
 
   const filtered = useMemo(() => {
     let result = contacts ?? [];
