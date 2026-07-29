@@ -7,6 +7,14 @@ import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, Spinner, EmptyState } from "@/components/shared/ui";
+import { Badge, Button, Card, DataTable } from "@/src/shared/ui";
+import {
+  CHART_SERIES,
+  CHART_TOKENS,
+  CHART_TOOLTIP_STYLE,
+  ChartCard,
+  ReportKpiCard,
+} from "./components/ReportPieces";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { formatToman, formatNumber, toFaDigits } from "@/lib/utils/format";
@@ -45,7 +53,8 @@ const TABS: { id: TabId; label: string; icon: typeof TrendingUp }[] = [
   { id: "profit", label: "سود و زیان", icon: TrendingUp },
 ];
 
-const COLORS = ["#1d60f2", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
+// پالت نمودارها از توکن‌های معنایی پروژه می‌آید (نه hex خام مرجع).
+const COLORS = CHART_SERIES;
 
 function csvEscape(value: unknown) {
   const text = value == null ? "" : String(value);
@@ -101,33 +110,23 @@ function SalesReport({ orgId }: { orgId: string }) {
   return (
     <div className="space-y-6">
       {/* خلاصه آمار */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
-          <div className="text-2xl font-bold text-primary">{formatToman(summary?.sales_today ?? 0)}</div>
-          <div className="text-xs text-slate-500 mt-1">فروش امروز</div>
-        </div>
-        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
-          <div className="text-2xl font-bold text-emerald-600">{formatToman(summary?.sales_month ?? 0)}</div>
-          <div className="text-xs text-slate-500 mt-1">فروش ماه</div>
-        </div>
-        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
-          <div className="text-2xl font-bold text-slate-600">{toFaDigits(summary?.sales_today_count ?? 0)}</div>
-          <div className="text-xs text-slate-500 mt-1">فاکتور امروز</div>
-        </div>
-        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
-          <div className="text-2xl font-bold text-amber-600">{formatToman(summary?.profit_month ?? 0)}</div>
-          <div className="text-xs text-slate-500 mt-1">سود ماه</div>
-        </div>
+      <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4">
+        <ReportKpiCard label="فروش امروز" value={formatToman(summary?.sales_today ?? 0, false)} unit="تومان" icon={TrendingUp} tone="primary" />
+        <ReportKpiCard label="فروش ماه" value={formatToman(summary?.sales_month ?? 0, false)} unit="تومان" icon={Wallet} />
+        <ReportKpiCard label="فاکتور امروز" value={toFaDigits(summary?.sales_today_count ?? 0)} unit="فاکتور" icon={Calendar} />
+        <ReportKpiCard label="سود ماه" value={formatToman(summary?.profit_month ?? 0, false)} unit="تومان" icon={TrendingUp} />
       </div>
 
       {/* انتخاب بازه زمانی */}
-      <div className="flex gap-2">
+      <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
         {(["7d", "30d", "90d", "1y"] as const).map((p) => (
           <button
             key={p}
             onClick={() => setPeriod(p)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-              period === p ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-primary/5"
+            className={`shrink-0 rounded-xl px-4 py-2 text-sm font-bold transition focus:outline-none focus:ring-2 focus:ring-ring ${
+              period === p
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "border border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground"
             }`}
           >
             {p === "7d" ? "۷ روز" : p === "30d" ? "۳۰ روز" : p === "90d" ? "۹۰ روز" : "یک سال"}
@@ -136,8 +135,8 @@ function SalesReport({ orgId }: { orgId: string }) {
       </div>
 
       {/* نمودار */}
-      <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur sm:p-6">
-        <h3 className="font-semibold text-slate-800 mb-4">نمودار فروش</h3>
+      <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-6">
+        <h3 className="mb-4 text-sm font-extrabold text-foreground">نمودار فروش</h3>
         {isLoading ? (
           <Spinner />
         ) : !chartData?.length ? (
@@ -146,18 +145,18 @@ function SalesReport({ orgId }: { orgId: string }) {
           <div className="h-72" dir="ltr">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="#94a3b8" />
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_TOKENS.grid} />
+                <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke={CHART_TOKENS.axis} />
                 <YAxis
                   tick={{ fontSize: 11 }}
-                  stroke="#94a3b8"
+                  stroke={CHART_TOKENS.axis}
                   tickFormatter={(v) => (v >= 1000000 ? `${v / 1000000}M` : `${v / 1000}k`)}
                 />
                 <Tooltip
                   formatter={(v: number) => [formatNumber(v * 10) + " تومان", "فروش"]}
-                  contentStyle={{ fontFamily: "Vazirmatn", fontSize: 12, direction: "rtl" }}
+                  contentStyle={CHART_TOOLTIP_STYLE}
                 />
-                <Line type="monotone" dataKey="فروش" stroke="#1d60f2" strokeWidth={2} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="فروش" stroke={CHART_TOKENS.primary} strokeWidth={2} dot={{ r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -218,8 +217,8 @@ function ProductsReport({ orgId }: { orgId: string }) {
   return (
     <div className="space-y-6">
       {/* پرفروش‌ترین‌ها */}
-      <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur sm:p-6">
-        <h3 className="font-semibold text-slate-800 mb-4">پرفروش‌ترین محصولات (۳۰ روز)</h3>
+      <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-6">
+        <h3 className="mb-4 text-sm font-extrabold text-foreground">پرفروش‌ترین محصولات (۳۰ روز)</h3>
         {isLoading ? (
           <Spinner />
         ) : !topProducts?.length ? (
@@ -228,14 +227,14 @@ function ProductsReport({ orgId }: { orgId: string }) {
           <div className="h-72" dir="ltr">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={topProducts} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis type="number" tick={{ fontSize: 11 }} stroke="#94a3b8" tickFormatter={(v) => `${v / 1000000}M`} />
-                <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} stroke="#94a3b8" width={100} />
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_TOKENS.grid} />
+                <XAxis type="number" tick={{ fontSize: 11 }} stroke={CHART_TOKENS.axis} tickFormatter={(v) => `${v / 1000000}M`} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} stroke={CHART_TOKENS.axis} width={100} />
                 <Tooltip
                   formatter={(v: number) => [formatNumber(v) + " تومان", "درآمد"]}
-                  contentStyle={{ fontFamily: "Vazirmatn", fontSize: 12, direction: "rtl" }}
+                  contentStyle={CHART_TOOLTIP_STYLE}
                 />
-                <Bar dataKey="revenue" fill="#1d60f2" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="revenue" fill={CHART_TOKENS.primary} radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -243,16 +242,16 @@ function ProductsReport({ orgId }: { orgId: string }) {
       </div>
 
       {/* کالاهای کم‌موجود */}
-      <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur sm:p-6">
-        <h3 className="font-semibold text-slate-800 mb-4">کالاهای کم‌موجود</h3>
+      <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-6">
+        <h3 className="mb-4 text-sm font-extrabold text-foreground">کالاهای کم‌موجود</h3>
         {!lowStock?.length ? (
           <EmptyState icon={Package} message="همه کالاها موجودی کافی دارند" />
         ) : (
           <div className="space-y-2">
             {lowStock.map((v: any, i: number) => (
-              <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+              <div key={i} className="flex items-center justify-between rounded-xl bg-muted/60 p-3">
                 <span className="text-sm font-medium"><EntityLink type="product" id={v.product?.id}>{v.product?.name ?? "نامعلوم"}</EntityLink></span>
-                <span className="text-sm font-bold text-rose-600">{toFaDigits(v.stock_qty)} عدد</span>
+                <span className="text-sm font-bold tabular-nums text-destructive">{toFaDigits(v.stock_qty)} عدد</span>
               </div>
             ))}
           </div>
@@ -296,28 +295,28 @@ function FinancialReport({ orgId }: { orgId: string }) {
     <div className="space-y-6">
       {/* خلاصه مالی */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
-          <div className="text-2xl font-bold text-emerald-600">{formatToman(summary?.cash_total ?? 0)}</div>
-          <div className="text-xs text-slate-500 mt-1">موجودی صندوق و بانک</div>
+        <div className="rounded-[1.5rem] border border-border bg-card p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <div className="text-2xl font-black tabular-nums text-finance-profit">{formatToman(summary?.cash_total ?? 0)}</div>
+          <div className="mt-1 text-xs text-muted-foreground">موجودی صندوق و بانک</div>
         </div>
-        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
-          <div className="text-2xl font-bold text-slate-600">{formatToman(summary?.customers_debt ?? 0)}</div>
-          <div className="text-xs text-slate-500 mt-1">بدهی مشتریان</div>
+        <div className="rounded-[1.5rem] border border-border bg-card p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <div className="text-2xl font-black tabular-nums text-finance-debt">{formatToman(summary?.customers_debt ?? 0)}</div>
+          <div className="mt-1 text-xs text-muted-foreground">بدهی مشتریان</div>
         </div>
-        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
-          <div className="text-2xl font-bold text-rose-600">{formatToman(summary?.suppliers_credit ?? 0)}</div>
-          <div className="text-xs text-slate-500 mt-1">طلب از تأمین‌کنندگان</div>
+        <div className="rounded-[1.5rem] border border-border bg-card p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <div className="text-2xl font-black tabular-nums text-finance-credit">{formatToman(summary?.suppliers_credit ?? 0)}</div>
+          <div className="mt-1 text-xs text-muted-foreground">طلب از تأمین‌کنندگان</div>
         </div>
-        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
-          <div className="text-2xl font-bold text-amber-600">{formatToman(summary?.inventory_value ?? 0)}</div>
-          <div className="text-xs text-slate-500 mt-1">ارزش موجودی انبار</div>
+        <div className="rounded-[1.5rem] border border-border bg-card p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <div className="text-2xl font-black tabular-nums text-warning">{formatToman(summary?.inventory_value ?? 0)}</div>
+          <div className="mt-1 text-xs text-muted-foreground">ارزش موجودی انبار</div>
         </div>
       </div>
 
       {/* نمودار دایره‌ای */}
       {pieData.length > 0 && (
-        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur sm:p-6">
-          <h3 className="font-semibold text-slate-800 mb-4">توزیع حساب‌ها</h3>
+        <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-6">
+          <h3 className="mb-4 text-sm font-extrabold text-foreground">توزیع حساب‌ها</h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -381,27 +380,27 @@ function ContactsReport({ orgId }: { orgId: string }) {
     <div className="space-y-6">
       {/* آمار */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="rounded-[1.5rem] border border-border bg-card p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
           <div className="text-2xl font-bold text-primary">{toFaDigits(stats.customers)}</div>
-          <div className="text-xs text-slate-500 mt-1">مشتریان</div>
+          <div className="mt-1 text-xs text-muted-foreground">مشتریان</div>
         </div>
-        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
-          <div className="text-2xl font-bold text-emerald-600">{toFaDigits(stats.suppliers)}</div>
-          <div className="text-xs text-slate-500 mt-1">تأمین‌کنندگان</div>
+        <div className="rounded-[1.5rem] border border-border bg-card p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <div className="text-2xl font-black tabular-nums text-success">{toFaDigits(stats.suppliers)}</div>
+          <div className="mt-1 text-xs text-muted-foreground">تأمین‌کنندگان</div>
         </div>
-        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
-          <div className="text-2xl font-bold text-rose-600">{formatToman(stats.totalDebt)}</div>
-          <div className="text-xs text-slate-500 mt-1">کل بدهی</div>
+        <div className="rounded-[1.5rem] border border-border bg-card p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <div className="text-2xl font-black tabular-nums text-finance-debt">{formatToman(stats.totalDebt)}</div>
+          <div className="mt-1 text-xs text-muted-foreground">کل بدهی</div>
         </div>
-        <div className="rounded-[22px] border border-white/80 bg-white/90 p-4 text-center shadow-sm shadow-slate-900/[0.04] transition hover:-translate-y-0.5 hover:shadow-lg">
-          <div className="text-2xl font-bold text-amber-600">{formatToman(stats.totalCredit)}</div>
-          <div className="text-xs text-slate-500 mt-1">کل طلب</div>
+        <div className="rounded-[1.5rem] border border-border bg-card p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <div className="text-2xl font-black tabular-nums text-finance-credit">{formatToman(stats.totalCredit)}</div>
+          <div className="mt-1 text-xs text-muted-foreground">کل طلب</div>
         </div>
       </div>
 
       {/* نمودار دایره‌ای */}
-      <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur sm:p-6">
-        <h3 className="font-semibold text-slate-800 mb-4">توزیع اشخاص</h3>
+      <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-6">
+        <h3 className="mb-4 text-sm font-extrabold text-foreground">توزیع اشخاص</h3>
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -426,42 +425,47 @@ function ContactsReport({ orgId }: { orgId: string }) {
       </div>
 
       {/* لیست اشخاص */}
-      <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur sm:p-6">
-        <h3 className="font-semibold text-slate-800 mb-4">لیست اشخاص</h3>
+      <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-6">
+        <h3 className="mb-4 text-sm font-extrabold text-foreground">لیست اشخاص</h3>
         {!contactBalances?.length ? (
           <EmptyState icon={Users} message="شخصی ثبت نشده است" />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="text-right py-2 px-3 font-medium text-slate-500">نام</th>
-                  <th className="text-right py-2 px-3 font-medium text-slate-500">نوع</th>
-                  <th className="text-right py-2 px-3 font-medium text-slate-500">مانده</th>
-                </tr>
-              </thead>
-              <tbody>
-                {contactBalances.slice(0, 10).map((c: any) => (
-                  <tr key={c.contact_id} className="border-b border-slate-50 hover:bg-slate-50">
-                    <td className="py-2 px-3 font-medium">
-                      <div className="flex items-center gap-2">
-                        <EntityLink type="contact" id={c.contact_id}>{c.name}</EntityLink>
-                        <EntityActionMenu type="contact" id={c.contact_id} label={c.name} />
-                      </div>
-                    </td>
-                    <td className="py-2 px-3">
-                      <span className={`badge ${c.type === "customer" ? "bg-blue-100 text-blue-700" : c.type === "supplier" ? "bg-emerald-100 text-emerald-700" : "bg-violet-100 text-violet-700"}`}>
-                        {c.type === "customer" ? "مشتری" : c.type === "supplier" ? "تأمین‌کننده" : "هر دو"}
-                      </span>
-                    </td>
-                    <td className={`py-2 px-3 ${c.balance > 0 ? "text-rose-600" : c.balance < 0 ? "text-emerald-600" : "text-slate-500"}`}>
-                      {c.balance > 0 ? "بدهکار " : c.balance < 0 ? "بستانکار " : ""}{formatToman(Math.abs(c.balance))}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            rows={contactBalances.slice(0, 10)}
+            keyExtractor={(c: any) => c.contact_id}
+            columns={[
+              {
+                key: "name",
+                header: "نام",
+                render: (c: any) => (
+                  <div className="flex items-center gap-2">
+                    <EntityLink type="contact" id={c.contact_id}>{c.name}</EntityLink>
+                    <EntityActionMenu type="contact" id={c.contact_id} label={c.name} />
+                  </div>
+                ),
+              },
+              {
+                key: "type",
+                header: "نوع",
+                render: (c: any) => (
+                  <Badge tone={c.type === "customer" ? "info" : c.type === "supplier" ? "success" : "primary"}>
+                    {c.type === "customer" ? "مشتری" : c.type === "supplier" ? "تأمین‌کننده" : "هر دو"}
+                  </Badge>
+                ),
+              },
+              {
+                key: "balance",
+                header: "مانده",
+                align: "left",
+                render: (c: any) => (
+                  <span className={`font-extrabold tabular-nums ${c.balance > 0 ? "text-finance-debt" : c.balance < 0 ? "text-finance-credit" : "text-muted-foreground"}`}>
+                    {c.balance > 0 ? "بدهکار " : c.balance < 0 ? "بستانکار " : ""}
+                    {formatToman(Math.abs(c.balance))}
+                  </span>
+                ),
+              },
+            ]}
+          />
         )}
       </div>
     </div>
@@ -504,76 +508,68 @@ function ProfitReport({ orgId }: { orgId: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur sm:p-6">
-        <h3 className="font-semibold text-slate-800 mb-4">فروش بر اساس رنگ</h3>
+      <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-6">
+        <h3 className="mb-4 text-sm font-extrabold text-foreground">فروش بر اساس رنگ</h3>
         {(!salesByColor || !salesByColor.length) ? (
           <EmptyState icon={Package} message="داده‌ای موجود نیست" />
         ) : (
           <div className="h-64" dir="ltr">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={salesByColor}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="color" tick={{ fontSize: 11 }} stroke="#94a3b8" />
-                <YAxis tick={{ fontSize: 11 }} stroke="#94a3b8" />
-                <Tooltip formatter={(v: number) => [toFaDigits(v) + " عدد", "تعداد فروش"]} contentStyle={{ fontFamily: "Vazirmatn", fontSize: 12, direction: "rtl" }} />
-                <Bar dataKey="total_sold_qty" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_TOKENS.grid} />
+                <XAxis dataKey="color" tick={{ fontSize: 11 }} stroke={CHART_TOKENS.axis} />
+                <YAxis tick={{ fontSize: 11 }} stroke={CHART_TOKENS.axis} />
+                <Tooltip formatter={(v: number) => [toFaDigits(v) + " عدد", "تعداد فروش"]} contentStyle={CHART_TOOLTIP_STYLE} />
+                <Bar dataKey="total_sold_qty" fill={CHART_TOKENS.success} radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         )}
       </div>
 
-      <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur sm:p-6">
-        <h3 className="font-semibold text-slate-800 mb-4">فروش بر اساس سایز</h3>
+      <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-6">
+        <h3 className="mb-4 text-sm font-extrabold text-foreground">فروش بر اساس سایز</h3>
         {!salesBySize || !salesBySize.length ? (
           <EmptyState icon={Package} message="داده‌ای موجود نیست" />
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {salesBySize.map((s: any) => (
-              <div key={s.size} className="p-4 bg-slate-50 rounded-xl text-center">
+              <div key={s.size} className="rounded-xl border border-border bg-muted/60 p-4 text-center">
                 <div className="text-lg font-bold text-primary">{s.size || "-"}</div>
-                <div className="text-2xl font-bold text-slate-800">{toFaDigits(s.total_sold_qty)}</div>
-                <div className="text-xs text-slate-500">فروش</div>
+                <div className="text-2xl font-black tabular-nums text-foreground">{toFaDigits(s.total_sold_qty)}</div>
+                <div className="text-xs text-muted-foreground">فروش</div>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur sm:p-6">
-        <h3 className="font-semibold text-slate-800 mb-4">پرفروش‌ترین محصولات</h3>
+      <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-6">
+        <h3 className="mb-4 text-sm font-extrabold text-foreground">پرفروش‌ترین محصولات</h3>
         {isLoading ? (
           <Spinner />
         ) : !topProducts?.length ? (
           <EmptyState icon={TrendingUp} message="داده‌ای موجود نیست" />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="text-right py-2 px-3 font-medium text-slate-500">محصول</th>
-                  <th className="text-right py-2 px-3 font-medium text-slate-500">تعداد</th>
-                  <th className="text-right py-2 px-3 font-medium text-slate-500">فروش</th>
-                  <th className="text-right py-2 px-3 font-medium text-slate-500">سود</th>
-                </tr>
-              </thead>
-              <tbody>
-                {topProducts.map((p: any) => (
-                  <tr key={p.product_id} className="border-b border-slate-50 hover:bg-slate-50">
-                    <td className="py-2 px-3 font-medium">
-                      <div className="flex items-center gap-2">
-                        <EntityLink type="product" id={p.product_id}>{p.product_name}</EntityLink>
-                        <EntityActionMenu type="product" id={p.product_id} label={p.product_name} />
-                      </div>
-                    </td>
-                    <td className="py-2 px-3">{toFaDigits(p.total_sold_qty)}</td>
-                    <td className="py-2 px-3 text-primary">{formatToman(p.total_sales_amount)}</td>
-                    <td className="py-2 px-3 text-emerald-600">{formatToman(p.total_profit)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            rows={topProducts as any[]}
+            keyExtractor={(p: any) => p.product_id}
+            columns={[
+              {
+                key: "product",
+                header: "محصول",
+                render: (p: any) => (
+                  <div className="flex items-center gap-2">
+                    <EntityLink type="product" id={p.product_id}>{p.product_name}</EntityLink>
+                    <EntityActionMenu type="product" id={p.product_id} label={p.product_name} />
+                  </div>
+                ),
+              },
+              { key: "qty", header: "تعداد", align: "center", render: (p: any) => <span className="tabular-nums">{toFaDigits(p.total_sold_qty)}</span> },
+              { key: "sales", header: "فروش", align: "left", render: (p: any) => <span className="font-bold tabular-nums text-foreground">{formatToman(p.total_sales_amount)}</span> },
+              { key: "profit", header: "سود", align: "left", render: (p: any) => <span className="font-bold tabular-nums text-finance-profit">{formatToman(p.total_profit)}</span> },
+            ]}
+          />
         )}
       </div>
     </div>
@@ -637,32 +633,30 @@ export function ReportsPageContent({ forcedTab }: { forcedTab?: TabId }) {
   if (!orgId) return <EmptyState icon={Calendar} message="لطفاً ابتدا وارد شوید" />;
 
   return (
-    <div>
+    <div className="space-y-5">
       <PageHeader
         title="گزارش‌ها"
         subtitle="تحلیل عملکرد کسب‌وکار"
         action={
           <div className="flex gap-2">
-            <button onClick={exportExcel} className="btn-secondary flex items-center gap-2 text-sm">
-              <Download size={16} />
-              Excel
-            </button>
-            <button onClick={() => window.print()} className="btn-secondary flex items-center gap-2 text-sm">
-              <Download size={16} />
+            <Button variant="secondary" size="sm" onClick={exportExcel} icon={<Download size={15} />}>
+              خروجی اکسل
+            </Button>
+            <Button variant="secondary" size="sm" onClick={() => window.print()} icon={<Download size={15} />}>
               PDF
-            </button>
+            </Button>
           </div>
         }
       />
 
-      <div className="mb-6 overflow-hidden rounded-[24px] border border-primary/20 bg-gradient-to-l from-primary/[0.08] via-white/90 to-white/70 p-4 shadow-sm shadow-primary/10">
+      <div className="overflow-hidden rounded-[1.75rem] border border-primary/20 bg-primary/[0.05] p-4 shadow-sm">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="font-extrabold text-slate-800">گزارش‌های جدید در دسترس است</h2>
-              <span className="badge bg-primary/10 text-primary">جدید</span>
+              <h2 className="text-sm font-extrabold text-foreground">گزارش‌های جدید در دسترس است</h2>
+              <Badge tone="primary">جدید</Badge>
             </div>
-            <p className="mt-1 text-sm text-slate-500">نمای بدهکاران، سودآوری کالا و فروش روزانه با طراحی تازه و اتصال به پنل‌های جدید.</p>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">نمای بدهکاران، سودآوری کالا و فروش روزانه با طراحی تازه و اتصال به پنل‌های جدید.</p>
           </div>
           <Link href="/reports/overview-v2" className="btn-primary shrink-0 text-sm">
             مشاهده
@@ -671,17 +665,17 @@ export function ReportsPageContent({ forcedTab }: { forcedTab?: TabId }) {
       </div>
 
       {/* تب‌ها */}
-      <div className="mb-6 -mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:rounded-[22px] sm:border sm:border-white/70 sm:bg-white/70 sm:p-2 sm:shadow-sm">
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:rounded-[1.5rem] sm:border sm:border-border sm:bg-card sm:p-2 sm:shadow-sm">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition ${
+              className={`flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-bold transition focus:outline-none focus:ring-2 focus:ring-ring ${
                 activeTab === tab.id
-                  ? "bg-primary text-white shadow-lg shadow-primary/20"
-                  : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-primary/5 hover:text-primary hover:ring-primary/20"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "border border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground"
               }`}
             >
               <Icon size={16} />

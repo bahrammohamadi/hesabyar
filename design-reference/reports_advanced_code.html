@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="fa"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>حساب‌یار | گزارشات پیشرفته</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;400;700;900&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-container": "#004c5f",
+                    "surface-variant": "#e0e3e5",
+                    "secondary": "#712ae2",
+                    "on-secondary-fixed": "#25005a",
+                    "primary-container": "#134e48",
+                    "on-surface": "#191c1e",
+                    "on-primary": "#ffffff",
+                    "surface-container": "#eceef0",
+                    "surface-container-highest": "#e0e3e5",
+                    "background": "#f7f9fb",
+                    "tertiary": "#003442",
+                    "tertiary-fixed": "#b7eaff",
+                    "secondary-container": "#8a4cfc",
+                    "outline": "#707977",
+                    "surface-container-high": "#e6e8ea",
+                    "on-secondary-container": "#fffbff",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#004e61",
+                    "outline-variant": "#bfc8c6",
+                    "on-tertiary-container": "#56c0e2",
+                    "on-primary-fixed-variant": "#154f49",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed-dim": "#d2bbff",
+                    "on-background": "#191c1e",
+                    "surface-tint": "#316761",
+                    "on-error": "#ffffff",
+                    "primary-fixed-dim": "#9ad1c9",
+                    "inverse-surface": "#2d3133",
+                    "on-primary-container": "#87beb6",
+                    "secondary-fixed": "#eaddff",
+                    "surface": "#f7f9fb",
+                    "error": "#ba1a1a",
+                    "on-primary-fixed": "#00201d",
+                    "inverse-on-surface": "#eff1f3",
+                    "on-tertiary": "#ffffff",
+                    "surface-bright": "#f7f9fb",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-primary": "#9ad1c9",
+                    "on-tertiary-fixed": "#001f28",
+                    "primary": "#003631",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-fixed-variant": "#5a00c6",
+                    "surface-container-low": "#f2f4f6",
+                    "primary-fixed": "#b5ede5",
+                    "tertiary-fixed-dim": "#6cd3f7",
+                    "surface-dim": "#d8dadc",
+                    "on-surface-variant": "#404947"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sidebar_width": "260px",
+                    "card_padding": "1.25rem",
+                    "stack_gap": "1rem",
+                    "margin_page": "2rem",
+                    "gutter": "1.5rem"
+            },
+            "fontFamily": {
+                    "headline-md-mobile": ["Vazirmatn"],
+                    "label-numeric": ["Work Sans"],
+                    "body-sm": ["Vazirmatn"],
+                    "display-lg": ["Vazirmatn"],
+                    "body-lg": ["Vazirmatn"],
+                    "body-md": ["Vazirmatn"],
+                    "headline-sm": ["Vazirmatn"],
+                    "headline-md": ["Vazirmatn"]
+            },
+            "fontSize": {
+                    "headline-md-mobile": ["20px", {"lineHeight": "30px", "fontWeight": "600"}],
+                    "label-numeric": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+                    "body-sm": ["14px", {"lineHeight": "22px", "fontWeight": "400"}],
+                    "display-lg": ["36px", {"lineHeight": "52px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-sm": ["20px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "36px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Vazirmatn', sans-serif; background-color: #f7f9fb; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .chart-gradient { background: linear-gradient(180deg, rgba(19, 78, 72, 0.1) 0%, rgba(19, 78, 72, 0) 100%); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="text-on-surface bg-background">
+<!-- Right Sidebar -->
+<aside class="fixed right-0 top-0 h-full w-sidebar_width flex flex-col border-l border-outline-variant bg-surface-container-lowest z-40 hidden md:flex">
+<div class="p-6 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">حساب‌یار</h1>
+<p class="text-body-sm text-on-surface-variant -mt-1">مدیریت هوشمند مالی</p>
+</div>
+</div>
+<nav class="flex-1 px-2 space-y-1 mt-4">
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-xl mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md text-body-md">پیش‌خوان</span>
+</a>
+<a class="bg-primary text-on-primary rounded-xl mx-2 my-1 px-4 py-3 flex items-center gap-3 shadow-md" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-body-md text-body-md">تجزیه و تحلیل</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-xl mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-body-md text-body-md">تراکنش‌ها</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-xl mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-body-md text-body-md">سرمایه‌گذاری</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-xl mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">sync_alt</span>
+<span class="font-body-md text-body-md">حواله‌ها</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-xl mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">credit_card</span>
+<span class="font-body-md text-body-md">کارت‌ها</span>
+</a>
+<div class="pt-4 mt-4 border-t border-outline-variant mx-4">
+<p class="text-xs font-bold text-outline mb-2 px-2">بخش تنظیمات</p>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-xl px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">تنظیمات</span>
+</a>
+</div>
+</nav>
+<div class="p-4 border-t border-outline-variant">
+<button class="w-full text-on-surface-variant hover:bg-error-container hover:text-error rounded-xl px-4 py-3 flex items-center gap-3 transition-all">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-body-md text-body-md">خروج</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="md:mr-sidebar_width min-h-screen pb-24 md:pb-8">
+<!-- Top App Bar -->
+<header class="h-20 bg-surface flex items-center justify-between px-margin_page sticky top-0 z-30">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-primary font-bold">گزارشات و تحلیل بازار</h2>
+<p class="text-body-sm text-on-surface-variant">تحلیل هوشمند عملکرد خرده‌فروشی پوشاک</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden lg:flex items-center bg-surface-container-low rounded-full px-4 py-2 border border-outline-variant w-80">
+<span class="material-symbols-outlined text-outline">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-full" placeholder="جستجو در گزارشات..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<button class="hover:bg-surface-container-low rounded-full p-2 text-on-surface-variant transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</button>
+<button class="hover:bg-surface-container-low rounded-full p-2 text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">chat_bubble</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3 cursor-pointer group">
+<div class="text-left hidden sm:block">
+<p class="text-sm font-bold text-on-surface">آریانا صبوری</p>
+<p class="text-[10px] text-outline text-left">مدیر بازرگانی</p>
+</div>
+<img class="w-10 h-10 rounded-full border-2 border-primary-fixed object-cover" data-alt="A professional business portrait of a modern Persian woman with a confident smile, wearing a stylish minimalist professional outfit. High-key soft lighting, clean background, representative of a corporate leadership profile in a high-end fintech application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmyC6AjCqx68jCECCYEgTuKOOWPERmguoSueQdqurNSN3H1POuRKnVt5-IkjU2uwIX65s4oIr5-rCdLZTge-JfIh8tjtn-S6kFPIF_sCCMTnhQ2aZabPqnYfiS0IVW71uOGwSTeAO1s8PTGgUUZbCuD9SWq9Iq_vdvBZYCi5qsyeVoqi7dbVI2ynI4GAao3NjhiCJa-exPFp3k0bnLhzehPS6uFOKbR0-3c4gMql1GtSc1eu1cTHuoFAppjzHvkXgucN3HcYJPmVoy"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Content Grid -->
+<div class="px-margin_page space-y-gutter">
+<!-- Filters Bar -->
+<div class="flex flex-col md:flex-row items-center justify-between gap-4 bg-surface-container-lowest p-4 rounded-2xl shadow-sm border border-outline-variant/30">
+<div class="flex items-center gap-3 overflow-x-auto scrollbar-hide w-full md:w-auto">
+<button class="bg-primary text-white px-5 py-2 rounded-xl font-body-sm whitespace-nowrap">امروز</button>
+<button class="hover:bg-surface-container-low border border-outline-variant px-5 py-2 rounded-xl font-body-sm whitespace-nowrap">هفته اخیر</button>
+<button class="hover:bg-surface-container-low border border-outline-variant px-5 py-2 rounded-xl font-body-sm whitespace-nowrap">ماه جاری</button>
+<button class="hover:bg-surface-container-low border border-outline-variant px-5 py-2 rounded-xl font-body-sm whitespace-nowrap">انتخاب بازه زمانی</button>
+</div>
+<div class="flex items-center gap-3 w-full md:w-auto">
+<button class="flex-1 md:flex-none flex items-center justify-center gap-2 border border-outline-variant px-4 py-2 rounded-xl hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-lg">filter_alt</span>
+<span class="text-sm">فیلترهای پیشرفته</span>
+</button>
+<button class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary-fixed text-on-primary-fixed px-4 py-2 rounded-xl hover:bg-primary-container hover:text-white transition-colors">
+<span class="material-symbols-outlined text-lg">file_download</span>
+<span class="text-sm">خروجی اکسل</span>
+</button>
+</div>
+</div>
+<!-- Dashboard Row 1: Key Charts -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Main Area Chart (12-column grid spans 8) -->
+<div class="lg:col-span-8 bg-surface-container-lowest p-card_padding rounded-3xl shadow-sm border border-outline-variant/20 flex flex-col">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h3 class="text-lg font-bold text-on-surface">روند فروش روزانه</h3>
+<p class="text-xs text-outline">مقایسه فروش هفته جاری نسبت به هفته قبل</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+<span class="text-xs">هفته جاری</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-outline-variant"></span>
+<span class="text-xs">هفته قبل</span>
+</div>
+</div>
+</div>
+<div class="h-64 w-full relative">
+<div class="absolute inset-0 flex items-end justify-between px-4 pb-2">
+<!-- Simple custom-built SVG graph placeholder -->
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 1000 200">
+<path d="M0,180 Q100,50 200,120 T400,60 T600,140 T800,40 T1000,100 L1000,200 L0,200 Z" fill="url(#grad1)"></path>
+<path d="M0,180 Q100,50 200,120 T400,60 T600,140 T800,40 T1000,100" fill="none" stroke="#134e48" stroke-width="3"></path>
+<defs>
+<lineargradient id="grad1" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:#134e48;stop-opacity:0.2"></stop>
+<stop offset="100%" style="stop-color:#134e48;stop-opacity:0"></stop>
+</lineargradient>
+</defs>
+</svg>
+</div>
+<!-- Axis Labels -->
+<div class="absolute bottom-0 left-0 right-0 flex justify-between text-[10px] text-outline pt-2 border-t border-outline-variant/30">
+<span>شنبه</span><span>یکشنبه</span><span>دوشنبه</span><span>سه‌شنبه</span><span>چهارشنبه</span><span>پنجشنبه</span><span>جمعه</span>
+</div>
+</div>
+</div>
+<!-- Donut Chart (12-column grid spans 4) -->
+<div class="lg:col-span-4 bg-surface-container-lowest p-card_padding rounded-3xl shadow-sm border border-outline-variant/20">
+<h3 class="text-lg font-bold text-on-surface mb-2">توزیع هزینه‌ها</h3>
+<p class="text-xs text-outline mb-6">دسته‌بندی مخارج ماه اخیر</p>
+<div class="flex flex-col items-center">
+<div class="relative w-48 h-48 flex items-center justify-center">
+<!-- Decorative Donut Placeholder -->
+<div class="absolute inset-0 rounded-full border-[18px] border-surface-container"></div>
+<div class="absolute inset-0 rounded-full border-[18px] border-primary border-r-transparent border-b-transparent rotate-45"></div>
+<div class="absolute inset-0 rounded-full border-[18px] border-secondary border-t-transparent border-l-transparent -rotate-12 opacity-80"></div>
+<div class="text-center">
+<p class="text-xs text-outline">مجموع</p>
+<p class="font-label-numeric text-xl font-bold">۴۸.۵ <span class="text-xs">میلیون</span></p>
+</div>
+</div>
+<div class="w-full mt-8 space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+<span class="text-sm">اجاره و انبارداری</span>
+</div>
+<span class="font-label-numeric text-sm font-bold">۴۰٪</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-secondary"></span>
+<span class="text-sm">تبلیغات و مارکتینگ</span>
+</div>
+<span class="font-label-numeric text-sm font-bold">۳۵٪</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-tertiary-container"></span>
+<span class="text-sm">حقوق و دستمزد</span>
+</div>
+<span class="font-label-numeric text-sm font-bold">۲۵٪</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Dashboard Row 2: Profitability Table -->
+<div class="bg-surface-container-lowest rounded-3xl shadow-sm border border-outline-variant/20 overflow-hidden">
+<div class="p-6 flex items-center justify-between border-b border-outline-variant/30">
+<div>
+<h3 class="text-lg font-bold text-on-surface">جدول سودآوری به تفکیک دسته‌بندی</h3>
+<p class="text-xs text-outline">گزارش جامع عملکرد مالی لاین‌های مختلف محصول</p>
+</div>
+<div class="flex gap-2">
+<div class="relative">
+<select class="appearance-none bg-surface-container-low border border-outline-variant rounded-xl pr-10 pl-4 py-2 text-sm focus:ring-primary">
+<option>مرتب‌سازی بر اساس سود</option>
+<option>مرتب‌سازی بر اساس رشد</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2.5 text-outline text-lg pointer-events-none">sort</span>
+</div>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-right">
+<thead class="bg-primary text-white">
+<tr>
+<th class="px-6 py-4 font-body-sm font-bold">دسته محصول</th>
+<th class="px-6 py-4 font-body-sm font-bold">درآمد (تومان)</th>
+<th class="px-6 py-4 font-body-sm font-bold">هزینه نهایی</th>
+<th class="px-6 py-4 font-body-sm font-bold">سود خالص</th>
+<th class="px-6 py-4 font-body-sm font-bold">درصد سود</th>
+<th class="px-6 py-4 font-body-sm font-bold text-center">وضعیت رشد</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-fixed rounded-lg flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">checkroom</span>
+</div>
+<span class="font-bold">پوشاک مردانه</span>
+</div>
+</td>
+<td class="px-6 py-4 font-label-numeric">۴۵۰,۰۰۰,۰۰۰</td>
+<td class="px-6 py-4 font-label-numeric">۲۸۰,۰۰۰,۰۰۰</td>
+<td class="px-6 py-4 font-label-numeric text-primary font-bold">۱۷۰,۰۰۰,۰۰۰</td>
+<td class="px-6 py-4 font-label-numeric">۳۷٪</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded-lg">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span class="text-xs font-bold">۱۲.۴٪+</span>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-secondary-fixed rounded-lg flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">styler</span>
+</div>
+<span class="font-bold">پوشاک زنانه</span>
+</div>
+</td>
+<td class="px-6 py-4 font-label-numeric">۶۸۰,۰۰۰,۰۰۰</td>
+<td class="px-6 py-4 font-label-numeric">۴۲۰,۰۰۰,۰۰۰</td>
+<td class="px-6 py-4 font-label-numeric text-primary font-bold">۲۶۰,۰۰۰,۰۰۰</td>
+<td class="px-6 py-4 font-label-numeric">۳۸٪</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded-lg">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span class="text-xs font-bold">۸.۲٪+</span>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-tertiary-fixed rounded-lg flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">child_care</span>
+</div>
+<span class="font-bold">پوشاک کودک</span>
+</div>
+</td>
+<td class="px-6 py-4 font-label-numeric">۱۲۰,۰۰۰,۰۰۰</td>
+<td class="px-6 py-4 font-label-numeric">۹۵,۰۰۰,۰۰۰</td>
+<td class="px-6 py-4 font-label-numeric text-primary font-bold">۲۵,۰۰۰,۰۰۰</td>
+<td class="px-6 py-4 font-label-numeric">۲۰٪</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-center gap-1 text-red-600 bg-red-50 px-2 py-1 rounded-lg">
+<span class="material-symbols-outlined text-sm">trending_down</span>
+<span class="text-xs font-bold">۳.۱٪-</span>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-surface-container-high rounded-lg flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined">watch</span>
+</div>
+<span class="font-bold">اکسسوری</span>
+</div>
+</td>
+<td class="px-6 py-4 font-label-numeric">۸۵,۰۰۰,۰۰۰</td>
+<td class="px-6 py-4 font-label-numeric">۴۰,۰۰۰,۰۰۰</td>
+<td class="px-6 py-4 font-label-numeric text-primary font-bold">۴۵,۰۰۰,۰۰۰</td>
+<td class="px-6 py-4 font-label-numeric">۵۲٪</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded-lg">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span class="text-xs font-bold">۱۵.۸٪+</span>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 bg-surface-container-low flex items-center justify-center gap-2">
+<button class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white text-outline transition-colors"><span class="material-symbols-outlined">chevron_right</span></button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center bg-primary text-white font-bold text-sm">۱</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white text-on-surface text-sm">۲</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white text-on-surface text-sm">۳</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white text-outline transition-colors"><span class="material-symbols-outlined">chevron_left</span></button>
+</div>
+</div>
+<!-- Bento Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<div class="bg-primary-container text-on-primary-container p-6 rounded-3xl flex flex-col justify-between">
+<div class="flex items-center justify-between mb-4">
+<span class="material-symbols-outlined text-3xl">payments</span>
+<div class="bg-white/20 px-2 py-1 rounded-full flex items-center gap-1">
+<span class="text-[10px] font-bold">+۵.۴٪</span>
+</div>
+</div>
+<div>
+<p class="text-sm opacity-80">نقدینگی در گردش</p>
+<h4 class="text-2xl font-bold font-label-numeric">۱,۲۸۴,۰۰۰,۰۰۰ <span class="text-xs">تومان</span></h4>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-3xl border border-outline-variant/30 flex flex-col justify-between">
+<div class="flex items-center justify-between mb-4">
+<span class="material-symbols-outlined text-3xl text-secondary">trending_up</span>
+<div class="bg-secondary-fixed text-secondary px-2 py-1 rounded-full flex items-center gap-1">
+<span class="text-[10px] font-bold">+۱۲.۱٪</span>
+</div>
+</div>
+<div>
+<p class="text-sm text-outline">نرخ تبدیل مشتری</p>
+<h4 class="text-2xl font-bold font-label-numeric">۱۸.۵٪</h4>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-3xl border border-outline-variant/30 flex flex-col justify-between">
+<div class="flex items-center justify-between mb-4">
+<span class="material-symbols-outlined text-3xl text-tertiary">inventory_2</span>
+</div>
+<div>
+<p class="text-sm text-outline">گردش موجودی انبار</p>
+<h4 class="text-2xl font-bold font-label-numeric">۴.۲ <span class="text-xs">بار در ماه</span></h4>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-3xl border border-outline-variant/30 flex flex-col justify-between">
+<div class="flex items-center justify-between mb-4">
+<span class="material-symbols-outlined text-3xl text-primary">groups</span>
+<div class="bg-primary-fixed text-primary px-2 py-1 rounded-full flex items-center gap-1">
+<span class="text-[10px] font-bold">+۸٪</span>
+</div>
+</div>
+<div>
+<p class="text-sm text-outline">مشتریان وفادار</p>
+<h4 class="text-2xl font-bold font-label-numeric">۳,۴۵۰ <span class="text-xs">نفر</span></h4>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-2 bg-surface-container-lowest border-t border-outline-variant md:hidden h-16">
+<button class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px]">خانه</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-[10px]">گزارشات</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">swap_horiz</span>
+<span class="text-[10px]">تراکنش</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px]">تنظیمات</span>
+</button>
+</nav>
+<script>
+        // Simple interactivity for mobile layout toggle and button press effects
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('mousedown', () => el.classList.add('scale-95'));
+            el.addEventListener('mouseup', () => el.classList.remove('scale-95'));
+            el.addEventListener('mouseleave', () => el.classList.remove('scale-95'));
+        });
+
+        // Simulating some loading or dynamic data updates
+        console.log("حساب‌یار آماده است. گزارشات بارگذاری شد.");
+    </script>
+</body></html>
