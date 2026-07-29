@@ -5,7 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
-import { Spinner, Modal } from "@/components/shared/ui";
+import { Modal } from "@/src/shared/ui";
+import { Spinner } from "@/components/shared/ui";
 import { DatePicker } from "@/components/shared/date-picker";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
@@ -22,7 +23,10 @@ import {
   DashboardRecentInvoices,
   DashboardSalesChart,
   DashboardStats,
+  DashboardStockAlert,
+  DashboardTopProducts,
 } from "./components";
+import { useTopProducts } from "@/src/core/services/reports-service";
 
 export default function DashboardPage() {
   const { orgId, loading: orgLoading } = useOrg();
@@ -100,6 +104,9 @@ export default function DashboardPage() {
     },
   });
 
+  // هوک موجود گزارش‌ها — کوئری جدیدی ساخته نشده است.
+  const topProductsQuery = useTopProducts(5);
+
   if (orgLoading || summaryQuery.isLoading) {
     return <Spinner label="در حال بارگذاری داشبورد..." />;
   }
@@ -132,8 +139,8 @@ export default function DashboardPage() {
       {/* هدر */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-slate-800 sm:text-2xl">داشبورد</h1>
-          <p className="mt-0.5 text-xs text-slate-400">مرکز کنترل و تحلیل لحظه‌ای کسب‌وکار</p>
+          <h1 className="text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">داشبورد</h1>
+          <p className="mt-0.5 text-xs text-muted-foreground">مرکز کنترل و تحلیل لحظه‌ای کسب‌وکار</p>
         </div>
         <button
           onClick={() => setQuickSaleOpen(true)}
@@ -151,16 +158,34 @@ export default function DashboardPage() {
         onCreateContact={() => openEntity("contact", undefined, { mode: "create", context: "dashboard", title: "مشتری جدید" })}
       />
 
-      <DashboardStats summary={s} lowStockItems={lowStockItems} onOpenExpense={() => setQuickExpenseOpen(true)} onOpenReceipt={() => setQuickReceiptOpen(true)} />
+      <DashboardStats summary={s} onOpenExpense={() => setQuickExpenseOpen(true)} onOpenReceipt={() => setQuickReceiptOpen(true)} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-        <DashboardSalesChart isLoading={chartQuery.isLoading} data={chartQuery.data} />
-        <DashboardRecentInvoices
-          sales={recentSales}
-          onOpenSale={openRecentSale}
-          onSaleClick={handleRecentSaleClick}
-          onSaleAuxClick={handleRecentSaleAuxClick}
-        />
+      {/*
+        چیدمان مطابق مرجع: ستون اصلی (نمودار + پرفروش‌ها) و ستون کناری
+        (هشدار موجودی + فاکتورهای اخیر).
+        موبایل: تک‌ستونی · تبلت: تک‌ستونی با گرید داخلی · دسکتاپ: ۸/۴
+      */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-6">
+        <div className="space-y-4 lg:col-span-8 lg:space-y-6">
+          <DashboardSalesChart isLoading={chartQuery.isLoading} data={chartQuery.data} />
+          <DashboardTopProducts
+            isLoading={topProductsQuery.isLoading}
+            items={topProductsQuery.data}
+          />
+        </div>
+
+        <div className="space-y-4 lg:col-span-4 lg:space-y-6">
+          <DashboardStockAlert
+            lowStockCount={s?.low_stock_count ?? 0}
+            items={lowStockItems}
+          />
+          <DashboardRecentInvoices
+            sales={recentSales}
+            onOpenSale={openRecentSale}
+            onSaleClick={handleRecentSaleClick}
+            onSaleAuxClick={handleRecentSaleAuxClick}
+          />
+        </div>
       </div>
 
       {/* مودال‌ها */}
