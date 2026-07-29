@@ -166,8 +166,8 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
     return (
       <div className="max-w-2xl mx-auto py-12">
         <div className="card p-6 text-center">
-          <h1 className="font-bold text-rose-600 mb-2">خطا در نمایش فاکتور</h1>
-          <p className="text-sm text-slate-500 break-words">{(error as Error).message}</p>
+          <h1 className="font-bold text-destructive mb-2">خطا در نمایش فاکتور</h1>
+          <p className="text-sm text-muted-foreground break-words">{(error as Error).message}</p>
           <Link href="/sales" className="btn-secondary mt-5">بازگشت به فروش</Link>
         </div>
       </div>
@@ -217,7 +217,7 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
           </Link>
           <div className="flex flex-wrap gap-2">
             {sale.status !== "cancelled" && !hasReturns && <button onClick={() => setEditOpen(true)} className="btn-secondary"><Pencil size={16} /> ویرایش فاکتور</button>}
-            {sale.status !== "cancelled" && !hasReturns && <button onClick={() => setCancelOpen(true)} className="btn-secondary text-rose-600"><X size={16} /> ابطال</button>}
+            {sale.status !== "cancelled" && !hasReturns && <button onClick={() => setCancelOpen(true)} className="btn-secondary text-destructive"><X size={16} /> ابطال</button>}
             {balance > 0 && sale.status !== "cancelled" && <button onClick={() => setPaymentOpen(true)} className="btn-secondary"><Plus size={16} /> ثبت پرداخت</button>}
             <button onClick={handleExcel} className="btn-secondary"><FileSpreadsheet size={16} /> Excel</button>
             <button onClick={() => window.print()} className="btn-primary"><Printer size={16} /> چاپ / PDF</button>
@@ -225,7 +225,7 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
         </div>
 
         {hasReturns && (
-          <div className="no-print mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          <div className="no-print mb-4 rounded-2xl border border-warning/20 bg-warning/10 p-4 text-sm text-warning">
             برای این فاکتور مرجوعی ثبت شده است؛ برای جلوگیری از خطای موجودی، ویرایش یا ابطال مستقیم فاکتور غیرفعال است.
           </div>
         )}
@@ -236,19 +236,19 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
               <img src="/logo.png" alt="حسابیار" className="w-14 h-14 object-contain rounded-xl" />
               <div>
                 <h1 className="text-xl font-bold text-primary">مهرجامه</h1>
-                <p className="text-xs text-slate-500 mt-1">فاکتور فروش</p>
+                <p className="text-xs text-muted-foreground mt-1">فاکتور فروش</p>
               </div>
             </div>
-            <div className="text-left text-sm text-slate-600">
-              <div className="text-lg font-bold text-slate-800">شماره: {sale.invoice_no ?? "—"}</div>
+            <div className="text-left text-sm text-muted-foreground">
+              <div className="text-lg font-bold text-foreground">شماره: {sale.invoice_no ?? "—"}</div>
               <div>تاریخ: {toJalali(sale.date)}</div>
               <div>وضعیت: {sale.status === "cancelled" ? "باطل‌شده" : "ثبت‌شده"}</div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5 rounded-2xl bg-slate-50 p-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5 rounded-2xl bg-muted/50 p-4 text-sm">
             <div>
-              <span className="text-slate-500">مشتری: </span>
+              <span className="text-muted-foreground">مشتری: </span>
               {sale.customer_id ? (
                 <span className="inline-flex items-center gap-2">
                   <EntityLink type="contact" id={sale.customer_id}>{customer?.name ?? "مشتری"}</EntityLink>
@@ -256,12 +256,12 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
                 </span>
               ) : <span className="font-medium">مشتری نقدی</span>}
             </div>
-            {customer?.phone && <div><span className="text-slate-500">تلفن: </span><PhoneLink phone={customer.phone} /></div>}
-            {customer?.address && <div className="sm:col-span-2"><span className="text-slate-500">آدرس: </span>{customer.address}</div>}
+            {customer?.phone && <div><span className="text-muted-foreground">تلفن: </span><PhoneLink phone={customer.phone} /></div>}
+            {customer?.address && <div className="sm:col-span-2"><span className="text-muted-foreground">آدرس: </span>{customer.address}</div>}
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-sm border border-slate-200 rounded-xl overflow-hidden">
+            <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
               <thead>
                 <tr className="bg-primary/[0.06] text-primary">
                   <th className="px-3 py-2 text-right">#</th>
@@ -275,21 +275,21 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
               </thead>
               <tbody>
                 {items.length === 0 ? (
-                  <tr><td colSpan={7} className="px-3 py-8 text-center text-slate-400">آیتمی در فاکتور ثبت نشده است.</td></tr>
+                  <tr><td colSpan={7} className="px-3 py-8 text-center text-muted-foreground">آیتمی در فاکتور ثبت نشده است.</td></tr>
                 ) : items.map((item, index) => (
-                  <tr key={item.id} className="border-t border-slate-100">
-                    <td className="px-3 py-2 text-slate-400 text-center">{toFaDigits(index + 1)}</td>
+                  <tr key={item.id} className="border-t border-border">
+                    <td className="px-3 py-2 text-muted-foreground text-center">{toFaDigits(index + 1)}</td>
                     <td className="px-3 py-2">
                       <div className="flex items-center gap-2">
                         <EntityLink type="product" id={item.product_id}>{item.product_name}</EntityLink>
                         <span className="no-print"><EntityActionMenu type="product" id={item.product_id} label={item.product_name} /></span>
                       </div>
-                      <div className="text-xs text-slate-400 mt-1">{[item.color, item.size].filter(Boolean).join(" / ") || "ساده"}</div>
+                      <div className="text-xs text-muted-foreground mt-1">{[item.color, item.size].filter(Boolean).join(" / ") || "ساده"}</div>
                     </td>
-                    <td className="px-3 py-2 text-center font-mono text-xs text-slate-500">{item.sku || item.product_code || item.barcode || "—"}</td>
+                    <td className="px-3 py-2 text-center font-mono text-xs text-muted-foreground">{item.sku || item.product_code || item.barcode || "—"}</td>
                     <td className="px-3 py-2 text-center font-medium">{toFaDigits(item.qty)}</td>
                     <td className="px-3 py-2 text-center">{formatToman(item.unit_price, false)}</td>
-                    <td className="px-3 py-2 text-center text-rose-500">{item.discount ? formatToman(item.discount, false) : "—"}</td>
+                    <td className="px-3 py-2 text-center text-destructive">{item.discount ? formatToman(item.discount, false) : "—"}</td>
                     <td className="px-3 py-2 text-center font-bold">{formatToman(item.line_total, false)}</td>
                   </tr>
                 ))}
@@ -299,21 +299,21 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
 
           <div className="mt-5 flex justify-end">
             <div className="w-full sm:w-72 space-y-2 text-sm">
-              <div className="flex justify-between text-slate-500"><span>جمع کل</span><span>{formatToman(sale.subtotal ?? 0, false)}</span></div>
-              {sale.discount > 0 && <div className="flex justify-between text-rose-500"><span>تخفیف</span><span>-{formatToman(sale.discount, false)}</span></div>}
-              {sale.tax > 0 && <div className="flex justify-between text-slate-500"><span>مالیات</span><span>{formatToman(sale.tax, false)}</span></div>}
-              <div className="flex justify-between border-t border-slate-200 pt-2 text-base font-bold text-slate-800"><span>مبلغ نهایی</span><span>{formatToman(sale.total ?? 0, false)}</span></div>
-              <div className="flex justify-between text-emerald-600"><span>پرداخت‌شده</span><span>{formatToman(paidTotal, false)}</span></div>
-              {balance > 0 && <div className="flex justify-between text-rose-600 font-bold"><span>مانده</span><span>{formatToman(balance, false)}</span></div>}
+              <div className="flex justify-between text-muted-foreground"><span>جمع کل</span><span>{formatToman(sale.subtotal ?? 0, false)}</span></div>
+              {sale.discount > 0 && <div className="flex justify-between text-destructive"><span>تخفیف</span><span>-{formatToman(sale.discount, false)}</span></div>}
+              {sale.tax > 0 && <div className="flex justify-between text-muted-foreground"><span>مالیات</span><span>{formatToman(sale.tax, false)}</span></div>}
+              <div className="flex justify-between border-t border-border pt-2 text-base font-bold text-foreground"><span>مبلغ نهایی</span><span>{formatToman(sale.total ?? 0, false)}</span></div>
+              <div className="flex justify-between text-success"><span>پرداخت‌شده</span><span>{formatToman(paidTotal, false)}</span></div>
+              {balance > 0 && <div className="flex justify-between text-destructive font-bold"><span>مانده</span><span>{formatToman(balance, false)}</span></div>}
             </div>
           </div>
 
           {payments.length > 0 && (
-            <div className="no-print mt-5 rounded-2xl bg-slate-50 p-4">
-              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700"><CreditCard size={15} /> پرداخت‌ها</div>
+            <div className="no-print mt-5 rounded-2xl bg-muted/50 p-4">
+              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground"><CreditCard size={15} /> پرداخت‌ها</div>
               <div className="space-y-1">
                 {payments.map((payment: any) => (
-                  <div key={payment.id} className="flex justify-between text-xs text-slate-500">
+                  <div key={payment.id} className="flex justify-between text-xs text-muted-foreground">
                     <span>{payment.note ?? payment.method ?? "پرداخت"}</span>
                     <span>{formatToman(payment.amount, false)} • {toJalali(payment.date)}</span>
                   </div>
@@ -322,8 +322,8 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
             </div>
           )}
 
-          {sale.note && <div className="mt-5 text-xs text-slate-500">توضیح: {sale.note}</div>}
-          <div className="mt-8 border-t border-slate-100 pt-4 text-center text-xs text-slate-400">از خرید شما سپاسگزاریم 🌸</div>
+          {sale.note && <div className="mt-5 text-xs text-muted-foreground">توضیح: {sale.note}</div>}
+          <div className="mt-8 border-t border-border pt-4 text-center text-xs text-muted-foreground">از خرید شما سپاسگزاریم 🌸</div>
         </div>
       </div>
 
@@ -460,34 +460,34 @@ function EditInvoiceModal({
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div><label className="label">تاریخ فاکتور</label><DatePicker value={date} onChange={setDate} /></div>
-            <div><label className="label">مشتری</label>{selectedCustomer ? <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3.5 py-2.5"><span>{selectedCustomer.name}</span><button onClick={() => setSelectedCustomer(null)} className="text-rose-500"><X size={16}/></button></div> : <button onClick={() => setCustomerOpen(true)} className="btn-secondary w-full">انتخاب مشتری</button>}</div>
+            <div><label className="label">مشتری</label>{selectedCustomer ? <div className="flex items-center justify-between rounded-xl border border-border px-3.5 py-2.5"><span>{selectedCustomer.name}</span><button onClick={() => setSelectedCustomer(null)} className="text-destructive"><X size={16}/></button></div> : <button onClick={() => setCustomerOpen(true)} className="btn-secondary w-full">انتخاب مشتری</button>}</div>
           </div>
 
           <button onClick={() => setProductOpen(true)} className="w-full rounded-xl border-2 border-dashed border-primary/20 bg-primary/[0.04] px-4 py-3 text-sm font-medium text-primary">+ افزودن کالا</button>
 
           <div className="space-y-2 max-h-[40vh] overflow-y-auto">
             {cart.map((item) => (
-              <div key={item.variant_id} className="rounded-xl border border-slate-100 p-3">
+              <div key={item.variant_id} className="rounded-xl border border-border p-3">
                 <div className="flex items-center justify-between gap-2">
-                  <div><div className="font-medium text-sm">{item.product_name}</div><div className="text-xs text-slate-400">{item.variant_label || "ساده"}</div></div>
-                  <button onClick={() => setCart((prev) => prev.filter((x) => x.variant_id !== item.variant_id))} className="text-rose-500"><Trash2 size={16}/></button>
+                  <div><div className="font-medium text-sm">{item.product_name}</div><div className="text-xs text-muted-foreground">{item.variant_label || "ساده"}</div></div>
+                  <button onClick={() => setCart((prev) => prev.filter((x) => x.variant_id !== item.variant_id))} className="text-destructive"><Trash2 size={16}/></button>
                 </div>
                 <div className="grid grid-cols-3 gap-2 mt-2">
-                  <div><label className="text-xs text-slate-400">تعداد</label><input className="input" inputMode="numeric" value={String(item.qty)} onChange={(e) => setCart((prev) => prev.map((x) => x.variant_id === item.variant_id ? { ...x, qty: Number(toEnDigits(e.target.value)) || 1 } : x))} /></div>
-                  <div><label className="text-xs text-slate-400">قیمت فروش</label><input className="input" inputMode="numeric" value={String(rialToToman(item.unit_price))} onChange={(e) => setCart((prev) => prev.map((x) => x.variant_id === item.variant_id ? { ...x, unit_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x))} /></div>
-                  <div><label className="text-xs text-slate-400">تخفیف ردیف</label><input className="input" inputMode="numeric" value={String(rialToToman(item.discount))} onChange={(e) => setCart((prev) => prev.map((x) => x.variant_id === item.variant_id ? { ...x, discount: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x))} /></div>
+                  <div><label className="text-xs text-muted-foreground">تعداد</label><input className="input" inputMode="numeric" value={String(item.qty)} onChange={(e) => setCart((prev) => prev.map((x) => x.variant_id === item.variant_id ? { ...x, qty: Number(toEnDigits(e.target.value)) || 1 } : x))} /></div>
+                  <div><label className="text-xs text-muted-foreground">قیمت فروش</label><input className="input" inputMode="numeric" value={String(rialToToman(item.unit_price))} onChange={(e) => setCart((prev) => prev.map((x) => x.variant_id === item.variant_id ? { ...x, unit_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x))} /></div>
+                  <div><label className="text-xs text-muted-foreground">تخفیف ردیف</label><input className="input" inputMode="numeric" value={String(rialToToman(item.discount))} onChange={(e) => setCart((prev) => prev.map((x) => x.variant_id === item.variant_id ? { ...x, discount: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x))} /></div>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 border-t border-slate-100 pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 border-t border-border pt-4">
             <div><label className="label">تخفیف فاکتور</label><div className="flex gap-2"><input className="input" inputMode="numeric" value={discountValue} onChange={(e) => setDiscountValue(e.target.value)} /><select className="input w-28" value={discountType} onChange={(e) => setDiscountType(e.target.value as any)}><option value="fixed">تومان</option><option value="percent">٪</option></select></div></div>
             <div><label className="label">مالیات (تومان)</label><input className="input" inputMode="numeric" value={tax} onChange={(e) => setTax(e.target.value)} /></div>
-            <div><label className="label">جمع نهایی</label><div className="rounded-xl bg-slate-50 px-3.5 py-2.5 font-bold text-slate-800">{formatToman(total)}</div></div>
+            <div><label className="label">جمع نهایی</label><div className="rounded-xl bg-muted/50 px-3.5 py-2.5 font-bold text-foreground">{formatToman(total)}</div></div>
           </div>
           <div><label className="label">توضیح</label><input className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
-          {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm p-3">{error}</div>}
+          {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3">{error}</div>}
           <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving && <Loader2 className="animate-spin" size={16}/>} ذخیره تغییرات</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
         </div>
       </Modal>
@@ -515,9 +515,9 @@ function CancelSaleModal({ saleId, invoiceNo, onClose }: { saleId: string; invoi
   return (
     <Modal open onClose={onClose} title="ابطال فاکتور فروش" size="md">
       <div className="space-y-4">
-        <div className="rounded-xl bg-rose-50 text-rose-700 p-3 text-sm">فاکتور {invoiceNo ?? ""} باطل می‌شود؛ موجودی اقلام برمی‌گردد و پرداخت‌ها خنثی می‌شوند.</div>
+        <div className="rounded-xl bg-destructive/10 text-destructive p-3 text-sm">فاکتور {invoiceNo ?? ""} باطل می‌شود؛ موجودی اقلام برمی‌گردد و پرداخت‌ها خنثی می‌شوند.</div>
         <div><label className="label">دلیل ابطال</label><textarea className="input" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} /></div>
-        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm p-3">{error}</div>}
+        {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3">{error}</div>}
         <div className="flex gap-2"><button onClick={cancel} disabled={saving} className="btn-danger flex-1">{saving && <Loader2 className="animate-spin" size={16}/>} ابطال فاکتور</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
       </div>
     </Modal>
@@ -565,12 +565,12 @@ function SalePaymentModal({ saleId, balance, onClose }: { saleId: string; balanc
   return (
     <Modal open onClose={onClose} title="ثبت پرداخت فاکتور فروش" size="md">
       <div className="space-y-4">
-        <div className="rounded-xl bg-rose-50 p-3 text-sm text-rose-700">مانده فعلی: <b>{formatToman(balance)}</b></div>
+        <div className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">مانده فعلی: <b>{formatToman(balance)}</b></div>
         <div><label className="label">مبلغ پرداخت (تومان)</label><input className="input" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} /></div>
         <div><label className="label">روش پرداخت</label><select className="input" value={method} onChange={(e) => setMethod(e.target.value)}><option value="cash">نقد</option><option value="card">کارت</option><option value="transfer">انتقال</option><option value="cheque">چک</option></select></div>
         <div><label className="label">حساب</label><select className="input" value={accountId} onChange={(e) => setAccountId(e.target.value)}><option value="">انتخاب...</option>{accounts?.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
         <div><label className="label">توضیح</label><input className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
-        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
+        {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm px-4 py-3">{error}</div>}
         <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving && <Loader2 className="animate-spin" size={18} />} ثبت پرداخت</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
       </div>
     </Modal>

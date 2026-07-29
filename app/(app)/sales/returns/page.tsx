@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatToman, toJalali, toFaDigits } from "@/lib/utils/format";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
+import { Badge } from "@/src/shared/ui";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { Plus, Trash2, RotateCcw, Search } from "lucide-react";
@@ -134,14 +135,14 @@ export default function SalesReturnsPage() {
       />
 
       <div className="relative">
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+        <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
         <input className="input pr-9" placeholder="جستجو..." value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-slate-800">{toFaDigits(returns.length)}</div><div className="text-xs text-slate-500">تعداد مرجوعی</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-rose-600">{formatToman(returns.reduce((sum, r) => sum + (r.total || 0), 0))}</div><div className="text-xs text-slate-500">مجموع مرجوعی</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-emerald-600">{formatToman(returns.filter(r => r.refund_method === "cash").reduce((sum, r) => sum + (r.total || 0), 0))}</div><div className="text-xs text-slate-500">برگشت نقدی</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-foreground">{toFaDigits(returns.length)}</div><div className="text-xs text-muted-foreground">تعداد مرجوعی</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-destructive">{formatToman(returns.reduce((sum, r) => sum + (r.total || 0), 0))}</div><div className="text-xs text-muted-foreground">مجموع مرجوعی</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-success">{formatToman(returns.filter(r => r.refund_method === "cash").reduce((sum, r) => sum + (r.total || 0), 0))}</div><div className="text-xs text-muted-foreground">برگشت نقدی</div></div>
       </div>
 
       {loading ? <Spinner label="در حال بارگذاری..." /> :
@@ -154,10 +155,10 @@ export default function SalesReturnsPage() {
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="font-bold text-slate-800">{ret.return_no || "بدون شماره"}</span>
-                    <span className="badge bg-purple-100 text-purple-800">مرجوعی</span>
+                    <span className="font-bold text-foreground">{ret.return_no || "بدون شماره"}</span>
+                    <Badge tone="primary">مرجوعی</Badge>
                   </div>
-                  <div className="text-sm text-slate-600 mb-1">
+                  <div className="text-sm text-muted-foreground mb-1">
                     {ret.customer_id ? (
                       <span className="inline-flex items-center gap-2">
                         <EntityLink type="contact" id={ret.customer_id}>{ret.customer?.name ?? "مشتری"}</EntityLink>
@@ -165,15 +166,15 @@ export default function SalesReturnsPage() {
                       </span>
                     ) : "بدون مشتری"}
                   </div>
-                  <div className="text-xs text-slate-400">{toJalali(ret.date)}</div>
-                  {ret.reason && <div className="text-xs text-slate-500 mt-1">دلیل: {ret.reason}</div>}
+                  <div className="text-xs text-muted-foreground">{toJalali(ret.date)}</div>
+                  {ret.reason && <div className="text-xs text-muted-foreground mt-1">دلیل: {ret.reason}</div>}
                 </div>
                 <div className="text-left">
-                  <div className="text-lg font-bold text-rose-600">{formatToman(ret.total)}</div>
-                  <div className="text-xs text-slate-400">{ret.refund_method === "cash" ? "نقدی" : ret.refund_method === "card" ? "کارت" : "اعتبار"}</div>
+                  <div className="text-lg font-bold text-destructive">{formatToman(ret.total)}</div>
+                  <div className="text-xs text-muted-foreground">{ret.refund_method === "cash" ? "نقدی" : ret.refund_method === "card" ? "کارت" : "اعتبار"}</div>
                 </div>
               </div>
-              <div className="flex items-center justify-end mt-3 pt-3 border-t border-slate-100">
+              <div className="flex items-center justify-end mt-3 pt-3 border-t border-border">
                 <button onClick={() => deleteReturn(ret.id)} className="btn-danger text-sm"><Trash2 size={14} /></button>
               </div>
             </div>
@@ -193,12 +194,12 @@ export default function SalesReturnsPage() {
             </div>
 
             {sale && (
-              <div className="p-3 bg-slate-50 rounded-xl">
+              <div className="p-3 bg-muted/50 rounded-xl">
                 <div className="text-sm font-medium mb-2">اقلام فاکتور:</div>
                 <div className="space-y-2">
                   {returnItems.map((item, idx) => (
                     <div key={idx} className="flex items-center justify-between p-2 bg-white rounded-lg">
-                      <div className="text-sm"><div>سایز: {item.variant?.size || "-"} رنگ: {item.variant?.color || "-"}</div><div className="text-xs text-slate-400">تعداد اصلی: {item.qty} • قیمت: {formatToman(item.unit_price)}</div></div>
+                      <div className="text-sm"><div>سایز: {item.variant?.size || "-"} رنگ: {item.variant?.color || "-"}</div><div className="text-xs text-muted-foreground">تعداد اصلی: {item.qty} • قیمت: {formatToman(item.unit_price)}</div></div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs">تعداد:</span>
                         <input type="number" min="1" max={item.qty} value={item.return_qty} onChange={e => { const newItems = [...returnItems]; newItems[idx].return_qty = parseInt(e.target.value) || 0; setReturnItems(newItems); }} className="input w-16 text-center" />
@@ -229,9 +230,9 @@ export default function SalesReturnsPage() {
               <textarea className="input" rows={2} value={note} onChange={e => setNote(e.target.value)} />
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-rose-50 rounded-xl">
-              <span className="font-medium text-rose-700">جمع مرجوعی:</span>
-              <span className="text-xl font-bold text-rose-700">{formatToman(returnItems.filter(i => i.return_qty > 0).reduce((sum, i) => sum + (i.return_qty * i.return_price), 0))}</span>
+            <div className="flex items-center justify-between p-4 bg-destructive/10 rounded-xl">
+              <span className="font-medium text-destructive">جمع مرجوعی:</span>
+              <span className="text-xl font-bold text-destructive">{formatToman(returnItems.filter(i => i.return_qty > 0).reduce((sum, i) => sum + (i.return_qty * i.return_price), 0))}</span>
             </div>
 
             <div className="flex gap-2">

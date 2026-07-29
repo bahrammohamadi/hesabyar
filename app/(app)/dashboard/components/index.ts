@@ -1,10 +1,9 @@
-export { DashboardLowStock } from "./DashboardLowStock";
-export type { DashboardLowStockItem } from "./DashboardLowStock";
 export { DashboardQuickActions } from "./DashboardQuickActions";
 export { DashboardRecentInvoices } from "./DashboardRecentInvoices";
 export { DashboardSalesChart } from "./DashboardSalesChart";
 export type { SalesChartPoint } from "./DashboardSalesChart";
 export { DashboardStats } from "./DashboardStats";
 export { DashboardStockAlert } from "./DashboardStockAlert";
+export type { DashboardLowStockItem } from "./DashboardStockAlert";
 export { DashboardTopProducts } from "./DashboardTopProducts";
 export type { DashboardTopProduct } from "./DashboardTopProducts";

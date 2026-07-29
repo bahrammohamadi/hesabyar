@@ -92,8 +92,8 @@ export default function SalesPage() {
           <div className="w-14 h-14 rounded-2xl bg-primary/[0.06] text-primary flex items-center justify-center mx-auto mb-4">
             <ShoppingCart size={26} />
           </div>
-          <h3 className="font-semibold text-slate-700">هنوز فروشی ثبت نشده</h3>
-          <p className="text-sm text-slate-400 mt-1">اولین فاکتور فروش خود را صادر کنید.</p>
+          <h3 className="font-semibold text-foreground">هنوز فروشی ثبت نشده</h3>
+          <p className="mt-1 text-sm text-muted-foreground">اولین فاکتور فروش خود را صادر کنید.</p>
           <button onClick={() => setPosOpen(true)} className="btn-primary mt-4 mx-auto">
             <Plus size={18} /> فروش جدید
           </button>
@@ -109,7 +109,7 @@ export default function SalesPage() {
             onClick: (event) => handleSaleRowClick(event, s.id),
             onAuxClick: (event) => handleSaleRowAuxClick(event, s.id),
             onKeyDown: (event) => { if (event.key === "Enter") openSale(s.id); },
-            className: "cursor-pointer odd:bg-white even:bg-slate-50/60 hover:bg-primary/[0.06] hover:shadow-sm",
+            className: "cursor-pointer odd:bg-card even:bg-muted/40 hover:bg-primary/[0.06] hover:shadow-sm",
           })}
           columns={[
             {
@@ -130,7 +130,7 @@ export default function SalesPage() {
                 </Link>
               ),
             },
-            { key: "date", header: "تاریخ", render: (s) => <span className="text-slate-500">{toJalali(s.date)}</span> },
+            { key: "date", header: "تاریخ", render: (s) => <span className="tabular-nums text-muted-foreground">{toJalali(s.date)}</span> },
             {
               key: "customer",
               header: "مشتری",
@@ -139,10 +139,10 @@ export default function SalesPage() {
                   <EntityLink type="contact" id={s.customer_id}>{s.customer?.name ?? "مشتری"}</EntityLink>
                   <span onClick={(event) => event.stopPropagation()}><EntityActionMenu type="contact" id={s.customer_id} label={s.customer?.name ?? "مشتری"} /></span>
                 </div>
-              ) : <span className="text-slate-400">مشتری نقدی</span>,
+              ) : <span className="text-muted-foreground">مشتری نقدی</span>,
             },
             { key: "total", header: "مبلغ", align: "left", render: (s) => <span className="font-semibold tabular-nums">{formatToman(s.total)}</span> },
-            { key: "credit", header: "نسیه", render: (s) => s.paid_credit > 0 ? <span className="text-rose-600">{formatToman(s.paid_credit, false)}</span> : <span className="text-slate-300">—</span> },
+            { key: "credit", header: "نسیه", render: (s) => s.paid_credit > 0 ? <span className="font-bold tabular-nums text-finance-debt">{formatToman(s.paid_credit, false)}</span> : <span className="text-muted-foreground">—</span> },
             { key: "status", header: "وضعیت", render: (s) => <span className="badge bg-info-soft text-info border border-info/20">{s.status === "settled" ? "تسویه‌شده" : s.status === "reversed" ? "برگشت‌خورده" : "ثبت‌شده"}</span> },
           ] satisfies Column<(typeof sales)[number]>[]}
         />
@@ -391,11 +391,11 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
     return (
       <Modal open onClose={onClose} title="فروش ثبت شد">
         <div className="text-center py-6">
-          <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success/10 text-success">
             <Receipt size={30} />
           </div>
-          <h3 className="font-bold text-slate-800 text-lg">فاکتور با موفقیت ثبت شد ✅</h3>
-          <p className="text-sm text-slate-500 mt-2">مبلغ کل: {formatToman(total)}</p>
+          <h3 className="text-lg font-bold text-foreground">فاکتور با موفقیت ثبت شد ✅</h3>
+          <p className="mt-2 text-sm text-muted-foreground">مبلغ کل: {formatToman(total)}</p>
           <div className="mt-6 grid gap-2 sm:grid-cols-2">
             <Link href={`/sales/${done}`} className="btn-primary">
               مشاهده و چاپ فاکتور
