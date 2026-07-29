@@ -11,7 +11,7 @@ import {
   YAxis,
 } from "recharts";
 import { TrendingUp } from "lucide-react";
-import { Spinner } from "@/components/shared/ui";
+import { Spinner } from "@/src/shared/ui";
 import { formatNumber } from "@/lib/utils/format";
 
 export type SalesChartPoint = { day: string; total: number };
@@ -24,7 +24,7 @@ export function DashboardSalesChart({
   data: SalesChartPoint[] | undefined;
 }) {
   return (
-    <div className="lg:col-span-2 rounded-2xl border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur sm:p-5">
+    <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-5">
       {/* هدر */}
       <div className="mb-5 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
@@ -32,13 +32,13 @@ export function DashboardSalesChart({
             <TrendingUp size={17} strokeWidth={2.2} />
           </div>
           <div>
-            <h3 className="text-sm font-extrabold text-slate-800">روند فروش</h3>
-            <p className="text-[11px] text-slate-400">۳۰ روز اخیر</p>
+            <h3 className="text-sm font-extrabold text-foreground">روند فروش</h3>
+            <p className="text-[11px] text-muted-foreground">۳۰ روز اخیر</p>
           </div>
         </div>
         <Link
           href="/reports"
-          className="rounded-xl bg-slate-100 px-3 py-1.5 text-[11px] font-medium text-slate-500 transition hover:bg-primary/10 hover:text-primary"
+          className="rounded-xl bg-muted px-3 py-1.5 text-[11px] font-medium text-muted-foreground transition hover:bg-primary/10 hover:text-primary"
         >
           گزارش کامل
         </Link>
@@ -51,8 +51,8 @@ export function DashboardSalesChart({
         </div>
       ) : !data || data.length === 0 ? (
         <div className="flex h-56 flex-col items-center justify-center gap-2">
-          <TrendingUp size={32} className="text-slate-200" />
-          <p className="text-sm text-slate-400">هنوز داده‌ای برای نمایش وجود ندارد</p>
+          <TrendingUp size={32} className="text-muted-foreground/30" />
+          <p className="text-sm text-muted-foreground">هنوز داده‌ای برای نمایش وجود ندارد</p>
         </div>
       ) : (
         <div className="h-56 sm:h-64" dir="ltr">
@@ -64,15 +64,15 @@ export function DashboardSalesChart({
                   <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis
                 dataKey="day"
-                tick={{ fontSize: 10, fill: "#94a3b8" }}
+                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fontSize: 10, fill: "#94a3b8" }}
+                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={(v: number) =>
@@ -87,8 +87,10 @@ export function DashboardSalesChart({
                   fontSize: 12,
                   direction: "rtl",
                   borderRadius: "14px",
-                  border: "1px solid #e2e8f0",
+                  border: "1px solid hsl(var(--border))",
                   boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+                  background: "hsl(var(--popover))",
+                  color: "hsl(var(--popover-foreground))",
                 }}
                 cursor={{ stroke: "hsl(var(--primary))", strokeWidth: 1, strokeDasharray: "4 2" }}
               />

@@ -5,6 +5,10 @@ const config: Config = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./lib/**/*.{js,ts,jsx,tsx,mdx}",
+    // سیستم اصلی UI و runtime پنل‌ها اینجا هستند؛ بدون این مسیر، کلاس‌هایی که
+    // فقط در src/ استفاده می‌شوند (مثل overscroll-contain در PanelShell) اصلاً
+    // در CSS خروجی تولید نمی‌شدند.
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
