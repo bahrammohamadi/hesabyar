@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="fa"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>حساب‌یار | صدور فاکتور فروش</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;400;700;900&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #f7f9fb;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .font-numeric {
+            font-family: 'Work Sans', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .press-effect:active {
+            transform: scale(0.96);
+            transition: transform 0.1s ease;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#004c5f",
+                        "surface-variant": "#e0e3e5",
+                        "secondary": "#712ae2",
+                        "on-secondary-fixed": "#25005a",
+                        "primary-container": "#134e48",
+                        "on-surface": "#191c1e",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#eceef0",
+                        "surface-container-highest": "#e0e3e5",
+                        "background": "#f7f9fb",
+                        "tertiary": "#003442",
+                        "tertiary-fixed": "#b7eaff",
+                        "secondary-container": "#8a4cfc",
+                        "outline": "#707977",
+                        "surface-container-high": "#e6e8ea",
+                        "on-secondary-container": "#fffbff",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#004e61",
+                        "outline-variant": "#bfc8c6",
+                        "on-tertiary-container": "#56c0e2",
+                        "on-primary-fixed-variant": "#154f49",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#d2bbff",
+                        "on-background": "#191c1e",
+                        "surface-tint": "#316761",
+                        "on-error": "#ffffff",
+                        "primary-fixed-dim": "#9ad1c9",
+                        "inverse-surface": "#2d3133",
+                        "on-primary-container": "#87beb6",
+                        "secondary-fixed": "#eaddff",
+                        "surface": "#f7f9fb",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed": "#00201d",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-tertiary": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-primary": "#9ad1c9",
+                        "on-tertiary-fixed": "#001f28",
+                        "primary": "#003631",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#5a00c6",
+                        "surface-container-low": "#f2f4f6",
+                        "primary-fixed": "#b5ede5",
+                        "tertiary-fixed-dim": "#6cd3f7",
+                        "surface-dim": "#d8dadc",
+                        "on-surface-variant": "#404947"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sidebar_width": "260px",
+                        "card_padding": "1.25rem",
+                        "stack_gap": "1rem",
+                        "margin_page": "2rem",
+                        "gutter": "1.5rem"
+                    },
+                    "fontSize": {
+                        "headline-md-mobile": ["20px", {"lineHeight": "30px", "fontWeight": "600"}],
+                        "label-numeric": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+                        "body-sm": ["14px", {"lineHeight": "22px", "fontWeight": "400"}],
+                        "headline-sm": ["20px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "36px", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface">
+<!-- Top App Bar -->
+<header class="fixed top-0 left-0 w-full z-40 bg-surface/80 backdrop-blur-md">
+<div class="flex justify-between items-center px-4 h-16 rtl">
+<div class="flex items-center gap-3">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-high text-on-surface-variant press-effect">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<h1 class="font-headline-sm text-headline-sm text-primary">صدور فاکتور</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-high text-on-surface-variant press-effect">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+</header>
+<main class="pt-20 pb-40 px-4 max-w-md mx-auto">
+<!-- Search & Barcode -->
+<section class="mb-6">
+<div class="relative group">
+<div class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-2xl py-4 pr-12 pl-14 font-body-md text-on-surface focus:outline-none focus:border-primary transition-all shadow-sm" placeholder="جستجوی کالا یا اسکن بارکد..." type="text"/>
+<button class="absolute inset-y-2 left-2 px-3 bg-primary-container text-on-primary-container rounded-xl flex items-center justify-center press-effect">
+<span class="material-symbols-outlined">barcode_scanner</span>
+</button>
+</div>
+</section>
+<!-- Customer Selection -->
+<section class="mb-8 flex items-center justify-between bg-surface-container-low p-4 rounded-2xl border border-outline-variant/30">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full bg-secondary-container/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">person_add</span>
+</div>
+<div>
+<p class="font-body-sm text-on-surface-variant">مشتری انتخابی</p>
+<p class="font-headline-sm text-headline-sm text-on-surface">مشتری گذری</p>
+</div>
+</div>
+<button class="text-primary font-bold text-body-sm px-3 py-1 rounded-lg hover:bg-primary/5">تغییر</button>
+</section>
+<!-- Simplified Cart List -->
+<section>
+<div class="flex items-center justify-between mb-4">
+<h2 class="font-headline-sm text-headline-sm flex items-center gap-2">
+                    سبد خرید
+                    <span class="bg-primary-container text-on-primary-container text-[12px] px-2 py-0.5 rounded-full font-numeric">۳ کالا</span>
+</h2>
+<button class="text-error text-body-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">delete_sweep</span>
+                    حذف همه
+                </button>
+</div>
+<div class="space-y-4">
+<!-- Item 1 -->
+<div class="bg-surface-container-lowest p-3 rounded-2xl flex gap-4 shadow-sm border border-outline-variant/20">
+<div class="w-20 h-20 rounded-xl bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional product photograph of a modern, minimalist linen shirt in a soft sage green color, presented against a clean white background with soft, diffused studio lighting and a high-end commercial feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlNCW9ioAcb8KxxlmZxunxWdDQ21powjEgZbAU4OroiL29lReajc3tE4S8kzjO_KWI6xdSWoVIMgE0cYBjKnOjFAxmHusodjA23m2ChZPm-erT-Oja9cTv6XADSY-FF0yuVWGrKm00Gp_lfiagIoIuQowy3uVQc5JWEvzM1dLAFPC-Xk4_CGxcDxzeDMHKTBVefmQz1PlEcHncNcRiqFz1ZF8A9Boe-B74Z3ppdgdPDpv4m8btiIx6f5xCzEWl61UUAZFRKSeu0I11"/>
+</div>
+<div class="flex-1 flex flex-col justify-between">
+<div>
+<h3 class="font-body-md text-on-surface font-bold">پیراهن کتان آکسفورد</h3>
+<p class="text-[12px] text-on-surface-variant mt-1">سایز: XL | رنگ: سبز لجنی</p>
+</div>
+<div class="flex justify-between items-end">
+<span class="font-numeric text-primary font-bold">۸۵۰,۰۰۰ <span class="text-[10px] font-normal">تومان</span></span>
+<div class="flex items-center bg-surface-container-high rounded-lg p-1 gap-3">
+<button class="w-6 h-6 flex items-center justify-center bg-surface-container-lowest rounded-md shadow-sm press-effect"><span class="material-symbols-outlined text-[16px]">add</span></button>
+<span class="font-numeric font-bold">۱</span>
+<button class="w-6 h-6 flex items-center justify-center bg-surface-container-lowest rounded-md shadow-sm press-effect"><span class="material-symbols-outlined text-[16px]">remove</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="bg-surface-container-lowest p-3 rounded-2xl flex gap-4 shadow-sm border border-outline-variant/20">
+<div class="w-20 h-20 rounded-xl bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A clean product shot of premium dark denim jeans neatly folded on a minimalist gray surface, showcasing high-quality stitching and fabric texture under soft, natural daylight, reflecting a professional retail aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoMgwOJv5onCaAgAHdTpWHJluAxUGwTs9pFHmKm7BToq3qZuVExwuIW9XELC6Va98DtGKUu4UGFLxCn2dcKKEp5rQ5NnoFUg5HY57z6KtgRd6mdG0-hHr8K6SBWHWtx60clofx5McFCmvPrs1bq1S2koiWysoqR6km_2e282rMvL_oqIJWDJj8weVu3JXWT6p9hj__aeQb3CeK5o8P1uQgsrsGbmOrvJ9F1xdLfQJoQaQAwg8va-5XwpGBpZdUX96eigjklveVVHE4"/>
+</div>
+<div class="flex-1 flex flex-col justify-between">
+<div>
+<h3 class="font-body-md text-on-surface font-bold">شلوار جین راسته - تیره</h3>
+<p class="text-[12px] text-on-surface-variant mt-1">سایز: ۴۲ | کد: ۷۷۸۲</p>
+</div>
+<div class="flex justify-between items-end">
+<span class="font-numeric text-primary font-bold">۱,۲۰۰,۰۰۰ <span class="text-[10px] font-normal">تومان</span></span>
+<div class="flex items-center bg-surface-container-high rounded-lg p-1 gap-3">
+<button class="w-6 h-6 flex items-center justify-center bg-surface-container-lowest rounded-md shadow-sm press-effect"><span class="material-symbols-outlined text-[16px]">add</span></button>
+<span class="font-numeric font-bold">۲</span>
+<button class="w-6 h-6 flex items-center justify-center bg-surface-container-lowest rounded-md shadow-sm press-effect"><span class="material-symbols-outlined text-[16px]">remove</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="bg-surface-container-lowest p-3 rounded-2xl flex gap-4 shadow-sm border border-outline-variant/20 opacity-80">
+<div class="w-20 h-20 rounded-xl bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A macro close-up of a premium leather belt with a polished metallic buckle, arranged in a circular loop on a textured dark wood surface with dramatic side lighting creating a sophisticated and professional accessory presentation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcIX2GIXhts-EnaM8wl4r1sdYfwmyq-W68B6CCWAsxEW89NNwGZkcBpY6TNIcaDS452bLz19CNReLSIr2BXktWizEQNk7i8IR8qGzjKJQmAUlfyjVTSdmo3Bm9utBJcOii6gVAvF6XnLCYC7Grt4Mc4sJ1x_jCB2rlrJeul1CxZ5HM2W2LIhotorZrINTCCVNCfhre2oz3D-kM1DOmlOuEZ286gPlAaQvOGcrn4UcgL9ViZENhTAclGKA7ibUbxhaM4dlyhU0i3lIV"/>
+</div>
+<div class="flex-1 flex flex-col justify-between">
+<div>
+<h3 class="font-body-md text-on-surface font-bold">کمربند چرم طبیعی</h3>
+<p class="text-[12px] text-on-surface-variant mt-1">رنگ: قهوه‌ای سوخته</p>
+</div>
+<div class="flex justify-between items-end">
+<span class="font-numeric text-primary font-bold">۴۵۰,۰۰۰ <span class="text-[10px] font-normal">تومان</span></span>
+<div class="flex items-center bg-surface-container-high rounded-lg p-1 gap-3">
+<button class="w-6 h-6 flex items-center justify-center bg-surface-container-lowest rounded-md shadow-sm press-effect"><span class="material-symbols-outlined text-[16px]">add</span></button>
+<span class="font-numeric font-bold">۱</span>
+<button class="w-6 h-6 flex items-center justify-center bg-surface-container-lowest rounded-md shadow-sm press-effect"><span class="material-symbols-outlined text-[16px]">remove</span></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Summary Section (Quick View) -->
+<section class="mt-8 bg-surface-container-low rounded-2xl p-4 border border-dashed border-outline-variant">
+<div class="flex justify-between items-center mb-2">
+<span class="text-body-sm text-on-surface-variant">جمع ناخالص کالاها</span>
+<span class="font-numeric text-on-surface">۳,۷۰۰,۰۰۰</span>
+</div>
+<div class="flex justify-between items-center mb-2">
+<span class="text-body-sm text-on-surface-variant">تخفیف کلی</span>
+<span class="font-numeric text-error">(-۱۵۰,۰۰۰)</span>
+</div>
+<div class="flex justify-between items-center pt-2 border-t border-outline-variant/50">
+<span class="text-body-sm font-bold text-on-surface">مالیات بر ارزش افزوده</span>
+<span class="font-numeric text-on-surface">۳۱۹,۵۰۰</span>
+</div>
+</section>
+</main>
+<!-- Sticky Bottom Payment Container -->
+<div class="fixed bottom-16 left-0 w-full z-30 bg-surface/90 backdrop-blur-xl border-t border-outline-variant/30 p-4">
+<div class="max-w-md mx-auto flex items-center justify-between gap-4">
+<div class="flex flex-col">
+<span class="text-[12px] text-on-surface-variant">مبلغ قابل پرداخت</span>
+<div class="flex items-baseline gap-1">
+<span class="font-numeric text-[22px] font-black text-primary">۳,۸۶۹,۵۰۰</span>
+<span class="text-[10px] text-primary">تومان</span>
+</div>
+</div>
+<button class="flex-1 bg-primary text-on-primary py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 press-effect">
+<span>تایید و پرداخت</span>
+<span class="material-symbols-outlined">payments</span>
+</button>
+</div>
+</div>
+<!-- Bottom Navigation Bar (Mandatory Shell) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 bg-surface-container-lowest h-16 flex justify-around items-center px-4 pb-2 rtl shadow-lg border-t border-outline-variant md:hidden">
+<div class="flex flex-col items-center justify-center text-on-surface-variant press-effect">
+<span class="material-symbols-outlined">home</span>
+<span class="font-numeric text-[10px] mt-1">خانه</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant press-effect">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="font-numeric text-[10px] mt-1">گزارشات</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 press-effect">
+<span class="material-symbols-outlined">swap_horiz</span>
+<span class="font-numeric text-[10px] mt-1">تراکنش</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant press-effect">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-numeric text-[10px] mt-1">تنظیمات</span>
+</div>
+</nav>
+<!-- Floating Action Button (Contextual Suppression Logic: Hidden on Transactional focus screens as per guidelines) -->
+<script>
+        // Simple Interaction Logic
+        document.querySelectorAll('.press-effect').forEach(btn => {
+            btn.addEventListener('touchstart', () => btn.classList.add('scale-95'));
+            btn.addEventListener('touchend', () => btn.classList.remove('scale-95'));
+        });
+    </script>
+</body></html>
