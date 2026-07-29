@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, CreditCard, FileSpreadsheet, Loader2, Plus, Printer, Pencil, Trash2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useDemoGuard } from "@/lib/hooks/useDemoGuard";
 import { EmptyState, Modal, Spinner } from "@/components/shared/ui";
 import { DatePicker } from "@/components/shared/date-picker";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
@@ -501,8 +502,10 @@ function CancelSaleModal({ saleId, invoiceNo, onClose }: { saleId: string; invoi
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { guard: demoGuard } = useDemoGuard();
 
   async function cancel() {
+    if (demoGuard("ابطال فاکتور")) return;
     setSaving(true);
     const supabase = createClient();
     try {

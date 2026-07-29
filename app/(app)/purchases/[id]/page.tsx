@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Calendar, CreditCard, Loader2, Package, Pencil, Plus, Printer, ShoppingCart, Trash2, Truck, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useDemoGuard } from "@/lib/hooks/useDemoGuard";
 import { EmptyState, Modal, Spinner } from "@/components/shared/ui";
 import { DatePicker } from "@/components/shared/date-picker";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
@@ -335,7 +336,9 @@ function CancelPurchaseModal({ purchaseId, invoiceNo, onClose }: { purchaseId: s
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { guard: demoGuard } = useDemoGuard();
   async function cancel() {
+    if (demoGuard("ابطال فاکتور خرید")) return;
     setSaving(true);
     const supabase = createClient();
     try {
