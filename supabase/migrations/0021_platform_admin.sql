@@ -299,6 +299,7 @@ select
   o.is_active,
   o.created_at,
   o.approved_at,
+  o.approved_by,
   o.rejection_note,
   o.owner_id,
   (select count(*) from public.memberships m where m.org_id = o.id and m.is_active) as members_count,
