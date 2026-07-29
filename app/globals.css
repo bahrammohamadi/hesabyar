@@ -148,6 +148,16 @@ body {
 /* Stable neutral app surface - prevents the old yellow/cream theme bleed */
 html, body {
   background-color: hsl(var(--background)) !important;
+}
+
+/*
+  overflow-x فقط روی html اعمال می‌شود، نه body.
+  اگر روی body هم بیاید، body خودش تبدیل به scroll container می‌شود
+  (body.clientHeight برابر کل محتوا می‌شد، نه ارتفاع پنجره) و در بعضی
+  مرورگرها اسکرول با چرخ ماوس روی صفحات بلند گیر می‌کند؛ کاربر مجبور
+  می‌شد نوار اسکرول را دستی بکشد.
+*/
+html {
   overflow-x: hidden;
 }
 
