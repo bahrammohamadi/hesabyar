@@ -4,11 +4,13 @@ import { useMemo, useState } from "react";
 import dayjs from "dayjs";
 import jalaliday from "jalaliday";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Activity, Download, Gift, Plus, Search, Users } from "lucide-react";
+import { Activity, Download, Gift, Plus, Search, Star, UserMinus, Users, Wallet } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { EmptyState, Modal, PageHeader, Spinner } from "@/components/shared/ui";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
+import { Badge } from "@/src/shared/ui";
+import { CrmKpiCard, CustomerTierBadge } from "@/app/(app)/contacts/components/ContactsPieces";
 import { EntityLink } from "@/components/shared/entity-link";
 import { PhoneLink } from "@/components/shared/phone-link";
 import { formatToman, normalizeSearchText, toFaDigits, toJalali } from "@/lib/utils/format";
@@ -122,7 +124,7 @@ export function CrmPage({ mode }: { mode: CrmMode }) {
   }, [data, search]);
 
   if (isLoading) return <Spinner label="در حال بارگذاری CRM..." />;
-  if (error) return <div className="rounded-xl bg-rose-50 text-rose-700 p-4 text-sm">{(error as Error).message}</div>;
+  if (error) return <div className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive">{(error as Error).message}</div>;
 
   const vipCount = rows.filter((r) => r.segment === "VIP").length;
   const inactiveCount = rows.filter((r) => r.segment === "غیرفعال").length;
@@ -145,15 +147,15 @@ export function CrmPage({ mode }: { mode: CrmMode }) {
         action={<button onClick={() => setInteractionOpen(true)} className="btn-primary"><Plus size={16} /> تعامل جدید</button>}
       />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"><div className="text-xs text-slate-500">کل مشتریان</div><div className="text-xl font-bold text-slate-800 mt-1">{toFaDigits(rows.length)}</div></div>
-        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"><div className="text-xs text-slate-500">مشتریان VIP</div><div className="text-xl font-bold text-primary mt-1">{toFaDigits(vipCount)}</div></div>
-        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"><div className="text-xs text-slate-500">غیرفعال</div><div className="text-xl font-bold text-rose-600 mt-1">{toFaDigits(inactiveCount)}</div></div>
-        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"><div className="text-xs text-slate-500">ارزش خرید</div><div className="text-xl font-bold text-emerald-600 mt-1">{formatToman(totalValue, false)}</div></div>
+      <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4">
+        <CrmKpiCard label="کل مشتریان" value={toFaDigits(rows.length)} icon={Users} tone="primary" />
+        <CrmKpiCard label="مشتریان VIP" value={toFaDigits(vipCount)} chip="ویژه" icon={Star} tone="accent" />
+        <CrmKpiCard label="غیرفعال" value={toFaDigits(inactiveCount)} chip="بدون خرید" icon={UserMinus} tone="danger" />
+        <CrmKpiCard label="ارزش خرید" value={formatToman(totalValue, false)} icon={Wallet} tone="info" />
       </div>
 
       <div className="relative mb-4">
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
+        <Search className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={17} />
         <input className="input pr-10" placeholder="جستجوی نام یا تلفن مشتری..." value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
 
@@ -168,14 +170,14 @@ export function CrmPage({ mode }: { mode: CrmMode }) {
       ) : (
         <div className="space-y-2">
           {rows.length === 0 ? <EmptyState icon={Users} title="مشتری یافت نشد" /> : rows.map((row) => (
-            <div key={row.contact.id} className="flex items-center justify-between gap-3 rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:bg-primary/[0.03]">
+            <div key={row.contact.id} className="flex items-center justify-between gap-3 rounded-[1.75rem] border border-border bg-card p-4 shadow-sm transition hover:border-primary/25 hover:bg-primary/[0.03]">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <EntityLink type="contact" id={row.contact.id}>{row.contact.name}</EntityLink>
-                  <span className="badge bg-primary/10 text-primary">{row.segment}</span>
-                  <span className="badge bg-amber-100 text-amber-700"><Gift size={12} /> {toFaDigits(row.points)} امتیاز</span>
+                  <CustomerTierBadge tier={row.segment} />
+                  <Badge tone="warning"><Gift size={12} /> {toFaDigits(row.points)} امتیاز</Badge>
                 </div>
-                <div className="text-xs text-slate-400 mt-1 flex flex-wrap gap-3">
+                <div className="mt-1 flex flex-wrap gap-3 text-xs text-muted-foreground">
                   {row.contact.phone && <PhoneLink phone={row.contact.phone} />}
                   <span>فاکتور: {toFaDigits(row.count)}</span>
                   <span>آخرین خرید: {row.lastDate ? toJalali(row.lastDate) : "—"}</span>
@@ -183,7 +185,7 @@ export function CrmPage({ mode }: { mode: CrmMode }) {
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <div className="text-left"><div className="font-bold text-slate-800">{formatToman(row.total, false)}</div><div className="text-xs text-slate-400">مجموع خرید</div></div>
+                <div className="text-left"><div className="font-extrabold tabular-nums text-foreground">{formatToman(row.total, false)}</div><div className="text-xs text-muted-foreground">مجموع خرید</div></div>
                 <EntityActionMenu type="contact" id={row.contact.id} label={row.contact.name} phone={row.contact.phone} />
                 <button onClick={() => { setSelectedContact(row.contact); setInteractionOpen(true); }} className="btn-secondary text-sm"><Activity size={14}/> تعامل</button>
               </div>
@@ -229,7 +231,7 @@ function InteractionsList({ interactions, contacts }: { interactions: any[]; con
       {interactions.map((interaction) => {
         const contact = contactMap.get(interaction.contact_id);
         return (
-          <div key={interaction.id} className="flex items-center justify-between gap-3 rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:bg-primary/[0.03]">
+          <div key={interaction.id} className="flex items-center justify-between gap-3 rounded-[1.75rem] border border-border bg-card p-4 shadow-sm transition hover:border-primary/25 hover:bg-primary/[0.03]">
             <div>
               <div className="font-medium text-slate-800">{interaction.title || interaction.type}</div>
               <div className="text-xs text-slate-400 mt-1">{contact ? <EntityLink type="contact" id={contact.id}>{contact.name}</EntityLink> : "—"} • {toJalali(interaction.created_at, true)}</div>

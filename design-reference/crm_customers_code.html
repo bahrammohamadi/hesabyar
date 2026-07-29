@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="fa"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>حساب‌یار | مدیریت مشتریان</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;400;700;900&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #f7f9fb;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-active {
+            background-color: #003631; /* primary */
+            color: #ffffff; /* on-primary */
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .num-font {
+            font-family: 'Work Sans', sans-serif;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#004c5f",
+                        "surface-variant": "#e0e3e5",
+                        "secondary": "#712ae2",
+                        "on-secondary-fixed": "#25005a",
+                        "primary-container": "#134e48",
+                        "on-surface": "#191c1e",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#eceef0",
+                        "surface-container-highest": "#e0e3e5",
+                        "background": "#f7f9fb",
+                        "tertiary": "#003442",
+                        "tertiary-fixed": "#b7eaff",
+                        "secondary-container": "#8a4cfc",
+                        "outline": "#707977",
+                        "surface-container-high": "#e6e8ea",
+                        "on-secondary-container": "#fffbff",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#004e61",
+                        "outline-variant": "#bfc8c6",
+                        "on-tertiary-container": "#56c0e2",
+                        "on-primary-fixed-variant": "#154f49",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#d2bbff",
+                        "on-background": "#191c1e",
+                        "surface-tint": "#316761",
+                        "on-error": "#ffffff",
+                        "primary-fixed-dim": "#9ad1c9",
+                        "inverse-surface": "#2d3133",
+                        "on-primary-container": "#87beb6",
+                        "secondary-fixed": "#eaddff",
+                        "surface": "#f7f9fb",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed": "#00201d",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-tertiary": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-primary": "#9ad1c9",
+                        "on-tertiary-fixed": "#001f28",
+                        "primary": "#003631",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#5a00c6",
+                        "surface-container-low": "#f2f4f6",
+                        "primary-fixed": "#b5ede5",
+                        "tertiary-fixed-dim": "#6cd3f7",
+                        "surface-dim": "#d8dadc",
+                        "on-surface-variant": "#404947"
+                    },
+                    "spacing": {
+                        "sidebar_width": "260px",
+                        "card_padding": "1.25rem",
+                        "stack_gap": "1rem",
+                        "margin_page": "2rem",
+                        "gutter": "1.5rem"
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface">
+<!-- SideNavBar (Right-Aligned) -->
+<aside class="fixed right-0 top-0 h-full w-[260px] bg-surface-container-lowest border-l border-outline-variant shadow-sm z-40 hidden md:flex flex-col">
+<div class="p-6 flex flex-col items-center gap-2">
+<div class="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-3xl">account_balance_wallet</span>
+</div>
+<div class="text-center mt-2">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">حساب‌یار</h1>
+<p class="text-body-sm text-on-surface-variant">مدیریت هوشمند مالی</p>
+</div>
+</div>
+<nav class="flex-1 mt-6 px-4 space-y-2">
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-xl px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md">پیش‌خوان</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-xl px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body-md">تجزیه و تحلیل</span>
+</a>
+<a class="bg-primary text-on-primary rounded-xl px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">groups</span>
+<span class="font-body-md">مشتریان</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-xl px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-body-md">تراکنش‌ها</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-xl px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-body-md">سرمایه‌گذاری</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-xl px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">credit_card</span>
+<span class="font-body-md">کارت‌ها</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-xl px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md">تنظیمات</span>
+</a>
+</nav>
+<div class="p-6 border-t border-outline-variant mt-auto">
+<div class="flex items-center gap-3 p-3 bg-surface-container-low rounded-2xl mb-4">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="Close-up portrait of a professional female sales manager with a friendly smile, soft natural studio lighting, professional corporate aesthetic in a modern office background, high quality photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAF3_tEI34Ywfn7haWrGKoOvOMgIBsxNJNASKcD2expPpz_sNI0fuGFMyPNqcUdesH2TJLpXkiE_kNxIq8cPOVujOO9Nf_wGEqxRvptJikKxFde30QSVDWDsjTYP_nmCOkSAHwbvG8h4D6sRUhqpjqcp7fME9FxPLZBV6M89OMHpI7dTtAyiqW4Njea23Yv6oZGbsX1WNrTafz3bPh-P--i8EvhgXNnpeY3DcOk8Yx0iJHc5I1JhkztvWWhjA5aFm3bddT8_SIqVJ2k"/>
+<div>
+<p class="font-bold text-sm">نورا واتسون</p>
+<p class="text-xs text-on-surface-variant">مدیر فروش</p>
+</div>
+</div>
+<button class="w-full flex items-center gap-3 text-error px-4 py-2 hover:bg-error-container/10 rounded-xl transition-colors">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-body-md">خروج از حساب</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="md:mr-[260px] min-h-screen transition-all duration-300">
+<!-- TopAppBar -->
+<header class="h-20 bg-surface flex justify-between items-center px-8 w-full sticky top-0 z-30">
+<div class="flex items-center gap-4">
+<h2 class="font-headline-sm text-headline-sm text-primary">مدیریت مشتریان (CRM)</h2>
+<div class="hidden lg:flex items-center bg-surface-container-low px-4 py-2 rounded-full border border-outline-variant">
+<span class="material-symbols-outlined text-on-surface-variant">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-64 pr-2" placeholder="جستجوی نام مشتری..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="hover:bg-surface-container-low rounded-full p-2 text-on-surface-variant transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</button>
+<button class="hover:bg-surface-container-low rounded-full p-2 text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">chat_bubble</span>
+</button>
+<div class="h-8 w-px bg-outline-variant mx-2"></div>
+<button class="bg-primary text-on-primary px-5 py-2 rounded-xl flex items-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined">person_add</span>
+<span>افزودن مشتری جدید</span>
+</button>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-8 space-y-8">
+<!-- Quick KPI Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="bg-primary-container text-on-primary-container p-6 rounded-[2rem] shadow-sm flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined p-3 bg-white/10 rounded-2xl">group</span>
+<span class="bg-white/20 px-2 py-1 rounded-lg text-xs num-font font-semibold">+12%</span>
+</div>
+<div class="mt-4">
+<p class="text-on-primary-container/80 text-sm">کل مشتریان</p>
+<h3 class="text-3xl font-bold num-font">1,284</h3>
+</div>
+</div>
+<div class="bg-[#eaddff] text-[#25005a] p-6 rounded-[2rem] shadow-sm flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined p-3 bg-white/20 rounded-2xl">stars</span>
+<span class="bg-white/30 px-2 py-1 rounded-lg text-xs num-font font-semibold">456 نفر</span>
+</div>
+<div class="mt-4">
+<p class="text-[#25005a]/80 text-sm">مشتریان VIP</p>
+<h3 class="text-3xl font-bold num-font">35%</h3>
+</div>
+</div>
+<div class="bg-[#ffdad6] text-[#93000a] p-6 rounded-[2rem] shadow-sm flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined p-3 bg-white/20 rounded-2xl">payments</span>
+<span class="bg-white/30 px-2 py-1 rounded-lg text-xs text-sm">بدهکار</span>
+</div>
+<div class="mt-4">
+<p class="text-[#93000a]/80 text-sm">مجموع بدهی‌ها</p>
+<h3 class="text-3xl font-bold num-font">420.5M <span class="text-xs">تومان</span></h3>
+</div>
+</div>
+<div class="bg-[#b7eaff] text-[#001f28] p-6 rounded-[2rem] shadow-sm flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined p-3 bg-white/20 rounded-2xl">history</span>
+<span class="bg-white/30 px-2 py-1 rounded-lg text-xs text-sm">امروز</span>
+</div>
+<div class="mt-4">
+<p class="text-[#001f28]/80 text-sm">تعاملات اخیر</p>
+<h3 class="text-3xl font-bold num-font">24 <span class="text-xs">مورد</span></h3>
+</div>
+</div>
+</div>
+<!-- Main CRM Table Section -->
+<section class="bg-surface-container-lowest rounded-[2rem] shadow-sm overflow-hidden border border-outline-variant/30">
+<div class="p-6 flex flex-col md:flex-row justify-between items-center gap-4 border-b border-outline-variant/30">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">فهرست جامع مشتریان</h3>
+<p class="text-sm text-on-surface-variant">مدیریت مالی و گروه‌بندی مخاطبین</p>
+</div>
+<div class="flex gap-2">
+<button class="px-4 py-2 bg-surface-container-high rounded-xl text-sm flex items-center gap-2 hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-sm">filter_alt</span>
+                            فیلترها
+                        </button>
+<button class="px-4 py-2 bg-surface-container-high rounded-xl text-sm flex items-center gap-2 hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-sm">file_download</span>
+                            خروجی اکسل
+                        </button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-right border-collapse">
+<thead class="bg-surface-container-low/50">
+<tr>
+<th class="px-6 py-4 font-semibold text-on-surface-variant text-sm">مشتری</th>
+<th class="px-6 py-4 font-semibold text-on-surface-variant text-sm">شماره تماس</th>
+<th class="px-6 py-4 font-semibold text-on-surface-variant text-sm">سطح کاربری</th>
+<th class="px-6 py-4 font-semibold text-on-surface-variant text-sm">مانده بدهی (تومان)</th>
+<th class="px-6 py-4 font-semibold text-on-surface-variant text-sm">آخرین فعالیت</th>
+<th class="px-6 py-4 font-semibold text-on-surface-variant text-sm text-center">عملیات</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold">ع</div>
+<div>
+<p class="font-bold">علیرضا محمدی</p>
+<p class="text-xs text-on-surface-variant">پوشاک پارسیان</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 num-font text-sm">0912 123 4567</td>
+<td class="px-6 py-5">
+<span class="bg-primary-container/20 text-primary-container px-3 py-1 rounded-full text-xs font-bold">VIP</span>
+</td>
+<td class="px-6 py-5">
+<p class="num-font font-semibold text-error">12,500,000</p>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface-variant">۲ ساعت پیش</td>
+<td class="px-6 py-5">
+<div class="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-primary/10 text-primary rounded-lg transition-colors" title="تسویه حساب">
+<span class="material-symbols-outlined">payments</span>
+</button>
+<button class="p-2 hover:bg-tertiary/10 text-tertiary rounded-lg transition-colors" title="تماس">
+<span class="material-symbols-outlined">call</span>
+</button>
+<button class="p-2 hover:bg-on-surface-variant/10 text-on-surface-variant rounded-lg transition-colors" title="ویرایش">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold">س</div>
+<div>
+<p class="font-bold">سارا کریمی</p>
+<p class="text-xs text-on-surface-variant">فروشگاه زنجیره‌ای افق</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 num-font text-sm">0935 987 6543</td>
+<td class="px-6 py-5">
+<span class="bg-surface-container-high text-on-surface-variant px-3 py-1 rounded-full text-xs font-bold">معمولی</span>
+</td>
+<td class="px-6 py-5">
+<p class="num-font font-semibold text-on-surface-variant">۰</p>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface-variant">دیروز</td>
+<td class="px-6 py-5">
+<div class="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-primary/10 text-primary rounded-lg transition-colors" title="تسویه حساب">
+<span class="material-symbols-outlined">payments</span>
+</button>
+<button class="p-2 hover:bg-tertiary/10 text-tertiary rounded-lg transition-colors" title="تماس">
+<span class="material-symbols-outlined">call</span>
+</button>
+<button class="p-2 hover:bg-on-surface-variant/10 text-on-surface-variant rounded-lg transition-colors" title="ویرایش">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center font-bold">ج</div>
+<div>
+<p class="font-bold">جواد رضایی</p>
+<p class="text-xs text-on-surface-variant">عمده‌فروشی بازار</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 num-font text-sm">0912 555 1212</td>
+<td class="px-6 py-5">
+<span class="bg-primary-container/20 text-primary-container px-3 py-1 rounded-full text-xs font-bold">VIP</span>
+</td>
+<td class="px-6 py-5">
+<p class="num-font font-semibold text-error">48,200,000</p>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface-variant">۱ هفته پیش</td>
+<td class="px-6 py-5">
+<div class="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-primary/10 text-primary rounded-lg transition-colors" title="تسویه حساب">
+<span class="material-symbols-outlined">payments</span>
+</button>
+<button class="p-2 hover:bg-tertiary/10 text-tertiary rounded-lg transition-colors" title="تماس">
+<span class="material-symbols-outlined">call</span>
+</button>
+<button class="p-2 hover:bg-on-surface-variant/10 text-on-surface-variant rounded-lg transition-colors" title="ویرایش">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-outline-variant text-on-surface-variant flex items-center justify-center font-bold">م</div>
+<div>
+<p class="font-bold">مهدی اکبری</p>
+<p class="text-xs text-on-surface-variant">تولیدی سپهر</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 num-font text-sm">0901 223 3344</td>
+<td class="px-6 py-5">
+<span class="bg-surface-container-high text-on-surface-variant px-3 py-1 rounded-full text-xs font-bold">معمولی</span>
+</td>
+<td class="px-6 py-5">
+<p class="num-font font-semibold text-error">2,400,000</p>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface-variant">۳ ساعت پیش</td>
+<td class="px-6 py-5">
+<div class="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-primary/10 text-primary rounded-lg transition-colors" title="تسویه حساب">
+<span class="material-symbols-outlined">payments</span>
+</button>
+<button class="p-2 hover:bg-tertiary/10 text-tertiary rounded-lg transition-colors" title="تماس">
+<span class="material-symbols-outlined">call</span>
+</button>
+<button class="p-2 hover:bg-on-surface-variant/10 text-on-surface-variant rounded-lg transition-colors" title="ویرایش">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-6 flex items-center justify-between bg-surface-container-low/30">
+<p class="text-sm text-on-surface-variant">نمایش ۱۰ مورد از ۱,۲۸۴ مشتری</p>
+<div class="flex gap-2">
+<button class="p-2 hover:bg-surface-container-high rounded-lg transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+<div class="flex gap-1">
+<button class="w-8 h-8 flex items-center justify-center bg-primary text-on-primary rounded-lg font-bold text-sm">۱</button>
+<button class="w-8 h-8 flex items-center justify-center hover:bg-surface-container-high rounded-lg text-sm">۲</button>
+<button class="w-8 h-8 flex items-center justify-center hover:bg-surface-container-high rounded-lg text-sm">۳</button>
+<span class="flex items-center px-1">...</span>
+<button class="w-8 h-8 flex items-center justify-center hover:bg-surface-container-high rounded-lg text-sm">۱۲۸</button>
+</div>
+<button class="p-2 hover:bg-surface-container-high rounded-lg transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Bottom Layout: Analysis & Activity -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Segment Chart -->
+<div class="lg:col-span-1 bg-surface-container-lowest p-8 rounded-[2rem] border border-outline-variant/30 flex flex-col items-center">
+<h3 class="w-full font-headline-sm text-headline-sm mb-6">ترکیب مشتریان</h3>
+<div class="relative w-48 h-48 flex items-center justify-center">
+<!-- Simulated Donut Chart using Tailwind Conic Gradient -->
+<div class="w-full h-full rounded-full" style="background: conic-gradient(#134e48 0% 35%, #8a4cfc 35% 85%, #e0e3e5 85% 100%);"></div>
+<div class="absolute inset-4 bg-surface-container-lowest rounded-full flex flex-col items-center justify-center">
+<p class="num-font text-2xl font-bold">1.2K</p>
+<p class="text-xs text-on-surface-variant">مجموع</p>
+</div>
+</div>
+<div class="w-full mt-8 space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary-container"></span>
+<span class="text-sm">VIP (ویژه)</span>
+</div>
+<span class="num-font font-bold">۳۵٪</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-secondary-container"></span>
+<span class="text-sm">معمولی</span>
+</div>
+<span class="num-font font-bold">۵۰٪</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-outline-variant"></span>
+<span class="text-sm">سایر</span>
+</div>
+<span class="num-font font-bold">۱۵٪</span>
+</div>
+</div>
+</div>
+<!-- Recent Activities -->
+<div class="lg:col-span-2 bg-surface-container-lowest p-8 rounded-[2rem] border border-outline-variant/30">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-sm text-headline-sm">فعالیت‌های اخیر مشتریان</h3>
+<a class="text-primary text-sm font-bold hover:underline" href="#">مشاهده همه</a>
+</div>
+<div class="space-y-6">
+<div class="flex items-start gap-4">
+<div class="bg-primary-container/10 p-3 rounded-2xl text-primary-container">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<div class="flex-1">
+<p class="font-bold">پرداخت بدهی</p>
+<p class="text-sm text-on-surface-variant">علیرضا محمدی مبلغ ۵,۰۰۰,۰۰۰ تومان از بدهی خود را تسویه کرد.</p>
+</div>
+<span class="text-xs text-on-surface-variant num-font">۱۰:۴۵</span>
+</div>
+<div class="flex items-start gap-4">
+<div class="bg-secondary-container/10 p-3 rounded-2xl text-secondary-container">
+<span class="material-symbols-outlined">person_add</span>
+</div>
+<div class="flex-1">
+<p class="font-bold">ثبت مشتری جدید</p>
+<p class="text-sm text-on-surface-variant">مشتری "تولیدی ارکیده" به لیست اضافه شد.</p>
+</div>
+<span class="text-xs text-on-surface-variant num-font">۰۹:۱۵</span>
+</div>
+<div class="flex items-start gap-4">
+<div class="bg-tertiary-container/10 p-3 rounded-2xl text-tertiary-container">
+<span class="material-symbols-outlined">edit_note</span>
+</div>
+<div class="flex-1">
+<p class="font-bold">ویرایش اطلاعات</p>
+<p class="text-sm text-on-surface-variant">آدرس شعبه دوم برای "فروشگاه زنجیره‌ای افق" به‌روزرسانی شد.</p>
+</div>
+<span class="text-xs text-on-surface-variant num-font">دیروز</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Mobile only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center bg-surface-container-lowest h-16 md:hidden shadow-lg border-t border-outline-variant px-4 pb-2 rtl">
+<button class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px]">خانه</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="text-[10px]">گزارشات</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1">
+<span class="material-symbols-outlined">groups</span>
+<span class="text-[10px]">مشتریان</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px]">تنظیمات</span>
+</button>
+</nav>
+<!-- Interactive script for some hover effects -->
+<script>
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('mousedown', () => {
+                el.style.transform = 'scale(0.96)';
+            });
+            el.addEventListener('mouseup', () => {
+                el.style.transform = 'scale(1)';
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body></html>
