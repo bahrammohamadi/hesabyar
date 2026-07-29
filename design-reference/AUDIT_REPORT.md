@@ -48,7 +48,7 @@
 | ۴ | تثبیت `src/shared/ui` به‌عنوان سیستم اصلی | ✅ | `PageHeader`/`StatCard`/`Modal` منتقل شدند؛ diff تأیید کرد بدنه بایت‌به‌بایت یکسان است |
 | ۵ | حذف `components/ui/tabs.tsx` (کد مرده) | ✅ | فایل حذف شد؛ سه الگوی grep تأیید کرد importer نداشت |
 | ۶ | shim موقت `components/shared/ui.tsx` | ✅ | حالا فقط `Spinner`/`EmptyState` محلی + re-export بقیه |
-| ۷ | **داشبورد** طبق مرجع Stitch | ⚠️ **Partial** | کامپوننت‌های `dashboard/components/` صفر رنگ هاردکد ✅ — اما **خودِ `dashboard/page.tsx` هنوز ۴۲ مورد دارد** (خطوط ۳۴۳–۴۴۶، داخل `QuickSaleModal`/`QuickTxModal`) و این کد **رندر می‌شود** (خطوط ۱۹۲–۱۹۴) |
+| ۷ | **داشبورد** طبق مرجع Stitch | ✅ **رفع شد** | در کامیت بعدی ۴۲ مورد → **صفر**. `create_sale` payload با diff تأیید شد بایت‌به‌بایت یکسان است |
 | ۸ | ویجت هشدار موجودی + پرفروش‌ها | ✅ | `DashboardStockAlert.tsx`، `DashboardTopProducts.tsx` — از هوک موجود `useTopProducts` |
 | ۹ | **فروش (POS) دو‌مرحله‌ای** | ✅ | `PosPieces.tsx` + `PosPayment.tsx`؛ `create_sale` payload با diff تأیید شد بدون تغییر |
 | ۱۰ | صفحات کناری فروش | ✅ | هر ۴ فایل `sales/*` → **صفر** رنگ هاردکد |
@@ -106,7 +106,7 @@
 | # | مورد | شدت | وضعیت |
 |---|---|---|---|
 | ۱ | **کلید `service_role` لو‌رفته هنوز زنده** | 🔴 بحرانی | تست زنده همین حالا: `HTTP 200` روی `/rest/v1/contacts`. کلید داخل git history (کامیت `4763219`) با کلید production یکی است. **۲۸ روز باز.** |
-| ۲ | توکن‌های plaintext در `DEPLOYMENT_AUDIT.md` | 🔴 بالا | خط ۱۷۷ (`ghp_w0UM…`) و ۱۸۲ (`vcp_7DcI…`) هنوز در ریپو |
+| ۲ | توکن‌های plaintext در `DEPLOYMENT_AUDIT.md` | ✅ **رفع شد** | هر سه مقدار کامل redact شدند؛ grep الان صفر برمی‌گرداند. ⚠️ همچنان در git history هستند، پس Revoke لازم است |
 | ۳ | PII مشتریان در گیت | 🟠 متوسط | `contacts_from_00_pdf.csv` ۵۳۱ سطر + `data/customers-ready.csv` ۵۴۱ سطر (نام، موبایل، تاریخ تولد) |
 | ۴ | ۲۱ advisory باقی‌مانده Next.js | 🟡 پایین‌تر | همه DoS/cache — فقط با ارتقای شکننده به Next 16 حل می‌شوند. یکی «Pages Router bypass» است که **قابل اعمال نیست** (پروژه `/pages` ندارد) |
 | ۵ | `tar` critical + ۲۰ `@vercel/*` high | 🟢 ناچیز | dev-only، به production نمی‌رسد |
@@ -148,3 +148,22 @@
 ۳. 🟠 پاک‌سازی CSVهای PII از history.
 ۴. 🟡 تکمیل ۴۲ مورد `dashboard/page.tsx` (تنها نقص داخل اسکوپ).
 ۵. ⚪ ۷۲۶ مورد باقی‌مانده app-wide — نیازمند تسک جدا با تأیید صریح.
+
+
+---
+
+## پیگیری — رفع دو مورد باقی‌مانده (پس از ممیزی)
+
+| مورد | قبل | بعد | شاهد |
+|---|---|---|---|
+| رنگ هاردکد در `dashboard/page.tsx` | ۴۲ | **۰** | `grep -c` روی فایل |
+| توکن کامل در `DEPLOYMENT_AUDIT.md` | ۳ | **۰** | `grep -cE "ghp_[A-Za-z0-9]{30,}|vcp_[A-Za-z0-9]{30,}"` |
+
+منطق فروش سریع دست‌نخورده ماند: diff هیچ خط `useQuery`/`rpc`/`queryKey` ندارد و
+payload فراخوانی `create_sale` بایت‌به‌بایت با نسخه‌ی قبل یکسان است.
+
+`tsc` صفر خطا · ۱۴/۱۴ تست · build ۶۸/۶۸ · مسیرها: `/`→۲۰۰، `/login`→۲۰۰،
+`/dashboard`→۳۰۷، `/sales`→۳۰۷.
+
+**باقی‌مانده‌ی امنیتی (نیازمند اقدام شما، نه کد):**
+کلید `service_role` همچنان زنده است و PII در CSVهای گیت باقی است.

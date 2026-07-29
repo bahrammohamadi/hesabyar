@@ -9,6 +9,12 @@
 
 ---
 
+
+> ⚠️ **یادداشت امنیتی:** مقادیر کامل توکن‌ها از این سند حذف شده‌اند تا خودِ سندِ
+> هشدار به منبع نشت تبدیل نشود. فقط پیشوند نگه داشته شده تا بتوانید توکن درست را
+> در پنل پیدا و باطل کنید. توجه: این توکن‌ها همچنان در تاریخچه‌ی git وجود دارند،
+> پس صرفِ حذف از فایل کافی نیست — حتماً باید در گیت‌هاب/وِرسل هم Revoke شوند.
+
 ## ✅ خلاصه وضعیت Deploy
 
 **وضعیت فعلی: DEPLOYED SUCCESSFULLY ✅**
@@ -132,7 +138,7 @@ Import trace: @supabase/supabase-js → @supabase/ssr → lib/supabase/middlewar
 - **.gitignore:** درست است (.env* ignore شده) ✅
 
 **⚠️ Security Issue:**
-- GitHub Token شما در چت لو رفت: `ghp_w0UMU...` 
+- GitHub Token شما در چت لو رفت: `ghp_w0UM…` (مقدار کامل عمداً حذف شد — [REDACTED])
 - **فورا این توکن را Revoke کنید!**
   https://github.com/settings/tokens
 
@@ -174,12 +180,12 @@ Route (app)        Size     First Load JS
 
 ### 2. REVOKE GITHUB TOKEN 🔴
 https://github.com/settings/tokens
-- توکن `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` را Delete کن
+- توکن با پیشوند `ghp_w0UM…` را Delete کن (مقدار کامل از این سند حذف شد — [REDACTED])
 - یک Fine-grained token جدید بساز
 
 ### 3. REVOKE VERCEL TOKEN 🔴
 https://vercel.com/account/tokens
-- توکن `vcp_7DcIvbCP5s7n1ysJQ0qjy5E44vzSjIoS14BB50xAOw1JdY5l3p3hBMKr` را Delete کن
+- توکن با پیشوند `vcp_7DcI…` را Delete کن (مقدار کامل از این سند حذف شد — [REDACTED])
 
 ---
 

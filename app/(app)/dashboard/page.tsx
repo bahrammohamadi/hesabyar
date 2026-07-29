@@ -148,7 +148,7 @@ export default function DashboardPage() {
         >
           <Plus size={18} />
           <span className="hidden sm:inline">فروش جدید</span>
-          <span className="hidden rounded bg-white/20 px-1.5 py-0.5 text-[10px] lg:inline">F2</span>
+          <span className="hidden rounded bg-card/20 px-1.5 py-0.5 text-[10px] lg:inline">F2</span>
         </button>
       </div>
 
@@ -340,11 +340,11 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
     return (
       <Modal open onClose={onClose} title="فروش ثبت شد">
         <div className="text-center py-6">
-          <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success/10 text-success">
             <Receipt size={30} />
           </div>
-          <h3 className="font-bold text-slate-800 text-lg">فاکتور با موفقیت ثبت شد ✅</h3>
-          <p className="text-sm text-slate-500 mt-2">مبلغ کل: {formatToman(total)}</p>
+          <h3 className="font-bold text-foreground text-lg">فاکتور با موفقیت ثبت شد ✅</h3>
+          <p className="text-sm text-muted-foreground mt-2">مبلغ کل: {formatToman(total)}</p>
           <div className="mt-6 grid gap-2 sm:grid-cols-2">
             <Link href={`/sales/${done}`} className="btn-primary">مشاهده و چاپ فاکتور</Link>
             <button type="button" disabled title="به‌زودی - نیاز به اتصال سرویس پیامک" className="btn-secondary cursor-not-allowed opacity-60"><Send size={16} /> ارسال برای مشتری</button>
@@ -363,15 +363,15 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
           <div>
             <label className="label">مشتری</label>
             {customer ? (
-              <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3.5 py-2.5">
+              <div className="flex items-center justify-between rounded-xl border border-border px-3.5 py-2.5">
                 <div>
-                  <div className="font-medium text-sm text-slate-800">{customer.name}</div>
+                  <div className="font-medium text-sm text-foreground">{customer.name}</div>
                   {customer.phone && <PhoneLink phone={customer.phone} className="text-xs" />}
                 </div>
-                <button onClick={() => setCustomer(null)} className="text-slate-400 hover:text-rose-500"><X size={18} /></button>
+                <button onClick={() => setCustomer(null)} className="text-muted-foreground transition hover:text-destructive"><X size={18} /></button>
               </div>
             ) : (
-              <button onClick={() => setCustomerPickerOpen(true)} className="w-full flex items-center gap-2 rounded-xl border border-dashed border-slate-300 px-3.5 py-2.5 text-sm text-slate-500 hover:border-primary/30 hover:text-primary">
+              <button onClick={() => setCustomerPickerOpen(true)} className="w-full flex items-center gap-2 rounded-xl border border-dashed border-border px-3.5 py-2.5 text-sm text-muted-foreground hover:border-primary/30 hover:text-primary">
                 <UserPlus size={18} /> انتخاب مشتری (یا مشتری نقدی)
               </button>
             )}
@@ -380,24 +380,24 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
             <Package2 size={18} /> افزودن کالا به فاکتور
           </button>
           {cart.length === 0 ? (
-            <div className="text-center text-sm text-slate-400 py-6 border border-dashed border-slate-200 rounded-xl">کالایی انتخاب نشده است.</div>
+            <div className="text-center text-sm text-muted-foreground py-6 border border-dashed border-border rounded-xl">کالایی انتخاب نشده است.</div>
           ) : (
-            <div className="max-h-[42vh] overflow-y-auto rounded-2xl border border-slate-100 bg-white">
-              <div className="hidden grid-cols-[minmax(220px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_140px_minmax(120px,1fr)_44px] gap-2 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-500 md:grid">
+            <div className="max-h-[42vh] overflow-y-auto rounded-2xl border border-border bg-card">
+              <div className="hidden grid-cols-[minmax(220px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_140px_minmax(120px,1fr)_44px] gap-2 bg-muted/50 px-3 py-2 text-xs font-bold text-muted-foreground md:grid">
                 <span>کالا</span><span>تنوع/SKU</span><span>قیمت واحد</span><span className="text-center">تعداد</span><span className="text-left">جمع</span><span />
               </div>
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-border">
                 {cart.map((c) => (
                   <div key={c.variant_id} className="p-3">
                     <div className="hidden grid-cols-[minmax(220px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_140px_minmax(120px,1fr)_44px] items-center gap-2 md:grid">
                       <div className="min-w-0"><div className="flex items-center gap-2"><EntityLink type="product" id={c.product_id} className="truncate text-sm font-semibold">{c.product_name}</EntityLink><EntityActionMenu type="product" id={c.product_id} label={c.product_name} /></div></div>
-                      <div className="truncate text-xs text-slate-500" title={c.variant_label || "ساده"}>{c.variant_label || "ساده"}</div>
+                      <div className="truncate text-xs text-muted-foreground" title={c.variant_label || "ساده"}>{c.variant_label || "ساده"}</div>
                       <input className="input h-10 min-h-10 text-left text-sm" inputMode="numeric" value={String(rialToToman(c.unit_price))} onChange={(e) => updatePrice(c.variant_id, e.target.value)} />
-                      <div className="mx-auto flex h-10 items-center rounded-xl border border-slate-200 bg-white"><button onClick={() => updateQty(c.variant_id, c.qty - 1)} className="px-2.5 text-slate-500">−</button><span className="min-w-8 text-center text-sm font-bold">{toFaDigits(c.qty)}</span><button onClick={() => updateQty(c.variant_id, c.qty + 1)} className="px-2.5 text-slate-500">+</button></div>
-                      <div className="text-left text-sm font-black text-slate-800 tabular-nums">{formatToman(c.unit_price * c.qty - c.discount, false)}</div>
-                      <button onClick={() => updateQty(c.variant_id, 0)} className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-rose-400 hover:bg-rose-50 hover:text-rose-600"><Trash2 size={16} /></button>
+                      <div className="mx-auto flex h-10 items-center rounded-xl border border-border bg-card"><button onClick={() => updateQty(c.variant_id, c.qty - 1)} className="px-2.5 text-muted-foreground">−</button><span className="min-w-8 text-center text-sm font-bold">{toFaDigits(c.qty)}</span><button onClick={() => updateQty(c.variant_id, c.qty + 1)} className="px-2.5 text-muted-foreground">+</button></div>
+                      <div className="text-left text-sm font-black text-foreground tabular-nums">{formatToman(c.unit_price * c.qty - c.discount, false)}</div>
+                      <button onClick={() => updateQty(c.variant_id, 0)} className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"><Trash2 size={16} /></button>
                     </div>
-                    <div className="md:hidden"><div className="flex items-start justify-between gap-2"><div className="min-w-0"><EntityLink type="product" id={c.product_id} className="truncate text-sm font-semibold">{c.product_name}</EntityLink><div className="text-xs text-slate-400">{c.variant_label || "ساده"}</div></div><button onClick={() => updateQty(c.variant_id, 0)} className="text-rose-400"><Trash2 size={16} /></button></div><div className="mt-2 flex items-center justify-between gap-2 text-sm"><span>{formatToman(c.unit_price, false)} × {toFaDigits(c.qty)}</span><strong>{formatToman(c.unit_price * c.qty - c.discount, false)}</strong></div></div>
+                    <div className="md:hidden"><div className="flex items-start justify-between gap-2"><div className="min-w-0"><EntityLink type="product" id={c.product_id} className="truncate text-sm font-semibold">{c.product_name}</EntityLink><div className="text-xs text-muted-foreground">{c.variant_label || "ساده"}</div></div><button onClick={() => updateQty(c.variant_id, 0)} className="text-destructive"><Trash2 size={16} /></button></div><div className="mt-2 flex items-center justify-between gap-2 text-sm"><span>{formatToman(c.unit_price, false)} × {toFaDigits(c.qty)}</span><strong>{formatToman(c.unit_price * c.qty - c.discount, false)}</strong></div></div>
                   </div>
                 ))}
               </div>
@@ -421,9 +421,9 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
                   <option value="percent">٪</option>
                 </select>
               </div>
-              {discountRial > 0 && <div className="text-xs text-slate-400 mt-1">معادل تخفیف: {formatToman(discountRial)}</div>}
+              {discountRial > 0 && <div className="text-xs text-muted-foreground mt-1">معادل تخفیف: {formatToman(discountRial)}</div>}
             </div>
-            <label className="col-span-2 flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+            <label className="col-span-2 flex items-center gap-2 rounded-xl border border-border bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
               <input type="checkbox" checked={isCreditSale} onChange={(e) => setIsCreditSale(e.target.checked)} />
               این فروش نسیه است / پرداخت خودکار نقدی را غیرفعال کن
             </label>
@@ -439,18 +439,18 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
               <div>
                 <label className="label">اعتبار مشتری (تومان)</label>
                 <input className="input" inputMode="numeric" value={paidWallet} onChange={(e) => setPaidWallet(e.target.value)} />
-                <div className="text-xs text-slate-400 mt-1">اعتبار موجود: {formatToman(walletCredit ?? 0)}</div>
+                <div className="text-xs text-muted-foreground mt-1">اعتبار موجود: {formatToman(walletCredit ?? 0)}</div>
               </div>
             )}
           </div>
-          <div className="rounded-xl bg-slate-50 p-4 space-y-1.5 text-sm">
-            <div className="flex justify-between text-slate-500"><span>جمع کل</span><span>{formatToman(subtotal)}</span></div>
-            {discountRial > 0 && <div className="flex justify-between text-slate-500"><span>تخفیف</span><span>{formatToman(discountRial)}</span></div>}
-            <div className="flex justify-between font-bold text-slate-800 text-base border-t border-slate-200 pt-1.5"><span>مبلغ قابل پرداخت</span><span>{formatToman(total)}</span></div>
-            {paidWalletRial > 0 && <div className="flex justify-between text-emerald-600 font-medium"><span>پرداخت از اعتبار</span><span>{formatToman(paidWalletRial)}</span></div>}
-            {credit > 0 && <div className="flex justify-between text-rose-600 font-medium"><span>نسیه</span><span>{formatToman(credit)}</span></div>}
+          <div className="rounded-xl bg-muted/50 p-4 space-y-1.5 text-sm">
+            <div className="flex justify-between text-muted-foreground"><span>جمع کل</span><span>{formatToman(subtotal)}</span></div>
+            {discountRial > 0 && <div className="flex justify-between text-muted-foreground"><span>تخفیف</span><span>{formatToman(discountRial)}</span></div>}
+            <div className="flex justify-between font-bold text-foreground text-base border-t border-border pt-1.5"><span>مبلغ قابل پرداخت</span><span>{formatToman(total)}</span></div>
+            {paidWalletRial > 0 && <div className="flex justify-between font-medium text-finance-profit"><span>پرداخت از اعتبار</span><span>{formatToman(paidWalletRial)}</span></div>}
+            {credit > 0 && <div className="flex justify-between font-medium text-finance-debt"><span>نسیه</span><span>{formatToman(credit)}</span></div>}
           </div>
-          {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
+          {error && <div className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>}
           <div className="flex gap-2">
             <button onClick={handleSubmit} disabled={saving} className="btn-primary flex-1">
               {saving && <Loader2 className="animate-spin" size={18} />} ثبت فروش
@@ -570,7 +570,7 @@ function QuickTxModal({ orgId, type, onClose }: { orgId: string | null; type: "e
           <label className="label">توضیحات</label>
           <input className="input" value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
-        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
+        {error && <div className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>}
         <div className="flex gap-2">
           <button onClick={handleSave} disabled={saving} className="btn-primary flex-1">
             {saving && <Loader2 className="animate-spin" size={18} />} ثبت
