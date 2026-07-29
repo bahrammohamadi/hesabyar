@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { formatToman, toFaDigits, toJalali } from "@/lib/utils/format";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
+import { Badge, type BadgeTone } from "@/src/shared/ui";
 import { DatePicker } from "@/components/shared/date-picker";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
@@ -27,12 +28,13 @@ type Order = {
   customer?: { name: string };
 };
 
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  pending: { label: "در انتظار", color: "bg-yellow-100 text-yellow-800" },
-  confirmed: { label: "تأیید شده", color: "bg-blue-100 text-blue-800" },
-  converted: { label: "تبدیل به فاکتور", color: "bg-emerald-100 text-emerald-800" },
-  cancelled: { label: "لغو شده", color: "bg-rose-100 text-rose-800" },
-  expired: { label: "منقضی", color: "bg-slate-100 text-slate-600" },
+// وضعیت‌ها به tone های Badge مشترک نگاشت شدند (به‌جای رنگ خام).
+const STATUS_LABELS: Record<string, { label: string; tone: BadgeTone }> = {
+  pending: { label: "در انتظار", tone: "warning" },
+  confirmed: { label: "تأیید شده", tone: "info" },
+  converted: { label: "تبدیل به فاکتور", tone: "success" },
+  cancelled: { label: "لغو شده", tone: "danger" },
+  expired: { label: "منقضی", tone: "neutral" },
 };
 
 export default function SalesOrdersPage() {
@@ -209,7 +211,7 @@ export default function SalesOrdersPage() {
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
           <input className="input pr-9" placeholder="جستجو شماره سفارش یا مشتری..." value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <select className="input w-auto" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
@@ -222,10 +224,10 @@ export default function SalesOrdersPage() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-slate-800">{toFaDigits(orders.length)}</div><div className="text-xs text-slate-500">کل سفارش‌ها</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-yellow-600">{toFaDigits(orders.filter(o => o.status === "pending").length)}</div><div className="text-xs text-slate-500">در انتظار</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-blue-600">{toFaDigits(orders.filter(o => o.status === "confirmed").length)}</div><div className="text-xs text-slate-500">تأیید شده</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-emerald-600">{formatToman(orders.filter(o => o.status !== "cancelled").reduce((sum, o) => sum + (o.total || 0), 0))}</div><div className="text-xs text-slate-500">مجموع</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-foreground">{toFaDigits(orders.length)}</div><div className="text-xs text-muted-foreground">کل سفارش‌ها</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-black tabular-nums text-warning">{toFaDigits(orders.filter(o => o.status === "pending").length)}</div><div className="text-xs text-muted-foreground">در انتظار</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-black tabular-nums text-info">{toFaDigits(orders.filter(o => o.status === "confirmed").length)}</div><div className="text-xs text-muted-foreground">تأیید شده</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-success">{formatToman(orders.filter(o => o.status !== "cancelled").reduce((sum, o) => sum + (o.total || 0), 0))}</div><div className="text-xs text-muted-foreground">مجموع</div></div>
       </div>
 
       {loading ? <Spinner label="در حال بارگذاری..." /> :
@@ -240,30 +242,30 @@ export default function SalesOrdersPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="font-bold text-slate-800">{order.order_no || "بدون شماره"}</span>
-                      <span className={`badge ${statusInfo.color}`}>{statusInfo.label}</span>
+                      <span className="font-bold text-foreground">{order.order_no || "بدون شماره"}</span>
+                      <Badge tone={statusInfo.tone}>{statusInfo.label}</Badge>
                     </div>
-                    <div className="text-sm text-slate-600 mb-1">
+                    <div className="text-sm text-muted-foreground mb-1">
                       {order.customer_id ? (
                         <span className="inline-flex items-center gap-2">
                           <EntityLink type="contact" id={order.customer_id}>{order.customer?.name ?? "مشتری"}</EntityLink>
                           <EntityActionMenu type="contact" id={order.customer_id} label={order.customer?.name ?? "مشتری"} />
                         </span>
                       ) : (
-                        <span className="text-slate-400">بدون مشتری</span>
+                        <span className="text-muted-foreground">بدون مشتری</span>
                       )}
                     </div>
-                    <div className="flex items-center gap-4 text-xs text-slate-400">
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <span>{toJalali(order.date)}</span>
                       {order.expiry_date && <span>انقضا: {toJalali(order.expiry_date)}</span>}
                     </div>
                   </div>
                   <div className="text-left">
-                    <div className="text-lg font-bold text-slate-800">{formatToman(order.total)}</div>
-                    <div className="text-xs text-slate-400">تومان</div>
+                    <div className="text-lg font-bold text-foreground">{formatToman(order.total)}</div>
+                    <div className="text-xs text-muted-foreground">تومان</div>
                   </div>
                 </div>
-                <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-slate-100">
+                <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-border">
                   {order.status === "pending" && (
                     <button onClick={() => updateOrderStatus(order.id, "confirmed")} className="btn-secondary text-sm">تأیید</button>
                   )}
@@ -301,13 +303,13 @@ export default function SalesOrdersPage() {
                 <button type="button" onClick={() => setShowProductSearch(!showProductSearch)} className="text-primary text-sm font-medium">+ افزودن کالا</button>
               </div>
               {showProductSearch && (
-                <div className="mb-3 p-3 bg-slate-50 rounded-xl">
+                <div className="mb-3 p-3 bg-muted/50 rounded-xl">
                   <input className="input mb-2" placeholder="جستجوی کالا..." value={productSearch} onChange={e => setProductSearch(e.target.value)} />
                   <div className="space-y-1 max-h-48 overflow-y-auto">
                     {items.map(item => (
                       item.variants?.map((v: any) => (
                         <div key={v.id} className="flex items-center justify-between p-2 bg-white rounded-lg">
-                          <div className="text-sm"><div className="font-medium">{item.name}</div><div className="text-xs text-slate-400">{v.color && `رنگ: ${v.color}`} {v.size && `سایز: ${v.size}`}</div></div>
+                          <div className="text-sm"><div className="font-medium">{item.name}</div><div className="text-xs text-muted-foreground">{v.color && `رنگ: ${v.color}`} {v.size && `سایز: ${v.size}`}</div></div>
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium">{formatToman(v.sale_price)}</span>
                             <button type="button" onClick={() => { setItems([...items.filter(i => i.variant_id !== v.id), { ...v, product_id: item.id, product_name: item.name, qty: 1, price: v.sale_price }]); setShowProductSearch(false); setProductSearch(""); }} className="btn-primary py-1 px-2 text-xs"><Plus size={12} /></button>
@@ -320,18 +322,18 @@ export default function SalesOrdersPage() {
               )}
               <div className="space-y-2">
                 {items.filter(i => i.qty > 0).map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                  <div key={idx} className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl">
                     <div className="flex-1">
                       <div className="inline-flex items-center gap-2 text-sm font-medium">
                         <EntityLink type="product" id={item.product_id}>{item.product_name}</EntityLink>
                         <EntityActionMenu type="product" id={item.product_id} label={item.product_name} />
                       </div>
-                      <div className="text-xs text-slate-400">{item.color && `رنگ: ${item.color}`} {item.size && `سایز: ${item.size}`}</div>
+                      <div className="text-xs text-muted-foreground">{item.color && `رنگ: ${item.color}`} {item.size && `سایز: ${item.size}`}</div>
                     </div>
                     <div className="flex items-center gap-2">
                       <input type="number" min="1" value={item.qty} onChange={e => { const newItems = [...items]; newItems[idx].qty = parseInt(e.target.value) || 1; setItems(newItems); }} className="input w-16 text-center" />
                       <span className="text-sm">{formatToman(item.price * item.qty)}</span>
-                      <button type="button" onClick={() => setItems(items.map((i, j) => j === idx ? { ...i, qty: 0 } : i))} className="text-rose-500 hover:text-rose-700"><Trash2 size={14} /></button>
+                      <button type="button" onClick={() => setItems(items.map((i, j) => j === idx ? { ...i, qty: 0 } : i))} className="text-destructive hover:text-destructive"><Trash2 size={14} /></button>
                     </div>
                   </div>
                 ))}

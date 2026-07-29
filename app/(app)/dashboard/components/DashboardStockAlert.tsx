@@ -4,7 +4,16 @@ import Link from "next/link";
 import { AlertTriangle, PackageCheck } from "lucide-react";
 import { Badge, Card } from "@/src/shared/ui";
 import { toFaDigits } from "@/lib/utils/format";
-import type { DashboardLowStockItem } from "./DashboardLowStock";
+/** یک قلم کالای کم‌موجود — از DashboardLowStock حذف‌شده به اینجا منتقل شد. */
+export type DashboardLowStockItem = {
+  variant_id: string;
+  product_id: string | null;
+  product_name: string;
+  color: string | null;
+  size: string | null;
+  stock_qty: number;
+  low_stock_threshold: number;
+};
 
 /**
  * ویجت «هشدار موجودی» — برگرفته از مرجع طراحی (_6 / alt widgets).
