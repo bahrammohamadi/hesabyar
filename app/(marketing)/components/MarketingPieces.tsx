@@ -107,13 +107,13 @@ export function MarketingHero() {
       <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
         <Link
           href="/register"
-          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 text-sm font-black text-primary-foreground shadow-sm transition hover:bg-primary/90 sm:w-auto"
+          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 text-sm font-black text-primary-foreground shadow-sm transition-all duration-200 hover:bg-primary/90 hover:shadow-md active:scale-95 sm:w-auto"
         >
           شروع رایگان حساب‌یار
         </Link>
         <Link
           href="/login"
-          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card px-6 text-sm font-bold text-foreground transition hover:border-primary/30 hover:text-primary sm:w-auto"
+          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card px-6 text-sm font-bold text-foreground transition-all duration-200 hover:border-primary/30 hover:text-primary active:scale-95 sm:w-auto"
         >
           ورود به حساب
         </Link>
@@ -142,7 +142,7 @@ function StatTile({
 }) {
   return (
     <div
-      className={`rounded-2xl border p-4 text-center ${
+      className={`rounded-2xl border p-4 text-center transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${
         highlight ? "border-primary/20 bg-primary/[0.06]" : "border-border bg-card"
       }`}
     >
@@ -199,8 +199,8 @@ export function MarketingFeatures() {
 
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map(({ icon: Icon, title, body }) => (
-            <Card key={title} className="p-5 transition hover:-translate-y-0.5 hover:shadow-md">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <Card key={title} className="group p-5 transition hover:-translate-y-0.5 hover:shadow-md">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-transform duration-200 group-hover:scale-110">
                 <Icon size={20} strokeWidth={2.2} />
               </span>
               <h3 className="mt-4 text-sm font-extrabold text-foreground">{title}</h3>
@@ -305,7 +305,7 @@ function PlanCard({ plan }: { plan: Plan }) {
       className={[
         "relative flex h-full flex-col rounded-[1.75rem] border p-5 shadow-sm transition",
         featured
-          ? "border-primary bg-primary text-primary-foreground shadow-md"
+          ? "border-primary bg-primary text-primary-foreground shadow-md transition-transform hover:-translate-y-0.5"
           : "border-border bg-card hover:-translate-y-0.5 hover:shadow-md",
       ].join(" ")}
     >
@@ -350,7 +350,7 @@ function PlanCard({ plan }: { plan: Plan }) {
       <Link
         href={plan.href}
         className={[
-          "mt-5 inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-black transition",
+          "mt-5 inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-black transition-all duration-200 active:scale-95",
           featured
             ? "bg-primary-foreground text-primary hover:bg-primary-foreground/90"
             : "border border-border bg-card text-foreground hover:border-primary/40 hover:text-primary",
@@ -377,13 +377,13 @@ export function MarketingCta() {
         <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             href="/register"
-            className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-primary-foreground px-6 text-sm font-black text-primary transition hover:bg-primary-foreground/90 sm:w-auto"
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-primary-foreground px-6 text-sm font-black text-primary transition-all duration-200 hover:bg-primary-foreground/90 active:scale-95 sm:w-auto"
           >
             ایجاد حساب کاربری
           </Link>
           <Link
             href="/login"
-            className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-primary-foreground/25 px-6 text-sm font-bold text-primary-foreground transition hover:bg-primary-foreground/10 sm:w-auto"
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-primary-foreground/25 px-6 text-sm font-bold text-primary-foreground transition-all duration-200 hover:bg-primary-foreground/10 active:scale-95 sm:w-auto"
           >
             تماس با واحد فروش
           </Link>
