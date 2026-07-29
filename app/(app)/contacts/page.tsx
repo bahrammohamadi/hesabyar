@@ -8,10 +8,12 @@ import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { PageHeader, Spinner, EmptyState } from "@/components/shared/ui";
+import { Button, Card, Select } from "@/src/shared/ui";
+import { CrmKpiCard, CustomerTierBadge } from "./components/ContactsPieces";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { PhoneLink } from "@/components/shared/phone-link";
-import { formatToman, normalizeSearchText } from "@/lib/utils/format";
-import { Plus, Search, User, Pencil, Trash2 } from "lucide-react";
+import { formatToman, normalizeSearchText, toFaDigits } from "@/lib/utils/format";
+import { History, Pencil, Plus, Search, Star, Trash2, User, Users, Wallet } from "lucide-react";
 import type { Contact, ContactType } from "@/types/db";
 
 const TYPE_LABEL: Record<ContactType, string> = {
@@ -148,143 +150,252 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
     }
   }
 
+  // شمارنده‌های نمایشی — از همان دادهٔ موجود مشتق می‌شوند، بدون کوئری جدید.
+  const totalCount = contacts?.length ?? 0;
+  const debtorsTotal = useMemo(
+    () => (contacts ?? []).reduce((sum, c) => { const b = balances?.[c.id] ?? 0; return b > 0 ? sum + b : sum; }, 0),
+    [contacts, balances]
+  );
+  const debtorsCount = useMemo(
+    () => (contacts ?? []).filter((c) => (balances?.[c.id] ?? 0) > 0).length,
+    [contacts, balances]
+  );
+  const creditorsCount = useMemo(
+    () => (contacts ?? []).filter((c) => (balances?.[c.id] ?? 0) < 0).length,
+    [contacts, balances]
+  );
+
   return (
-    <div>
+    <div className="space-y-5">
       <PageHeader
-        title="اشخاص"
-        subtitle="مشتری‌ها و تامین‌کننده‌ها"
+        title="مدیریت مشتریان (CRM)"
+        subtitle="مدیریت مالی و گروه‌بندی مخاطبین"
         action={
-          <div className="flex gap-2">
-            <button
-              onClick={() => openEntity("contact", undefined, { mode: "create", context: "workspace", title: "شخص جدید", props: { initialType: typeFilter || "customer" } })}
-              className="btn-primary"
-            >
-              <Plus size={18} />
-              <span className="hidden sm:inline">شخص جدید</span>
-            </button>
-          </div>
+          <Button
+            onClick={() => openEntity("contact", undefined, { mode: "create", context: "workspace", title: "شخص جدید", props: { initialType: typeFilter || "customer" } })}
+            icon={<Plus size={17} />}
+          >
+            <span className="hidden sm:inline">افزودن مشتری جدید</span>
+            <span className="sm:hidden">افزودن</span>
+          </Button>
         }
       />
 
-      <div className="flex gap-2 mb-4">
-        <div className="relative flex-1">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input
-            className="input pr-10"
-            placeholder="جستجوی نام..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <select
-          className="input w-32 sm:w-36"
-          value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value as ContactType | "")}
-        >
-          <option value="">همه</option>
-          <option value="customer">مشتری</option>
-          <option value="supplier">تامین‌کننده</option>
-        </select>
-        <select
-          className="input w-36 sm:w-44"
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-        >
-          <option value="code_desc">جدیدترین بر اساس کد</option>
-          <option value="code_asc">قدیمی‌ترین بر اساس کد</option>
-          <option value="newest">جدیدترین بر اساس تاریخ ثبت</option>
-          <option value="name_asc">نام A-Z</option>
-          <option value="name_desc">نام Z-A</option>
-          <option value="balance_high">مانده بیشتر</option>
-          <option value="balance_low">مانده کمتر</option>
-        </select>
+      {/* KPI — مطابق مرجع */}
+      <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4 lg:gap-4">
+        <CrmKpiCard label="کل مخاطبین" value={toFaDigits(totalCount)} icon={Users} tone="primary" />
+        <CrmKpiCard label="بستانکاران" value={toFaDigits(creditorsCount)} chip="نفر" icon={Star} tone="accent" />
+        <CrmKpiCard label="مجموع بدهی‌ها" value={formatToman(debtorsTotal, false)} chip="بدهکار" icon={Wallet} tone="danger" />
+        <CrmKpiCard label="مخاطبین بدهکار" value={toFaDigits(debtorsCount)} chip="مورد" icon={History} tone="info" />
       </div>
 
-      {isLoading ? (
-        <Spinner label="در حال بارگذاری..." />
-      ) : !contacts || contacts.length === 0 ? (
-        <EmptyState title="هنوز شخصی ثبت نشده" description="مشتری یا تامین‌کننده اضافه کنید." />
-      ) : (
-        <div className="space-y-1.5 md:space-y-1">
-          {filtered.map((c) => {
-            const bal = balances?.[c.id] ?? 0;
-            return (
-              <div
-                key={c.id}
-                role="link"
-                tabIndex={0}
-                onClick={(event) => handleContactRowClick(event, c.id, c.name)}
-                onAuxClick={(event) => handleContactRowAuxClick(event, c.id)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") openContact(c.id, c.name);
-                }}
-                className="card flex cursor-pointer items-center justify-between gap-3 border-white/80 bg-white/90 p-3 shadow-sm shadow-slate-900/[0.03] transition hover:border-primary/30 hover:bg-primary/[0.02] md:min-h-[58px] md:px-3 md:py-2"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-sm font-black text-primary shadow-sm md:h-9 md:w-9">
-                    {(c.name || "؟").trim().slice(0, 1)}
-                  </div>
-                  <div className="min-w-0">
-                    <Link
-                      href={`/contacts/${c.id}`}
-                      className="block truncate font-semibold text-primary hover:underline"
-                      onClick={(event) => {
-                        if (event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1) return;
-                        event.preventDefault();
-                        event.stopPropagation();
-                        openContact(c.id, c.name);
-                      }}
-                    >
-                      {c.name || "بدون نام"}
-                    </Link>
-                    <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-slate-400 md:flex-nowrap">
-                      {(c as any).code && <span className="font-mono text-primary">{(c as any).code}</span>}
-                      <span className="badge bg-slate-100 text-slate-500">{TYPE_LABEL[c.type]}</span>
-                      {c.phone && <span onClick={(event) => event.stopPropagation()}><PhoneLink phone={c.phone} className="text-xs" /></span>}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex shrink-0 items-center gap-2 md:gap-2">
-                  <div className="text-left">
-                    {bal !== 0 && (
-                      <span
-                        className={`text-xs font-medium md:text-sm ${
-                          bal > 0 ? "text-rose-600" : "text-emerald-600"
-                        }`}
-                      >
-                        <span className="hidden md:inline">{bal > 0 ? "بدهکار " : "بستانکار "}</span>
-                        {formatToman(Math.abs(bal), false)}
-                      </span>
-                    )}
-                  </div>
-                  <div onClick={(event) => event.stopPropagation()}>
-                    <EntityActionMenu type="contact" id={c.id} label={c.name} phone={c.phone} />
-                  </div>
-                  <button
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      openEntity("contact", c.id, { mode: "edit", context: "workspace", title: c.name });
-                    }}
-                    className="p-1 text-slate-400 hover:text-primary"
-                  >
-                    <Pencil size={17} />
-                  </button>
-                  <button
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleDelete(c.id);
-                    }}
-                    className="p-1 text-slate-400 hover:text-rose-600"
-                  >
-                    <Trash2 size={17} />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+      {/* فهرست جامع مشتریان */}
+      <Card className="overflow-hidden">
+        <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <h3 className="text-sm font-extrabold text-foreground">فهرست جامع مشتریان</h3>
+            <p className="mt-0.5 text-xs text-muted-foreground">مدیریت مالی و گروه‌بندی مخاطبین</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative min-w-0 flex-1 sm:w-56 sm:flex-none">
+              <Search className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+              <input
+                className="input pr-9"
+                placeholder="جستجوی نام مشتری..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <Select
+              className="w-32"
+              aria-label="نوع مخاطب"
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value as ContactType | "")}
+            >
+              <option value="">همه</option>
+              <option value="customer">مشتری</option>
+              <option value="supplier">تامین‌کننده</option>
+            </Select>
+            <Select
+              className="w-40"
+              aria-label="مرتب‌سازی"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+            >
+              <option value="code_desc">جدیدترین بر اساس کد</option>
+              <option value="code_asc">قدیمی‌ترین بر اساس کد</option>
+              <option value="newest">جدیدترین بر اساس تاریخ ثبت</option>
+              <option value="name_asc">نام A-Z</option>
+              <option value="name_desc">نام Z-A</option>
+              <option value="balance_high">مانده بیشتر</option>
+              <option value="balance_low">مانده کمتر</option>
+            </Select>
+          </div>
         </div>
-      )}
 
+        {isLoading ? (
+          <div className="p-6"><Spinner label="در حال بارگذاری..." /></div>
+        ) : !contacts || contacts.length === 0 ? (
+          <div className="p-4">
+            <EmptyState icon={User} title="هنوز شخصی ثبت نشده" description="مشتری یا تامین‌کننده اضافه کنید." />
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="p-4">
+            <EmptyState icon={Search} title="مشتری یافت نشد" description="فیلترها یا عبارت جستجو را تغییر دهید." />
+          </div>
+        ) : (
+          <>
+            {/* دسکتاپ — جدول، مطابق مرجع */}
+            <div className="hidden overflow-x-auto lg:block">
+              <table className="w-full min-w-[820px] text-right text-sm">
+                <thead className="border-y border-border bg-muted/60 text-xs text-muted-foreground">
+                  <tr>
+                    <th className="px-4 py-3 font-extrabold">مشتری</th>
+                    <th className="px-4 py-3 font-extrabold">شماره تماس</th>
+                    <th className="px-4 py-3 font-extrabold">سطح کاربری</th>
+                    <th className="px-4 py-3 text-left font-extrabold">مانده بدهی (تومان)</th>
+                    <th className="px-4 py-3 font-extrabold">کد</th>
+                    <th className="px-4 py-3 font-extrabold">عملیات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((c) => {
+                    const bal = balances?.[c.id] ?? 0;
+                    return (
+                      <tr
+                        key={c.id}
+                        role="link"
+                        tabIndex={0}
+                        onClick={(event) => handleContactRowClick(event, c.id, c.name)}
+                        onAuxClick={(event) => handleContactRowAuxClick(event, c.id)}
+                        onKeyDown={(event) => { if (event.key === "Enter") openContact(c.id, c.name); }}
+                        className="cursor-pointer border-b border-border transition last:border-0 hover:bg-primary/[0.03]"
+                      >
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-black text-primary">
+                              {(c.name || "؟").trim().slice(0, 1)}
+                            </div>
+                            <div className="min-w-0">
+                              <Link
+                                href={`/contacts/${c.id}`}
+                                className="block truncate font-bold text-foreground hover:text-primary hover:underline"
+                                onClick={(event) => {
+                                  if (event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1) return;
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  openContact(c.id, c.name);
+                                }}
+                              >
+                                {c.name || "بدون نام"}
+                              </Link>
+                              <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+                                {TYPE_LABEL[c.type]}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3" onClick={(event) => event.stopPropagation()}>
+                          {c.phone ? <PhoneLink phone={c.phone} className="text-sm" /> : <span className="text-muted-foreground">—</span>}
+                        </td>
+                        <td className="px-4 py-3">
+                          <CustomerTierBadge tier={bal > 0 ? "بدهکار" : bal < 0 ? "بستانکار" : "معمولی"} />
+                        </td>
+                        <td className="px-4 py-3 text-left">
+                          {bal === 0 ? (
+                            <span className="tabular-nums text-muted-foreground">۰</span>
+                          ) : (
+                            <span className={`font-extrabold tabular-nums ${bal > 0 ? "text-finance-debt" : "text-finance-credit"}`}>
+                              {formatToman(Math.abs(bal), false)}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {(c as any).code ? (
+                            <span className="font-mono text-xs text-primary">{(c as any).code}</span>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1" onClick={(event) => event.stopPropagation()}>
+                            <EntityActionMenu type="contact" id={c.id} label={c.name} phone={c.phone} />
+                            <button
+                              onClick={() => openEntity("contact", c.id, { mode: "edit", context: "workspace", title: c.name })}
+                              aria-label={`ویرایش ${c.name}`}
+                              className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-primary/10 hover:text-primary"
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(c.id)}
+                              aria-label={`حذف ${c.name}`}
+                              className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* موبایل و تبلت — کارت */}
+            <ul className="divide-y divide-border lg:hidden">
+              {filtered.map((c) => {
+                const bal = balances?.[c.id] ?? 0;
+                return (
+                  <li
+                    key={c.id}
+                    role="link"
+                    tabIndex={0}
+                    onClick={(event) => handleContactRowClick(event, c.id, c.name)}
+                    onAuxClick={(event) => handleContactRowAuxClick(event, c.id)}
+                    onKeyDown={(event) => { if (event.key === "Enter") openContact(c.id, c.name); }}
+                    className="flex cursor-pointer items-center justify-between gap-3 p-3.5 transition hover:bg-primary/[0.03]"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-black text-primary">
+                        {(c.name || "؟").trim().slice(0, 1)}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-bold text-foreground">{c.name || "بدون نام"}</div>
+                        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                          <CustomerTierBadge tier={bal > 0 ? "بدهکار" : bal < 0 ? "بستانکار" : "معمولی"} />
+                          {c.phone && (
+                            <span onClick={(event) => event.stopPropagation()}>
+                              <PhoneLink phone={c.phone} className="text-xs" />
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      {bal !== 0 && (
+                        <span className={`text-xs font-extrabold tabular-nums ${bal > 0 ? "text-finance-debt" : "text-finance-credit"}`}>
+                          {formatToman(Math.abs(bal), false)}
+                        </span>
+                      )}
+                      <div onClick={(event) => event.stopPropagation()}>
+                        <EntityActionMenu type="contact" id={c.id} label={c.name} phone={c.phone} />
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        )}
+
+        <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3 text-xs text-muted-foreground">
+          <span>
+            نمایش {toFaDigits(filtered.length)} مورد از {toFaDigits(totalCount)} مخاطب
+          </span>
+        </div>
+      </Card>
     </div>
   );
 }
