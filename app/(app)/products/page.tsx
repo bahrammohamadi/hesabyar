@@ -7,6 +7,8 @@ import { useOrg } from "@/lib/hooks/useOrg";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { PageHeader, Spinner, EmptyState } from "@/components/shared/ui";
+import { Button, Card, Select } from "@/src/shared/ui";
+import { ProductKpiCard, StockStatusBadge, stockQtyClass, stockStateOf } from "./components/ProductsPieces";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { formatToman, toFaDigits } from "@/lib/utils/format";
 import { Plus, Search, Package, Pencil } from "lucide-react";
@@ -74,142 +76,269 @@ export default function ProductsPage() {
     }
   }
 
+  // شمارنده‌های نمایشی — از همان دادهٔ useProducts مشتق می‌شوند، بدون کوئری جدید.
+  const kpi = (() => {
+    const list = products ?? [];
+    let totalStock = 0;
+    let inventoryValue = 0;
+    let lowCount = 0;
+    for (const p of list) {
+      const stock = p.product_variants.reduce((s, v) => s + v.stock_qty, 0);
+      totalStock += stock;
+      inventoryValue += p.product_variants.reduce(
+        (s, v) => s + v.stock_qty * (v.purchase_price ?? p.base_purchase_price ?? 0),
+        0
+      );
+      if (stock <= p.low_stock_threshold) lowCount += 1;
+    }
+    return { totalStock, inventoryValue, lowCount, productCount: list.length };
+  })();
+
   return (
-    <div>
+    <div className="space-y-5">
       <PageHeader
-        title="کالا و انبار"
+        title="لیست محصولات"
         subtitle="مدیریت محصولات، تنوع‌ها (رنگ/سایز) و موجودی"
         action={
-          <button onClick={openNew} className="btn-primary">
-            <Plus size={18} />
-            <span className="hidden sm:inline">کالای جدید</span>
-          </button>
+          <Button onClick={openNew} icon={<Plus size={17} />}>
+            <span className="hidden sm:inline">افزودن محصول جدید</span>
+            <span className="sm:hidden">افزودن</span>
+          </Button>
         }
       />
 
-      <div className="flex flex-col sm:flex-row gap-2 mb-4">
-        <div className="relative flex-1">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input
-            className="input pr-10"
-            placeholder="جستجوی نام، کد، بارکد یا SKU..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <select className="input sm:w-48" value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)}>
-          <option value="code_desc">جدیدترین بر اساس کد کالا</option>
-          <option value="code_asc">قدیمی‌ترین بر اساس کد کالا</option>
-          <option value="newest">جدیدترین بر اساس تاریخ ثبت</option>
-          <option value="name_asc">نام A-Z</option>
-          <option value="name_desc">نام Z-A</option>
-          <option value="stock_high">موجودی بیشتر</option>
-          <option value="stock_low">موجودی کمتر</option>
-          <option value="price_high">قیمت بیشتر</option>
-          <option value="price_low">قیمت کمتر</option>
-        </select>
+      {/* KPI — مطابق مرجع */}
+      <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4 lg:gap-4">
+        <ProductKpiCard
+          label="کل موجودی کالا"
+          value={toFaDigits(kpi.totalStock)}
+          unit="عدد"
+          accent="primary"
+        />
+        <ProductKpiCard
+          label="کالاهای رو به اتمام"
+          value={toFaDigits(kpi.lowCount)}
+          chip={kpi.lowCount > 0 ? "بحرانی" : undefined}
+          chipTone="danger"
+          accent="destructive"
+        />
+        <ProductKpiCard
+          label="ارزش کل انبار"
+          value={formatToman(kpi.inventoryValue, false)}
+          unit="تومان"
+          accent="info"
+        />
+        <ProductKpiCard
+          label="تعداد اقلام"
+          value={toFaDigits(kpi.productCount)}
+          unit="عدد کالا"
+          accent="success"
+        />
       </div>
 
-      {isLoading ? (
-        <Spinner label="در حال بارگذاری کالاها..." />
-      ) : !products || products.length === 0 ? (
-        <EmptyState
-          title="هنوز کالایی ثبت نشده"
-          description="اولین کالای خود را اضافه کنید یا از فایل اکسل وارد کنید."
-          action={
-            <button onClick={openNew} className="btn-primary">
-              <Plus size={18} /> کالای جدید
-            </button>
-          }
-        />
-      ) : (
-        <div className="space-y-1.5 md:space-y-1">
-          {sortedProducts.map((p) => {
-            const totalStock = p.product_variants.reduce((s, v) => s + v.stock_qty, 0);
-            const low = totalStock <= p.low_stock_threshold;
-            const displaySalePrice = p.base_sale_price || p.product_variants.find((variant) => variant.sale_price)?.sale_price || 0;
-            return (
-              <div
-                key={p.id}
-                role="link"
-                tabIndex={0}
-                onClick={(event) => handleProductRowClick(event, p.id, p.name)}
-                onAuxClick={(event) => handleProductRowAuxClick(event, p.id)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") openProduct(p.id, p.name);
-                }}
-                className="card cursor-pointer border-white/80 bg-white/90 p-3 shadow-sm shadow-slate-900/[0.03] transition hover:border-primary/30 hover:bg-primary/[0.02] md:min-h-[62px] md:px-3 md:py-2"
-              >
-                <div className="flex items-start justify-between gap-3 md:items-center">
-                  <div className="flex min-w-0 items-start gap-3 md:items-center">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-sm md:h-9 md:w-9">
-                      <Package size={19} />
-                    </div>
-                    <div className="min-w-0">
-                      <Link
-                        href={`/products/${p.id}`}
-                        className="block truncate font-semibold text-primary hover:underline"
-                        onClick={(event) => {
-                          if (event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1) return;
-                          event.preventDefault();
-                          event.stopPropagation();
-                          openProduct(p.id, p.name);
-                        }}
+      {/* جدول محصولات */}
+      <Card className="overflow-hidden">
+        <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative min-w-0 flex-1 sm:max-w-sm">
+            <Search className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+            <input
+              className="input pr-9"
+              placeholder="جستجو در انبار..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <Select
+            className="sm:w-52"
+            aria-label="مرتب‌سازی"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+          >
+            <option value="code_desc">جدیدترین بر اساس کد کالا</option>
+            <option value="code_asc">قدیمی‌ترین بر اساس کد کالا</option>
+            <option value="newest">جدیدترین بر اساس تاریخ ثبت</option>
+            <option value="name_asc">نام A-Z</option>
+            <option value="name_desc">نام Z-A</option>
+            <option value="stock_high">موجودی بیشتر</option>
+            <option value="stock_low">موجودی کمتر</option>
+            <option value="price_high">قیمت بیشتر</option>
+            <option value="price_low">قیمت کمتر</option>
+          </Select>
+        </div>
+
+        {isLoading ? (
+          <div className="p-6"><Spinner label="در حال بارگذاری کالاها..." /></div>
+        ) : !products || products.length === 0 ? (
+          <div className="p-4">
+            <EmptyState
+              icon={Package}
+              title="هنوز کالایی ثبت نشده"
+              description="اولین کالای خود را اضافه کنید یا از فایل اکسل وارد کنید."
+              action={<Button onClick={openNew} icon={<Plus size={17} />}>کالای جدید</Button>}
+            />
+          </div>
+        ) : sortedProducts.length === 0 ? (
+          <div className="p-4">
+            <EmptyState icon={Search} title="کالایی یافت نشد" description="عبارت جستجو را تغییر دهید." />
+          </div>
+        ) : (
+          <>
+            {/* دسکتاپ — جدول، مطابق مرجع */}
+            <div className="hidden overflow-x-auto lg:block">
+              <table className="w-full min-w-[900px] text-right text-sm">
+                <thead className="bg-primary text-xs text-primary-foreground">
+                  <tr>
+                    <th className="px-4 py-3.5 font-extrabold">نام و شناسه</th>
+                    <th className="px-4 py-3.5 font-extrabold">دسته‌بندی</th>
+                    <th className="px-4 py-3.5 text-center font-extrabold">موجودی</th>
+                    <th className="px-4 py-3.5 font-extrabold">قیمت واحد</th>
+                    <th className="px-4 py-3.5 text-center font-extrabold">وضعیت</th>
+                    <th className="px-4 py-3.5 text-center font-extrabold">عملیات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedProducts.map((p) => {
+                    const totalStock = p.product_variants.reduce((s, v) => s + v.stock_qty, 0);
+                    const state = stockStateOf(totalStock, p.low_stock_threshold);
+                    const displaySalePrice = p.base_sale_price || p.product_variants.find((variant) => variant.sale_price)?.sale_price || 0;
+                    return (
+                      <tr
+                        key={p.id}
+                        role="link"
+                        tabIndex={0}
+                        onClick={(event) => handleProductRowClick(event, p.id, p.name)}
+                        onAuxClick={(event) => handleProductRowAuxClick(event, p.id)}
+                        onKeyDown={(event) => { if (event.key === "Enter") openProduct(p.id, p.name); }}
+                        className="cursor-pointer border-b border-border transition last:border-0 hover:bg-primary/[0.03]"
                       >
-                        {p.name}
-                      </Link>
-                      <div className="mt-0.5 flex flex-wrap gap-x-2 text-xs text-slate-400 md:flex-nowrap md:overflow-hidden">
-                        {p.code && <span className="font-mono text-primary">{p.code}</span>}
-                        {p.brand?.name && <span>برند: {p.brand.name}</span>}
-                        {p.category?.name && <span>دسته: {p.category.name}</span>}
-                        {p.season && <span>فصل: {p.season}</span>}
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                              <Package size={19} />
+                            </div>
+                            <div className="min-w-0">
+                              <Link
+                                href={`/products/${p.id}`}
+                                className="block truncate font-bold text-foreground hover:text-primary hover:underline"
+                                onClick={(event) => {
+                                  if (event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1) return;
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  openProduct(p.id, p.name);
+                                }}
+                              >
+                                {p.name}
+                              </Link>
+                              {p.code && (
+                                <span className="mt-0.5 block truncate font-mono text-xs text-muted-foreground">
+                                  ID: {p.code}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          {p.category?.name ? (
+                            <span className="inline-flex rounded-lg bg-muted px-2.5 py-1 text-xs text-foreground/80">
+                              {p.category.name}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </td>
+                        <td className={`px-4 py-3 text-center font-extrabold tabular-nums ${stockQtyClass(state)}`}>
+                          {toFaDigits(totalStock)}
+                        </td>
+                        <td className="px-4 py-3">
+                          {displaySalePrice ? (
+                            <div className="leading-tight">
+                              <span className="font-bold tabular-nums text-foreground">
+                                {formatToman(displaySalePrice, false)}
+                              </span>
+                              <span className="mr-1 text-[11px] text-muted-foreground">تومان</span>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <StockStatusBadge state={state} />
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-center gap-1" onClick={(event) => event.stopPropagation()}>
+                            <EntityActionMenu type="product" id={p.id} label={p.name} />
+                            <button
+                              onClick={() => openEdit(p.id, p.name)}
+                              aria-label={`ویرایش ${p.name}`}
+                              className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-primary/10 hover:text-primary"
+                            >
+                              <Pencil size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* موبایل و تبلت — کارت */}
+            <ul className="divide-y divide-border lg:hidden">
+              {sortedProducts.map((p) => {
+                const totalStock = p.product_variants.reduce((s, v) => s + v.stock_qty, 0);
+                const state = stockStateOf(totalStock, p.low_stock_threshold);
+                const displaySalePrice = p.base_sale_price || p.product_variants.find((variant) => variant.sale_price)?.sale_price || 0;
+                return (
+                  <li
+                    key={p.id}
+                    role="link"
+                    tabIndex={0}
+                    onClick={(event) => handleProductRowClick(event, p.id, p.name)}
+                    onAuxClick={(event) => handleProductRowAuxClick(event, p.id)}
+                    onKeyDown={(event) => { if (event.key === "Enter") openProduct(p.id, p.name); }}
+                    className="cursor-pointer p-3.5 transition hover:bg-primary/[0.03]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex min-w-0 items-start gap-3">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                          <Package size={19} />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-bold text-foreground">{p.name}</div>
+                          {p.code && (
+                            <div className="mt-0.5 truncate font-mono text-xs text-muted-foreground">ID: {p.code}</div>
+                          )}
+                          <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                            <StockStatusBadge state={state} />
+                            <span className={`text-xs font-extrabold tabular-nums ${stockQtyClass(state)}`}>
+                              {toFaDigits(totalStock)} عدد
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 flex-col items-end gap-1.5">
+                        {displaySalePrice > 0 && (
+                          <span className="text-sm font-extrabold tabular-nums text-foreground">
+                            {formatToman(displaySalePrice, false)}
+                          </span>
+                        )}
+                        <div onClick={(event) => event.stopPropagation()}>
+                          <EntityActionMenu type="product" id={p.id} label={p.name} />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <span className="badge hidden bg-primary/10 text-primary md:inline-flex">
-                      قیمت فروش: {displaySalePrice ? formatToman(displaySalePrice, false) : "—"}
-                    </span>
-                    <span
-                      className={`badge ${
-                        low ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"
-                      }`}
-                    >
-                      {toFaDigits(totalStock)} عدد
-                    </span>
-                    <div onClick={(event) => event.stopPropagation()}>
-                      <EntityActionMenu type="product" id={p.id} label={p.name} />
-                    </div>
-                    <button
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        openEdit(p.id, p.name);
-                      }}
-                      className="text-slate-400 hover:text-primary p-1"
-                    >
-                      <Pencil size={17} />
-                    </button>
-                  </div>
-                </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        )}
 
-                {p.product_variants.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-2 md:hidden">
-                    {p.product_variants.map((v) => (
-                      <span key={v.id} className="rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-1 text-xs text-slate-600">
-                        {[v.color, v.size].filter(Boolean).join(" / ") || "ساده"}
-                        {" — "}
-                        {toFaDigits(v.stock_qty)} عدد
-                        {v.sale_price ? ` — ${formatToman(v.sale_price)}` : ""}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+        <div className="border-t border-border px-4 py-3 text-xs text-muted-foreground">
+          نمایش {toFaDigits(sortedProducts.length)} مورد از مجموع {toFaDigits(products?.length ?? 0)} محصول
         </div>
-      )}
-
+      </Card>
     </div>
   );
 }
