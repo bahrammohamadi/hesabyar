@@ -2,8 +2,16 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Activity, Filter } from "lucide-react";
+import { Activity, Filter, History } from "lucide-react";
 import { PageHeader, Spinner, EmptyState } from "@/components/shared/ui";
+import { Card, Select } from "@/src/shared/ui";
+import {
+  ActionBadge,
+  ActivityFeedCard,
+  ActivityTimelineItem,
+  ActorAvatar,
+  relativeTimeFa,
+} from "./components/ActivityPieces";
 import { EntityLink } from "@/components/shared/entity-link";
 import { toJalali, formatToman, toFaDigits } from "@/lib/utils/format";
 
@@ -79,54 +87,96 @@ export default function ActivityPage() {
   });
 
   return (
-    <div>
+    <div className="space-y-5">
       <PageHeader title="گزارش فعالیت کاربران" subtitle="مشاهده اینکه چه کسی فاکتور زده، پرداخت ثبت کرده یا عملیات انجام داده است" />
 
-      <div className="card p-4 mb-4 flex flex-col sm:flex-row gap-2">
-        <div className="flex items-center gap-2 text-sm text-slate-500"><Filter size={16} /> فیلتر</div>
-        <select className="input sm:w-48" value={entityType} onChange={(e) => setEntityType(e.target.value)}>
-          <option value="">همه بخش‌ها</option>
-          <option value="sale">فروش</option>
-          <option value="purchase">خرید</option>
-          <option value="transaction">مالی</option>
-          <option value="stock_movement">انبار</option>
-          <option value="product">کالا</option>
-          <option value="contact">اشخاص</option>
-        </select>
-        <select className="input sm:w-48" value={action} onChange={(e) => setAction(e.target.value)}>
-          <option value="">همه عملیات</option>
-          <option value="create">ثبت</option>
-          <option value="update">ویرایش</option>
-          <option value="payment">پرداخت</option>
-          <option value="price_change">تغییر قیمت</option>
-          <option value="stock_adjust">تعدیل موجودی</option>
-          <option value="stock_in">ورود موجودی</option>
-          <option value="stock_out">خروج موجودی</option>
-        </select>
-      </div>
-
-      {isLoading ? <Spinner /> : error ? (
-        <div className="rounded-xl bg-rose-50 text-rose-700 p-4 text-sm">{(error as Error).message}</div>
-      ) : !data?.length ? <EmptyState icon={Activity} title="فعالیتی ثبت نشده" /> : (
-        <div className="space-y-2">
-          {data.map((log) => {
-            const linkType = entityTypeForLink(log.entity_type) as any;
-            return (
-              <div key={log.id} className="card p-4 flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="badge bg-primary/10 text-primary">{ACTION_LABEL[log.action] ?? log.action}</span>
-                    <span className="text-sm font-semibold text-slate-800">{ENTITY_LABEL[log.entity_type] ?? log.entity_type}</span>
-                    {linkType && log.entity_id && <EntityLink type={linkType} id={log.entity_id}>مشاهده</EntityLink>}
-                  </div>
-                  <div className="text-sm text-slate-500 mt-2">{describe(log)}</div>
-                  <div className="text-xs text-slate-400 mt-1">کاربر: {log.user?.name || log.user?.email || log.user_id || "نامشخص"}</div>
-                </div>
-                <div className="shrink-0 text-left text-xs text-slate-400">{toJalali(log.created_at, true)}</div>
-              </div>
-            );
-          })}
+      {/* فیلترها */}
+      <Card className="p-3 sm:p-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="flex shrink-0 items-center gap-2 text-sm font-bold text-muted-foreground">
+            <Filter size={16} /> فیلتر
+          </div>
+          <Select
+            className="sm:w-48"
+            aria-label="فیلتر بخش"
+            value={entityType}
+            onChange={(e) => setEntityType(e.target.value)}
+          >
+            <option value="">همه بخش‌ها</option>
+            <option value="sale">فروش</option>
+            <option value="purchase">خرید</option>
+            <option value="transaction">مالی</option>
+            <option value="stock_movement">انبار</option>
+            <option value="product">کالا</option>
+            <option value="contact">اشخاص</option>
+          </Select>
+          <Select
+            className="sm:w-48"
+            aria-label="فیلتر عملیات"
+            value={action}
+            onChange={(e) => setAction(e.target.value)}
+          >
+            <option value="">همه عملیات</option>
+            <option value="create">ثبت</option>
+            <option value="update">ویرایش</option>
+            <option value="payment">پرداخت</option>
+            <option value="price_change">تغییر قیمت</option>
+            <option value="stock_adjust">تعدیل موجودی</option>
+            <option value="stock_in">ورود موجودی</option>
+            <option value="stock_out">خروج موجودی</option>
+          </Select>
         </div>
+      </Card>
+
+      {isLoading ? (
+        <Spinner />
+      ) : error ? (
+        <div className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive">{(error as Error).message}</div>
+      ) : !data?.length ? (
+        <EmptyState icon={Activity} title="فعالیتی ثبت نشده" />
+      ) : (
+        <ActivityFeedCard title="آخرین فعالیت‌های سیستم" icon={History}>
+          <ul className="relative">
+            {data.map((log, index) => {
+              const linkType = entityTypeForLink(log.entity_type) as any;
+              const actorName = log.user?.name || log.user?.email || "سیستم";
+              const detailText = describe(log);
+              return (
+                <ActivityTimelineItem
+                  key={log.id}
+                  action={log.action}
+                  isLast={index === data.length - 1}
+                  time={relativeTimeFa(log.created_at)}
+                  meta={
+                    <span className="flex items-center gap-1.5">
+                      <ActorAvatar name={actorName} className="h-5 w-5 text-[10px]" />
+                      {actorName}
+                    </span>
+                  }
+                  title={
+                    <>
+                      <ActionBadge action={log.action} label={ACTION_LABEL[log.action] ?? log.action} />
+                      <span className="text-sm font-bold text-foreground">
+                        {ENTITY_LABEL[log.entity_type] ?? log.entity_type}
+                      </span>
+                      {linkType && log.entity_id && (
+                        <EntityLink type={linkType} id={log.entity_id}>
+                          مشاهده
+                        </EntityLink>
+                      )}
+                    </>
+                  }
+                  detail={detailText !== "—" ? detailText : undefined}
+                  trailing={
+                    <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
+                      {toJalali(log.created_at, true)}
+                    </span>
+                  }
+                />
+              );
+            })}
+          </ul>
+        </ActivityFeedCard>
       )}
     </div>
   );
