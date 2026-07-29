@@ -119,7 +119,12 @@ export function MarketingHero() {
         </Link>
       </div>
 
-      {/* آمار — مطابق مرجع موبایل */}
+      {/*
+        آمار — مطابق مرجع موبایل.
+        ⚠️ عدد «+۱۰٬۰۰۰ کسب‌وکار فعال» از متن مرجع Stitch آمده و داده‌ی
+        واقعی نیست. پیش از انتشار عمومی باید یا با عدد واقعی جایگزین شود
+        یا حذف گردد (ادعای تبلیغاتی اثبات‌نشده).
+      */}
       <div className="mx-auto mt-10 grid max-w-3xl grid-cols-1 gap-3 sm:grid-cols-3">
         <StatTile value={`+${toFaDigits("10,000")}`} label="کسب‌وکار فعال" icon={Users} highlight />
         <StatTile value="امنیت بالا" label="تضمین داده‌ها" icon={ShieldCheck} />
@@ -171,8 +176,10 @@ const FEATURES = [
   },
   {
     icon: ScanBarcode,
-    title: "اسکن بارکد",
-    body: "با استفاده از دوربین موبایل یا دستگاه بارکدخوان، کالاهای خود را سریع جستجو و به فاکتور اضافه کنید.",
+    title: "جستجو با بارکد",
+    // ⚠️ اسکن با دوربین موبایل هنوز پیاده‌سازی نشده؛ متن عمداً فقط
+    // بارکدخوان را ذکر می‌کند تا قابلیت نداشته تبلیغ نشود.
+    body: "با دستگاه بارکدخوان یا وارد کردن کد، کالاهای خود را سریع جستجو و به فاکتور اضافه کنید.",
   },
   {
     icon: Package,
@@ -372,6 +379,8 @@ export function MarketingCta() {
       <div className="mx-auto max-w-5xl overflow-hidden rounded-[1.75rem] bg-primary p-6 text-center text-primary-foreground shadow-sm sm:p-10">
         <h2 className="text-lg font-black sm:text-2xl">همین امروز کسب‌وکارت را متحول کن</h2>
         <p className="mx-auto mt-3 max-w-xl text-xs leading-7 text-primary-foreground/75 sm:text-sm">
+          {/* ⚠️ «۱۴ روز تست رایگان» هنوز مکانیزم واقعی ندارد (نه جدول
+              subscriptions، نه شمارش انقضا). قبل از فروش باید پیاده یا حذف شود. */}
           ۱۴ روز تست رایگان بدون نیاز به کارت بانکی. تمام امکانات را امتحان کنید.
         </p>
         <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">

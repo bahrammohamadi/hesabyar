@@ -18,13 +18,19 @@ import { formatToman, rialToToman, toFaDigits } from "@/lib/utils/format";
 import type { CartItem } from "@/types/db";
 
 /* ------------------------------------------------------------------ */
-/* نوار جستجو / اسکن بارکد — مطابق مرجع step1                          */
+/* نوار جستجو / ورود بارکد — مطابق مرجع step1                          */
+/*                                                                     */
+/* ⚠️ اسکن با دوربین موبایل پیاده‌سازی نشده است. این ورودی با           */
+/* بارکدخوان فیزیکی (که مثل کیبورد تایپ می‌کند) کار می‌کند: پنل         */
+/* ProductSelector خودکار فوکوس می‌گیرد و روی فیلد barcode جستجو        */
+/* می‌کند. متن UI عمداً «ورود بارکد» است نه «اسکن»، تا قابلیتی که       */
+/* وجود ندارد به کاربر وعده داده نشود.                                 */
 /* ------------------------------------------------------------------ */
 
 export function PosSearchBar({ onOpenPicker }: { onOpenPicker: () => void }) {
   return (
     <Card className="p-3 sm:p-4">
-      <p className="mb-2 text-xs font-bold text-muted-foreground">جستجوی کالا یا اسکن بارکد</p>
+      <p className="mb-2 text-xs font-bold text-muted-foreground">جستجوی کالا یا ورود بارکد</p>
       <div className="flex flex-col gap-2 sm:flex-row">
         <button
           type="button"
@@ -32,7 +38,7 @@ export function PosSearchBar({ onOpenPicker }: { onOpenPicker: () => void }) {
           className="flex min-h-11 flex-1 items-center gap-2 rounded-xl border border-input bg-background px-3.5 text-right text-sm text-muted-foreground transition hover:border-primary/40 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         >
           <Barcode size={18} className="shrink-0 text-muted-foreground" />
-          <span className="truncate">نام کالا، کد کالا یا بارکد را وارد کنید...</span>
+          <span className="truncate">نام کالا، کد کالا یا بارکد را وارد کنید (سازگار با بارکدخوان)</span>
         </button>
         <Button onClick={onOpenPicker} icon={<Package size={17} />} className="shrink-0">
           افزودن سریع
