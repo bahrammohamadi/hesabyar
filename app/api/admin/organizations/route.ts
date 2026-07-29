@@ -90,11 +90,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "پارامترهای نامعتبر" }, { status: 400 });
     }
 
-    // از همان RPCهای migration 0021 استفاده می‌شود تا منطق در یک جا بماند.
+    /*
+      p_actor صریح پاس داده می‌شود چون این کلاینت با service_role کار می‌کند
+      و در آن حالت auth.uid() داخل دیتابیس NULL است (migration 0022).
+      هویت auth.user از قبل در requirePlatformAdmin تأیید شده است.
+    */
     const rpc =
       action === "approve"
-        ? auth.svc.rpc("approve_organization", { p_org: org_id })
-        : auth.svc.rpc("reject_organization", { p_org: org_id, p_reason: reason ?? null });
+        ? auth.svc.rpc("approve_organization", { p_org: org_id, p_actor: auth.user.id })
+        : auth.svc.rpc("reject_organization", {
+            p_org: org_id,
+            p_reason: reason ?? null,
+            p_actor: auth.user.id,
+          });
 
     const { error } = await rpc;
     if (error) throw error;
