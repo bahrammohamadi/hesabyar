@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Badge, Card } from "@/src/shared/ui";
 import { toFaDigits } from "@/lib/utils/format";
+import type { MarketingPlan } from "../plans";
 
 /**
  * قطعات صفحه‌ی معرفی (لندینگ) — مطابق مراجع hero_features و pricing.
@@ -225,68 +226,12 @@ export function MarketingFeatures() {
 /* داده‌ها فعلاً hardcode است؛ اتصال به جدول plans در فاز بعد.          */
 /* ------------------------------------------------------------------ */
 
-type Plan = {
-  id: string;
-  name: string;
-  price: string;
-  unit: string;
-  note: string;
-  features: string[];
-  featured?: boolean;
-  cta: string;
-  href: string;
-};
+/*
+  پلن‌ها از جدول `plans` خوانده می‌شوند (migration 0021) و به‌صورت prop
+  به این کامپوننت می‌رسند. تعریف نوع و داده‌ی پشتیبان در ./plans.ts است.
+*/
 
-const PLANS: Plan[] = [
-  {
-    id: "free",
-    name: "پایه",
-    price: "رایگان",
-    unit: "",
-    note: "مناسب برای فریلنسرها و کسب‌وکارهای کوچک.",
-    features: ["۱۰۰ فاکتور ماهانه", "پشتیبانی معمولی", "گزارش‌های پایه فروش"],
-    cta: "انتخاب پلن",
-    href: "/register",
-  },
-  {
-    id: "monthly",
-    name: "یک ماهه",
-    price: toFaDigits("149,000"),
-    unit: "تومان / ماه",
-    note: "شروع حرفه‌ای برای فروشگاه‌های کوچک.",
-    features: ["صدور فاکتور نامحدود", "مدیریت ۱۰۰ محصول", "گزارش‌های پایه فروش"],
-    cta: "شروع کنید",
-    href: "/register",
-  },
-  {
-    id: "biannual",
-    name: "شش ماهه",
-    price: toFaDigits("749,000"),
-    unit: "تومان / دوره",
-    note: "بهترین گزینه برای شرکت‌های در حال رشد.",
-    features: [
-      "محصولات نامحدود",
-      "مدیریت کامل انبارداری",
-      "پنل پیامکی رایگان",
-      "۱۵٪ تخفیف اقتصادی",
-    ],
-    featured: true,
-    cta: "خرید اشتراک",
-    href: "/register",
-  },
-  {
-    id: "enterprise",
-    name: "سازمانی",
-    price: "تماس بگیرید",
-    unit: "",
-    note: "راه‌کار اختصاصی برای هولدینگ‌ها.",
-    features: ["نصب روی سرور اختصاصی", "پشتیبانی VIP", "ماژول وفاداری مشتریان"],
-    cta: "تماس با واحد فروش",
-    href: "/login",
-  },
-];
-
-export function MarketingPricing() {
+export function MarketingPricing({ plans }: { plans: MarketingPlan[] }) {
   return (
     <section id="pricing" className="py-12 sm:py-16">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
@@ -296,7 +241,7 @@ export function MarketingPricing() {
         </div>
 
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {PLANS.map((plan) => (
+          {plans.map((plan) => (
             <PlanCard key={plan.id} plan={plan} />
           ))}
         </div>
@@ -305,7 +250,7 @@ export function MarketingPricing() {
   );
 }
 
-function PlanCard({ plan }: { plan: Plan }) {
+function PlanCard({ plan }: { plan: MarketingPlan }) {
   const featured = plan.featured;
   return (
     <div

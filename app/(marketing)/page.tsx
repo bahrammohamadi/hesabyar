@@ -10,6 +10,7 @@ import {
   MarketingPricing,
   MarketingShell,
 } from "./components/MarketingPieces";
+import { getMarketingPlans } from "./plans";
 
 export const metadata: Metadata = {
   title: "حساب‌یار | مدیریت هوشمند فروش و انبارداری",
@@ -33,13 +34,16 @@ export default async function MarketingPage() {
     redirect("/dashboard");
   }
 
+  // پلن‌ها از دیتابیس؛ در صورت خطا به داده‌ی پشتیبان برمی‌گردد.
+  const plans = await getMarketingPlans();
+
   return (
     <MarketingShell>
       <MarketingHeader />
       <main>
         <MarketingHero />
         <MarketingFeatures />
-        <MarketingPricing />
+        <MarketingPricing plans={plans} />
         <MarketingCta />
       </main>
       <MarketingFooter />
