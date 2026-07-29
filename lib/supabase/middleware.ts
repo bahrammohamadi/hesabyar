@@ -37,8 +37,12 @@ export async function updateSession(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   const isAuthPage = path.startsWith("/login") || path.startsWith("/register");
+  // صفحه‌ی معرفی عمومی؛ بازدیدکننده‌ی مهمان باید بتواند ببیندش.
+  // خودِ صفحه اگر کاربر واردشده باشد او را به داشبورد می‌فرستد.
+  const isLanding = path === "/";
   const isPublic =
     isAuthPage ||
+    isLanding ||
     path.startsWith("/_next") ||
     path.startsWith("/api/public") ||
     path === "/manifest.webmanifest" ||

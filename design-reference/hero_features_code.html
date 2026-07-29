@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="fa"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>حساب‌یار | مدیریت هوشمند منابع و فروش</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;300;400;500;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px border-outline-variant;
+        }
+        .hero-gradient {
+            background: radial-gradient(circle at 10% 20%, rgba(21, 101, 85, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 90% 80%, rgba(106, 49, 37, 0.03) 0%, transparent 50%);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary": "#6a3125",
+                      "inverse-primary": "#8cd4c0",
+                      "on-secondary-fixed-variant": "#3a485c",
+                      "secondary-container": "#d5e3fd",
+                      "inverse-surface": "#2d3130",
+                      "on-surface-variant": "#3f4945",
+                      "on-tertiary-container": "#ffc3b6",
+                      "surface-tint": "#1c6a5a",
+                      "on-primary-fixed": "#00201a",
+                      "surface-dim": "#d8dbd8",
+                      "surface-bright": "#f7faf7",
+                      "outline": "#6f7975",
+                      "surface-container-high": "#e6e9e6",
+                      "on-surface": "#191c1b",
+                      "inverse-on-surface": "#eff1ef",
+                      "tertiary-fixed-dim": "#ffb4a4",
+                      "on-tertiary-fixed-variant": "#703629",
+                      "primary-container": "#156555",
+                      "secondary": "#515f74",
+                      "on-background": "#191c1b",
+                      "on-primary-container": "#97dfcb",
+                      "on-secondary": "#ffffff",
+                      "surface-variant": "#e0e3e0",
+                      "outline-variant": "#bec9c4",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed": "#d5e3fd",
+                      "error": "#ba1a1a",
+                      "surface-container-highest": "#e0e3e0",
+                      "tertiary-container": "#87483a",
+                      "on-secondary-fixed": "#0d1c2f",
+                      "surface-container": "#ecefec",
+                      "surface-container-lowest": "#ffffff",
+                      "secondary-fixed-dim": "#b9c7e0",
+                      "on-error-container": "#93000a",
+                      "background": "#f7faf7",
+                      "error-container": "#ffdad6",
+                      "surface": "#f7faf7",
+                      "on-primary-fixed-variant": "#005143",
+                      "on-tertiary-fixed": "#390c04",
+                      "primary-fixed-dim": "#8cd4c0",
+                      "primary": "#004c3e",
+                      "primary-fixed": "#a8f1dc",
+                      "tertiary-fixed": "#ffdad3",
+                      "on-secondary-container": "#57657b",
+                      "on-error": "#ffffff",
+                      "surface-container-low": "#f2f4f1",
+                      "on-primary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin_mobile": "1rem",
+                      "margin_desktop": "2rem",
+                      "container_max_width": "1440px",
+                      "gutter": "1.5rem",
+                      "sidebar_width": "280px"
+              },
+              "fontFamily": {
+                      "title-lg": ["Vazirmatn"],
+                      "headline-xl": ["Vazirmatn"],
+                      "headline-lg": ["Vazirmatn"],
+                      "headline-md": ["Vazirmatn"],
+                      "headline-lg-mobile": ["Vazirmatn"],
+                      "body-md": ["Vazirmatn"],
+                      "body-lg": ["Vazirmatn"],
+                      "label-md": ["Vazirmatn"]
+              },
+              "fontSize": {
+                      "title-lg": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "headline-xl": ["36px", {"lineHeight": "48px", "fontWeight": "700"}],
+                      "headline-lg": ["28px", {"lineHeight": "40px", "fontWeight": "700"}],
+                      "headline-md": ["22px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "body-md": ["14px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-lg": ["16px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-md": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface overflow-x-hidden">
+<!-- Top Navigation Shell (Consistent with TopAppBar JSON) -->
+<nav class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-outline-variant rtl h-16 flex justify-between items-center px-4 md:px-margin_desktop">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-3xl">account_balance_wallet</span>
+<span class="font-headline-md text-headline-md font-bold text-primary">حساب‌یار</span>
+</div>
+<div class="hidden md:flex gap-6">
+<a class="text-on-surface-variant hover:text-primary transition-all font-body-md text-body-md" href="#features">ویژگی‌ها</a>
+<a class="text-on-surface-variant hover:text-primary transition-all font-body-md text-body-md" href="#pricing">تعرفه‌ها</a>
+<a class="text-on-surface-variant hover:text-primary transition-all font-body-md text-body-md" href="#">درباره ما</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-primary hover:bg-primary-fixed/20 px-4 py-2 rounded-lg font-body-md text-body-md transition-all">ورود</button>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-lg font-body-md text-body-md shadow-sm hover:shadow-md transition-all">ثبت‌نام رایگان</button>
+</div>
+</nav>
+<main class="pt-16">
+<!-- Hero Section -->
+<section class="hero-gradient relative py-16 md:py-24 px-4 overflow-hidden">
+<div class="max-w-container_max_width mx-auto flex flex-col items-center text-center">
+<div class="inline-flex items-center gap-2 bg-primary-fixed/30 text-on-primary-fixed-variant px-4 py-1.5 rounded-full mb-8 font-label-md text-label-md">
+<span class="material-symbols-outlined text-base">verified</span>
+<span>نسل جدید مدیریت مالی کسب و کارهای کوچک</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl md:text-[56px] md:leading-[72px] text-on-surface max-w-4xl mb-6">
+                    مدیریت هوشمند فروش و انبارداری، <br class="hidden md:block"/>
+<span class="text-primary">ساده‌تر از همیشه با حساب‌یار</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mb-10">
+                    حساب‌یار به شما کمک می‌کند فاکتورها را سریع صادر کنید، موجودی انبار را در لحظه چک کنید و با گزارشات دقیق سود و زیان، بهترین تصمیمات را برای رشد کسب‌وکارتان بگیرید.
+                </p>
+<div class="flex flex-col sm:flex-row gap-4 mb-16">
+<button class="bg-primary text-on-primary px-10 py-4 rounded-xl font-title-lg text-title-lg shadow-lg hover:bg-primary-container transition-all flex items-center gap-2">
+                        شروع رایگان حساب‌یار
+                        <span class="material-symbols-outlined">arrow_back</span>
+</button>
+<button class="border-2 border-outline text-on-surface px-10 py-4 rounded-xl font-title-lg text-title-lg hover:bg-surface-container transition-all">
+                        مشاهده دمو سیستم
+                    </button>
+</div>
+<!-- Dashboard Mockup -->
+<div class="relative w-full max-w-5xl mx-auto group">
+<div class="absolute -inset-4 bg-primary/5 blur-3xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
+<div class="relative bg-surface-container-lowest border border-outline-variant p-2 rounded-[24px] shadow-2xl overflow-hidden">
+<img class="w-full h-auto rounded-[18px]" data-alt="A high-fidelity, high-end professional SaaS dashboard interface for a financial management app. The screen displays vibrant data visualizations, a clean RTL layout with a sidebar on the right, sophisticated cards for total sales and inventory status. The UI features a soft neutral light mode aesthetic with deep emerald green primary accents and crisp typography in Vazirmatn font. Cinematic studio lighting on the screen highlights the glassmorphism effects and soft ambient shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnSTDHEmeaz5F1AL8VfmHlmSkQVSKx0xHpB9L2CJre0aTv1Jd2Sm5WT5Yw_zFl1P_S8j5fea2kStsdkPQO0_x544376A6YoCK1o9Iwa6mlIpJSX2UfvK8obCIRN7K3VOGwnKBuNUKcJES6BDAQ5ZmhsbtLLQgv0LkVOFyVWvlyurXrSTrvR0Tkwf9xgR0Yvt5zyXmUUdFImbc5jZ8MiLfRldyQIcD9i6BsUlrk8htv2moiYd84pEiJySFBANQFQBOAWUJtJgKzSEQZ"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Section -->
+<section class="py-24 bg-surface-container-lowest" id="features">
+<div class="max-w-container_max_width mx-auto px-4 md:px-margin_desktop">
+<div class="text-center mb-16">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-4">چرا حساب‌یار؟</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">تمام ابزارهایی که برای مدیریت یک فروشگاه موفق نیاز دارید</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Feature 1 -->
+<div class="p-8 bg-surface rounded-3xl border border-outline-variant hover:border-primary/30 hover:shadow-lg transition-all group">
+<div class="w-14 h-14 bg-primary-container/10 rounded-2xl flex items-center justify-center mb-6 text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl">receipt_long</span>
+</div>
+<h3 class="font-title-lg text-title-lg text-on-surface mb-3">صدور سریع فاکتور</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">کمتر از چند ثانیه فاکتور حرفه‌ای صادر کنید و به صورت چاپی یا دیجیتال برای مشتری ارسال نمایید.</p>
+</div>
+<!-- Feature 2 -->
+<div class="p-8 bg-surface rounded-3xl border border-outline-variant hover:border-primary/30 hover:shadow-lg transition-all group">
+<div class="w-14 h-14 bg-primary-container/10 rounded-2xl flex items-center justify-center mb-6 text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl">barcode_scanner</span>
+</div>
+<h3 class="font-title-lg text-title-lg text-on-surface mb-3">اسکن بارکد</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">با استفاده از دوربین موبایل یا دستگاه بارکدخوان، کالاهای خود را سریع جستجو و به فاکتور اضافه کنید.</p>
+</div>
+<!-- Feature 3 -->
+<div class="p-8 bg-surface rounded-3xl border border-outline-variant hover:border-primary/30 hover:shadow-lg transition-all group">
+<div class="w-14 h-14 bg-primary-container/10 rounded-2xl flex items-center justify-center mb-6 text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl">inventory_2</span>
+</div>
+<h3 class="font-title-lg text-title-lg text-on-surface mb-3">مدیریت انبار و مشتریان</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">کنترل کامل روی موجودی کالاها، نقطه سفارش و پرونده الکترونیک مشتریان و تاریخچه خرید آن‌ها.</p>
+</div>
+<!-- Feature 4 -->
+<div class="p-8 bg-surface rounded-3xl border border-outline-variant hover:border-primary/30 hover:shadow-lg transition-all group">
+<div class="w-14 h-14 bg-primary-container/10 rounded-2xl flex items-center justify-center mb-6 text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl">assessment</span>
+</div>
+<h3 class="font-title-lg text-title-lg text-on-surface mb-3">گزارشات سود و زیان</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">تحلیل هوشمند عملکرد فروش، میزان سود خالص و شناسایی پرفروش‌ترین کالاها در بازه‌های زمانی مختلف.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Pricing Section -->
+<section class="py-24 bg-surface-container-low" id="pricing">
+<div class="max-w-container_max_width mx-auto px-4 md:px-margin_desktop">
+<div class="text-center mb-16">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-4">پلن‌های اشتراک حساب‌یار</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">متناسب با نیاز و ابعاد کسب و کار شما</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+<!-- Plan 1 -->
+<div class="bg-surface rounded-3xl p-8 border border-outline-variant flex flex-col h-full shadow-sm">
+<h3 class="font-title-lg text-title-lg mb-4 text-on-surface">یک ماهه</h3>
+<div class="mb-6">
+<span class="text-3xl font-bold">۱۴۹,۰۰۰</span>
+<span class="text-on-surface-variant font-label-md">تومان / ماه</span>
+</div>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-2 text-body-md font-body-md">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                                صدور فاکتور نامحدود
+                            </li>
+<li class="flex items-center gap-2 text-body-md font-body-md">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                                مدیریت ۱۰۰ محصول
+                            </li>
+<li class="flex items-center gap-2 text-body-md font-body-md">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                                گزارشات پایه فروش
+                            </li>
+</ul>
+<button class="w-full border border-primary text-primary py-3 rounded-xl font-body-md text-body-md hover:bg-primary/5 transition-all">شروع کنید</button>
+</div>
+<!-- Plan 2 -->
+<div class="bg-surface rounded-3xl p-8 border border-outline-variant flex flex-col h-full shadow-sm">
+<h3 class="font-title-lg text-title-lg mb-4 text-on-surface">سه ماهه</h3>
+<div class="mb-6">
+<span class="text-3xl font-bold">۳۹۹,۰۰۰</span>
+<span class="text-on-surface-variant font-label-md">تومان / دوره</span>
+</div>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-2 text-body-md font-body-md">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                                تمام امکانات پلن ماهانه
+                            </li>
+<li class="flex items-center gap-2 text-body-md font-body-md">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                                مدیریت ۵۰۰ محصول
+                            </li>
+<li class="flex items-center gap-2 text-body-md font-body-md">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                                پشتیبانی اولویت‌دار
+                            </li>
+</ul>
+<button class="w-full border border-primary text-primary py-3 rounded-xl font-body-md text-body-md hover:bg-primary/5 transition-all">شروع کنید</button>
+</div>
+<!-- Plan 3 (Special) -->
+<div class="bg-surface rounded-3xl p-8 border-2 border-primary ring-4 ring-primary/10 flex flex-col h-full shadow-xl relative scale-105 z-10">
+<div class="absolute -top-4 right-1/2 translate-x-1/2 bg-primary text-on-primary px-4 py-1 rounded-full text-xs font-bold">پیشنهاد ویژه</div>
+<h3 class="font-title-lg text-title-lg mb-4 text-on-surface">شش ماهه</h3>
+<div class="mb-6">
+<span class="text-3xl font-bold text-primary">۷۴۹,۰۰۰</span>
+<span class="text-on-surface-variant font-label-md">تومان / دوره</span>
+</div>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-2 text-body-md font-body-md">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                                محصولات نامحدود
+                            </li>
+<li class="flex items-center gap-2 text-body-md font-body-md">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                                مدیریت کامل انبارداری
+                            </li>
+<li class="flex items-center gap-2 text-body-md font-body-md">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                                پنل پیامکی رایگان
+                            </li>
+<li class="flex items-center gap-2 text-body-md font-body-md font-bold text-primary">
+<span class="material-symbols-outlined text-primary text-xl">savings</span>
+                                ۱۵٪ تخفیف اقتصادی
+                            </li>
+</ul>
+<button class="w-full bg-primary text-on-primary py-3 rounded-xl font-body-md text-body-md shadow-md hover:bg-primary-container transition-all">شروع کنید</button>
+</div>
+<!-- Plan 4 -->
+<div class="bg-surface rounded-3xl p-8 border border-outline-variant flex flex-col h-full shadow-sm">
+<h3 class="font-title-lg text-title-lg mb-4 text-on-surface">یک ساله</h3>
+<div class="mb-6">
+<span class="text-3xl font-bold">۱,۲۹۹,۰۰۰</span>
+<span class="text-on-surface-variant font-label-md">تومان / سال</span>
+</div>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-2 text-body-md font-body-md">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                                تمام امکانات پیشرفته
+                            </li>
+<li class="flex items-center gap-2 text-body-md font-body-md">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                                ماژول وفاداری مشتریان
+                            </li>
+<li class="flex items-center gap-2 text-body-md font-body-md font-bold text-primary">
+<span class="material-symbols-outlined text-primary text-xl">stars</span>
+                                ۲ ماه رایگان هدیه
+                            </li>
+</ul>
+<button class="w-full border border-primary text-primary py-3 rounded-xl font-body-md text-body-md hover:bg-primary/5 transition-all">شروع کنید</button>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Final Section -->
+<section class="py-20 px-4">
+<div class="max-w-4xl mx-auto bg-primary text-on-primary rounded-[40px] p-12 text-center relative overflow-hidden">
+<div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+<div class="relative z-10">
+<h2 class="font-headline-lg text-headline-lg mb-6">همین امروز کسب و کارت را متحول کن</h2>
+<p class="font-body-lg text-body-lg opacity-90 mb-10">۱۴ روز تست رایگان بدون نیاز به کارت بانکی. تمام امکانات را امتحان کنید.</p>
+<div class="flex flex-col sm:flex-row justify-center gap-4">
+<button class="bg-surface text-primary px-8 py-4 rounded-xl font-title-lg text-title-lg hover:bg-surface-variant transition-all">ایجاد حساب کاربری</button>
+<button class="border border-on-primary/30 text-on-primary px-8 py-4 rounded-xl font-title-lg text-title-lg hover:bg-white/10 transition-all">تماس با مشاوره</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer Shell -->
+<footer class="bg-inverse-surface text-inverse-on-surface pt-20 pb-10 px-4 md:px-margin_desktop rtl">
+<div class="max-w-container_max_width mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16 border-b border-outline-variant pb-16">
+<div class="space-y-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-fixed-dim text-3xl">account_balance_wallet</span>
+<span class="font-headline-md text-headline-md font-bold text-white">حساب‌یار</span>
+</div>
+<p class="font-body-md text-body-md text-outline leading-relaxed">
+                        حساب‌یار همراه هوشمند شما در مدیریت مالی و انبارداری است. ما با ساده‌سازی فرآیندهای پیچیده حسابداری، فرصت تمرکز روی رشد کسب‌وکارتان را برای شما فراهم می‌کنیم.
+                    </p>
+</div>
+<div>
+<h4 class="text-white font-title-lg text-title-lg mb-8">لینک‌های سریع</h4>
+<ul class="space-y-4 font-body-md text-body-md text-outline">
+<li><a class="hover:text-primary-fixed-dim transition-colors" href="#">داشبورد کاربری</a></li>
+<li><a class="hover:text-primary-fixed-dim transition-colors" href="#features">امکانات سیستم</a></li>
+<li><a class="hover:text-primary-fixed-dim transition-colors" href="#pricing">پلن‌های فروش</a></li>
+<li><a class="hover:text-primary-fixed-dim transition-colors" href="#">سوالات متداول</a></li>
+</ul>
+</div>
+<div>
+<h4 class="text-white font-title-lg text-title-lg mb-8">راهنمای کاربران</h4>
+<ul class="space-y-4 font-body-md text-body-md text-outline">
+<li><a class="hover:text-primary-fixed-dim transition-colors" href="#">آموزش کار با پنل</a></li>
+<li><a class="hover:text-primary-fixed-dim transition-colors" href="#">حریم خصوصی</a></li>
+<li><a class="hover:text-primary-fixed-dim transition-colors" href="#">قوانین و مقررات</a></li>
+<li><a class="hover:text-primary-fixed-dim transition-colors" href="#">ثبت شکایت</a></li>
+</ul>
+</div>
+<div>
+<h4 class="text-white font-title-lg text-title-lg mb-8">ارتباط با ما</h4>
+<ul class="space-y-4 font-body-md text-body-md text-outline">
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-fixed-dim">call</span>
+                            ۰۲۱-۱۲۳۴۵۶۷۸
+                        </li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-fixed-dim">mail</span>
+                            info@hesabyar.ir
+                        </li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-fixed-dim">location_on</span>
+                            تهران، خیابان ولیعصر، برج مدیریت
+                        </li>
+</ul>
+</div>
+</div>
+<div class="flex flex-col md:flex-row justify-between items-center gap-4 text-outline font-label-md text-label-md">
+<p>© ۱۴۰۳ تمامی حقوق برای حساب‌یار محفوظ است.</p>
+<div class="flex gap-6">
+<a class="hover:text-white transition-colors" href="#">اینستاگرام</a>
+<a class="hover:text-white transition-colors" href="#">تلگرام</a>
+<a class="hover:text-white transition-colors" href="#">لینکدین</a>
+</div>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interaction for cards on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-10');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.grid > div').forEach(card => {
+            card.classList.add('transition-all', 'duration-700', 'opacity-0', 'translate-y-10');
+            observer.observe(card);
+        });
+    </script>
+</body></html>
