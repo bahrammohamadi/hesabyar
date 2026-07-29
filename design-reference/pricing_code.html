@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+
+<html class="light" dir="rtl" lang="fa"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;300;400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #f7faf7;
+            color: #191c1b;
+            scroll-behavior: smooth;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px border-outline-variant;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #bec9c4;
+            border-radius: 10px;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#6a3125",
+                        "inverse-primary": "#8cd4c0",
+                        "on-secondary-fixed-variant": "#3a485c",
+                        "secondary-container": "#d5e3fd",
+                        "inverse-surface": "#2d3130",
+                        "on-surface-variant": "#3f4945",
+                        "on-tertiary-container": "#ffc3b6",
+                        "surface-tint": "#1c6a5a",
+                        "on-primary-fixed": "#00201a",
+                        "surface-dim": "#d8dbd8",
+                        "surface-bright": "#f7faf7",
+                        "outline": "#6f7975",
+                        "surface-container-high": "#e6e9e6",
+                        "on-surface": "#191c1b",
+                        "inverse-on-surface": "#eff1ef",
+                        "tertiary-fixed-dim": "#ffb4a4",
+                        "on-tertiary-fixed-variant": "#703629",
+                        "primary-container": "#156555",
+                        "secondary": "#515f74",
+                        "on-background": "#191c1b",
+                        "on-primary-container": "#97dfcb",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#e0e3e0",
+                        "outline-variant": "#bec9c4",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#d5e3fd",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e0e3e0",
+                        "tertiary-container": "#87483a",
+                        "on-secondary-fixed": "#0d1c2f",
+                        "surface-container": "#ecefec",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#b9c7e0",
+                        "on-error-container": "#93000a",
+                        "background": "#f7faf7",
+                        "error-container": "#ffdad6",
+                        "surface": "#f7faf7",
+                        "on-primary-fixed-variant": "#005143",
+                        "on-tertiary-fixed": "#390c04",
+                        "primary-fixed-dim": "#8cd4c0",
+                        "primary": "#004c3e",
+                        "primary-fixed": "#a8f1dc",
+                        "tertiary-fixed": "#ffdad3",
+                        "on-secondary-container": "#57657b",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#f2f4f1",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "title-lg": ["Vazirmatn"],
+                        "headline-xl": ["Vazirmatn"],
+                        "headline-lg": ["Vazirmatn"],
+                        "headline-md": ["Vazirmatn"],
+                        "headline-lg-mobile": ["Vazirmatn"],
+                        "body-md": ["Vazirmatn"],
+                        "body-lg": ["Vazirmatn"],
+                        "label-md": ["Vazirmatn"]
+                    },
+                    "fontSize": {
+                        "title-lg": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-xl": ["36px", {"lineHeight": "48px", "fontWeight": "700"}],
+                        "headline-lg": ["28px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "headline-md": ["22px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background">
+<!-- Top Navigation (Mobile Header) -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-outline-variant px-4 h-16 flex justify-between items-center rtl">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary text-xl">account_balance_wallet</span>
+</div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">حساب‌یار</h1>
+</div>
+<div class="flex gap-4 items-center">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer">search</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer">notifications</span>
+</div>
+</header>
+<main class="pt-20 pb-24 px-4 max-w-md mx-auto rtl">
+<!-- Hero Section -->
+<section class="mb-12 text-center">
+<div class="relative w-full h-56 rounded-3xl overflow-hidden mb-8 shadow-lg">
+
+<img class="w-full h-full object-cover" data-alt="A premium 3D visualization of a minimalist digital workspace with floating gold coins and glass financial charts. The scene is lit with soft volumetric lighting and a professional deep green and white color palette, conveying financial growth and stability in a modern corporate style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWbMQqYfF7SjBFjRofPFCely6NZY9ZZr8G34zJdCLMScrduG9HClq6OSjZN_4_EkqB0cZG2_7Mrt6MVOk8MnDn3w3dKox5k-hR01DTltNted8SRBTeVFtpa4Ghi8CETu8TcHl6e6_NQo6-GNoqUVHVvpUPZ1AQqx_2HSQ8n6rfpfzO1_CNGIB7dlz_hjcsI7kAzi0s4_asntU3aqUaCCBquRPj3B9fEKkoUZCOlV22m4scQQ9Tfyje3azdMp8CoRM8Pd0CxzLn6oP_"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+</div>
+<h2 class="font-headline-xl text-headline-lg-mobile text-primary mb-4">مدیریت هوشمند منابع مالی</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-8 px-2">با حساب‌یار، تمامی تراکنش‌ها، موجودی انبار و روابط مشتریان خود را در یک نگاه رصد کنید.</p>
+<div class="flex flex-col gap-4">
+<button class="bg-primary text-on-primary h-12 rounded-xl font-title-lg flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-transform">
+<span class="material-symbols-outlined">rocket_launch</span>
+                    شروع رایگان
+                </button>
+<button class="border-2 border-primary text-primary h-12 rounded-xl font-title-lg flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined">play_circle</span>
+                    مشاهده دمو
+                </button>
+</div>
+</section>
+<!-- Stats Grid (Bento Style) -->
+<section class="grid grid-cols-2 gap-4 mb-12">
+<div class="col-span-2 bg-surface-container-low p-6 rounded-3xl flex flex-col items-center justify-center text-center shadow-sm border border-outline-variant/30">
+<span class="text-primary font-headline-xl text-headline-xl mb-1">+۱۰,۰۰۰</span>
+<span class="font-label-md text-on-surface-variant">کسب‌وکار فعال</span>
+</div>
+<div class="bg-primary-container/20 p-4 rounded-3xl border border-primary-container/30">
+<span class="material-symbols-outlined text-primary text-3xl mb-2">security</span>
+<p class="font-title-lg text-primary text-sm">امنیت بالا</p>
+<p class="font-body-md text-xs text-on-surface-variant">تضمین داده‌ها</p>
+</div>
+<div class="bg-secondary-container/20 p-4 rounded-3xl border border-secondary-container/30">
+<span class="material-symbols-outlined text-secondary text-3xl mb-2">cloud_sync</span>
+<p class="font-title-lg text-secondary text-sm">همگام‌سازی</p>
+<p class="font-body-md text-xs text-on-surface-variant">دسترسی آنی</p>
+</div>
+</section>
+<!-- Features Vertical List -->
+<section class="mb-12">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-headline-md text-on-surface">ویژگی‌های کلیدی</h3>
+<span class="text-primary font-label-md">مشاهده همه</span>
+</div>
+<div class="space-y-4">
+<!-- Feature 1 -->
+<div class="bg-surface-container-lowest p-4 rounded-2xl flex items-center gap-4 shadow-sm border border-outline-variant/20 hover:shadow-md transition-shadow">
+<div class="w-12 h-12 bg-primary-container text-on-primary-container rounded-xl flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">inventory_2</span>
+</div>
+<div>
+<h4 class="font-title-lg text-on-surface">انبارداری پیشرفته</h4>
+<p class="font-body-md text-on-surface-variant">مدیریت دقیق موجودی و هشدار کاهش کالا.</p>
+</div>
+</div>
+<!-- Feature 2 -->
+<div class="bg-surface-container-lowest p-4 rounded-2xl flex items-center gap-4 shadow-sm border border-outline-variant/20">
+<div class="w-12 h-12 bg-secondary-container text-on-secondary-container rounded-xl flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">receipt_long</span>
+</div>
+<div>
+<h4 class="font-title-lg text-on-surface">فاکتورهای آنلاین</h4>
+<p class="font-body-md text-on-surface-variant">صدور سریع و ارسال لینک پرداخت به مشتری.</p>
+</div>
+</div>
+<!-- Feature 3 -->
+<div class="bg-surface-container-lowest p-4 rounded-2xl flex items-center gap-4 shadow-sm border border-outline-variant/20">
+<div class="w-12 h-12 bg-tertiary-container text-on-tertiary-container rounded-xl flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">group</span>
+</div>
+<div>
+<h4 class="font-title-lg text-on-surface">CRM هوشمند</h4>
+<p class="font-body-md text-on-surface-variant">تحلیل رفتار مشتری و وفادارسازی مخاطبان.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Pricing Carousel -->
+<section class="mb-12">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-6">پلن‌های اشتراک</h3>
+<div class="flex overflow-x-auto gap-4 pb-4 custom-scrollbar snap-x">
+<!-- Plan 1 -->
+<div class="min-w-[280px] bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-6 snap-center flex flex-col h-full">
+<span class="bg-surface-variant text-on-surface-variant px-3 py-1 rounded-full text-xs self-start mb-4">پایه</span>
+<span class="font-headline-md text-primary mb-2">رایگان</span>
+<p class="font-body-md text-on-surface-variant mb-6">مناسب برای فریلنسرها و کسب‌وکارهای کوچک.</p>
+<ul class="space-y-3 mb-8 grow">
+<li class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-primary text-lg">check_circle</span> ۱۰۰ فاکتور ماهانه</li>
+<li class="flex items-center gap-2 text-sm text-on-surface-variant"><span class="material-symbols-outlined text-outline text-lg">check_circle</span> پشتیبانی معمولی</li>
+</ul>
+<button class="w-full py-3 rounded-xl border border-primary text-primary font-title-lg">انتخاب پلن</button>
+</div>
+<!-- Plan 2 (Featured) -->
+<div class="min-w-[280px] bg-primary text-on-primary rounded-3xl p-6 snap-center flex flex-col h-full shadow-xl relative overflow-hidden">
+<div class="absolute -right-4 -top-4 opacity-10">
+<span class="material-symbols-outlined text-8xl">diamond</span>
+</div>
+<span class="bg-on-primary/20 text-on-primary px-3 py-1 rounded-full text-xs self-start mb-4">ویژه</span>
+<span class="font-headline-md mb-2">۴۹۰,۰۰۰ تومان</span>
+<p class="font-body-md opacity-80 mb-6">بهترین گزینه برای شرکت‌های در حال رشد.</p>
+<ul class="space-y-3 mb-8 grow">
+<li class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-on-primary text-lg">check_circle</span> فاکتور نامحدود</li>
+<li class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-on-primary text-lg">check_circle</span> گزارشات پیشرفته</li>
+<li class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-on-primary text-lg">check_circle</span> پشتیبانی VIP</li>
+</ul>
+<button class="w-full py-3 rounded-xl bg-on-primary text-primary font-title-lg shadow-lg">خرید اشتراک</button>
+</div>
+<!-- Plan 3 -->
+<div class="min-w-[280px] bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-6 snap-center flex flex-col h-full">
+<span class="bg-surface-variant text-on-surface-variant px-3 py-1 rounded-full text-xs self-start mb-4">سازمانی</span>
+<span class="font-headline-md text-primary mb-2">تماس بگیرید</span>
+<p class="font-body-md text-on-surface-variant mb-6">راه‌کار اختصاصی برای هولدینگ‌ها.</p>
+<ul class="space-y-3 mb-8 grow">
+<li class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-primary text-lg">check_circle</span> تمامی امکانات</li>
+<li class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-primary text-lg">check_circle</span> نصب روی سرور اختصاصی</li>
+</ul>
+<button class="w-full py-3 rounded-xl border border-primary text-primary font-title-lg">درخواست مشاوره</button>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="bg-surface-container-highest rounded-3xl p-8 text-center mb-12 relative overflow-hidden">
+
+<h3 class="font-headline-md text-on-surface mb-4 relative z-10">آماده‌اید مدیریت مالی خود را متحول کنید؟</h3>
+<p class="font-body-md text-on-surface-variant mb-8 relative z-10">همین امروز بپیوندید و ۱۴ روز تست رایگان هدیه بگیرید.</p>
+<div class="flex flex-col gap-3 relative z-10">
+<button class="bg-primary text-on-primary h-12 rounded-xl font-title-lg">ثبت‌نام سریع</button>
+<button class="text-primary font-label-md">تماس با واحد فروش</button>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (Fixed) -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface-container rounded-t-xl shadow-lg border-t border-outline-variant flex justify-around items-center h-16 px-2 pb-safe rtl">
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-3 py-1 transition-transform scale-95" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">داشبورد</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-secondary-fixed-variant active:bg-surface-variant transition-transform" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-md text-label-md">فروش</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-secondary-fixed-variant active:bg-surface-variant transition-transform" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-md text-label-md">انبار</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-secondary-fixed-variant active:bg-surface-variant transition-transform" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">مالی</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-secondary-fixed-variant active:bg-surface-variant transition-transform" href="#">
+<span class="material-symbols-outlined">menu</span>
+<span class="font-label-md text-label-md">بیشتر</span>
+</a>
+</nav>
+<!-- Floating Action Button (Contextual) -->
+<div class="fixed bottom-20 left-4 z-40">
+<button class="w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+<script>
+        // Micro-interaction for the active tab
+        const navItems = document.querySelectorAll('nav a');
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                navItems.forEach(i => {
+                    i.classList.remove('bg-primary-container', 'text-on-primary-container', 'rounded-xl', 'px-3', 'py-1');
+                    i.classList.add('text-on-secondary-fixed-variant');
+                });
+                item.classList.add('bg-primary-container', 'text-on-primary-container', 'rounded-xl', 'px-3', 'py-1');
+                item.classList.remove('text-on-secondary-fixed-variant');
+            });
+        });
+
+        // Simple scroll reveal effect
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-8');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section').forEach(section => {
+            section.classList.add('transition-all', 'duration-700', 'opacity-0', 'translate-y-8');
+            observer.observe(section);
+        });
+    </script>
+</body></html>
