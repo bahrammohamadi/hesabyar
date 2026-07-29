@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="fa"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>حساب‌یار | مدیریت موجودی محصولات</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;300;400;700;900&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#004c5f",
+                        "surface-variant": "#e0e3e5",
+                        "secondary": "#712ae2",
+                        "on-secondary-fixed": "#25005a",
+                        "primary-container": "#134e48",
+                        "on-surface": "#191c1e",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#eceef0",
+                        "surface-container-highest": "#e0e3e5",
+                        "background": "#f7f9fb",
+                        "tertiary": "#003442",
+                        "tertiary-fixed": "#b7eaff",
+                        "secondary-container": "#8a4cfc",
+                        "outline": "#707977",
+                        "surface-container-high": "#e6e8ea",
+                        "on-secondary-container": "#fffbff",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#004e61",
+                        "outline-variant": "#bfc8c6",
+                        "on-tertiary-container": "#56c0e2",
+                        "on-primary-fixed-variant": "#154f49",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#d2bbff",
+                        "on-background": "#191c1e",
+                        "surface-tint": "#316761",
+                        "on-error": "#ffffff",
+                        "primary-fixed-dim": "#9ad1c9",
+                        "inverse-surface": "#2d3133",
+                        "on-primary-container": "#87beb6",
+                        "secondary-fixed": "#eaddff",
+                        "surface": "#f7f9fb",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed": "#00201d",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-tertiary": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-primary": "#9ad1c9",
+                        "on-tertiary-fixed": "#001f28",
+                        "primary": "#003631",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#5a00c6",
+                        "surface-container-low": "#f2f4f6",
+                        "primary-fixed": "#b5ede5",
+                        "tertiary-fixed-dim": "#6cd3f7",
+                        "surface-dim": "#d8dadc",
+                        "on-surface-variant": "#404947"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sidebar_width": "260px",
+                        "card_padding": "1.25rem",
+                        "stack_gap": "1rem",
+                        "margin_page": "2rem",
+                        "gutter": "1.5rem"
+                    },
+                    "fontFamily": {
+                        "headline-md-mobile": ["Vazirmatn"],
+                        "label-numeric": ["Work Sans"],
+                        "body-sm": ["Vazirmatn"],
+                        "display-lg": ["Vazirmatn"],
+                        "body-lg": ["Vazirmatn"],
+                        "body-md": ["Vazirmatn"],
+                        "headline-sm": ["Vazirmatn"],
+                        "headline-md": ["Vazirmatn"]
+                    },
+                    "fontSize": {
+                        "headline-md-mobile": ["20px", {"lineHeight": "30px", "fontWeight": "600"}],
+                        "label-numeric": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+                        "body-sm": ["14px", {"lineHeight": "22px", "fontWeight": "400"}],
+                        "display-lg": ["36px", {"lineHeight": "52px", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-sm": ["20px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "36px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #f7f9fb;
+            font-family: 'Vazirmatn', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #bfc8c6;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface overflow-hidden">
+<!-- Right Sidebar -->
+<aside class="fixed right-0 top-0 h-full w-sidebar_width flex flex-col border-l border-outline-variant bg-surface-container-lowest z-50">
+<div class="p-6 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">حساب‌یار</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant opacity-70">مدیریت هوشمند مالی</p>
+</div>
+</div>
+<nav class="mt-4 flex-grow px-2 overflow-y-auto custom-scrollbar">
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-xl mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md text-body-md">پیش‌خوان</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-xl mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body-md text-body-md">تجزیه و تحلیل</span>
+</a>
+<a class="bg-primary text-on-primary rounded-xl mx-2 my-1 px-4 py-3 flex items-center gap-3 shadow-md" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">inventory</span>
+<span class="font-body-md text-body-md">محصولات</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-xl mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-body-md text-body-md">تراکنش‌ها</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-xl mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-body-md text-body-md">سرمایه‌گذاری</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-xl mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">credit_card</span>
+<span class="font-body-md text-body-md">کارت‌ها</span>
+</a>
+<div class="my-4 mx-4 border-t border-outline-variant opacity-50"></div>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-xl mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">تنظیمات</span>
+</a>
+</nav>
+<div class="p-4 border-t border-outline-variant bg-surface-container-low/50">
+<div class="flex items-center gap-3 mb-4 p-2 rounded-xl">
+<img class="w-10 h-10 rounded-full object-cover border-2 border-primary-fixed" data-alt="A professional headshot of a middle-aged male accounting executive with a friendly smile, set against a blurred modern office background with soft teal and white lighting. He is wearing a dark charcoal suit that reflects the corporate yet approachable brand identity of Hesabyar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDv8ELj2H7Ej2_odBhX4bnqvZ5Gcia8KKgxRtbZIdww_8C15utesSiy0sdu14NHtOPoYFpIQ94e79YbrKuIUHSPyOa539iRyPUmL6rWECsaJzjPtZww52ojttsE5eEoBJnSCWHxTr1j8gOZTi866GQ5xDiivPazupu7Pd4HWnyxXVeoZZ4nmMUx44q4oscrhML2Y7aUsjozDorT8un5mRP8ZNKsIADjWEcYOBvP09cvrwbOJjSNrP5x0izUaTBX9wpXGVRDc8yw1510"/>
+<div class="flex-grow overflow-hidden">
+<p class="font-body-md text-body-md font-bold truncate">سهراب احمدی</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">مدیر انبار</p>
+</div>
+</div>
+<button class="w-full flex items-center justify-center gap-2 py-2 text-error hover:bg-error-container/30 rounded-lg transition-colors">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-body-md text-body-md">خروج</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="mr-sidebar_width h-full flex flex-col">
+<!-- Top App Bar -->
+<header class="w-full h-20 flex items-center justify-between px-margin_page bg-surface shadow-sm z-40">
+<div class="flex items-center gap-4">
+<h2 class="font-headline-md text-headline-md font-bold text-primary">لیست محصولات</h2>
+<span class="text-on-surface-variant opacity-50 font-body-sm">دوشنبه، ۲۳ مرداد ۱۴۰۲</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative hidden lg:block">
+<input class="w-72 bg-surface-container-low border-none rounded-full px-12 py-2.5 font-body-sm focus:ring-2 focus:ring-primary/20 transition-all" placeholder="جستجو در انبار..." type="text"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="hover:bg-surface-container-low rounded-full p-2 transition-colors relative">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+<span class="absolute top-2 left-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="hover:bg-surface-container-low rounded-full p-2 transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">chat_bubble</span>
+</button>
+<button class="hover:bg-surface-container-low rounded-full p-1 transition-colors">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="A small circular avatar of a Persian woman with elegant corporate attire, symbolizing professional user profile navigation in a high-end financial application. The lighting is soft and professional, echoing the minimalist aesthetic of the UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCL7iaKnElo1z7-anw43mftIOYgQ-s1-p6KVzJL3rNXV69LjDHBxbddRg7i0OkMjhd9AseZR-lR1E5Aq8I_Vh37H3LLT-2brm0bXDyl4qGC5AOmg_xWZvhTDFR1eyk9wTvLzcyOaHC40-ons8gJJdXvSyPMqmRI4oitWoK7InvUvqNwy2EkNYAzmu_NpQBruSoI6i0Id-6A0nX0FQ_Dh9zuhbsmRfu7B_59uWtsttIET-1cVKGZor1FN4tHm6kJi_nUuRrU8XzzGFJ"/>
+</button>
+</div>
+</div>
+</header>
+<!-- Scrollable Canvas -->
+<section class="flex-grow overflow-y-auto p-margin_page custom-scrollbar">
+<!-- Stats Row -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+<div class="glass-card p-card_padding rounded-2xl flex flex-col gap-2 border-r-4 border-r-primary">
+<p class="font-body-sm text-body-sm text-on-surface-variant">کل موجودی کالا</p>
+<div class="flex items-end justify-between">
+<span class="font-label-numeric text-3xl font-bold text-primary">۱۲,۴۵۰</span>
+<span class="text-on-primary-container bg-primary-container/20 px-2 py-1 rounded-lg text-[12px] flex items-center gap-1 font-label-numeric">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> ۸٪+
+                        </span>
+</div>
+</div>
+<div class="glass-card p-card_padding rounded-2xl flex flex-col gap-2 border-r-4 border-r-error">
+<p class="font-body-sm text-body-sm text-on-surface-variant">کالاهای رو به اتمام</p>
+<div class="flex items-end justify-between">
+<span class="font-label-numeric text-3xl font-bold text-error">۱۸</span>
+<span class="text-error bg-error-container/40 px-2 py-1 rounded-lg text-[12px] flex items-center gap-1 font-label-numeric">
+                            بحرانی
+                        </span>
+</div>
+</div>
+<div class="glass-card p-card_padding rounded-2xl flex flex-col gap-2 border-r-4 border-r-secondary">
+<p class="font-body-sm text-body-sm text-on-surface-variant">ارزش کل انبار</p>
+<div class="flex items-end justify-between">
+<span class="font-label-numeric text-2xl font-bold text-secondary">۴.۸ میلیارد</span>
+<span class="text-on-surface-variant opacity-60 text-[12px] font-body-sm">تومان</span>
+</div>
+</div>
+<div class="glass-card p-card_padding rounded-2xl flex flex-col gap-2 border-r-4 border-r-tertiary">
+<p class="font-body-sm text-body-sm text-on-surface-variant">فروش ماه جاری</p>
+<div class="flex items-end justify-between">
+<span class="font-label-numeric text-2xl font-bold text-tertiary">۳۴۲</span>
+<span class="text-on-surface-variant opacity-60 text-[12px] font-body-sm">عدد کالا</span>
+</div>
+</div>
+</div>
+<!-- Filters & Actions -->
+<div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-6 bg-surface-container-lowest p-4 rounded-2xl shadow-sm">
+<div class="flex items-center gap-3 w-full md:w-auto">
+<div class="flex items-center gap-2 bg-background border border-outline-variant rounded-xl px-3 py-2 cursor-pointer hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">filter_list</span>
+<span class="font-body-sm">فیلتر دسته‌بندی</span>
+</div>
+<div class="flex items-center gap-2 bg-background border border-outline-variant rounded-xl px-3 py-2 cursor-pointer hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">sort</span>
+<span class="font-body-sm">مرتب‌سازی</span>
+</div>
+</div>
+<button class="bg-primary text-on-primary px-6 py-2.5 rounded-xl font-body-md font-bold flex items-center gap-2 shadow-lg hover:shadow-primary/20 active:scale-95 transition-all">
+<span class="material-symbols-outlined">add</span>
+                    افزودن محصول جدید
+                </button>
+</div>
+<!-- Data Table -->
+<div class="glass-card rounded-2xl overflow-hidden shadow-md">
+<table class="w-full text-right border-collapse">
+<thead>
+<tr class="bg-primary text-on-primary">
+<th class="py-5 px-6 font-headline-sm text-body-md text-right">تصویر محصول</th>
+<th class="py-5 px-6 font-headline-sm text-body-md text-right">نام و شناسه</th>
+<th class="py-5 px-6 font-headline-sm text-body-md text-right">دسته‌بندی</th>
+<th class="py-5 px-6 font-headline-sm text-body-md text-center">موجودی</th>
+<th class="py-5 px-6 font-headline-sm text-body-md text-right">قیمت واحد</th>
+<th class="py-5 px-6 font-headline-sm text-body-md text-center">وضعیت</th>
+<th class="py-5 px-6 font-headline-sm text-body-md text-center">عملیات</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- Product Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-4 px-6">
+<img class="w-14 h-14 rounded-lg object-cover border border-outline-variant" data-alt="A crisp, professional product shot of a high-quality navy blue tailored men's blazer hanging on a minimalist wooden hanger. The lighting is bright and clean, emphasizing the fabric texture and stitching details, perfect for a high-end retail inventory system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWzrnPalTs-ONfoazoz2n0WySYrJaiIcLgLR-BjjHyz8AqDcTcJLrKDQLNPwtq6eOMyjnfQ5pRIesrJXumFgIKH7x8n87D0Pf1z3vMtferFV86OFtf55kn0klCLUf6SVAsv3iteipnAlrWh2Ij87D9cFEzIDfUmemMbTcu-bPNkpTYxf2t_ul00IW0ZGQo0DGYzQbAbY3q_eF8rBWKt7vcb8W9bhL6Y3MkDLComu0Pj99fK0LhY9T4k_UwjCaGtaO9kG5MFB-70rPE"/>
+</td>
+<td class="py-4 px-6">
+<p class="font-body-md font-bold text-on-surface">کت تک سرمه‌ای مدل الیت</p>
+<p class="font-label-numeric text-body-sm text-on-surface-variant">ID: JK-9923</p>
+</td>
+<td class="py-4 px-6">
+<span class="bg-surface-container-high text-on-surface-variant px-3 py-1 rounded-full text-body-sm">پوشاک آقایان</span>
+</td>
+<td class="py-4 px-6 text-center font-label-numeric text-body-md">۴۲</td>
+<td class="py-4 px-6 font-label-numeric text-body-md font-bold">۳,۴۵۰,۰۰۰ <span class="text-[10px] font-body-sm">تومان</span></td>
+<td class="py-4 px-6 text-center">
+<span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold">موجود</span>
+</td>
+<td class="py-4 px-6 text-center">
+<div class="flex items-center justify-center gap-2">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+<button class="p-2 hover:bg-error-container/30 rounded-lg text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Product Row 2 (Low Stock) -->
+<tr class="hover:bg-surface-container-low transition-colors bg-error-container/5">
+<td class="py-4 px-6">
+<img class="w-14 h-14 rounded-lg object-cover border border-outline-variant" data-alt="A minimalist, high-contrast studio photograph of a pair of designer white leather sneakers against a soft grey background. The lighting highlights the sleek curves and premium material, capturing the essence of modern fashion retail in a clean, uncluttered way." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBovLZyHNsmTD1BpqNrXjnWg1ewvVVWOMmGD-kLefRuKOUZ8wOrVWjIvJoqj0DGmzCJFGH4o88OFQMcJTl4uKHmH8gQvfZow2xn_7hIUKM-Clrr175znT0E4JMhQXy_E-3DkbPUS1oFSgbstwYQiLKLytkl4MqELoOGrTCtCYITdRKYP9PwM1piN0WYNCQFhxlXntw5E5ot5YpFDLlyQQ4ViruDeuaYGgWUCxm4VjMGV-e4vRYuNmEQNiufu4V7yql8EPuoiDoR6jkR"/>
+</td>
+<td class="py-4 px-6">
+<p class="font-body-md font-bold text-on-surface">کفش چرم اسپرت سفید</p>
+<p class="font-label-numeric text-body-sm text-on-surface-variant">ID: SH-4012</p>
+</td>
+<td class="py-4 px-6">
+<span class="bg-surface-container-high text-on-surface-variant px-3 py-1 rounded-full text-body-sm">کفش و پاپوش</span>
+</td>
+<td class="py-4 px-6 text-center font-label-numeric text-body-md text-error font-bold">۳</td>
+<td class="py-4 px-6 font-label-numeric text-body-md font-bold">۱,۸۹۰,۰۰۰ <span class="text-[10px] font-body-sm">تومان</span></td>
+<td class="py-4 px-6 text-center">
+<span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-bold">اتمام موجودی</span>
+</td>
+<td class="py-4 px-6 text-center">
+<div class="flex items-center justify-center gap-2">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+<button class="p-2 hover:bg-error-container/30 rounded-lg text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Product Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-4 px-6">
+<img class="w-14 h-14 rounded-lg object-cover border border-outline-variant" data-alt="An artistic flat-lay of a vibrant floral print silk dress, spread out on a white marble surface with soft, diffused natural daylight. The image showcases the delicate pattern and flowing texture of the fabric, suitable for an organized fashion ERP dashboard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhVs7wSjDHghz8kYrADE0OR7p_T8CIwOZCmz0pCNydmSYz6a2KSWgzeIaRjOf6qVexNWtMuxFBbx7bhhuOnWr2zUv3eg-9sycC-WJJJpz176igmCfSWphEbkIXc6NqUYSgBiC7X5sawje8LGf6jDblPxkicObnbHeIp7FZes6PTn6sn46RabpTg_6ziaTc0yjXifItK_a8oy8fwHb7Us2vFEkJEzzpLxDSbDQ8rIuyBIWJootBYoL8Gx_MCyLkyPpPpXyMPu-qvNlx"/>
+</td>
+<td class="py-4 px-6">
+<p class="font-body-md font-bold text-on-surface">پیراهن ابریشم طرح‌دار</p>
+<p class="font-label-numeric text-body-sm text-on-surface-variant">ID: DR-1156</p>
+</td>
+<td class="py-4 px-6">
+<span class="bg-surface-container-high text-on-surface-variant px-3 py-1 rounded-full text-body-sm">لباس زنانه</span>
+</td>
+<td class="py-4 px-6 text-center font-label-numeric text-body-md">۱۸</td>
+<td class="py-4 px-6 font-label-numeric text-body-md font-bold">۲,۱۰۰,۰۰۰ <span class="text-[10px] font-body-sm">تومان</span></td>
+<td class="py-4 px-6 text-center">
+<span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-bold">موجودی کم</span>
+</td>
+<td class="py-4 px-6 text-center">
+<div class="flex items-center justify-center gap-2">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+<button class="p-2 hover:bg-error-container/30 rounded-lg text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Product Row 4 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-4 px-6">
+<img class="w-14 h-14 rounded-lg object-cover border border-outline-variant" data-alt="A pair of premium indigo blue denim jeans folded neatly, showing the leather brand patch and heavy metal buttons. The lighting is moody but clear, focused on the quality of the denim and the craftsmanship, fitting for a sophisticated accounting software interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrRO9_DxS-QatHxQDgiB0f32DKlV-DsETzVOtFETPcj8t9Jd13fqZ1h3CSFMGHMXkhWLScLpdGgkshH5nyxtq9JJp-ScVpT_bXW901YRiTqxfRQFQUpUdeC8HbDqYheauoDKvJqEBS-EngYpCeS7GOrjdMp_d0UduIxpWs1JchG98CCgKymxui8evGe_TSAvHZ8u1ProvT2x0cw9TsTNSekLhMzVVEmjbPHnx_e2Qk13swNGcQiR7lZT3hb0lAcPVDsbG6IJ3L51vU"/>
+</td>
+<td class="py-4 px-6">
+<p class="font-body-md font-bold text-on-surface">شلوار جین پریمیوم</p>
+<p class="font-label-numeric text-body-sm text-on-surface-variant">ID: JN-5520</p>
+</td>
+<td class="py-4 px-6">
+<span class="bg-surface-container-high text-on-surface-variant px-3 py-1 rounded-full text-body-sm">شلوار و جین</span>
+</td>
+<td class="py-4 px-6 text-center font-label-numeric text-body-md">۸۵</td>
+<td class="py-4 px-6 font-label-numeric text-body-md font-bold">۹۸۰,۰۰۰ <span class="text-[10px] font-body-sm">تومان</span></td>
+<td class="py-4 px-6 text-center">
+<span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold">موجود</span>
+</td>
+<td class="py-4 px-6 text-center">
+<div class="flex items-center justify-center gap-2">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+<button class="p-2 hover:bg-error-container/30 rounded-lg text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="flex items-center justify-between mt-8">
+<p class="font-body-sm text-on-surface-variant">نمایش ۱ تا ۴ از مجموع ۱۲۴ محصول</p>
+<div class="flex items-center gap-1">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-on-primary font-label-numeric">۱</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-high font-label-numeric transition-colors">۲</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-high font-label-numeric transition-colors">۳</button>
+<span class="px-2 text-on-surface-variant">...</span>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-high font-label-numeric transition-colors">۱۲</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Micro-interactions Script -->
+<script>
+        document.querySelectorAll('tr').forEach(row => {
+            row.addEventListener('mousedown', () => {
+                row.classList.add('scale-[0.995]');
+            });
+            row.addEventListener('mouseup', () => {
+                row.classList.remove('scale-[0.995]');
+            });
+        });
+
+        // Search Bar Focus Effect
+        const searchInput = document.querySelector('input[type="text"]');
+        const searchContainer = searchInput.parentElement;
+        searchInput.addEventListener('focus', () => {
+            searchContainer.classList.add('scale-105');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchContainer.classList.remove('scale-105');
+        });
+    </script>
+</body></html>

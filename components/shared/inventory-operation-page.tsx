@@ -131,17 +131,17 @@ export function InventoryOperationPage({ mode }: { mode: InventoryMode }) {
       <PageHeader title={MODE_LABEL[mode]} subtitle={mode === "movements" ? "تاریخچه ورود، خروج و تعدیل کالاها" : "ثبت عملیات انبار در صفحه اختصاصی"} />
 
       {mode !== "movements" && (
-        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur">
+        <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm">
           {!selected ? (
             <button onClick={() => setPickerOpen(true)} className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-primary/20 bg-primary/[0.04] px-4 py-5 text-sm font-bold text-primary transition hover:bg-primary/[0.08]">
               <Package size={18}/> انتخاب کالا
             </button>
           ) : (
             <div className="space-y-3">
-              <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-3">
+              <div className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-muted/50 p-3">
                 <div>
                   <EntityLink type="product" id={selected.product_id}>{selected.product_name}</EntityLink>
-                  <div className="text-xs text-slate-400 mt-1">{[selected.color, selected.size].filter(Boolean).join(" / ") || "ساده"} • موجودی فعلی: {toFaDigits(selected.stock_qty)}</div>
+                  <div className="mt-1 text-xs text-muted-foreground">{[selected.color, selected.size].filter(Boolean).join(" / ") || "ساده"} • موجودی فعلی: {toFaDigits(selected.stock_qty)}</div>
                 </div>
                 <EntityActionMenu type="product" id={selected.product_id} label={selected.product_name} />
               </div>
@@ -149,24 +149,24 @@ export function InventoryOperationPage({ mode }: { mode: InventoryMode }) {
                 <div><label className="label">{mode === "adjust" ? "موجودی واقعی" : "تعداد"}</label><QuantityStepper value={qty || 1} min={mode === "adjust" ? 0 : 1} onChange={(value) => setQty(String(value))} /></div>
                 <div><label className="label">توضیح</label><input className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
               </div>
-              {error && <div className="rounded-2xl border border-rose-100 bg-rose-50 p-3 text-sm text-rose-700">{error}</div>}
+              {error && <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
               <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary"><Plus size={16}/>{saving && <Loader2 className="animate-spin" size={16}/>} ثبت</button><button onClick={() => setSelected(null)} className="btn-secondary">تغییر کالا</button></div>
             </div>
           )}
         </div>
       )}
 
-      <div className="overflow-hidden rounded-[24px] border border-white/80 bg-white/90 shadow-sm shadow-slate-900/[0.04] backdrop-blur">
-        <div className="border-b border-slate-100 bg-slate-50/60 p-4 font-extrabold text-slate-800">آخرین گردش‌ها</div>
+      <div className="overflow-hidden rounded-[1.75rem] border border-border bg-card shadow-sm">
+        <div className="border-b border-border bg-muted/50 p-4 text-sm font-extrabold text-foreground">آخرین گردش‌ها</div>
         {isLoading ? <Spinner /> : !movements?.length ? <EmptyState title="گردشی ثبت نشده" /> : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-border">
             {movements.map((m: any) => (
               <div key={m.id} className="flex items-center justify-between gap-3 p-4 transition hover:bg-primary/[0.03]">
                 <div className="min-w-0">
                   <EntityLink type="product" id={m.variant?.product?.id}>{m.variant?.product?.name ?? "کالا"}</EntityLink>
-                  <div className="text-xs text-slate-400 mt-1">{[m.variant?.color, m.variant?.size].filter(Boolean).join(" / ") || m.reason} • {m.note ?? ""}</div>
+                  <div className="mt-1 text-xs text-muted-foreground">{[m.variant?.color, m.variant?.size].filter(Boolean).join(" / ") || m.reason} • {m.note ?? ""}</div>
                 </div>
-                <div className={m.qty >= 0 ? "text-emerald-600 font-bold" : "text-rose-600 font-bold"}>{m.qty >= 0 ? "+" : ""}{toFaDigits(m.qty)} <span className="block text-xs text-slate-400 font-normal">{toJalali(m.created_at)}</span></div>
+                <div className={`text-left font-extrabold tabular-nums ${m.qty >= 0 ? "text-success" : "text-destructive"}`}>{m.qty >= 0 ? "+" : ""}{toFaDigits(m.qty)} <span className="block text-xs font-normal text-muted-foreground">{toJalali(m.created_at)}</span></div>
               </div>
             ))}
           </div>
