@@ -7,7 +7,9 @@ import { useOrg } from "@/lib/hooks/useOrg";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { PageHeader, Spinner, Modal } from "@/components/shared/ui";
 import { DatePicker } from "@/components/shared/date-picker";
-import { DataTable, type Column } from "@/src/shared/ui";
+import { DataTable, type Column, Button, Card, Field } from "@/src/shared/ui";
+import { PosCartList, PosCustomerCard, PosSearchBar, PosSummaryCard } from "./components/PosPieces";
+import { PosInvoiceFields, PosPaymentMethods, type PayMethod } from "./components/PosPayment";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
 import { EntityLink } from "@/components/shared/entity-link";
@@ -179,6 +181,10 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
 
   const [productPickerOpen, setProductPickerOpen] = useState(false);
   const [customerPickerOpen, setCustomerPickerOpen] = useState(false);
+  // فقط برای چیدمان موبایل/تبلت — در دسکتاپ هر دو بخش هم‌زمان دیده می‌شوند.
+  const [step, setStep] = useState<"items" | "payment">("items");
+  // روش پرداخت یک لایه‌ی بصری روی همان stateهای موجود است؛ منطق پرداخت تغییر نکرده.
+  const [payMethod, setPayMethod] = useState<PayMethod>("cash");
 
   const { data: accounts } = useQuery({
     queryKey: ["sale-accounts", orgId],
@@ -288,6 +294,29 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
     }
   }, [isCreditSale, total]);
 
+  /**
+   * انتخاب روش پرداخت — فقط همان stateهای موجود را ست می‌کند.
+   * هیچ منطق محاسباتی جدیدی اضافه نشده است:
+   *   نقدی     → isCreditSale=false ⇒ effect موجود مبلغ را در paidCash می‌گذارد
+   *   کارتخوان → کل مبلغ در paidCard، نقدی صفر
+   *   چک/امانی → همان حالت نسیه‌ی قبلی
+   */
+  function selectPayMethod(m: PayMethod) {
+    setPayMethod(m);
+    if (m === "cash") {
+      setIsCreditSale(false);
+      setPaidCard("");
+    } else if (m === "card") {
+      setIsCreditSale(true);
+      setPaidCash("");
+      setPaidCard(String(rialToToman(total)));
+    } else {
+      setIsCreditSale(true);
+      setPaidCash("");
+      setPaidCard("");
+    }
+  }
+
   function resetForNextSale() {
     setCart([]);
     setCustomer(null);
@@ -388,172 +417,127 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
 
   return (
     <>
-      <Modal open onClose={onClose} title="فروش جدید" size="xl">
-        <div className="space-y-4">
-          {/* انتخاب مشتری */}
-          <div>
-            <label className="label">مشتری</label>
-            {customer ? (
-              <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3.5 py-2.5">
-                <div>
-                  <div className="font-medium text-sm text-slate-800">{customer.name}</div>
-                  {customer.phone && <PhoneLink phone={customer.phone} className="text-xs" />}
-                </div>
-                <button onClick={() => setCustomer(null)} className="text-slate-400 hover:text-rose-500">
-                  <X size={18} />
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setCustomerPickerOpen(true)}
-                className="w-full flex items-center gap-2 rounded-xl border border-dashed border-slate-300 px-3.5 py-2.5 text-sm text-slate-500 hover:border-primary/30 hover:text-primary"
-              >
-                <UserPlus size={18} />
-                انتخاب مشتری (یا مشتری نقدی)
-              </button>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="label">لیست قیمت</label>
-              <select className="input" value={priceListId} onChange={(e) => setPriceListId(e.target.value)}>
-                <option value="">قیمت عادی کالا</option>
-                {priceLists?.map((list: any) => <option key={list.id} value={list.id}>{list.name} {list.discount_percent ? `(${list.discount_percent}٪)` : ""}</option>)}
-              </select>
-            </div>
-            <DatePicker label="تاریخ فاکتور" value={saleDate} onChange={setSaleDate} />
-          </div>
-
-          {/* دکمه افزودن کالا */}
-          <button
-            onClick={() => setProductPickerOpen(true)}
-            className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/20 bg-primary/[0.04] px-4 py-3 text-sm font-medium text-primary hover:bg-primary/[0.06]"
-          >
-            <Package size={18} />
-            افزودن کالا به فاکتور
-          </button>
-
-          {/* سبد */}
-          {cart.length === 0 ? (
-            <div className="text-center text-sm text-slate-400 py-6 border border-dashed border-slate-200 rounded-xl">
-              کالایی انتخاب نشده است.
-            </div>
-          ) : (
-            <div className="max-h-[42vh] overflow-y-auto rounded-2xl border border-slate-100 bg-white">
-              <div className="hidden grid-cols-[minmax(220px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_140px_minmax(120px,1fr)_44px] gap-2 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-500 md:grid">
-                <span>کالا</span><span>تنوع/SKU</span><span>قیمت واحد</span><span className="text-center">تعداد</span><span className="text-left">جمع</span><span />
-              </div>
-              <div className="divide-y divide-slate-100">
-                {cart.map((c) => (
-                  <div key={c.variant_id} className="p-3">
-                    <div className="hidden grid-cols-[minmax(220px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_140px_minmax(120px,1fr)_44px] items-center gap-2 md:grid">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <EntityLink type="product" id={c.product_id} className="truncate text-sm font-semibold">{c.product_name}</EntityLink>
-                          <EntityActionMenu type="product" id={c.product_id} label={c.product_name} />
-                        </div>
-                      </div>
-                      <div className="truncate text-xs text-slate-500" title={c.variant_label || "ساده"}>{c.variant_label || "ساده"}</div>
-                      <input className="input h-10 min-h-10 text-left text-sm" inputMode="numeric" value={String(rialToToman(c.unit_price))} onChange={(e) => updatePrice(c.variant_id, e.target.value)} />
-                      <div className="mx-auto flex h-10 items-center rounded-xl border border-slate-200 bg-white">
-                        <button onClick={() => updateQty(c.variant_id, c.qty - 1)} className="px-2.5 text-slate-500">−</button>
-                        <span className="min-w-8 text-center text-sm font-bold">{toFaDigits(c.qty)}</span>
-                        <button onClick={() => updateQty(c.variant_id, c.qty + 1)} className="px-2.5 text-slate-500">+</button>
-                      </div>
-                      <div className="text-left text-sm font-black text-slate-800 tabular-nums">{formatToman(c.unit_price * c.qty - c.discount, false)}</div>
-                      <button onClick={() => updateQty(c.variant_id, 0)} className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-rose-400 hover:bg-rose-50 hover:text-rose-600"><Trash2 size={16} /></button>
-                    </div>
-                    <div className="md:hidden">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0"><EntityLink type="product" id={c.product_id} className="truncate text-sm font-semibold">{c.product_name}</EntityLink><div className="text-xs text-slate-400">{c.variant_label || "ساده"}</div></div>
-                        <button onClick={() => updateQty(c.variant_id, 0)} className="text-rose-400"><Trash2 size={16} /></button>
-                      </div>
-                      <div className="mt-2 flex items-center justify-between gap-2 text-sm"><span>{formatToman(c.unit_price, false)} × {toFaDigits(c.qty)}</span><strong>{formatToman(c.unit_price * c.qty - c.discount, false)}</strong></div>
-                    </div>
-                    {c.qty > c.stock_qty && <div className="mt-2 text-xs text-amber-600">⚠ موجودی کافی نیست (موجودی: {toFaDigits(c.stock_qty)})</div>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* پرداخت */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-slate-100 pt-4">
-            <div>
-              <label className="label">حساب دریافت وجه</label>
-              <select className="input" value={accountId} onChange={(e) => setAccountId(e.target.value)}>
-                <option value="">انتخاب...</option>
-                {accounts?.map((a) => (
-                  <option key={a.id} value={a.id}>{a.name}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="label">تخفیف</label>
-              <div className="flex gap-2">
-                <input className="input" inputMode="numeric" value={discount} onChange={(e) => setDiscount(e.target.value)} />
-                <select className="input w-28" value={discountType} onChange={(e) => setDiscountType(e.target.value as "fixed" | "percent") }>
-                  <option value="fixed">تومان</option>
-                  <option value="percent">٪</option>
-                </select>
-              </div>
-              {discountRial > 0 && <div className="text-xs text-slate-400 mt-1">معادل تخفیف: {formatToman(discountRial)}</div>}
-            </div>
-            <label className="sm:col-span-2 flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-              <input type="checkbox" checked={isCreditSale} onChange={(e) => setIsCreditSale(e.target.checked)} />
-              این فروش نسیه است / پرداخت خودکار نقدی را غیرفعال کن
-            </label>
-            <div>
-              <label className="label">دریافت نقدی (تومان)</label>
-              <input className="input" inputMode="numeric" value={paidCash} onChange={(e) => setPaidCash(e.target.value)} />
-            </div>
-            <div>
-              <label className="label">دریافت کارتی (تومان)</label>
-              <input className="input" inputMode="numeric" value={paidCard} onChange={(e) => setPaidCard(e.target.value)} />
-            </div>
-            {customer && (
-              <div>
-                <label className="label">پرداخت از اعتبار مشتری (تومان)</label>
-                <input className="input" inputMode="numeric" value={paidWallet} onChange={(e) => setPaidWallet(e.target.value)} />
-                <div className="text-xs text-slate-400 mt-1">اعتبار موجود: {formatToman(walletCredit ?? 0)}</div>
-              </div>
-            )}
-          </div>
-
-          {/* جمع */}
-          <div className="rounded-xl bg-slate-50 p-4 space-y-1.5 text-sm">
-            <div className="flex justify-between text-slate-500">
-              <span>جمع کل</span>
-              <span>{formatToman(subtotal)}</span>
-            </div>
-            <div className="flex justify-between text-slate-500">
-              <span>تخفیف</span>
-              <span>{formatToman(discountRial)}</span>
-            </div>
-            <div className="flex justify-between font-bold text-slate-800 text-base border-t border-slate-200 pt-1.5">
-              <span>مبلغ قابل پرداخت</span>
-              <span>{formatToman(total)}</span>
-            </div>
-            {paidWalletRial > 0 && (
-              <div className="flex justify-between text-emerald-600 font-medium"><span>پرداخت از اعتبار</span><span>{formatToman(paidWalletRial)}</span></div>
-            )}
-            {credit > 0 && (
-              <div className="flex justify-between text-rose-600 font-medium">
-                <span>باقیمانده (نسیه)</span>
-                <span>{formatToman(credit)}</span>
-              </div>
-            )}
-          </div>
-
-          {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
-
-          <div className="flex gap-2">
-            <button onClick={handleSubmit} disabled={saving} className="btn-primary flex-1">
-              {saving && <Loader2 className="animate-spin" size={18} />}
-              ثبت فروش
+      <Modal open onClose={onClose} title="ثبت فاکتور فروش جدید" size="xl" mobileFullscreen>
+        <div className="flex min-h-0 flex-1 flex-col">
+          {/* مرحله‌ها فقط در موبایل/تبلت معنا دارند؛ در دسکتاپ هر دو ستون هم‌زمان دیده می‌شوند */}
+          <div className="mb-3 flex items-center gap-2 lg:hidden">
+            <button
+              type="button"
+              onClick={() => setStep("items")}
+              aria-current={step === "items"}
+              className={`flex-1 rounded-xl px-3 py-2 text-xs font-bold transition ${step === "items" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+            >
+              ۱. اقلام فاکتور
             </button>
-            <button onClick={onClose} className="btn-secondary">انصراف</button>
+            <button
+              type="button"
+              onClick={() => setStep("payment")}
+              aria-current={step === "payment"}
+              className={`flex-1 rounded-xl px-3 py-2 text-xs font-bold transition ${step === "payment" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+            >
+              ۲. پرداخت
+            </button>
+          </div>
+
+          <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto lg:grid-cols-[minmax(0,1fr)_340px] lg:overflow-visible">
+            {/* ستون اصلی: جستجو/بارکد + اقلام فاکتور */}
+            <div className={`space-y-4 ${step === "payment" ? "hidden lg:block" : ""}`}>
+              <PosSearchBar onOpenPicker={() => setProductPickerOpen(true)} />
+              <PosCartList
+                cart={cart}
+                onQtyChange={updateQty}
+                onPriceChange={updatePrice}
+                onRemove={(id) => updateQty(id, 0)}
+              />
+            </div>
+
+            {/* ستون کناری: مشتری، روش پرداخت، فیلدها و جمع مبالغ */}
+            <div className={`space-y-4 ${step === "items" ? "hidden lg:block" : ""}`}>
+              <PosCustomerCard
+                customer={customer}
+                walletCredit={walletCredit}
+                onPick={() => setCustomerPickerOpen(true)}
+                onClear={() => setCustomer(null)}
+              />
+
+              <PosPaymentMethods active={payMethod} onSelect={selectPayMethod} />
+
+              <PosInvoiceFields
+                priceListId={priceListId}
+                onPriceListChange={setPriceListId}
+                priceLists={priceLists as any}
+                saleDate={saleDate}
+                onSaleDateChange={setSaleDate}
+                accountId={accountId}
+                onAccountChange={setAccountId}
+                accounts={accounts}
+                discount={discount}
+                onDiscountChange={setDiscount}
+                discountType={discountType}
+                onDiscountTypeChange={setDiscountType}
+                discountRial={discountRial}
+              />
+
+              {/* مبالغ دریافتی — همان فیلدهای قبلی، بدون تغییر در منطق */}
+              <Card className="space-y-3 p-3 sm:p-4">
+                <Field label="دریافت نقدی (تومان)">
+                  <input className="input tabular-nums" inputMode="numeric" value={paidCash} onChange={(e) => setPaidCash(e.target.value)} />
+                </Field>
+                <Field label="دریافت کارتی (تومان)">
+                  <input className="input tabular-nums" inputMode="numeric" value={paidCard} onChange={(e) => setPaidCard(e.target.value)} />
+                </Field>
+                {customer && (
+                  <Field label="پرداخت از اعتبار مشتری (تومان)" hint={`اعتبار موجود: ${formatToman(walletCredit ?? 0)}`}>
+                    <input className="input tabular-nums" inputMode="numeric" value={paidWallet} onChange={(e) => setPaidWallet(e.target.value)} />
+                  </Field>
+                )}
+                <label className="flex items-center gap-2 rounded-xl border border-border bg-muted/60 px-3 py-2 text-sm text-foreground/80">
+                  <input type="checkbox" checked={isCreditSale} onChange={(e) => setIsCreditSale(e.target.checked)} />
+                  این فروش نسیه است / پرداخت خودکار نقدی را غیرفعال کن
+                </label>
+              </Card>
+
+              {error && (
+                <div className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>
+              )}
+
+              <PosSummaryCard
+                subtotal={subtotal}
+                discountRial={discountRial}
+                total={total}
+                paidWalletRial={paidWalletRial}
+                credit={credit}
+              >
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleSubmit}
+                    loading={saving}
+                    icon={<Receipt size={17} />}
+                    className="flex-1 bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+                  >
+                    تایید و پرداخت
+                  </Button>
+                  <Button variant="ghost" onClick={onClose} className="text-primary-foreground hover:bg-primary-foreground/10">
+                    انصراف
+                  </Button>
+                </div>
+              </PosSummaryCard>
+            </div>
+          </div>
+
+          {/* نوار چسبان موبایل — مطابق مرجع step2 */}
+          <div className={`sticky bottom-0 -mx-5 mt-3 border-t border-border bg-card px-5 py-3 lg:hidden ${step === "payment" ? "hidden" : ""}`}>
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-[11px] text-muted-foreground">مبلغ قابل پرداخت</div>
+                <div className="truncate text-lg font-black tabular-nums text-foreground">
+                  {formatToman(total, false)} <span className="text-[11px] font-normal text-muted-foreground">تومان</span>
+                </div>
+              </div>
+              <Button onClick={() => setStep("payment")} disabled={cart.length === 0} className="shrink-0">
+                ادامه به پرداخت
+              </Button>
+            </div>
           </div>
         </div>
       </Modal>
