@@ -113,3 +113,17 @@ export function fullJalali(date?: string | Date): string {
   const year = toFaDigits(j.format("YYYY"));
   return `${dayName} ${day} ${month} ${year}`.trim();
 }
+
+/**
+ * نمایش نام کاربری بدون دامنه‌ی داخلی.
+ *
+ * ثبت‌نام با شماره موبایل یا نام کاربری انجام می‌شود و سیستم پشت صحنه
+ * `@hesabyar.app` به آن اضافه می‌کند تا Supabase Auth که ایمیل می‌خواهد
+ * راضی شود. این دامنه یک جزئیات فنی است و نباید به کاربر نشان داده شود.
+ *
+ * ایمیل‌های واقعی (مثل info@example.com) دست‌نخورده باقی می‌مانند.
+ */
+export function displayUsername(email: string | null | undefined): string {
+  if (!email) return "";
+  return email.endsWith("@hesabyar.app") ? email.slice(0, -"@hesabyar.app".length) : email;
+}

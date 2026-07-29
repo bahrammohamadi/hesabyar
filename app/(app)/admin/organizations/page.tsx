@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building2, CheckCircle2, Clock, ShieldCheck, XCircle } from "lucide-react";
 import { PageHeader, Spinner, EmptyState } from "@/components/shared/ui";
 import { Badge, Button, Card, Select, useConfirm, useToast } from "@/src/shared/ui";
-import { toFaDigits, toJalali } from "@/lib/utils/format";
+import { displayUsername, toFaDigits, toJalali } from "@/lib/utils/format";
 
 type AdminOrg = {
   id: string;
@@ -146,7 +146,7 @@ export default function AdminOrganizationsPage() {
                         {o.is_demo && <Badge tone="info">دمو</Badge>}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">{o.owner_email || "—"}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{displayUsername(o.owner_email) || "—"}</td>
                     <td className="px-4 py-3 text-center tabular-nums">{toFaDigits(o.members_count ?? 0)}</td>
                     <td className="px-4 py-3 text-center tabular-nums">{toFaDigits(o.sales_count ?? 0)}</td>
                     <td className="px-4 py-3 text-muted-foreground">{o.current_plan ?? "—"}</td>
@@ -180,7 +180,7 @@ export default function AdminOrganizationsPage() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="truncate text-sm font-bold text-foreground">{o.name}</div>
-                    <div className="mt-0.5 truncate text-xs text-muted-foreground">{o.owner_email || "—"}</div>
+                    <div className="mt-0.5 truncate text-xs text-muted-foreground">{displayUsername(o.owner_email) || "—"}</div>
                     <div className="mt-1.5 flex flex-wrap items-center gap-2">
                       <Badge tone={STATUS[o.approval_status].tone}>{STATUS[o.approval_status].label}</Badge>
                       {o.is_demo && <Badge tone="info">دمو</Badge>}

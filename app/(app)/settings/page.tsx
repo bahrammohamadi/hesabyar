@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
+import { displayUsername } from "@/lib/utils/format";
 import { PageHeader, Modal, Spinner } from "@/components/shared/ui";
 import { Plus, Loader2, Tag, Landmark, FolderTree, Trash2, Pencil, Check, X, Users, Shield, Palette, Building2, SlidersHorizontal, Sparkles } from "lucide-react";
 import { applyTheme, DEFAULT_THEME, THEMES, THEME_STORAGE_KEY, type ThemeId } from "@/lib/theme";
@@ -566,8 +567,8 @@ function UsersAccessManager() {
               <div key={u.id} className="rounded-2xl border border-slate-100 p-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
                   <div>
-                    <div className="font-medium text-slate-800">{u.name || u.email}</div>
-                    <div className="text-xs text-slate-400" dir="ltr">{u.email}</div>
+                    <div className="font-medium text-slate-800">{u.name || displayUsername(u.email)}</div>
+                    <div className="text-xs text-slate-400" dir="ltr">{displayUsername(u.email)}</div>
                   </div>
                   <div className="flex items-center gap-2">
                     <select className="input w-36" value={u.role} onChange={(e) => updateUser(u, { role: e.target.value, permissions: defaultPermissions(e.target.value) })}>

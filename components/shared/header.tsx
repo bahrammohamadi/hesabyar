@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
-import { fullJalali } from "@/lib/utils/format";
+import { fullJalali, displayUsername } from "@/lib/utils/format";
 import { LogOut, UserCircle, Bell } from "lucide-react";
 import { GlobalSearchBar } from "@/src/shared/layout/GlobalSearchBar";
 
@@ -17,7 +17,8 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
       const user = data.user;
       return {
         email: user?.email ?? "",
-        name: user?.user_metadata?.name ?? user?.email ?? "کاربر",
+        // اگر نام تنظیم نشده باشد، از نام کاربری بدون دامنه استفاده می‌شود
+        name: user?.user_metadata?.name ?? displayUsername(user?.email) ?? "کاربر",
       };
     },
     staleTime: 60_000,
@@ -50,7 +51,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
             <UserCircle size={18} className="shrink-0 text-primary" />
             <div className="min-w-0 leading-tight text-right">
               <div className="max-w-36 truncate font-bold">{currentUser?.name ?? "کاربر"}</div>
-              {currentUser?.email && <div className="max-w-40 truncate text-[11px] text-slate-400" dir="ltr">{currentUser.email}</div>}
+              {currentUser?.email && <div className="max-w-40 truncate text-[11px] text-slate-400" dir="ltr">{displayUsername(currentUser.email)}</div>}
             </div>
           </div>
           <button
