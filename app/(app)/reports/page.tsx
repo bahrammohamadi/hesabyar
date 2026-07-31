@@ -385,7 +385,7 @@ function ContactsReport({ orgId }: { orgId: string }) {
           <div className="mt-1 text-xs text-muted-foreground">مشتریان</div>
         </div>
         <div className="rounded-[1.5rem] border border-border bg-card p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-          <div className="text-2xl font-black tabular-nums text-success">{toFaDigits(stats.suppliers)}</div>
+          <div className="text-2xl font-black tabular-nums text-success-onSoft">{toFaDigits(stats.suppliers)}</div>
           <div className="mt-1 text-xs text-muted-foreground">تأمین‌کنندگان</div>
         </div>
         <div className="rounded-[1.5rem] border border-border bg-card p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">

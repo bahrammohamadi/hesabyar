@@ -20,23 +20,28 @@ import type { DashboardSummary } from "@/types/db";
 const kpiToneClass = {
   primary: {
     card: "bg-primary text-primary-foreground border-primary",
-    label: "text-primary-foreground/70",
+    label: "text-primary-foreground/90",
     value: "text-primary-foreground",
-    sub: "text-primary-foreground/70",
+    sub: "text-primary-foreground/90",
     icon: "bg-primary-foreground/15 text-primary-foreground",
     blob: "bg-primary-foreground",
   },
   success: {
     card: "bg-success-soft text-foreground border-success/20",
-    label: "text-success/80",
+    label: "text-success-onSoft",
     value: "text-foreground",
     sub: "text-muted-foreground",
-    icon: "bg-success/15 text-success",
+    icon: "bg-success-soft text-success-onSoft",
     blob: "bg-success",
   },
   accent: {
+    /*
+      accent از تم فعال می‌آید و ممکن است روشن باشد.
+      برچسب را به foreground می‌بریم چون muted-foreground روی
+      برخی تم‌ها فقط ۳.۸ کنتراست می‌داد.
+    */
     card: "bg-accent text-accent-foreground border-border",
-    label: "text-muted-foreground",
+    label: "text-foreground/75",
     value: "text-foreground",
     sub: "text-muted-foreground",
     icon: "bg-primary/10 text-primary",
@@ -44,10 +49,10 @@ const kpiToneClass = {
   },
   info: {
     card: "bg-info-soft text-foreground border-info/20",
-    label: "text-info/80",
+    label: "text-info-onSoft",
     value: "text-foreground",
     sub: "text-muted-foreground",
-    icon: "bg-info/15 text-info",
+    icon: "bg-info-soft text-info-onSoft",
     blob: "bg-info",
   },
 } as const;

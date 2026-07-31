@@ -305,7 +305,7 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
               {sale.discount > 0 && <div className="flex justify-between text-destructive"><span>تخفیف</span><span>-{formatToman(sale.discount, false)}</span></div>}
               {sale.tax > 0 && <div className="flex justify-between text-muted-foreground"><span>مالیات</span><span>{formatToman(sale.tax, false)}</span></div>}
               <div className="flex justify-between border-t border-border pt-2 text-base font-bold text-foreground"><span>مبلغ نهایی</span><span>{formatToman(sale.total ?? 0, false)}</span></div>
-              <div className="flex justify-between text-success"><span>پرداخت‌شده</span><span>{formatToman(paidTotal, false)}</span></div>
+              <div className="flex justify-between text-success-onSoft"><span>پرداخت‌شده</span><span>{formatToman(paidTotal, false)}</span></div>
               {balance > 0 && <div className="flex justify-between text-destructive font-bold"><span>مانده</span><span>{formatToman(balance, false)}</span></div>}
             </div>
           </div>

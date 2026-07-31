@@ -148,7 +148,7 @@ export default function DashboardPage() {
         >
           <Plus size={18} />
           <span className="hidden sm:inline">فروش جدید</span>
-          <span className="hidden rounded bg-card/20 px-1.5 py-0.5 text-[10px] lg:inline">F2</span>
+          <span className="hidden rounded bg-primary-foreground px-1.5 py-0.5 text-[10px] font-bold text-primary lg:inline">F2</span>
         </button>
       </div>
 

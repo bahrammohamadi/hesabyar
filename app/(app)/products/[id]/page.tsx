@@ -201,7 +201,7 @@ function ProductInfo({ product, variants, onEdit }: { product: any; variants: an
     <div className="space-y-4">
       <div className="card p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-foreground">اطلاعات کالا</h3>
+          <h2 className="font-semibold text-foreground">اطلاعات کالا</h2>
           <button onClick={onEdit} className="text-sm text-primary hover:underline">ویرایش</button>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

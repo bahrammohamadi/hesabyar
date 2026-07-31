@@ -67,7 +67,11 @@ export function EmptyState({
       <div className="w-14 h-14 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center mb-4">
         {Icon ? <Icon size={26} /> : <Inbox size={26} />}
       </div>
-      <h3 className="font-semibold text-foreground">{displayTitle}</h3>
+      {/*
+        عمداً p است نه h3: این یک «حالت خالی» است، نه سرفصل بخش.
+        h3 اینجا ساختار عناوین صفحه را می‌شکست (heading-order).
+      */}
+      <p className="font-semibold text-foreground">{displayTitle}</p>
       {description && <p className="text-sm text-muted-foreground mt-1 max-w-sm">{description}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
