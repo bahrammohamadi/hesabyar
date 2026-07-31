@@ -36,8 +36,15 @@ export function Modal({
 
   return createPortal(
     <div className="fixed inset-0 flex items-end sm:items-center justify-center p-0 sm:p-4" style={{ zIndex: "var(--z-modal)" }}>
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="absolute inset-0 bg-foreground/40" onClick={onClose} aria-hidden />
+      {/*
+        role=dialog + aria-modal یک landmark می‌سازد؛ بدون آن، محتوای
+        مودال «خارج از landmark» شمرده می‌شد (region violation).
+      */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={typeof title === "string" ? title : undefined}
         className={cn(
           "relative w-full overflow-hidden rounded-t-[24px] bg-card shadow-2xl max-h-[92vh] sm:rounded-2xl",
           mobileFullscreen ? "flex h-[92vh] flex-col sm:h-auto" : "overflow-y-auto",
@@ -45,8 +52,8 @@ export function Modal({
         )}
       >
         <div className="sticky top-0 z-10 shrink-0 bg-card border-b border-border px-5 py-4 flex items-center justify-between">
-          <h3 className="font-semibold text-foreground">{title}</h3>
-          <button onClick={onClose} className="text-muted-foreground hover:text-muted-foreground text-xl leading-none">
+          <h2 className="font-semibold text-foreground">{title}</h2>
+          <button onClick={onClose} aria-label="بستن" className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground text-xl leading-none">
             ×
           </button>
         </div>
