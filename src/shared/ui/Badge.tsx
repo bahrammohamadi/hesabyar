@@ -7,10 +7,10 @@ export type BadgeTone = "neutral" | "success" | "warning" | "danger" | "info" | 
 
 const toneClass: Record<BadgeTone, string> = {
   neutral: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300",
-  success: "bg-success-soft text-success border-success/20",
-  warning: "bg-warning-soft text-warning border-warning/25",
+  success: "bg-success-soft text-success-onSoft border-success/25",
+  warning: "bg-warning-soft text-warning-onSoft border-warning/30",
   danger: "bg-rose-50 text-destructive border-destructive/20 dark:bg-rose-950/30",
-  info: "bg-info-soft text-info border-info/20",
+  info: "bg-info-soft text-info-onSoft border-info/25",
   primary: "bg-primary/10 text-primary border-primary/20",
 };
 

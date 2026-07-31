@@ -206,7 +206,7 @@ function PlanCard({ plan }: { plan: MarketingPlan }) {
   return (
     <div
       className={[
-        "relative flex h-full flex-col rounded-[1.75rem] border p-5 shadow-sm transition",
+        "relative flex h-full flex-col rounded-2xl border p-5 shadow-sm transition",
         featured
           ? "border-primary bg-primary text-primary-foreground shadow-md transition-transform hover:-translate-y-0.5"
           : "border-border bg-card hover:-translate-y-0.5 hover:shadow-md",
@@ -228,13 +228,13 @@ function PlanCard({ plan }: { plan: MarketingPlan }) {
           {plan.price}
         </span>
         {plan.unit && (
-          <span className={`text-[11px] ${featured ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+          <span className={`text-[11px] ${featured ? "text-primary-foreground/85" : "text-muted-foreground"}`}>
             {plan.unit}
           </span>
         )}
       </div>
 
-      <p className={`mt-2 text-xs leading-6 ${featured ? "text-primary-foreground/75" : "text-muted-foreground"}`}>
+      <p className={`mt-2 text-xs leading-6 ${featured ? "text-primary-foreground/85" : "text-muted-foreground"}`}>
         {plan.note}
       </p>
 
@@ -272,9 +272,9 @@ function PlanCard({ plan }: { plan: MarketingPlan }) {
 export function MarketingCta() {
   return (
     <section className="px-4 pb-12 sm:px-6 sm:pb-16">
-      <div className="mx-auto max-w-5xl overflow-hidden rounded-[1.75rem] bg-primary p-6 text-center text-primary-foreground shadow-sm sm:p-10">
+      <div className="mx-auto max-w-5xl overflow-hidden rounded-2xl bg-primary p-6 text-center text-primary-foreground shadow-sm sm:p-10">
         <h2 className="text-lg font-black sm:text-2xl">همین امروز کسب‌وکارت را متحول کن</h2>
-        <p className="mx-auto mt-3 max-w-xl text-xs leading-7 text-primary-foreground/75 sm:text-sm">
+        <p className="mx-auto mt-3 max-w-xl text-xs leading-7 text-primary-foreground/85 sm:text-sm">
           {/* پلن پایه واقعاً رایگان است (جدول plans)، پس این ادعا قابل اثبات است.
               ادعای «۱۴ روز تست رایگان» حذف شد چون منطق انقضا پیاده‌سازی نشده. */}
           با پلن رایگان شروع کنید؛ بدون نیاز به کارت بانکی. هر زمان خواستید ارتقا دهید.

@@ -98,7 +98,7 @@ export function StatCard({
 
   const cardInner = (
     <div className={cn(
-      "relative overflow-hidden rounded-[24px] bg-white/90 border border-white/80 p-4 sm:p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition-all duration-200",
+      "relative overflow-hidden rounded-2xl bg-white/90 border border-white/80 p-4 sm:p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition-all duration-200",
       "hover:shadow-xl hover:shadow-slate-900/[0.08] hover:-translate-y-0.5",
       "hover:border-primary/25",
       href && "cursor-pointer group"
@@ -137,7 +137,7 @@ export function StatCard({
 
   if (href) {
     return (
-      <Link href={href} className="block no-underline focus:outline-none focus:ring-2 focus:ring-primary/30 rounded-[20px]">
+      <Link href={href} className="block no-underline focus:outline-none focus:ring-2 focus:ring-primary/30 rounded-2xl">
         {cardInner}
       </Link>
     );

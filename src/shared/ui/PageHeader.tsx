@@ -32,7 +32,7 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="mb-6 rounded-[24px] border border-white/70 bg-white/85 p-4 shadow-sm shadow-slate-900/[0.03] backdrop-blur sm:p-5">
+    <div className="mb-6 rounded-2xl border border-white/70 bg-white/85 p-4 shadow-sm shadow-slate-900/[0.03] backdrop-blur sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="mb-2 h-1 w-12 rounded-full bg-primary/70" />

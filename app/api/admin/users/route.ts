@@ -9,6 +9,15 @@ import {
 import { hit, clientIp, tooManyRequests } from "@/lib/security/rate-limit";
 import { roleHasPermission } from "@/lib/permissions";
 
+
+/*
+  این روت به هدرهای درخواست (برای rate limiting و کوکی نشست) نیاز دارد،
+  پس نباید در زمان بیلد استاتیک رندر شود. بدون این خط، Next هشدار
+  «Dynamic server usage» می‌داد.
+*/
+export const dynamic = "force-dynamic";
+
+
 const ALLOWED_ROLES = ["owner", "manager", "cashier", "inventory", "accountant"] as const;
 
 type Role = typeof ALLOWED_ROLES[number];

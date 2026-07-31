@@ -7,6 +7,15 @@ import {
 } from "@/lib/security/api-guard";
 import { hit, clientIp, tooManyRequests } from "@/lib/security/rate-limit";
 
+
+/*
+  این روت به هدرهای درخواست (برای rate limiting و کوکی نشست) نیاز دارد،
+  پس نباید در زمان بیلد استاتیک رندر شود. بدون این خط، Next هشدار
+  «Dynamic server usage» می‌داد.
+*/
+export const dynamic = "force-dynamic";
+
+
 export async function GET(request: Request) {
   try {
     // گزارش سنگین است (تا ۵۰۰۰ ردیف + چند فراخوانی Auth) → سقف پایین‌تر.
