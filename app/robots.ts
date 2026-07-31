@@ -7,7 +7,7 @@ import type { MetadataRoute } from "next";
  * در نتایج جستجو ظاهر نشوند.
  */
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://tarazoo-app.vercel.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://tarazooapp.vercel.app";
 
 export default function robots(): MetadataRoute.Robots {
   return {
