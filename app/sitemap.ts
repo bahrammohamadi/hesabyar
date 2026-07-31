@@ -7,7 +7,7 @@ import type { MetadataRoute } from "next";
  * نیامده‌اند چون نیازمند ورود هستند و نباید ایندکس شوند.
  */
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hesabyar-two.vercel.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://tarazoo-app.vercel.app";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
