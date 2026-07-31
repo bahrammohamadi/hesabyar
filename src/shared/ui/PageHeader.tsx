@@ -17,7 +17,7 @@ function HeaderHelpTip({ text }: { text?: string }) {
   return (
     <span className="group relative inline-flex align-middle">
       <button type="button" className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-primary/20 bg-primary/5 text-primary" aria-label="راهنمای این صفحه"><HelpCircle size={14} /></button>
-      <span className="pointer-events-none absolute right-0 top-8 z-[1600] hidden w-72 rounded-2xl border border-slate-200 bg-white p-3 text-right text-xs leading-6 text-slate-600 shadow-2xl group-hover:block group-focus-within:block">{text}</span>
+      <span className="pointer-events-none absolute right-0 top-8 z-[1600] hidden w-72 rounded-2xl border border-border bg-card p-3 text-right text-xs leading-6 text-muted-foreground shadow-2xl group-hover:block group-focus-within:block">{text}</span>
     </span>
   );
 }
@@ -36,8 +36,8 @@ export function PageHeader({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="mb-2 h-1 w-12 rounded-full bg-primary/70" />
-          <div className="flex items-center gap-2"><h1 className="truncate text-lg font-extrabold tracking-tight text-slate-800 sm:text-2xl">{title}</h1><HeaderHelpTip text={subtitle} /></div>
-          {subtitle && <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500 sm:text-sm">{subtitle}</p>}
+          <div className="flex items-center gap-2"><h1 className="truncate text-lg font-extrabold tracking-tight text-foreground sm:text-2xl">{title}</h1><HeaderHelpTip text={subtitle} /></div>
+          {subtitle && <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground sm:text-sm">{subtitle}</p>}
         </div>
         {action && <div className="shrink-0">{action}</div>}
       </div>

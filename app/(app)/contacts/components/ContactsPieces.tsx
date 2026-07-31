@@ -112,7 +112,7 @@ export function CrmCompositionCard({
 
   return (
     <Card className="p-4 sm:p-5">
-      <h3 className="mb-4 text-sm font-extrabold text-foreground">ترکیب مشتریان</h3>
+      <h2 className="mb-4 text-sm font-extrabold text-foreground">ترکیب مشتریان</h2>
 
       <div className="flex items-center justify-center">
         <div className="relative h-40 w-40">
@@ -176,7 +176,7 @@ export function CrmActivityCard({
   return (
     <Card className="p-4 sm:p-5">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h3 className="text-sm font-extrabold text-foreground">فعالیت‌های اخیر مشتریان</h3>
+        <h2 className="text-sm font-extrabold text-foreground">فعالیت‌های اخیر مشتریان</h2>
         {action}
       </div>
 

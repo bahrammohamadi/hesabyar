@@ -29,11 +29,11 @@ type Check = {
 };
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  pending: { label: "در انتظار", color: "bg-yellow-100 text-yellow-800" },
-  deposited: { label: "واریز شده", color: "bg-blue-100 text-blue-800" },
-  returned: { label: "برگشت خورده", color: "bg-rose-100 text-rose-800" },
-  cashed: { label: "وصول شده", color: "bg-emerald-100 text-emerald-800" },
-  cancelled: { label: "لغو شده", color: "bg-slate-100 text-slate-600" },
+  pending: { label: "در انتظار", color: "bg-warning-soft text-warning-onSoft" },
+  deposited: { label: "واریز شده", color: "bg-info-soft text-info-onSoft" },
+  returned: { label: "برگشت خورده", color: "bg-destructive/15 text-destructive" },
+  cashed: { label: "وصول شده", color: "bg-success-soft text-success-onSoft" },
+  cancelled: { label: "لغو شده", color: "bg-muted text-muted-foreground" },
 };
 
 export default function ChecksPage() {
@@ -147,7 +147,7 @@ export default function ChecksPage() {
 
       <div className="flex flex-col sm:flex-row gap-3">
         <input className="input flex-1" placeholder="جستجو شماره چک یا طرف حساب..." value={search} onChange={e => setSearch(e.target.value)} />
-        <select className="input w-auto" value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
+        <select aria-label="فیلتر نوع چک" className="input w-auto" value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
           <option value="all">همه چک‌ها</option>
           <option value="received">دریافتی</option>
           <option value="issued">صادره</option>
@@ -155,10 +155,10 @@ export default function ChecksPage() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-yellow-600">{formatToman(totalPendingReceived)}</div><div className="text-xs text-slate-500">دریافتی در انتظار</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-orange-600">{formatToman(totalPendingIssued)}</div><div className="text-xs text-slate-500">صادره در انتظار</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-emerald-600">{formatToman(receivedChecks.filter(c => c.status === "cashed").reduce((sum, c) => sum + c.amount, 0))}</div><div className="text-xs text-slate-500">وصول شده</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-rose-600">{formatToman(receivedChecks.filter(c => c.status === "returned").reduce((sum, c) => sum + c.amount, 0))}</div><div className="text-xs text-slate-500">برگشتی</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-warning-onSoft">{formatToman(totalPendingReceived)}</div><div className="text-xs text-muted-foreground">دریافتی در انتظار</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-warning-onSoft">{formatToman(totalPendingIssued)}</div><div className="text-xs text-muted-foreground">صادره در انتظار</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-success-onSoft">{formatToman(receivedChecks.filter(c => c.status === "cashed").reduce((sum, c) => sum + c.amount, 0))}</div><div className="text-xs text-muted-foreground">وصول شده</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-destructive">{formatToman(receivedChecks.filter(c => c.status === "returned").reduce((sum, c) => sum + c.amount, 0))}</div><div className="text-xs text-muted-foreground">برگشتی</div></div>
       </div>
 
       {/* Tabs */}
@@ -185,41 +185,41 @@ export default function ChecksPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="font-bold text-slate-800">{check.check_no || "بدون شماره"}</span>
+                      <span className="font-bold text-foreground">{check.check_no || "بدون شماره"}</span>
                       <span className={`badge ${statusInfo.color}`}>{statusInfo.label}</span>
-                      <span className="badge bg-slate-100 text-slate-600">{check.type === "received" ? "دریافتی" : "صادره"}</span>
+                      <span className="badge bg-muted text-muted-foreground">{check.type === "received" ? "دریافتی" : "صادره"}</span>
                     </div>
-                    <div className="text-sm text-slate-600 mb-1">
+                    <div className="text-sm text-muted-foreground mb-1">
                       {check.contact_id ? (
                         <span className="inline-flex items-center gap-2">
                           <EntityLink type="contact" id={check.contact_id}>{check.contact?.name ?? "طرف حساب"}</EntityLink>
                           <EntityActionMenu type="contact" id={check.contact_id} label={check.contact?.name ?? "طرف حساب"} />
                         </span>
                       ) : (
-                        <span className="text-slate-400">بدون طرف حساب</span>
+                        <span className="text-muted-foreground">بدون طرف حساب</span>
                       )}
                     </div>
-                    <div className="text-xs text-slate-400">
+                    <div className="text-xs text-muted-foreground">
                       {check.bank_name && `بانک: ${check.bank_name}`}
                       {check.bank_name && check.account_no && " • "}
                       {check.account_no && `شماره: ${check.account_no}`}
                     </div>
-                    <div className="text-xs text-slate-400 mt-1">صدور: {toJalali(check.issue_date)} • سررسید: {toJalali(check.due_date)}</div>
+                    <div className="text-xs text-muted-foreground mt-1">صدور: {toJalali(check.issue_date)} • سررسید: {toJalali(check.due_date)}</div>
                   </div>
                   <div className="text-left">
-                    <div className="text-lg font-bold text-slate-800">{formatToman(check.amount)}</div>
-                    <div className="text-xs text-slate-400">تومان</div>
+                    <div className="text-lg font-bold text-foreground">{formatToman(check.amount)}</div>
+                    <div className="text-xs text-muted-foreground">تومان</div>
                   </div>
                 </div>
-                <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-slate-100">
+                <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-border">
                   {check.status === "pending" && (
                     <>
-                      <button onClick={() => updateCheckStatus(check.id, "cashed")} className="btn-secondary text-sm text-emerald-600"><CheckCircle size={14} /> {check.type === "received" ? "وصول" : "پاس"}</button>
-                      {check.type === "received" && <button onClick={() => updateCheckStatus(check.id, "returned")} className="btn-secondary text-sm text-rose-600"><XCircle size={14} /> برگشت</button>}
+                      <button onClick={() => updateCheckStatus(check.id, "cashed")} className="btn-secondary text-sm text-success-onSoft"><CheckCircle size={14} /> {check.type === "received" ? "وصول" : "پاس"}</button>
+                      {check.type === "received" && <button onClick={() => updateCheckStatus(check.id, "returned")} className="btn-secondary text-sm text-destructive"><XCircle size={14} /> برگشت</button>}
                     </>
                   )}
                   {check.status === "deposited" && (
-                    <button onClick={() => updateCheckStatus(check.id, "cashed")} className="btn-secondary text-sm text-emerald-600"><CheckCircle size={14} /> وصول شد</button>
+                    <button onClick={() => updateCheckStatus(check.id, "cashed")} className="btn-secondary text-sm text-success-onSoft"><CheckCircle size={14} /> وصول شد</button>
                   )}
                   <button onClick={() => deleteCheck(check.id)} className="btn-danger text-sm"><Trash2 size={14} /></button>
                 </div>

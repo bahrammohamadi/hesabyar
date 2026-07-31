@@ -37,27 +37,27 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
       <div className="flex h-16 items-center justify-between gap-3 px-3 sm:px-5 lg:px-6">
         <div className="flex min-w-0 items-center gap-3">
           <div className="min-w-0">
-            <div className="text-sm font-extrabold text-slate-800 lg:hidden">{BRAND_NAME}</div>
-            <div className="hidden text-sm text-slate-500 sm:block">{fullJalali()}</div>
+            <div className="text-sm font-extrabold text-foreground lg:hidden">{BRAND_NAME}</div>
+            <div className="hidden text-sm text-muted-foreground sm:block">{fullJalali()}</div>
           </div>
         </div>
 
         <GlobalSearchBar />
 
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-          <button className="hidden h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-500 hover:text-primary sm:flex" aria-label="اعلان‌ها">
+          <button className="hidden h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground hover:text-primary sm:flex" aria-label="اعلان‌ها">
             <Bell size={18} />
           </button>
-          <div className="hidden min-w-0 items-center gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 px-3 py-2 text-sm text-slate-700 sm:flex">
+          <div className="hidden min-w-0 items-center gap-2 rounded-2xl border border-border bg-muted/80 px-3 py-2 text-sm text-foreground sm:flex">
             <UserCircle size={18} className="shrink-0 text-primary" />
             <div className="min-w-0 leading-tight text-right">
               <div className="max-w-36 truncate font-bold">{currentUser?.name ?? "کاربر"}</div>
-              {currentUser?.email && <div className="max-w-40 truncate text-[11px] text-slate-400" dir="ltr">{displayUsername(currentUser.email)}</div>}
+              {currentUser?.email && <div className="max-w-40 truncate text-[11px] text-muted-foreground" dir="ltr">{displayUsername(currentUser.email)}</div>}
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="flex h-11 items-center justify-center gap-2 rounded-2xl px-2.5 text-sm text-slate-600 transition-colors hover:bg-rose-50 hover:text-rose-600 sm:px-3"
+            className="flex h-11 items-center justify-center gap-2 rounded-2xl px-2.5 text-sm text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive sm:px-3"
           >
             <LogOut size={18} />
             <span className="hidden sm:inline">خروج</span>

@@ -17,10 +17,10 @@ export function SettingsContent({ section = "all" }: { section?: "all" | "catalo
   if (section === "all") {
     const cards = [
       { title: "عمومی", desc: "اطلاعات کسب‌وکار، ظاهر برنامه و تنظیمات عمومی فاکتور", href: "/settings/general", icon: Building2, tone: "bg-primary/10 text-primary" },
-      { title: "کاربران و دسترسی‌ها", desc: "ساخت کاربر، نقش‌ها و سطح دسترسی", href: "/settings/users", icon: Shield, tone: "bg-violet-50 text-violet-600" },
-      { title: "مالی", desc: "حساب‌ها، دسته‌بندی هزینه و روش‌های پرداخت", href: "/settings/accounts", icon: Landmark, tone: "bg-emerald-50 text-emerald-600" },
-      { title: "کاتالوگ", desc: "دسته‌بندی کالا، برندها و لیست قیمت‌ها", href: "/settings/catalog", icon: FolderTree, tone: "bg-amber-50 text-amber-600" },
-      { title: "پیشرفته", desc: "گزارش فعالیت، تنظیمات باشگاه و امکانات مدیریتی", href: "/activity", icon: SlidersHorizontal, tone: "bg-slate-100 text-slate-700" },
+      { title: "کاربران و دسترسی‌ها", desc: "ساخت کاربر، نقش‌ها و سطح دسترسی", href: "/settings/users", icon: Shield, tone: "bg-primary/10 text-primary" },
+      { title: "مالی", desc: "حساب‌ها، دسته‌بندی هزینه و روش‌های پرداخت", href: "/settings/accounts", icon: Landmark, tone: "bg-success-soft text-success-onSoft" },
+      { title: "کاتالوگ", desc: "دسته‌بندی کالا، برندها و لیست قیمت‌ها", href: "/settings/catalog", icon: FolderTree, tone: "bg-warning-soft text-warning-onSoft" },
+      { title: "پیشرفته", desc: "گزارش فعالیت، تنظیمات باشگاه و امکانات مدیریتی", href: "/activity", icon: SlidersHorizontal, tone: "bg-muted text-foreground" },
     ];
     return (
       <div className="space-y-5">
@@ -31,13 +31,13 @@ export function SettingsContent({ section = "all" }: { section?: "all" | "catalo
             return (
               <Link key={card.title} href={card.href} className="group rounded-[26px] border border-white/80 bg-white/90 p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/[0.08]">
                 <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-2xl ${card.tone}`}><Icon size={22} /></div>
-                <h2 className="text-base font-black text-slate-800 group-hover:text-primary">{card.title}</h2>
-                <p className="mt-2 text-xs leading-6 text-slate-500">{card.desc}</p>
+                <h2 className="text-base font-black text-foreground group-hover:text-primary">{card.title}</h2>
+                <p className="mt-2 text-xs leading-6 text-muted-foreground">{card.desc}</p>
               </Link>
             );
           })}
         </div>
-        <div className="rounded-[24px] border border-primary/15 bg-primary/[0.04] p-4 text-sm text-slate-600">
+        <div className="rounded-[24px] border border-primary/15 bg-primary/[0.04] p-4 text-sm text-muted-foreground">
           <div className="mb-1 flex items-center gap-2 font-extrabold text-primary"><Sparkles size={16} /> راهنما</div>
           مسیرهای زیرین حذف نشده‌اند؛ این صفحه فقط نقطه ورود تنظیمات را ساده‌تر می‌کند.
         </div>
@@ -84,7 +84,7 @@ function ThemeSettings() {
 
   return (
     <div className="rounded-[24px] border border-white/80 bg-white/90 p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur">
-      <div className="flex items-center gap-2 mb-4 font-semibold text-slate-800">
+      <div className="flex items-center gap-2 mb-4 font-semibold text-foreground">
         <Palette size={18} /> تم رنگی نرم‌افزار
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">
@@ -93,13 +93,13 @@ function ThemeSettings() {
             key={theme.id}
             type="button"
             onClick={() => choose(theme.id)}
-            className={`text-right rounded-2xl border p-4 transition hover:shadow-sm ${selected === theme.id ? "border-primary bg-primary/[0.06]" : "border-slate-200 bg-white hover:border-primary/20"}`}
+            className={`text-right rounded-2xl border p-4 transition hover:shadow-sm ${selected === theme.id ? "border-primary bg-primary/[0.06]" : "border-border bg-white hover:border-primary/20"}`}
           >
             <div className="flex gap-1 mb-3">
               {theme.swatches.map((color) => <span key={color} className="w-7 h-7 rounded-full border border-white shadow-sm" style={{ backgroundColor: color }} />)}
             </div>
-            <div className="font-bold text-sm text-slate-800">{theme.name}</div>
-            <div className="text-xs text-slate-500 mt-1 leading-5">{theme.description}</div>
+            <div className="font-bold text-sm text-foreground">{theme.name}</div>
+            <div className="text-xs text-muted-foreground mt-1 leading-5">{theme.description}</div>
           </button>
         ))}
       </div>
@@ -178,7 +178,7 @@ function ManageableList({
 
   return (
     <div className="rounded-[24px] border border-white/80 bg-white/90 p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur">
-      <div className="flex items-center gap-2 mb-4 font-semibold text-slate-800">
+      <div className="flex items-center gap-2 mb-4 font-semibold text-foreground">
         {icon} {title}
       </div>
 
@@ -205,7 +205,7 @@ function ManageableList({
             data.map((d) => (
               <div
                 key={d.id}
-                className="flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-50 group"
+                className="flex items-center justify-between p-2.5 rounded-lg hover:bg-muted group"
               >
                 {editingId === d.id ? (
                   <div className="flex items-center gap-2 flex-1">
@@ -216,20 +216,20 @@ function ManageableList({
                       onKeyDown={(e) => { if (e.key === "Enter") updateItem(d.id); if (e.key === "Escape") setEditingId(null); }}
                       autoFocus
                     />
-                    <button onClick={() => updateItem(d.id)} disabled={saving} className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg">
+                    <button onClick={() => updateItem(d.id)} disabled={saving} className="p-1.5 text-success-onSoft hover:bg-success-soft rounded-lg">
                       <Check size={16} />
                     </button>
-                    <button onClick={() => setEditingId(null)} className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-lg">
+                    <button onClick={() => setEditingId(null)} className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg">
                       <X size={16} />
                     </button>
                   </div>
                 ) : (
                   <>
-                    <span className="text-sm text-slate-700">{d.name}</span>
+                    <span className="text-sm text-foreground">{d.name}</span>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => { setEditingId(d.id); setEditName(d.name); }}
-                        className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/[0.06] rounded-lg"
+                        className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/[0.06] rounded-lg"
                         title="ویرایش"
                       >
                         <Pencil size={14} />
@@ -237,7 +237,7 @@ function ManageableList({
                       <button
                         onClick={() => deleteItem(d.id)}
                         disabled={deletingId === d.id}
-                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"
+                        className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
                         title="حذف"
                       >
                         <Trash2 size={14} />
@@ -248,7 +248,7 @@ function ManageableList({
               </div>
             ))
           ) : (
-            <span className="text-sm text-slate-400">موردی ثبت نشده.</span>
+            <span className="text-sm text-muted-foreground">موردی ثبت نشده.</span>
           )}
         </div>
       )}
@@ -288,7 +288,7 @@ function AccountsManager({ orgId, branchId }: { orgId: string | null; branchId: 
   return (
     <div className="rounded-[24px] border border-white/80 bg-white/90 p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 font-semibold text-slate-800">
+        <div className="flex items-center gap-2 font-semibold text-foreground">
           <Landmark size={18} /> صندوق و حساب‌های بانکی
         </div>
         <button onClick={() => setModalOpen(true)} className="btn btn-primary text-sm py-2 px-3">
@@ -301,20 +301,20 @@ function AccountsManager({ orgId, branchId }: { orgId: string | null; branchId: 
       ) : (
         <div className="space-y-2">
           {data?.map((a) => (
-            <div key={a.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition group">
+            <div key={a.id} className="flex items-center justify-between p-3 rounded-lg bg-muted hover:bg-muted transition group">
               <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${a.type === "cash" ? "bg-emerald-100 text-emerald-600" : "bg-blue-100 text-blue-600"}`}>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${a.type === "cash" ? "bg-success-soft text-success-onSoft" : "bg-info-soft text-info-onSoft"}`}>
                   <Landmark size={16} />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-slate-800">{a.name}</div>
-                  <div className="text-xs text-slate-400">{a.type === "cash" ? "صندوق (نقد)" : "بانک"}</div>
+                  <div className="text-sm font-medium text-foreground">{a.name}</div>
+                  <div className="text-xs text-muted-foreground">{a.type === "cash" ? "صندوق (نقد)" : "بانک"}</div>
                 </div>
               </div>
               <button
                 onClick={() => deleteAccount(a.id)}
                 disabled={deletingId === a.id}
-                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                 title="حذف"
               >
                 <Trash2 size={14} />
@@ -322,7 +322,7 @@ function AccountsManager({ orgId, branchId }: { orgId: string | null; branchId: 
             </div>
           ))}
           {!data?.length && (
-            <span className="text-sm text-slate-400">حسابی ثبت نشده.</span>
+            <span className="text-sm text-muted-foreground">حسابی ثبت نشده.</span>
           )}
         </div>
       )}
@@ -391,7 +391,7 @@ function AccountModal({
         </div>
         <div>
           <label className="label">نوع</label>
-          <select className="input" value={type} onChange={(e) => setType(e.target.value)}>
+          <select aria-label="نوع" className="input" value={type} onChange={(e) => setType(e.target.value)}>
             <option value="cash">صندوق (نقد)</option>
             <option value="bank">بانک</option>
           </select>
@@ -408,7 +408,7 @@ function AccountModal({
             </div>
           </>
         )}
-        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
+        {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm px-4 py-3">{error}</div>}
         <button onClick={save} disabled={saving || !name.trim()} className="btn-primary w-full">
           {saving && <Loader2 className="animate-spin" size={18} />} ذخیره
         </button>
@@ -477,24 +477,24 @@ function PermissionTreeEditor({ value, disabled, onChange }: { value: string[]; 
     const checked = hasAll(effective, groupPermissions);
     const indeterminate = checkedChildren > 0 && !checked;
     return (
-      <div key={group.key} className="rounded-2xl border border-slate-100 bg-white p-3">
+      <div key={group.key} className="rounded-2xl border border-border bg-white p-3">
         <label className="flex cursor-pointer items-center justify-between gap-3">
-          <span className="font-extrabold text-slate-800">{group.label}</span>
+          <span className="font-extrabold text-foreground">{group.label}</span>
           <TreeCheckbox checked={checked} indeterminate={indeterminate} disabled={disabled} onChange={(nextChecked) => onChange(togglePermissions(effective, groupPermissions, nextChecked))} />
         </label>
-        {group.warning && <div className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-700">⚠️ {group.warning}</div>}
-        {group.recommendedWith?.length ? <div className="mt-2 text-[11px] text-slate-400">پیشنهاد پیش‌نیاز: {group.recommendedWith.join("، ")}</div> : null}
+        {group.warning && <div className="mt-2 rounded-xl bg-warning-soft px-3 py-2 text-xs leading-5 text-warning-onSoft">⚠️ {group.warning}</div>}
+        {group.recommendedWith?.length ? <div className="mt-2 text-[11px] text-muted-foreground">پیشنهاد پیش‌نیاز: {group.recommendedWith.join("، ")}</div> : null}
         {group.children?.length ? (
           <div className="mt-3 grid gap-2 md:grid-cols-2">
             {group.children.map((child) => {
               const childChecked = hasAll(effective, child.permissions);
               return (
-                <label key={child.key} className="flex cursor-pointer items-start gap-2 rounded-xl bg-slate-50 px-3 py-2 text-sm">
+                <label key={child.key} className="flex cursor-pointer items-start gap-2 rounded-xl bg-muted px-3 py-2 text-sm">
                   <TreeCheckbox checked={childChecked} disabled={disabled} onChange={(nextChecked) => onChange(togglePermissions(effective, child.permissions, nextChecked))} />
                   <span className="min-w-0 flex-1">
-                    <span className="block font-medium text-slate-700">{child.label}</span>
-                    {child.warning && <span className="mt-1 block text-[11px] leading-5 text-amber-700">⚠️ {child.warning}</span>}
-                    {child.recommendedWith?.length ? <span className="mt-1 block text-[11px] text-slate-400">پیشنهاد: {child.recommendedWith.join("، ")}</span> : null}
+                    <span className="block font-medium text-foreground">{child.label}</span>
+                    {child.warning && <span className="mt-1 block text-[11px] leading-5 text-warning-onSoft">⚠️ {child.warning}</span>}
+                    {child.recommendedWith?.length ? <span className="mt-1 block text-[11px] text-muted-foreground">پیشنهاد: {child.recommendedWith.join("، ")}</span> : null}
                   </span>
                 </label>
               );
@@ -549,7 +549,7 @@ function UsersAccessManager() {
   return (
     <div className="rounded-[24px] border border-white/80 bg-white/90 p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 font-semibold text-slate-800">
+        <div className="flex items-center gap-2 font-semibold text-foreground">
           <Users size={18} /> کاربران و دسترسی‌ها
         </div>
         <button onClick={() => setModalOpen(true)} className="btn-primary text-sm">
@@ -558,23 +558,23 @@ function UsersAccessManager() {
       </div>
 
       {isLoading ? <Spinner /> : error ? (
-        <div className="rounded-xl bg-rose-50 text-rose-700 text-sm p-4">{(error as Error).message}</div>
+        <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-4">{(error as Error).message}</div>
       ) : (
         <div className="space-y-3">
           {data?.map((u) => {
             const perms = u.permissions && u.permissions.length ? u.permissions : defaultPermissions(u.role);
             return (
-              <div key={u.id} className="rounded-2xl border border-slate-100 p-4">
+              <div key={u.id} className="rounded-2xl border border-border p-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
                   <div>
-                    <div className="font-medium text-slate-800">{u.name || displayUsername(u.email)}</div>
-                    <div className="text-xs text-slate-400" dir="ltr">{displayUsername(u.email)}</div>
+                    <div className="font-medium text-foreground">{u.name || displayUsername(u.email)}</div>
+                    <div className="text-xs text-muted-foreground" dir="ltr">{displayUsername(u.email)}</div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <select className="input w-36" value={u.role} onChange={(e) => updateUser(u, { role: e.target.value, permissions: defaultPermissions(e.target.value) })}>
+                    <select aria-label={`نقش کاربر ${u.name || u.email}`} className="input w-36" value={u.role} onChange={(e) => updateUser(u, { role: e.target.value, permissions: defaultPermissions(e.target.value) })}>
                       {Object.entries(ROLE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
                     </select>
-                    <button onClick={() => updateUser(u, { is_active: !u.is_active })} className={u.is_active ? "btn-secondary text-rose-600" : "btn-secondary text-emerald-600"}>
+                    <button onClick={() => updateUser(u, { is_active: !u.is_active })} className={u.is_active ? "btn-secondary text-destructive" : "btn-secondary text-success-onSoft"}>
                       {u.is_active ? "غیرفعال" : "فعال"}
                     </button>
                   </div>
@@ -628,10 +628,10 @@ function CreateUserModal({ onClose }: { onClose: () => void }) {
           <div><label className="label">نقش</label><select className="input" value={role} onChange={(e) => { setRole(e.target.value); setPermissions(defaultPermissions(e.target.value)); }}>{Object.entries(ROLE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
         </div>
         <div>
-          <div className="text-sm font-medium text-slate-700 mb-2">دسترسی‌ها</div>
+          <div className="text-sm font-medium text-foreground mb-2">دسترسی‌ها</div>
           <PermissionTreeEditor value={permissions} disabled={role === "owner"} onChange={setPermissions} />
         </div>
-        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
+        {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm px-4 py-3">{error}</div>}
         <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving && <Loader2 className="animate-spin" size={18} />} ساخت کاربر</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
       </div>
     </Modal>

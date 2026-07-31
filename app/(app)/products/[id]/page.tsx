@@ -115,7 +115,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-4">
-        <Link href="/products" className="flex items-center gap-1 text-slate-500 text-sm hover:text-primary">
+        <Link href="/products" className="flex items-center gap-1 text-muted-foreground text-sm hover:text-primary">
           <ArrowRight size={18} /> بازگشت
         </Link>
         <div className="flex gap-2">
@@ -136,36 +136,36 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
             <Package size={28} />
           </div>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-slate-800">{product.name}</h1>
-            <div className="flex flex-wrap gap-2 mt-1 text-sm text-slate-500">
-              {product.code && <span className="font-mono bg-slate-100 px-2 py-0.5 rounded">کد: {product.code}</span>}
+            <h1 className="text-2xl font-bold text-foreground">{product.name}</h1>
+            <div className="flex flex-wrap gap-2 mt-1 text-sm text-muted-foreground">
+              {product.code && <span className="font-mono bg-muted px-2 py-0.5 rounded">کد: {product.code}</span>}
               {product.category?.name && <span>دسته: {product.category.name}</span>}
               {product.brand?.name && <span>برند: {product.brand.name}</span>}
               {product.season && <span>فصل: {product.season}</span>}
             </div>
           </div>
-          <div className={`text-right shrink-0 ${low ? "text-amber-600" : "text-emerald-600"}`}>
+          <div className={`text-right shrink-0 ${low ? "text-warning-onSoft" : "text-success-onSoft"}`}>
             <div className="text-2xl font-bold">{toFaDigits(totalStock)}</div>
-            <div className="text-xs text-slate-400">موجودی</div>
+            <div className="text-xs text-muted-foreground">موجودی</div>
           </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-          <div className="bg-slate-50 rounded-xl p-3 text-center">
-            <div className="text-lg font-bold text-slate-700">{formatToman(totalStock * (product.base_sale_price ?? 0), false)}</div>
-            <div className="text-xs text-slate-400">ارزش موجودی</div>
+          <div className="bg-muted rounded-xl p-3 text-center">
+            <div className="text-lg font-bold text-foreground">{formatToman(totalStock * (product.base_sale_price ?? 0), false)}</div>
+            <div className="text-xs text-muted-foreground">ارزش موجودی</div>
           </div>
-          <div className="bg-emerald-50 rounded-xl p-3 text-center">
-            <div className="text-lg font-bold text-emerald-600">{formatToman(totalSales, false)}</div>
-            <div className="text-xs text-emerald-600">مجموع فروش</div>
+          <div className="bg-success-soft rounded-xl p-3 text-center">
+            <div className="text-lg font-bold text-success-onSoft">{formatToman(totalSales, false)}</div>
+            <div className="text-xs text-success-onSoft">مجموع فروش</div>
           </div>
-          <div className="bg-blue-50 rounded-xl p-3 text-center">
-            <div className="text-lg font-bold text-blue-600">{formatToman(profit, false)}</div>
-            <div className="text-xs text-blue-600">سود</div>
+          <div className="bg-info-soft rounded-xl p-3 text-center">
+            <div className="text-lg font-bold text-info-onSoft">{formatToman(profit, false)}</div>
+            <div className="text-xs text-info-onSoft">سود</div>
           </div>
-          <div className="bg-slate-50 rounded-xl p-3 text-center">
-            <div className="text-lg font-bold text-slate-700">{toFaDigits((saleItems ?? []).length)}</div>
-            <div className="text-xs text-slate-400">مرتبه فروش</div>
+          <div className="bg-muted rounded-xl p-3 text-center">
+            <div className="text-lg font-bold text-foreground">{toFaDigits((saleItems ?? []).length)}</div>
+            <div className="text-xs text-muted-foreground">مرتبه فروش</div>
           </div>
         </div>
       </div>
@@ -179,7 +179,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           { id: "purchases", label: `خریدها (${toFaDigits(purchaseItems?.length ?? 0)})`, icon: <Truck size={15} /> },
         ].map((tab) => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition ${activeTab === tab.id ? "bg-primary text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition ${activeTab === tab.id ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:bg-muted"}`}>
             {tab.icon} {tab.label}
           </button>
         ))}
@@ -201,7 +201,7 @@ function ProductInfo({ product, variants, onEdit }: { product: any; variants: an
     <div className="space-y-4">
       <div className="card p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-slate-700">اطلاعات کالا</h3>
+          <h3 className="font-semibold text-foreground">اطلاعات کالا</h3>
           <button onClick={onEdit} className="text-sm text-primary hover:underline">ویرایش</button>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -215,21 +215,21 @@ function ProductInfo({ product, variants, onEdit }: { product: any; variants: an
             { label: "حد کم‌موجودی", value: toFaDigits(product.low_stock_threshold ?? 3) },
             { label: "قیمت پایه فروش", value: formatToman(product.base_sale_price ?? 0, false) },
           ].map((item, i) => (
-            <div key={i} className="p-3 bg-slate-50 rounded-xl">
-              <div className="text-xs text-slate-400 mb-1">{item.label}</div>
+            <div key={i} className="p-3 bg-muted rounded-xl">
+              <div className="text-xs text-muted-foreground mb-1">{item.label}</div>
               <div className="font-medium text-sm">{item.value}</div>
             </div>
           ))}
         </div>
-        {product.description && <div className="mt-3 p-3 bg-slate-50 rounded-xl text-sm"><span className="text-slate-400">توضیحات:</span> {product.description}</div>}
+        {product.description && <div className="mt-3 p-3 bg-muted rounded-xl text-sm"><span className="text-muted-foreground">توضیحات:</span> {product.description}</div>}
       </div>
 
       <div className="card overflow-x-auto">
-        <div className="p-4 border-b border-slate-100">
-          <h3 className="font-semibold text-slate-700 flex items-center gap-2"><Tag size={16} /> تنوع‌ها ({toFaDigits(variants.length)})</h3>
+        <div className="p-4 border-b border-border">
+          <h3 className="font-semibold text-foreground flex items-center gap-2"><Tag size={16} /> تنوع‌ها ({toFaDigits(variants.length)})</h3>
         </div>
         {variants.length === 0 ? (
-          <div className="p-8 text-center text-slate-400">تنوعی ثبت نشده</div>
+          <div className="p-8 text-center text-muted-foreground">تنوعی ثبت نشده</div>
         ) : (
           <table className="table-base">
             <thead>
@@ -240,14 +240,14 @@ function ProductInfo({ product, variants, onEdit }: { product: any; variants: an
             </thead>
             <tbody>
               {variants.map((v: any) => (
-                <tr key={v.id} className="hover:bg-slate-50">
+                <tr key={v.id} className="hover:bg-muted">
                   <td className="font-medium">{v.color || "—"}</td>
                   <td>{v.size || "—"}</td>
-                  <td className="font-mono text-xs text-slate-400">{v.sku || "—"}</td>
-                  <td className="font-mono text-xs text-slate-400">{v.barcode || "—"}</td>
-                  <td className="text-emerald-600">{formatToman(v.purchase_price, false)}</td>
+                  <td className="font-mono text-xs text-muted-foreground">{v.sku || "—"}</td>
+                  <td className="font-mono text-xs text-muted-foreground">{v.barcode || "—"}</td>
+                  <td className="text-success-onSoft">{formatToman(v.purchase_price, false)}</td>
                   <td className="text-primary font-medium">{formatToman(v.sale_price, false)}</td>
-                  <td className={`font-bold ${v.stock_qty <= (product.low_stock_threshold ?? 3) ? "text-amber-600" : "text-emerald-600"}`}>{toFaDigits(v.stock_qty)}</td>
+                  <td className={`font-bold ${v.stock_qty <= (product.low_stock_threshold ?? 3) ? "text-warning-onSoft" : "text-success-onSoft"}`}>{toFaDigits(v.stock_qty)}</td>
                 </tr>
               ))}
             </tbody>
@@ -271,12 +271,12 @@ function MovementsList({ movements }: { movements: any[] }) {
             {movements.map((m: any) => {
               const isIn = m.qty >= 0;
               return (
-                <tr key={m.id} className="hover:bg-slate-50">
-                  <td><span className={`badge ${isIn ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>{isIn ? "ورود" : "خروج"}</span></td>
-                  <td className="text-slate-500 text-sm">{REASON_LABELS[m.reason] ?? m.reason}</td>
-                  <td className={`font-bold ${isIn ? "text-emerald-600" : "text-rose-600"}`}>{isIn ? "+" : ""}{toFaDigits(m.qty)}</td>
-                  <td className="text-slate-400 text-sm max-w-[150px] truncate">{m.note ?? "—"}</td>
-                  <td className="text-slate-500 text-sm">{toJalali(m.created_at)}</td>
+                <tr key={m.id} className="hover:bg-muted">
+                  <td><span className={`badge ${isIn ? "bg-success-soft text-success-onSoft" : "bg-destructive/15 text-destructive"}`}>{isIn ? "ورود" : "خروج"}</span></td>
+                  <td className="text-muted-foreground text-sm">{REASON_LABELS[m.reason] ?? m.reason}</td>
+                  <td className={`font-bold ${isIn ? "text-success-onSoft" : "text-destructive"}`}>{isIn ? "+" : ""}{toFaDigits(m.qty)}</td>
+                  <td className="text-muted-foreground text-sm max-w-[150px] truncate">{m.note ?? "—"}</td>
+                  <td className="text-muted-foreground text-sm">{toJalali(m.created_at)}</td>
                   <td>{m.ref_table === "sales" && m.ref_id ? <Link href={`/sales/${m.ref_id}`} className="text-primary text-sm hover:underline">فاکتور فروش</Link> : "—"}</td>
                 </tr>
               );
@@ -294,9 +294,9 @@ function SalesList({ items }: { items: any[] }) {
   return (
     <div>
       <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-emerald-600">{formatToman(total, false)}</div><div className="text-xs text-slate-500">مجموع فروش</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-primary">{toFaDigits(qty)}</div><div className="text-xs text-slate-500">تعداد فروخته</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-slate-600">{toFaDigits(items.length)}</div><div className="text-xs text-slate-500">فاکتور</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-success-onSoft">{formatToman(total, false)}</div><div className="text-xs text-muted-foreground">مجموع فروش</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-primary">{toFaDigits(qty)}</div><div className="text-xs text-muted-foreground">تعداد فروخته</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-muted-foreground">{toFaDigits(items.length)}</div><div className="text-xs text-muted-foreground">فاکتور</div></div>
       </div>
       <div className="card overflow-x-auto">
         {items.length === 0 ? <EmptyState title="فروشی ثبت نشده" />
@@ -305,13 +305,13 @@ function SalesList({ items }: { items: any[] }) {
             <thead><tr><th>فاکتور</th><th>مشتری</th><th>تعداد</th><th>قیمت</th><th>جمع</th><th>تاریخ</th></tr></thead>
             <tbody>
               {items.map((it: any, idx: number) => (
-                <tr key={idx} className="hover:bg-slate-50">
+                <tr key={idx} className="hover:bg-muted">
                   <td>{it.sale ? <EntityLink type="sale" id={it.sale.id}>{it.sale.invoice_no}</EntityLink> : "—"}</td>
-                  <td>{it.sale?.customer_id ? <EntityLink type="contact" id={it.sale.customer_id}>{it.sale?.customer?.name ?? "مشتری"}</EntityLink> : <span className="text-slate-400">—</span>}</td>
+                  <td>{it.sale?.customer_id ? <EntityLink type="contact" id={it.sale.customer_id}>{it.sale?.customer?.name ?? "مشتری"}</EntityLink> : <span className="text-muted-foreground">—</span>}</td>
                   <td className="font-medium">{toFaDigits(it.qty)}</td>
                   <td className="text-primary">{formatToman(it.unit_price, false)}</td>
                   <td className="font-medium">{formatToman(it.line_total, false)}</td>
-                  <td className="text-slate-500 text-sm">{toJalali(it.created_at)}</td>
+                  <td className="text-muted-foreground text-sm">{toJalali(it.created_at)}</td>
                 </tr>
               ))}
             </tbody>
@@ -328,9 +328,9 @@ function PurchasesList({ items }: { items: any[] }) {
   return (
     <div>
       <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-emerald-600">{formatToman(total, false)}</div><div className="text-xs text-slate-500">مجموع خرید</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-primary">{toFaDigits(qty)}</div><div className="text-xs text-slate-500">تعداد خریداری</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-slate-600">{toFaDigits(items.length)}</div><div className="text-xs text-slate-500">فاکتور</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-success-onSoft">{formatToman(total, false)}</div><div className="text-xs text-muted-foreground">مجموع خرید</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-primary">{toFaDigits(qty)}</div><div className="text-xs text-muted-foreground">تعداد خریداری</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-muted-foreground">{toFaDigits(items.length)}</div><div className="text-xs text-muted-foreground">فاکتور</div></div>
       </div>
       <div className="card overflow-x-auto">
         {items.length === 0 ? <EmptyState title="خریدی ثبت نشده" />
@@ -339,13 +339,13 @@ function PurchasesList({ items }: { items: any[] }) {
             <thead><tr><th>فاکتور</th><th>تامین‌کننده</th><th>تعداد</th><th>قیمت</th><th>جمع</th><th>تاریخ</th></tr></thead>
             <tbody>
               {items.map((it: any, idx: number) => (
-                <tr key={idx} className="hover:bg-slate-50">
-                  <td>{it.purchase?.id ? <EntityLink type="purchase" id={it.purchase.id}>{it.purchase?.invoice_no ?? "خرید"}</EntityLink> : <span className="text-slate-400">—</span>}</td>
-                  <td>{it.purchase?.supplier_id ? <EntityLink type="contact" id={it.purchase.supplier_id}>{it.purchase?.supplier?.name ?? "تامین‌کننده"}</EntityLink> : <span className="text-slate-400">—</span>}</td>
+                <tr key={idx} className="hover:bg-muted">
+                  <td>{it.purchase?.id ? <EntityLink type="purchase" id={it.purchase.id}>{it.purchase?.invoice_no ?? "خرید"}</EntityLink> : <span className="text-muted-foreground">—</span>}</td>
+                  <td>{it.purchase?.supplier_id ? <EntityLink type="contact" id={it.purchase.supplier_id}>{it.purchase?.supplier?.name ?? "تامین‌کننده"}</EntityLink> : <span className="text-muted-foreground">—</span>}</td>
                   <td className="font-medium">{toFaDigits(it.qty)}</td>
-                  <td className="text-slate-600">{formatToman(it.unit_price, false)}</td>
+                  <td className="text-muted-foreground">{formatToman(it.unit_price, false)}</td>
                   <td className="font-medium">{formatToman(it.line_total, false)}</td>
-                  <td className="text-slate-500 text-sm">{toJalali(it.created_at)}</td>
+                  <td className="text-muted-foreground text-sm">{toJalali(it.created_at)}</td>
                 </tr>
               ))}
             </tbody>

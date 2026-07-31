@@ -67,7 +67,7 @@ export function PosCustomerCard({
     <Card className="p-3 sm:p-4">
       <div className="mb-3 flex items-center gap-2">
         <Users size={16} className="text-primary" />
-        <h3 className="text-sm font-extrabold text-foreground">انتخاب مشتری</h3>
+        <h2 className="text-sm font-extrabold text-foreground">انتخاب مشتری</h2>
       </div>
 
       {customer ? (
@@ -124,7 +124,7 @@ export function PosCartList({
   return (
     <Card className="overflow-hidden">
       <div className="flex items-center justify-between gap-3 p-3 sm:p-4">
-        <h3 className="text-sm font-extrabold text-foreground">لیست اقلام فاکتور</h3>
+        <h2 className="text-sm font-extrabold text-foreground">لیست اقلام فاکتور</h2>
         <Badge tone={cart.length > 0 ? "primary" : "neutral"}>
           {toFaDigits(cart.length)} قلم کالا
         </Badge>

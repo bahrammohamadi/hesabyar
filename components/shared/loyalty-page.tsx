@@ -118,7 +118,7 @@ export function LoyaltyPage({ mode }: { mode: LoyaltyMode }) {
   if (mode === "settings") return <LoyaltySettingsPage settings={data?.settings ?? DEFAULT_LOYALTY_SETTINGS} orgId={orgId} />;
 
   if (isLoading) return <Spinner label="در حال بارگذاری باشگاه مشتریان..." />;
-  if (error) return <div className="rounded-xl bg-rose-50 text-rose-700 p-4 text-sm">{(error as Error).message}</div>;
+  if (error) return <div className="rounded-xl bg-destructive/10 text-destructive p-4 text-sm">{(error as Error).message}</div>;
 
   const totalPoints = rows.reduce((sum, row) => sum + row.points, 0);
   const totalWallet = rows.reduce((sum, row) => sum + row.walletCredit, 0);
@@ -141,14 +141,14 @@ export function LoyaltyPage({ mode }: { mode: LoyaltyMode }) {
       <PageHeader title={MODE[mode].title} subtitle={MODE[mode].subtitle} />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"><div className="text-xs text-slate-500">اعضا</div><div className="text-xl font-bold text-slate-800 mt-1">{toFaDigits(rows.length)}</div></div>
-        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"><div className="text-xs text-slate-500">امتیاز کل</div><div className="text-xl font-bold text-primary mt-1">{toFaDigits(totalPoints)}</div></div>
-        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"><div className="text-xs text-slate-500">اعتبار کل</div><div className="text-xl font-bold text-emerald-600 mt-1">{formatToman(totalWallet, false)}</div></div>
-        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"><div className="text-xs text-slate-500">VIP</div><div className="text-xl font-bold text-amber-600 mt-1">{toFaDigits(vipRows.length)}</div></div>
+        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"><div className="text-xs text-muted-foreground">اعضا</div><div className="text-xl font-bold text-foreground mt-1">{toFaDigits(rows.length)}</div></div>
+        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"><div className="text-xs text-muted-foreground">امتیاز کل</div><div className="text-xl font-bold text-primary mt-1">{toFaDigits(totalPoints)}</div></div>
+        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"><div className="text-xs text-muted-foreground">اعتبار کل</div><div className="text-xl font-bold text-success-onSoft mt-1">{formatToman(totalWallet, false)}</div></div>
+        <div className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"><div className="text-xs text-muted-foreground">VIP</div><div className="text-xl font-bold text-warning-onSoft mt-1">{toFaDigits(vipRows.length)}</div></div>
       </div>
 
       <div className="relative mb-4">
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
+        <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={17} />
         <input className="input pr-10" placeholder="جستجوی نام یا تلفن..." value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
 
@@ -156,7 +156,7 @@ export function LoyaltyPage({ mode }: { mode: LoyaltyMode }) {
         <div className="space-y-4">
           {campaignRows.map((campaign) => (
             <div key={campaign.title} className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg">
-              <div className="flex items-center gap-2 mb-3"><MessageCircle size={17} className="text-primary" /><div><h3 className="font-bold text-slate-800">{campaign.title}</h3><p className="text-xs text-slate-400">{campaign.hint}</p></div></div>
+              <div className="flex items-center gap-2 mb-3"><MessageCircle size={17} className="text-primary" /><div><h3 className="font-bold text-foreground">{campaign.title}</h3><p className="text-xs text-muted-foreground">{campaign.hint}</p></div></div>
               {!campaign.rows.length ? <EmptyState title="موردی وجود ندارد" /> : <CustomerRows rows={campaign.rows} onWallet={setWalletContact} />}
             </div>
           ))}
@@ -204,13 +204,13 @@ function LoyaltySettingsPage({ settings, orgId }: { settings: LoyaltySettings; o
       <PageHeader title={MODE.settings.title} subtitle={MODE.settings.subtitle} />
       <div className="rounded-[24px] border border-white/80 bg-white/90 p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div><label className="label">بازه محاسبه خریدها (روز)</label><input className="input" inputMode="numeric" value={periodDays} onChange={(e) => setPeriodDays(e.target.value)} /><p className="text-xs text-slate-400 mt-1">مثلاً 365 یعنی خریدهای یک سال اخیر</p></div>
+          <div><label className="label">بازه محاسبه خریدها (روز)</label><input className="input" inputMode="numeric" value={periodDays} onChange={(e) => setPeriodDays(e.target.value)} /><p className="text-xs text-muted-foreground mt-1">مثلاً 365 یعنی خریدهای یک سال اخیر</p></div>
           <div><label className="label">حداقل خرید VIP (تومان)</label><input className="input" inputMode="numeric" value={vipAmount} onChange={(e) => setVipAmount(e.target.value)} /></div>
           <div><label className="label">حداقل تعداد فاکتور برای وفادار</label><input className="input" inputMode="numeric" value={loyalCount} onChange={(e) => setLoyalCount(e.target.value)} /></div>
           <div><label className="label">غیرفعال بعد از چند روز بدون خرید</label><input className="input" inputMode="numeric" value={inactiveDays} onChange={(e) => setInactiveDays(e.target.value)} /></div>
           <div><label className="label">هر چند تومان = یک امتیاز</label><input className="input" inputMode="numeric" value={pointPerToman} onChange={(e) => setPointPerToman(e.target.value)} /></div>
         </div>
-        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm p-3 mt-4">{error}</div>}
+        {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3 mt-4">{error}</div>}
         <button onClick={save} disabled={saving} className="btn-primary mt-5">ذخیره قوانین باشگاه</button>
       </div>
     </div>
@@ -226,9 +226,9 @@ function CustomerRows({ rows, onWallet }: { rows: LoyaltyRow[]; onWallet: (row: 
             <div className="flex items-center gap-2 flex-wrap">
               <EntityLink type="contact" id={row.contact.id}>{row.contact.name}</EntityLink>
               <span className="badge bg-primary/10 text-primary">{row.segment}</span>
-              <span className="badge bg-amber-100 text-amber-700"><Gift size={12} /> {toFaDigits(row.points)} امتیاز</span>
+              <span className="badge bg-warning-soft text-warning-onSoft"><Gift size={12} /> {toFaDigits(row.points)} امتیاز</span>
             </div>
-            <div className="text-xs text-slate-400 mt-1 flex flex-wrap gap-3">
+            <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-3">
               {row.contact.phone && <PhoneLink phone={row.contact.phone} />}
               <span>فاکتور: {toFaDigits(row.count)}</span>
               <span>آخرین خرید: {row.lastDate ? toJalali(row.lastDate) : "—"}</span>
@@ -268,10 +268,10 @@ function WalletModal({ row, onClose }: { row: LoyaltyRow; onClose: () => void })
   return (
     <Modal open onClose={onClose} title="اعتبار مشتری" size="md">
       <div className="space-y-4">
-        <div className="rounded-xl bg-slate-50 p-3"><EntityLink type="contact" id={row.contact.id}>{row.contact.name}</EntityLink><div className="text-xs text-slate-400 mt-1">اعتبار فعلی: {formatToman(row.walletCredit)}</div></div>
+        <div className="rounded-xl bg-muted p-3"><EntityLink type="contact" id={row.contact.id}>{row.contact.name}</EntityLink><div className="text-xs text-muted-foreground mt-1">اعتبار فعلی: {formatToman(row.walletCredit)}</div></div>
         <div><label className="label">اعتبار جدید (تومان)</label><input className="input" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} /></div>
         <div><label className="label">توضیح</label><input className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
-        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm p-3">{error}</div>}
+        {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3">{error}</div>}
         <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">ذخیره اعتبار</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
       </div>
     </Modal>

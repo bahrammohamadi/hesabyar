@@ -50,12 +50,12 @@ function scoreAscending(value: number, values: number[]) {
 
 function labelFor(r: number, f: number, m: number) {
   const sum = r + f + m;
-  if (r >= 4 && f >= 4 && m >= 4) return { label: "قهرمان", hint: "حفظ با مزایا و پیام اختصاصی", tone: "bg-emerald-100 text-emerald-700" };
+  if (r >= 4 && f >= 4 && m >= 4) return { label: "قهرمان", hint: "حفظ با مزایا و پیام اختصاصی", tone: "bg-success-soft text-success-onSoft" };
   if (r >= 4 && f >= 3) return { label: "وفادار", hint: "پیشنهاد خرید مکمل", tone: "bg-primary/10 text-primary" };
-  if (r <= 2 && f >= 4) return { label: "در خطر ریزش", hint: "کمپین بازگشت فوری", tone: "bg-rose-100 text-rose-700" };
-  if (r <= 2 && m >= 4) return { label: "ارزشمند خوابیده", hint: "پیام شخصی‌سازی‌شده", tone: "bg-amber-100 text-amber-700" };
-  if (sum <= 5) return { label: "کم‌فعال", hint: "کمپین معرفی/تخفیف سبک", tone: "bg-slate-100 text-slate-600" };
-  return { label: "عادی", hint: "نگهداری و پیگیری معمول", tone: "bg-blue-100 text-blue-700" };
+  if (r <= 2 && f >= 4) return { label: "در خطر ریزش", hint: "کمپین بازگشت فوری", tone: "bg-destructive/15 text-destructive" };
+  if (r <= 2 && m >= 4) return { label: "ارزشمند خوابیده", hint: "پیام شخصی‌سازی‌شده", tone: "bg-warning-soft text-warning-onSoft" };
+  if (sum <= 5) return { label: "کم‌فعال", hint: "کمپین معرفی/تخفیف سبک", tone: "bg-muted text-muted-foreground" };
+  return { label: "عادی", hint: "نگهداری و پیگیری معمول", tone: "bg-info-soft text-info-onSoft" };
 }
 
 export default function RfmPage() {
@@ -136,24 +136,24 @@ export default function RfmPage() {
       <div className="card p-4 mb-4 grid grid-cols-1 md:grid-cols-4 gap-3">
         <div><label className="label">از تاریخ</label><DatePicker value={from} onChange={setFrom} /></div>
         <div><label className="label">تا تاریخ</label><DatePicker value={to} onChange={setTo} /></div>
-        <div className="rounded-xl bg-slate-50 p-3"><div className="text-xs text-slate-500">مشتریان تحلیل‌شده</div><div className="font-bold text-slate-800 mt-1">{toFaDigits(rows.length)}</div></div>
-        <div className="rounded-xl bg-slate-50 p-3"><div className="text-xs text-slate-500">قهرمان‌ها</div><div className="font-bold text-emerald-600 mt-1">{toFaDigits(rows.filter((r) => r.segment.label === "قهرمان").length)}</div></div>
+        <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">مشتریان تحلیل‌شده</div><div className="font-bold text-foreground mt-1">{toFaDigits(rows.length)}</div></div>
+        <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">قهرمان‌ها</div><div className="font-bold text-success-onSoft mt-1">{toFaDigits(rows.filter((r) => r.segment.label === "قهرمان").length)}</div></div>
       </div>
 
-      {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-rose-50 text-rose-700 p-4 text-sm">{(error as Error).message}</div> : rows.length === 0 ? <EmptyState icon={Target} title="داده‌ای برای تحلیل وجود ندارد" /> : (
+      {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-destructive/10 text-destructive p-4 text-sm">{(error as Error).message}</div> : rows.length === 0 ? <EmptyState icon={Target} title="داده‌ای برای تحلیل وجود ندارد" /> : (
         <DataTable
           rows={rows}
           keyExtractor={(row) => row.contact?.id ?? row.contact?.name ?? "unknown"}
           className="bg-white/90"
           columns={[
-            { key: "contact", header: "مشتری", render: (row) => <><EntityLink type="contact" id={row.contact?.id}>{row.contact?.name ?? "مشتری"}</EntityLink>{row.contact?.phone && <div className="text-xs text-slate-400"><PhoneLink phone={row.contact.phone} /></div>}</> },
-            { key: "last", header: "آخرین خرید", render: (row) => <>{row.lastDate ? toJalali(row.lastDate) : "—"}<div className="text-xs text-slate-400">{toFaDigits(row.recencyDays)} روز قبل</div></> },
+            { key: "contact", header: "مشتری", render: (row) => <><EntityLink type="contact" id={row.contact?.id}>{row.contact?.name ?? "مشتری"}</EntityLink>{row.contact?.phone && <div className="text-xs text-muted-foreground"><PhoneLink phone={row.contact.phone} /></div>}</> },
+            { key: "last", header: "آخرین خرید", render: (row) => <>{row.lastDate ? toJalali(row.lastDate) : "—"}<div className="text-xs text-muted-foreground">{toFaDigits(row.recencyDays)} روز قبل</div></> },
             { key: "r", header: "R", render: (row) => toFaDigits(row.rScore) },
             { key: "f", header: "F", render: (row) => toFaDigits(row.fScore) },
             { key: "m", header: "M", render: (row) => toFaDigits(row.mScore) },
-            { key: "rfm", header: "کد RFM", render: (row) => <span className="font-bold text-slate-800">{toFaDigits(row.rfm)}</span> },
+            { key: "rfm", header: "کد RFM", render: (row) => <span className="font-bold text-foreground">{toFaDigits(row.rfm)}</span> },
             { key: "segment", header: "گروه", render: (row) => <span className={`badge ${row.segment.tone}`}>{row.segment.label}</span> },
-            { key: "hint", header: "اقدام پیشنهادی", render: (row) => <span className="text-slate-500 text-sm">{row.segment.hint}</span> },
+            { key: "hint", header: "اقدام پیشنهادی", render: (row) => <span className="text-muted-foreground text-sm">{row.segment.hint}</span> },
             { key: "action", header: "عملیات", render: (row) => <EntityActionMenu type="contact" id={row.contact?.id} label={row.contact?.name} phone={row.contact?.phone} /> },
           ]}
         />

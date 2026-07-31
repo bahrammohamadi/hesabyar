@@ -39,14 +39,14 @@ export function Modal({
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div
         className={cn(
-          "relative w-full overflow-hidden rounded-t-[24px] bg-white shadow-2xl max-h-[92vh] sm:rounded-2xl",
+          "relative w-full overflow-hidden rounded-t-[24px] bg-card shadow-2xl max-h-[92vh] sm:rounded-2xl",
           mobileFullscreen ? "flex h-[92vh] flex-col sm:h-auto" : "overflow-y-auto",
           size === "xl" ? "sm:max-w-6xl" : size === "lg" ? "sm:max-w-2xl" : "sm:max-w-md"
         )}
       >
-        <div className="sticky top-0 z-10 shrink-0 bg-white border-b border-slate-100 px-5 py-4 flex items-center justify-between">
-          <h3 className="font-semibold text-slate-800">{title}</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-xl leading-none">
+        <div className="sticky top-0 z-10 shrink-0 bg-card border-b border-border px-5 py-4 flex items-center justify-between">
+          <h3 className="font-semibold text-foreground">{title}</h3>
+          <button onClick={onClose} className="text-muted-foreground hover:text-muted-foreground text-xl leading-none">
             ×
           </button>
         </div>

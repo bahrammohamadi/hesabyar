@@ -20,7 +20,7 @@ export function PortalMenu({ anchorRef, open, onClose, children }: { anchorRef: 
   return createPortal(
     <>
       <button className="fixed inset-0 z-[1250] bg-transparent" onClick={onClose} aria-label="بستن منو" />
-      <div className="fixed z-[1260] rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl" style={{ top: style.top, left: style.left, width: style.width }} dir="rtl">
+      <div className="fixed z-[1260] rounded-2xl border border-border bg-card p-2 shadow-2xl" style={{ top: style.top, left: style.left, width: style.width }} dir="rtl">
         {children}
       </div>
     </>,

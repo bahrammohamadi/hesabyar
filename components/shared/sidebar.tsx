@@ -162,26 +162,26 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
       )}
 
       <aside className={cn(
-        "fixed lg:sticky top-0 right-0 h-screen w-64 bg-white border-l border-slate-200 flex flex-col transition-transform duration-200",
+        "fixed lg:sticky top-0 right-0 h-screen w-64 bg-card border-l border-border flex flex-col transition-transform duration-200",
         open ? "translate-x-0" : "translate-x-full lg:translate-x-0"
       )}
         style={{ zIndex: "var(--z-sidebar)" }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-100">
+        <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-2">
             <img 
               src="/logo.png" 
               alt={BRAND_NAME} 
-              className="w-9 h-9 rounded-xl object-contain bg-white border border-slate-100"
+              className="w-9 h-9 rounded-xl object-contain bg-card border border-border"
               onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.3'; }}
             />
             <div className="leading-tight">
-              <div className="font-bold text-slate-800 text-sm">{BRAND_NAME}</div>
-              <div className="text-[10px] text-slate-400">سیستم مدیریت فروش</div>
+              <div className="font-bold text-foreground text-sm">{BRAND_NAME}</div>
+              <div className="text-[10px] text-muted-foreground">سیستم مدیریت فروش</div>
             </div>
           </div>
-          <button onClick={onClose} className="lg:hidden text-slate-400 hover:text-slate-600">
+          <button onClick={onClose} className="lg:hidden text-muted-foreground hover:text-muted-foreground">
             <X size={20} />
           </button>
         </div>
@@ -205,8 +205,8 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                     active 
                       ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" 
                       : isHighlight
-                      ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      ? "bg-success-soft text-success-onSoft hover:bg-success-soft"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}>
                   <Icon size={18} />
                   {item.label}
@@ -223,7 +223,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                     "w-full flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors",
                     active 
                       ? "bg-primary/10 text-primary" 
-                      : "text-slate-600 hover:bg-slate-50"
+                      : "text-muted-foreground hover:bg-muted"
                   )}>
                   <Icon size={18} />
                   <span className="flex-1 text-right">{item.label}</span>
@@ -234,7 +234,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                 </button>
 
                 {isExpanded && hasChildren && (
-                  <div className="mr-2 mt-1 space-y-0.5 pr-3 border-r-2 border-slate-100">
+                  <div className="mr-2 mt-1 space-y-0.5 pr-3 border-r-2 border-border">
                     {children.map((child: any) => {
                       const childActive = isActive(child.href);
                       const ChildIcon = child.icon;
@@ -244,7 +244,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                             "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
                             childActive 
                               ? "bg-primary/10 text-primary font-bold" 
-                              : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+                              : "text-muted-foreground hover:bg-muted hover:text-foreground"
                           )}>
                           <ChildIcon size={14} />
                           {child.label}
@@ -259,8 +259,8 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-100">
-          <div className="text-xs text-slate-400 text-center">
+        <div className="p-4 border-t border-border">
+          <div className="text-xs text-muted-foreground text-center">
             {BRAND_NAME} — نسخه {BRAND_VERSION}
           </div>
         </div>

@@ -32,7 +32,7 @@ export function DashboardSalesChart({
             <TrendingUp size={17} strokeWidth={2.2} />
           </div>
           <div>
-            <h3 className="text-sm font-extrabold text-foreground">روند فروش</h3>
+            <h2 className="text-sm font-extrabold text-foreground">روند فروش</h2>
             <p className="text-[11px] text-muted-foreground">۳۰ روز اخیر</p>
           </div>
         </div>

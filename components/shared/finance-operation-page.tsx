@@ -142,26 +142,26 @@ export function FinanceOperationPage({ mode }: { mode: FinanceMode }) {
             {mode === "expense" && <div><label className="label">دسته هزینه</label><select className="input" value={expenseCatId} onChange={(e) => setExpenseCatId(e.target.value)}><option value="">انتخاب...</option>{expenseCategories?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>}
             <div className="md:col-span-2"><label className="label">توضیحات</label><input className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
           </div>
-          {error && <div className="mt-3 rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
+          {error && <div className="mt-3 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>}
           <button onClick={save} disabled={saving} className="btn-primary mt-4 shadow-lg shadow-primary/20"><Plus size={16}/>{saving && <Loader2 className="animate-spin" size={16}/>} ثبت</button>
         </div>
       )}
 
       <div className="overflow-hidden rounded-[24px] border border-white/80 bg-white/90 shadow-sm shadow-slate-900/[0.04] backdrop-blur">
-        <div className="border-b border-slate-100 bg-slate-50/60 p-4 font-extrabold text-slate-800">آخرین موارد</div>
+        <div className="border-b border-border bg-muted/60 p-4 font-extrabold text-foreground">آخرین موارد</div>
         {isLoading ? <Spinner /> : !transactions?.length ? <EmptyState title="موردی ثبت نشده" /> : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-border">
             {transactions.map((t: any) => (
               <div key={t.id} className="flex items-center justify-between gap-3 p-4 transition hover:bg-primary/[0.03]">
                 <div className="min-w-0">
-                  <div className="font-medium text-slate-800">{MODE_LABEL[t.type as FinanceMode] ?? t.type}</div>
-                  <div className="text-xs text-slate-400 mt-1">
+                  <div className="font-medium text-foreground">{MODE_LABEL[t.type as FinanceMode] ?? t.type}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
                     {t.contact_id ? <EntityLink type="contact" id={t.contact_id}>{t.contact?.name ?? "طرف حساب"}</EntityLink> : t.note ?? "—"}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {t.contact_id && <EntityActionMenu type="contact" id={t.contact_id} label={t.contact?.name ?? "طرف حساب"} />}
-                  <div className="text-left"><div className="font-bold text-slate-800">{formatToman(t.amount, false)}</div><div className="text-xs text-slate-400">{toJalali(t.date)}</div></div>
+                  <div className="text-left"><div className="font-bold text-foreground">{formatToman(t.amount, false)}</div><div className="text-xs text-muted-foreground">{toJalali(t.date)}</div></div>
                 </div>
               </div>
             ))}

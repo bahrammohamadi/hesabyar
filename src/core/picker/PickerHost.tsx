@@ -82,19 +82,19 @@ export function PickerHost() {
   }
 
   return createPortal(
-    <div className="fixed inset-0 flex items-start justify-center bg-slate-950/35 p-3 pt-[10vh] backdrop-blur-sm" style={{ zIndex: "var(--z-picker)" }} dir="rtl">
-      <div className="w-full max-w-2xl overflow-hidden rounded-[24px] border border-white/70 bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+    <div className="fixed inset-0 flex items-start justify-center bg-foreground/35 p-3 pt-[10vh] backdrop-blur-sm" style={{ zIndex: "var(--z-picker)" }} dir="rtl">
+      <div className="w-full max-w-2xl overflow-hidden rounded-[24px] border border-white/70 bg-card shadow-2xl">
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div>
-            <div className="font-extrabold text-slate-800">{title}</div>
-            <div className="text-xs text-slate-500">نوع: {typeLabel}</div>
+            <div className="font-extrabold text-foreground">{title}</div>
+            <div className="text-xs text-muted-foreground">نوع: {typeLabel}</div>
           </div>
-          <button onClick={closePicker} className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100" aria-label="بستن انتخابگر">
+          <button onClick={closePicker} className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted" aria-label="بستن انتخابگر">
             <X size={20} />
           </button>
         </div>
-        <div className="relative border-b border-slate-100 p-3">
-          <Search className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+        <div className="relative border-b border-border p-3">
+          <Search className="absolute right-6 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
           <Input
             ref={inputRef}
             value={query}
@@ -120,7 +120,7 @@ export function PickerHost() {
         </div>
         <div className="max-h-[55vh] overflow-y-auto p-2">
           {loading && <Spinner label="در حال جستجو..." />}
-          {error && <div className="m-2 rounded-xl bg-rose-50 p-3 text-sm text-rose-700">{error}</div>}
+          {error && <div className="m-2 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
           {!loading && !error && query.trim() && results.length === 0 && <EmptyState title="نتیجه‌ای یافت نشد" description="عبارت دیگری را امتحان کنید." />}
           {!query.trim() && <EmptyState title="جستجوی سریع" description="برای شروع، عبارت جستجو را وارد کنید." />}
           {results.map((item, index) => (
@@ -131,12 +131,12 @@ export function PickerHost() {
               onClick={() => selectItem(item)}
               className={cn(
                 "flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-3 text-right transition",
-                index === activeIndex ? "bg-primary/10 text-primary" : "hover:bg-slate-50"
+                index === activeIndex ? "bg-primary/10 text-primary" : "hover:bg-muted"
               )}
             >
               <span className="min-w-0">
                 <span className="block truncate text-sm font-extrabold">{item.title}</span>
-                {item.subtitle && <span className="mt-0.5 block truncate text-xs text-slate-500">{item.subtitle}</span>}
+                {item.subtitle && <span className="mt-0.5 block truncate text-xs text-muted-foreground">{item.subtitle}</span>}
               </span>
               <Badge tone={item.result_type === "contact" ? "primary" : item.result_type === "product" ? "success" : "info"}>{item.result_type}</Badge>
             </button>

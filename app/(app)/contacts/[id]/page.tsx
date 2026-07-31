@@ -112,7 +112,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-4">
-        <Link href="/contacts" className="flex items-center gap-1 text-slate-500 text-sm hover:text-primary">
+        <Link href="/contacts" className="flex items-center gap-1 text-muted-foreground text-sm hover:text-primary">
           <ArrowRight size={18} /> بازگشت
         </Link>
         <div className="flex gap-2 flex-wrap">
@@ -140,23 +140,23 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
             <User size={28} />
           </div>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-slate-800">{contact.name}</h1>
-            <div className="flex flex-wrap gap-2 mt-1 text-sm text-slate-500">
-              {(contact as any).code && <span className="font-mono bg-slate-100 px-2 py-0.5 rounded">کد: {(contact as any).code}</span>}
-              <span className={`badge ${contact.type === "customer" ? "bg-blue-100 text-blue-700" : contact.type === "supplier" ? "bg-emerald-100 text-emerald-700" : "bg-violet-100 text-violet-700"}`}>
+            <h1 className="text-2xl font-bold text-foreground">{contact.name}</h1>
+            <div className="flex flex-wrap gap-2 mt-1 text-sm text-muted-foreground">
+              {(contact as any).code && <span className="font-mono bg-muted px-2 py-0.5 rounded">کد: {(contact as any).code}</span>}
+              <span className={`badge ${contact.type === "customer" ? "bg-info-soft text-info-onSoft" : contact.type === "supplier" ? "bg-success-soft text-success-onSoft" : "bg-primary/15 text-primary"}`}>
                 {TYPE_LABELS[contact.type as ContactType]}
               </span>
             </div>
             {(contact.phone || contact.address) && (
-              <div className="flex flex-wrap gap-3 mt-2 text-sm text-slate-500">
+              <div className="flex flex-wrap gap-3 mt-2 text-sm text-muted-foreground">
                 {contact.phone && <PhoneLink phone={contact.phone} />}
                 {contact.address && <span className="flex items-center gap-1"><MapPin size={13}/> {contact.address}</span>}
               </div>
             )}
           </div>
-          <div className={`text-left shrink-0 ${isDebtor ? "text-rose-600" : isCreditor ? "text-emerald-600" : "text-slate-500"}`}>
+          <div className={`text-left shrink-0 ${isDebtor ? "text-destructive" : isCreditor ? "text-success-onSoft" : "text-muted-foreground"}`}>
             <div className="text-2xl font-bold">{isDebtor ? "بدهکار" : isCreditor ? "بستانکار" : "—"}{bal !== 0 ? " " + formatToman(Math.abs(bal), false) : ""}</div>
-            <div className="text-xs text-slate-400">مانده حساب</div>
+            <div className="text-xs text-muted-foreground">مانده حساب</div>
           </div>
         </div>
       </div>
@@ -170,7 +170,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
           { id: "tx" as const, label: `تراکنش‌ها (${toFaDigits(txs?.length ?? 0)})`, icon: <DollarSign size={15}/> },
         ].map((t) => (
           <button key={t.id} onClick={() => setTab(t.id as any)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition ${tab === t.id ? "bg-primary text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition ${tab === t.id ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:bg-muted"}`}>
             {t.icon} {t.label}
           </button>
         ))}
@@ -191,13 +191,13 @@ function ContactInfo({ contact, sales, purchases, totalSales, totalPurchases }: 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-emerald-600">{formatToman(totalSales, false)}</div><div className="text-xs text-slate-500">مجموع خرید</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-primary">{formatToman(totalPurchases, false)}</div><div className="text-xs text-slate-500">مجموع خرید از</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-slate-600">{toFaDigits(sales.length)}</div><div className="text-xs text-slate-500">فاکتور فروش</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-slate-600">{toFaDigits(purchases.length)}</div><div className="text-xs text-slate-500">فاکتور خرید</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-success-onSoft">{formatToman(totalSales, false)}</div><div className="text-xs text-muted-foreground">مجموع خرید</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-primary">{formatToman(totalPurchases, false)}</div><div className="text-xs text-muted-foreground">مجموع خرید از</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-muted-foreground">{toFaDigits(sales.length)}</div><div className="text-xs text-muted-foreground">فاکتور فروش</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-muted-foreground">{toFaDigits(purchases.length)}</div><div className="text-xs text-muted-foreground">فاکتور خرید</div></div>
       </div>
       <div className="card p-5">
-        <h3 className="font-semibold text-slate-700 mb-4">اطلاعات کامل</h3>
+        <h3 className="font-semibold text-foreground mb-4">اطلاعات کامل</h3>
         <div className="grid grid-cols-2 gap-3">
           {[
             { label: "نام", value: contact.name },
@@ -211,10 +211,10 @@ function ContactInfo({ contact, sales, purchases, totalSales, totalPurchases }: 
             { label: "کد ملی", value: meta.national_code || "—" },
             { label: "شغل", value: meta.job_title || "—" },
           ].map((item, i) => (
-            <div key={i} className="p-3 bg-slate-50 rounded-xl"><div className="text-xs text-slate-400 mb-1">{item.label}</div><div className="font-medium">{item.value}</div></div>
+            <div key={i} className="p-3 bg-muted rounded-xl"><div className="text-xs text-muted-foreground mb-1">{item.label}</div><div className="font-medium">{item.value}</div></div>
           ))}
-          {contact.address && <div className="col-span-2 p-3 bg-slate-50 rounded-xl"><div className="text-xs text-slate-400 mb-1">آدرس</div><div className="font-medium">{contact.address}</div></div>}
-          {contact.description && <div className="col-span-2 p-3 bg-slate-50 rounded-xl"><div className="text-xs text-slate-400 mb-1">توضیحات</div><div className="font-medium">{contact.description}</div></div>}
+          {contact.address && <div className="col-span-2 p-3 bg-muted rounded-xl"><div className="text-xs text-muted-foreground mb-1">آدرس</div><div className="font-medium">{contact.address}</div></div>}
+          {contact.description && <div className="col-span-2 p-3 bg-muted rounded-xl"><div className="text-xs text-muted-foreground mb-1">توضیحات</div><div className="font-medium">{contact.description}</div></div>}
         </div>
       </div>
     </div>
@@ -227,9 +227,9 @@ function ContactSales({ sales }: { sales: any[] }) {
   return (
     <div>
       <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-emerald-600">{formatToman(total, false)}</div><div className="text-xs text-slate-500">مجموع</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-rose-600">{formatToman(credit, false)}</div><div className="text-xs text-slate-500">نسیه</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-slate-600">{toFaDigits(sales.length)}</div><div className="text-xs text-slate-500">فاکتور</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-success-onSoft">{formatToman(total, false)}</div><div className="text-xs text-muted-foreground">مجموع</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-destructive">{formatToman(credit, false)}</div><div className="text-xs text-muted-foreground">نسیه</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-muted-foreground">{toFaDigits(sales.length)}</div><div className="text-xs text-muted-foreground">فاکتور</div></div>
       </div>
       <div className="card overflow-x-auto">
         {sales.length === 0 ? <EmptyState title="فاکتوری ثبت نشده" />
@@ -237,12 +237,12 @@ function ContactSales({ sales }: { sales: any[] }) {
           <table className="table-base">
             <thead><tr><th>فاکتور</th><th>تاریخ</th><th>مبلغ</th><th>نقد/کارت</th><th>نسیه</th></tr></thead>
             <tbody>{sales.map((s: any) => (
-              <tr key={s.id} className="hover:bg-slate-50">
+              <tr key={s.id} className="hover:bg-muted">
                 <td><EntityLink type="sale" id={s.id}>{s.invoice_no}</EntityLink></td>
-                <td className="text-slate-500 text-sm">{toJalali(s.date)}</td>
+                <td className="text-muted-foreground text-sm">{toJalali(s.date)}</td>
                 <td className="font-medium">{formatToman(s.total, false)}</td>
-                <td className="text-slate-600">{formatToman((s.paid_cash??0)+(s.paid_card??0), false)}</td>
-                <td>{s.paid_credit > 0 ? <span className="text-rose-600 font-medium">{formatToman(s.paid_credit, false)}</span> : <span className="text-slate-300">—</span>}</td>
+                <td className="text-muted-foreground">{formatToman((s.paid_cash??0)+(s.paid_card??0), false)}</td>
+                <td>{s.paid_credit > 0 ? <span className="text-destructive font-medium">{formatToman(s.paid_credit, false)}</span> : <span className="text-muted-foreground">—</span>}</td>
               </tr>
             ))}</tbody>
           </table>
@@ -258,9 +258,9 @@ function ContactPurchases({ purchases }: { purchases: any[] }) {
   return (
     <div>
       <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-emerald-600">{formatToman(total, false)}</div><div className="text-xs text-slate-500">مجموع</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-primary">{formatToman(paid, false)}</div><div className="text-xs text-slate-500">پرداخت‌شده</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-rose-600">{formatToman(total-paid, false)}</div><div className="text-xs text-slate-500">باقیمانده</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-success-onSoft">{formatToman(total, false)}</div><div className="text-xs text-muted-foreground">مجموع</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-primary">{formatToman(paid, false)}</div><div className="text-xs text-muted-foreground">پرداخت‌شده</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-destructive">{formatToman(total-paid, false)}</div><div className="text-xs text-muted-foreground">باقیمانده</div></div>
       </div>
       <div className="card overflow-x-auto">
         {purchases.length === 0 ? <EmptyState title="خریدی ثبت نشده" />
@@ -270,12 +270,12 @@ function ContactPurchases({ purchases }: { purchases: any[] }) {
             <tbody>{purchases.map((p: any) => {
               const rem = (p.total??0) - (p.paid??0);
               return (
-                <tr key={p.id} className="hover:bg-slate-50">
-                  <td className="font-medium text-emerald-600">{p.invoice_no}</td>
-                  <td className="text-slate-500 text-sm">{toJalali(p.date)}</td>
+                <tr key={p.id} className="hover:bg-muted">
+                  <td className="font-medium text-success-onSoft">{p.invoice_no}</td>
+                  <td className="text-muted-foreground text-sm">{toJalali(p.date)}</td>
                   <td className="font-medium">{formatToman(p.total, false)}</td>
-                  <td className="text-slate-600">{formatToman(p.paid, false)}</td>
-                  <td>{rem > 0 ? <span className="text-rose-600 font-medium">{formatToman(rem, false)}</span> : <span className="text-emerald-500">✓</span>}</td>
+                  <td className="text-muted-foreground">{formatToman(p.paid, false)}</td>
+                  <td>{rem > 0 ? <span className="text-destructive font-medium">{formatToman(rem, false)}</span> : <span className="text-success-onSoft">✓</span>}</td>
                 </tr>
               );
             })}</tbody>
@@ -292,9 +292,9 @@ function ContactTx({ txs }: { txs: any[] }) {
   return (
     <div>
       <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-emerald-600">{formatToman(recv, false)}</div><div className="text-xs text-slate-500">دریافتی</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-rose-600">{formatToman(pay, false)}</div><div className="text-xs text-slate-500">پرداختی</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-slate-600">{toFaDigits(txs.length)}</div><div className="text-xs text-slate-500">تراکنش</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-success-onSoft">{formatToman(recv, false)}</div><div className="text-xs text-muted-foreground">دریافتی</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-destructive">{formatToman(pay, false)}</div><div className="text-xs text-muted-foreground">پرداختی</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-muted-foreground">{toFaDigits(txs.length)}</div><div className="text-xs text-muted-foreground">تراکنش</div></div>
       </div>
       <div className="card overflow-x-auto">
         {txs.length === 0 ? <EmptyState title="تراکنشی ثبت نشده" />
@@ -304,12 +304,12 @@ function ContactTx({ txs }: { txs: any[] }) {
             <tbody>{txs.map((t: any) => {
               const isIn = t.type === "receipt" || t.type === "income";
               return (
-                <tr key={t.id} className="hover:bg-slate-50">
-                  <td><span className={`badge ${isIn ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>{isIn ? "دریافت" : "پرداخت"}</span></td>
-                  <td className={`font-medium ${isIn ? "text-emerald-600" : "text-rose-600"}`}>{isIn ? "+" : "-"}{formatToman(t.amount, false)}</td>
-                  <td className="text-slate-500 text-sm">{t.account?.name ?? "—"}</td>
-                  <td className="text-slate-500 text-sm">{toJalali(t.date)}</td>
-                  <td className="text-slate-400 text-sm max-w-[150px] truncate">{t.note ?? "—"}</td>
+                <tr key={t.id} className="hover:bg-muted">
+                  <td><span className={`badge ${isIn ? "bg-success-soft text-success-onSoft" : "bg-destructive/15 text-destructive"}`}>{isIn ? "دریافت" : "پرداخت"}</span></td>
+                  <td className={`font-medium ${isIn ? "text-success-onSoft" : "text-destructive"}`}>{isIn ? "+" : "-"}{formatToman(t.amount, false)}</td>
+                  <td className="text-muted-foreground text-sm">{t.account?.name ?? "—"}</td>
+                  <td className="text-muted-foreground text-sm">{toJalali(t.date)}</td>
+                  <td className="text-muted-foreground text-sm max-w-[150px] truncate">{t.note ?? "—"}</td>
                 </tr>
               );
             })}</tbody>
@@ -357,7 +357,7 @@ function ContactEditModal({ contact, onClose, onSaved }: { contact: any; onClose
         </div>
         <div><label className="label">آدرس</label><input className="input" value={address} onChange={e=>setAddress(e.target.value)} /></div>
         <div><label className="label">توضیحات</label><textarea className="input" rows={2} value={desc} onChange={e=>setDesc(e.target.value)} /></div>
-        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
+        {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm px-4 py-3">{error}</div>}
         <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving&&<Loader2 className="animate-spin" size={18}/>} ذخیره</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
       </div>
     </Modal>

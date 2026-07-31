@@ -55,13 +55,13 @@ export function DashboardStockAlert({
             ) : (
               <PackageCheck size={16} className="shrink-0 text-success" strokeWidth={2.2} />
             )}
-            <h3
+            <h2
               className={`truncate text-sm font-extrabold ${
                 hasAlert ? "text-destructive" : "text-foreground"
               }`}
             >
               هشدار موجودی
-            </h3>
+            </h2>
           </div>
 
           <div className="mt-2.5 flex items-baseline gap-2">

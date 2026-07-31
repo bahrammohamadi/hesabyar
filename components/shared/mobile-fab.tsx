@@ -15,9 +15,9 @@ const ACTIONS = [
 
 const toneClass: Record<string, string> = {
   primary: "bg-primary/10 text-primary",
-  emerald: "bg-emerald-50 text-emerald-600",
-  cyan: "bg-cyan-50 text-cyan-600",
-  violet: "bg-violet-50 text-violet-600",
+  emerald: "bg-success-soft text-success-onSoft",
+  cyan: "bg-info-soft text-info-onSoft",
+  violet: "bg-primary/10 text-primary",
 };
 
 export function MobileFab() {
@@ -29,7 +29,7 @@ export function MobileFab() {
     <div className="fixed bottom-[96px] left-4 z-40 lg:hidden">
       {open && (
         <>
-          <button className="fixed inset-0 bg-slate-950/25 backdrop-blur-[1px]" onClick={() => setOpen(false)} aria-label="بستن" />
+          <button className="fixed inset-0 bg-foreground/25 backdrop-blur-[1px]" onClick={() => setOpen(false)} aria-label="بستن" />
           <div className="relative mb-3 flex flex-col gap-2">
             {actions.map((action) => {
               const Icon = action.icon;
@@ -44,8 +44,8 @@ export function MobileFab() {
                     <Icon size={19} />
                   </span>
                   <span className="whitespace-nowrap text-right">
-                    <span className="block text-sm font-extrabold text-slate-800">{action.label}</span>
-                    <span className="block text-[11px] text-slate-500">{action.hint}</span>
+                    <span className="block text-sm font-extrabold text-foreground">{action.label}</span>
+                    <span className="block text-[11px] text-muted-foreground">{action.hint}</span>
                   </span>
                 </Link>
               );

@@ -168,9 +168,9 @@ export default function ProfitabilityReportPage() {
       <div className="card p-4 mb-4 grid grid-cols-1 md:grid-cols-5 gap-3">
         <div><label className="label">از تاریخ</label><DatePicker value={from} onChange={setFrom} /></div>
         <div><label className="label">تا تاریخ</label><DatePicker value={to} onChange={setTo} /></div>
-        <div className="rounded-xl bg-slate-50 p-3"><div className="text-xs text-slate-500">فروش</div><div className="font-bold text-slate-800 mt-1">{formatToman(totals.revenue)}</div></div>
-        <div className="rounded-xl bg-slate-50 p-3"><div className="text-xs text-slate-500">بهای تمام‌شده</div><div className="font-bold text-amber-600 mt-1">{formatToman(totals.cost)}</div></div>
-        <div className="rounded-xl bg-slate-50 p-3"><div className="text-xs text-slate-500">سود ناخالص</div><div className={totals.profit >= 0 ? "font-bold text-emerald-600 mt-1" : "font-bold text-rose-600 mt-1"}>{formatToman(totals.profit)}</div></div>
+        <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">فروش</div><div className="font-bold text-foreground mt-1">{formatToman(totals.revenue)}</div></div>
+        <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">بهای تمام‌شده</div><div className="font-bold text-warning-onSoft mt-1">{formatToman(totals.cost)}</div></div>
+        <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">سود ناخالص</div><div className={totals.profit >= 0 ? "font-bold text-success-onSoft mt-1" : "font-bold text-destructive mt-1"}>{formatToman(totals.profit)}</div></div>
       </div>
 
       <div className="flex gap-2 mb-4">
@@ -178,11 +178,11 @@ export default function ProfitabilityReportPage() {
         <button onClick={() => setTab("invoices")} className={tab === "invoices" ? "btn-primary" : "btn-secondary"}>سود فاکتور</button>
       </div>
 
-      {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-rose-50 text-rose-700 text-sm p-4">{(error as Error).message}</div> : tab === "products" ? (
+      {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-4">{(error as Error).message}</div> : tab === "products" ? (
         !productRows.length ? <EmptyState icon={TrendingUp} title="داده‌ای برای این بازه نیست" /> : (
           <div className="card overflow-x-auto">
             <table className="table-base"><thead><tr><th>کالا</th><th>تعداد</th><th>فاکتور</th><th>فروش</th><th>بها</th><th>سود</th><th>حاشیه</th><th>عملیات</th></tr></thead><tbody>
-              {productRows.map((row: any) => <tr key={row.product_id ?? row.product_name} className="hover:bg-slate-50"><td><EntityLink type="product" id={row.product_id}>{row.product_name}</EntityLink><div className="text-xs text-slate-400">{row.product_code}</div></td><td>{toFaDigits(row.qty)}</td><td>{toFaDigits(row.invoice_count)}</td><td>{formatToman(row.revenue, false)}</td><td>{formatToman(row.cost, false)}</td><td className={row.profit >= 0 ? "text-emerald-600 font-bold" : "text-rose-600 font-bold"}>{formatToman(row.profit, false)}</td><td>{toFaDigits(row.margin)}٪</td><td><EntityActionMenu type="product" id={row.product_id} label={row.product_name} /></td></tr>)}
+              {productRows.map((row: any) => <tr key={row.product_id ?? row.product_name} className="hover:bg-muted"><td><EntityLink type="product" id={row.product_id}>{row.product_name}</EntityLink><div className="text-xs text-muted-foreground">{row.product_code}</div></td><td>{toFaDigits(row.qty)}</td><td>{toFaDigits(row.invoice_count)}</td><td>{formatToman(row.revenue, false)}</td><td>{formatToman(row.cost, false)}</td><td className={row.profit >= 0 ? "text-success-onSoft font-bold" : "text-destructive font-bold"}>{formatToman(row.profit, false)}</td><td>{toFaDigits(row.margin)}٪</td><td><EntityActionMenu type="product" id={row.product_id} label={row.product_name} /></td></tr>)}
             </tbody></table>
           </div>
         )
@@ -190,7 +190,7 @@ export default function ProfitabilityReportPage() {
         !invoiceRows.length ? <EmptyState icon={TrendingUp} title="فاکتوری برای این بازه نیست" /> : (
           <div className="card overflow-x-auto">
             <table className="table-base"><thead><tr><th>فاکتور</th><th>تاریخ</th><th>مشتری</th><th>تعداد</th><th>فروش</th><th>بها</th><th>سود</th><th>حاشیه</th></tr></thead><tbody>
-              {invoiceRows.map((row: any) => <tr key={row.sale.id} className="hover:bg-slate-50"><td><EntityLink type="sale" id={row.sale.id}>{row.sale.invoice_no}</EntityLink></td><td>{toJalali(row.sale.date)}</td><td>{row.sale.customer?.name ?? "مشتری نقدی"}</td><td>{toFaDigits(row.qty)}</td><td>{formatToman(row.revenue, false)}</td><td>{formatToman(row.cost, false)}</td><td className={row.profit >= 0 ? "text-emerald-600 font-bold" : "text-rose-600 font-bold"}>{formatToman(row.profit, false)}</td><td>{toFaDigits(row.margin)}٪</td></tr>)}
+              {invoiceRows.map((row: any) => <tr key={row.sale.id} className="hover:bg-muted"><td><EntityLink type="sale" id={row.sale.id}>{row.sale.invoice_no}</EntityLink></td><td>{toJalali(row.sale.date)}</td><td>{row.sale.customer?.name ?? "مشتری نقدی"}</td><td>{toFaDigits(row.qty)}</td><td>{formatToman(row.revenue, false)}</td><td>{formatToman(row.cost, false)}</td><td className={row.profit >= 0 ? "text-success-onSoft font-bold" : "text-destructive font-bold"}>{formatToman(row.profit, false)}</td><td>{toFaDigits(row.margin)}٪</td></tr>)}
             </tbody></table>
           </div>
         )

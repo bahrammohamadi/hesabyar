@@ -120,7 +120,7 @@ export default function PriceListsPage() {
           <div><label className="label">درصد تخفیف عمومی</label><input className="input" inputMode="numeric" value={discount} onChange={(e) => setDiscount(e.target.value)} /></div>
           <div className="flex items-end"><button onClick={addList} disabled={saving} className="btn-primary w-full"><Plus size={16}/> افزودن لیست</button></div>
         </div>
-        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm p-3 mt-3">{error}</div>}
+        {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3 mt-3">{error}</div>}
       </div>
 
       {isLoading ? <Spinner /> : !lists?.length ? <EmptyState icon={Tags} title="لیست قیمتی ثبت نشده" /> : (
@@ -130,10 +130,10 @@ export default function PriceListsPage() {
               <button key={list.id} onClick={() => setSelectedListId(list.id)} className={`card p-4 w-full text-right transition ${selectedList?.id === list.id ? "border-primary/40 bg-primary/[0.06]" : "hover:border-primary/20"}`}>
                 <div className="flex items-center justify-between gap-2">
                   <div>
-                    <div className="font-bold text-slate-800">{list.name}</div>
-                    <div className="text-xs text-slate-400 mt-1">نوع: {list.type} • تخفیف عمومی: {toFaDigits(list.discount_percent ?? 0)}٪ • ایجاد: {toJalali(list.created_at)}</div>
+                    <div className="font-bold text-foreground">{list.name}</div>
+                    <div className="text-xs text-muted-foreground mt-1">نوع: {list.type} • تخفیف عمومی: {toFaDigits(list.discount_percent ?? 0)}٪ • ایجاد: {toJalali(list.created_at)}</div>
                   </div>
-                  <span onClick={(e) => { e.stopPropagation(); removeList(list.id); }} className="text-slate-400 hover:text-rose-600"><Trash2 size={17}/></span>
+                  <span onClick={(e) => { e.stopPropagation(); removeList(list.id); }} className="text-muted-foreground hover:text-destructive"><Trash2 size={17}/></span>
                 </div>
               </button>
             ))}
@@ -144,16 +144,16 @@ export default function PriceListsPage() {
               <>
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h2 className="font-bold text-slate-800">{selectedList.name}</h2>
-                    <p className="text-xs text-slate-400 mt-1">اگر قیمت اختصاصی وارد نشود، تخفیف عمومی لیست روی قیمت فروش کالا اعمال می‌شود.</p>
+                    <h2 className="font-bold text-foreground">{selectedList.name}</h2>
+                    <p className="text-xs text-muted-foreground mt-1">اگر قیمت اختصاصی وارد نشود، تخفیف عمومی لیست روی قیمت فروش کالا اعمال می‌شود.</p>
                   </div>
                   <button onClick={() => setPickerOpen(true)} className="btn-primary"><Plus size={16}/> افزودن کالا</button>
                 </div>
 
                 {pendingVariant && (
-                  <div className="rounded-2xl bg-slate-50 p-3 mb-4">
-                    <div className="font-medium text-slate-800">{pendingVariant.product_name}</div>
-                    <div className="text-xs text-slate-400 mt-1">قیمت فعلی: {formatToman(pendingVariant.sale_price)} • {[pendingVariant.color, pendingVariant.size].filter(Boolean).join(" / ") || "ساده"}</div>
+                  <div className="rounded-2xl bg-muted p-3 mb-4">
+                    <div className="font-medium text-foreground">{pendingVariant.product_name}</div>
+                    <div className="text-xs text-muted-foreground mt-1">قیمت فعلی: {formatToman(pendingVariant.sale_price)} • {[pendingVariant.color, pendingVariant.size].filter(Boolean).join(" / ") || "ساده"}</div>
                     <div className="flex gap-2 mt-3"><input className="input" inputMode="numeric" placeholder="قیمت اختصاصی (تومان)" value={customPrice} onChange={(e) => setCustomPrice(e.target.value)} /><button onClick={saveItem} className="btn-primary">ذخیره</button><button onClick={() => setPendingVariant(null)} className="btn-secondary">لغو</button></div>
                   </div>
                 )}
@@ -165,14 +165,14 @@ export default function PriceListsPage() {
                       const product = variant?.product;
                       const finalPrice = item.price ?? Math.max(0, Math.round((variant?.sale_price ?? 0) * (100 - (selectedList.discount_percent ?? 0)) / 100));
                       return (
-                        <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 p-3">
+                        <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl border border-border p-3">
                           <div className="min-w-0">
                             <div className="flex items-center gap-2"><EntityLink type="product" id={product?.id}>{product?.name ?? "کالا"}</EntityLink><EntityActionMenu type="product" id={product?.id} label={product?.name ?? "کالا"} /></div>
-                            <div className="text-xs text-slate-400 mt-1">{[variant?.color, variant?.size].filter(Boolean).join(" / ") || variant?.sku || "ساده"}</div>
+                            <div className="text-xs text-muted-foreground mt-1">{[variant?.color, variant?.size].filter(Boolean).join(" / ") || variant?.sku || "ساده"}</div>
                           </div>
                           <div className="flex items-center gap-3 shrink-0">
-                            <div className="text-left"><div className="font-bold text-primary">{formatToman(finalPrice, false)}</div><div className="text-xs text-slate-400">{item.price ? "قیمت اختصاصی" : "با تخفیف عمومی"}</div></div>
-                            <button onClick={() => removeItem(item.id)} className="text-slate-400 hover:text-rose-600"><Trash2 size={16}/></button>
+                            <div className="text-left"><div className="font-bold text-primary">{formatToman(finalPrice, false)}</div><div className="text-xs text-muted-foreground">{item.price ? "قیمت اختصاصی" : "با تخفیف عمومی"}</div></div>
+                            <button onClick={() => removeItem(item.id)} className="text-muted-foreground hover:text-destructive"><Trash2 size={16}/></button>
                           </div>
                         </div>
                       );

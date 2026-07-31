@@ -41,7 +41,7 @@ export { PageHeader, StatCard, Modal } from "@/src/shared/ui";
 
 export function Spinner({ label }: { label?: string }) {
   return (
-    <div className="flex items-center justify-center gap-2 py-12 text-slate-400">
+    <div className="flex items-center justify-center gap-2 py-12 text-muted-foreground">
       <Loader2 className="animate-spin" size={20} />
       {label && <span className="text-sm">{label}</span>}
     </div>
@@ -64,11 +64,11 @@ export function EmptyState({
   const displayTitle = title ?? message ?? "اطلاعاتی موجود نیست";
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="w-14 h-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mb-4">
+      <div className="w-14 h-14 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center mb-4">
         {Icon ? <Icon size={26} /> : <Inbox size={26} />}
       </div>
-      <h3 className="font-semibold text-slate-700">{displayTitle}</h3>
-      {description && <p className="text-sm text-slate-400 mt-1 max-w-sm">{description}</p>}
+      <h3 className="font-semibold text-foreground">{displayTitle}</h3>
+      {description && <p className="text-sm text-muted-foreground mt-1 max-w-sm">{description}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
   );

@@ -416,7 +416,7 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
               <label className="label">تخفیف</label>
               <div className="flex gap-2">
                 <input className="input" inputMode="numeric" value={discount} onChange={(e) => setDiscount(e.target.value)} />
-                <select className="input w-28" value={discountType} onChange={(e) => setDiscountType(e.target.value as "fixed" | "percent") }>
+                <select aria-label="واحد تخفیف" className="input w-28" value={discountType} onChange={(e) => setDiscountType(e.target.value as "fixed" | "percent") }>
                   <option value="fixed">تومان</option>
                   <option value="percent">٪</option>
                 </select>
