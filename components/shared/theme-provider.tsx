@@ -8,16 +8,43 @@ import {
   DEFAULT_MODE,
   THEME_STORAGE_KEY,
   MODE_STORAGE_KEY,
+  LEGACY_THEME_STORAGE_KEY,
+  LEGACY_MODE_STORAGE_KEY,
+  THEME_CHANGE_EVENT,
+  MODE_CHANGE_EVENT,
+  normalizeThemeId,
   type ThemeId,
   type ThemeMode,
 } from "@/lib/theme";
 
+/**
+ * تم ذخیره‌شده را می‌خواند. اگر کاربر هنوز کلید قدیمی (پیش از تغییر نام برند)
+ * را داشته باشد، مقدارش خوانده و یک‌بار به کلید جدید منتقل می‌شود تا
+ * انتخاب او پس از تغییر نام از بین نرود.
+ */
 function getStoredTheme(): ThemeId {
-  return (window.localStorage.getItem(THEME_STORAGE_KEY) as ThemeId | null) ?? DEFAULT_THEME;
+  const current = window.localStorage.getItem(THEME_STORAGE_KEY);
+  if (current) return normalizeThemeId(current);
+
+  const legacy = window.localStorage.getItem(LEGACY_THEME_STORAGE_KEY);
+  if (legacy) {
+    const migrated = normalizeThemeId(legacy);
+    window.localStorage.setItem(THEME_STORAGE_KEY, migrated);
+    return migrated;
+  }
+  return DEFAULT_THEME;
 }
 
 function getStoredMode(): ThemeMode {
-  return (window.localStorage.getItem(MODE_STORAGE_KEY) as ThemeMode | null) ?? DEFAULT_MODE;
+  const current = window.localStorage.getItem(MODE_STORAGE_KEY) as ThemeMode | null;
+  if (current) return current;
+
+  const legacy = window.localStorage.getItem(LEGACY_MODE_STORAGE_KEY) as ThemeMode | null;
+  if (legacy) {
+    window.localStorage.setItem(MODE_STORAGE_KEY, legacy);
+    return legacy;
+  }
+  return DEFAULT_MODE;
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -38,8 +65,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       applyTheme(getStoredTheme());
     }
 
-    window.addEventListener("hesabyar-theme-change", handleThemeChanged);
-    window.addEventListener("hesabyar-mode-change", handleModeChanged);
+    window.addEventListener(THEME_CHANGE_EVENT, handleThemeChanged);
+    window.addEventListener(MODE_CHANGE_EVENT, handleModeChanged);
 
     const interval = setInterval(() => {
       const currentMode = getStoredMode();
@@ -50,8 +77,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }, 60000);
 
     return () => {
-      window.removeEventListener("hesabyar-theme-change", handleThemeChanged);
-      window.removeEventListener("hesabyar-mode-change", handleModeChanged);
+      window.removeEventListener(THEME_CHANGE_EVENT, handleThemeChanged);
+      window.removeEventListener(MODE_CHANGE_EVENT, handleModeChanged);
       clearInterval(interval);
     };
   }, []);

@@ -1,5 +1,5 @@
 /**
- * Hesabyar Help Content — نقطه ورود مرکزی
+ * Tarazoo Help Content — نقطه ورود مرکزی
  *
  * معماری:
  *   هر ماژول یک فایل جداگانه دارد.

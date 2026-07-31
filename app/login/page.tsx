@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Eye, EyeOff, LockKeyhole, Mail, ShieldCheck, Sparkles, Store } from "lucide-react";
 import { Button, Field, Input } from "@/src/shared/ui";
+import { BRAND_NAME } from "@/lib/brand";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -53,9 +54,9 @@ export default function LoginPage() {
                 <Sparkles size={16} /> حسابداری، فروش و انبار در یکجا
               </div>
               <div className="mt-10 flex items-center gap-4">
-                <img src="/logo.png" alt="مهرجامه" className="h-20 w-20 rounded-3xl border border-white/30 bg-white object-contain p-2" />
+                <img src="/logo.png" alt={BRAND_NAME} className="h-20 w-20 rounded-3xl border border-white/30 bg-white object-contain p-2" />
                 <div>
-                  <h1 className="text-4xl font-black tracking-tight">مهرجامه</h1>
+                  <h1 className="text-4xl font-black tracking-tight">{BRAND_NAME}</h1>
                   <p className="mt-2 text-white/75">سیستم مدیریت فروش و مالی</p>
                 </div>
               </div>
@@ -87,8 +88,8 @@ export default function LoginPage() {
 
         <section className="order-1 mx-auto w-full max-w-md animate-[fadeIn_0.35s_ease-out] lg:order-2">
           <div className="mb-8 text-center lg:hidden">
-            <img src="/logo.png" alt="مهرجامه" className="mx-auto mb-3 h-24 w-24 object-contain" />
-            <h1 className="text-2xl font-black text-slate-800">مهرجامه</h1>
+            <img src="/logo.png" alt={BRAND_NAME} className="mx-auto mb-3 h-24 w-24 object-contain" />
+            <h1 className="text-2xl font-black text-slate-800">{BRAND_NAME}</h1>
             <p className="mt-1 text-sm text-slate-500">سیستم مدیریت فروش و مالی</p>
           </div>
 

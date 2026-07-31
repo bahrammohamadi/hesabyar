@@ -6,7 +6,7 @@ import { Building2, Loader2, Palette, Save } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, Spinner } from "@/components/shared/ui";
-import { applyTheme, DEFAULT_THEME, THEMES, THEME_STORAGE_KEY, type ThemeId } from "@/lib/theme";
+import { applyTheme, DEFAULT_THEME, THEMES, THEME_STORAGE_KEY, THEME_CHANGE_EVENT, type ThemeId } from "@/lib/theme";
 
 function ThemeSettingsInline() {
   const [selected, setSelected] = useState<ThemeId>(() => {
@@ -18,7 +18,7 @@ function ThemeSettingsInline() {
     setSelected(themeId);
     window.localStorage.setItem(THEME_STORAGE_KEY, themeId);
     applyTheme(themeId);
-    window.dispatchEvent(new CustomEvent("hesabyar-theme-change", { detail: themeId }));
+    window.dispatchEvent(new CustomEvent(THEME_CHANGE_EVENT, { detail: themeId }));
   }
 
   return (

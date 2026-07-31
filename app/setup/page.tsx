@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2 } from "lucide-react";
+import { BRAND_NAME } from "@/lib/brand";
 
 export default function SetupPage() {
   const router = useRouter();
@@ -31,7 +32,7 @@ export default function SetupPage() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-slate-50 via-white to-slate-100">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <img src="/logo.png" alt="حسابیار" className="w-24 h-24 object-contain mx-auto mb-2" />
+          <img src="/logo.png" alt={BRAND_NAME} className="w-24 h-24 object-contain mx-auto mb-2" />
           <h1 className="text-2xl font-bold text-slate-800">راه‌اندازی کسب‌وکار</h1>
           <p className="text-slate-500 mt-1 text-sm">برای شروع، نام کسب‌وکار خود را وارد کنید</p>
         </div>

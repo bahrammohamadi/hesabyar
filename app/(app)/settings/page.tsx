@@ -8,7 +8,7 @@ import { useOrg } from "@/lib/hooks/useOrg";
 import { displayUsername } from "@/lib/utils/format";
 import { PageHeader, Modal, Spinner } from "@/components/shared/ui";
 import { Plus, Loader2, Tag, Landmark, FolderTree, Trash2, Pencil, Check, X, Users, Shield, Palette, Building2, SlidersHorizontal, Sparkles } from "lucide-react";
-import { applyTheme, DEFAULT_THEME, THEMES, THEME_STORAGE_KEY, type ThemeId } from "@/lib/theme";
+import { applyTheme, DEFAULT_THEME, THEMES, THEME_STORAGE_KEY, THEME_CHANGE_EVENT, type ThemeId } from "@/lib/theme";
 import { PERMISSION_TREE, uniquePermissions, type PermissionTreeItem } from "@/lib/access/permission-tree";
 
 export function SettingsContent({ section = "all" }: { section?: "all" | "catalog" | "accounts" | "users" }) {
@@ -79,7 +79,7 @@ function ThemeSettings() {
     setSelected(themeId);
     window.localStorage.setItem(THEME_STORAGE_KEY, themeId);
     applyTheme(themeId);
-    window.dispatchEvent(new CustomEvent("hesabyar-theme-change", { detail: themeId }));
+    window.dispatchEvent(new CustomEvent(THEME_CHANGE_EVENT, { detail: themeId }));
   }
 
   return (

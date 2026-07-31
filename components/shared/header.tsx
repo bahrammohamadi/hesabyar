@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { fullJalali, displayUsername } from "@/lib/utils/format";
 import { LogOut, UserCircle, Bell } from "lucide-react";
 import { GlobalSearchBar } from "@/src/shared/layout/GlobalSearchBar";
+import { BRAND_NAME } from "@/lib/brand";
 
 export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const router = useRouter();
@@ -36,7 +37,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
       <div className="flex h-16 items-center justify-between gap-3 px-3 sm:px-5 lg:px-6">
         <div className="flex min-w-0 items-center gap-3">
           <div className="min-w-0">
-            <div className="text-sm font-extrabold text-slate-800 lg:hidden">مهرجامه</div>
+            <div className="text-sm font-extrabold text-slate-800 lg:hidden">{BRAND_NAME}</div>
             <div className="hidden text-sm text-slate-500 sm:block">{fullJalali()}</div>
           </div>
         </div>

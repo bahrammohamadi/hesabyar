@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
+import { BRAND_NAME, BRAND_TAGLINE, BRAND_DESCRIPTION } from "@/lib/brand";
 
 /** فایل مانیفست PWA (داینامیک تا آیکون‌ها قابل تنظیم باشند) */
 export async function GET() {
   const manifest = {
-    name: "مهرجامه — مدیریت فروش و مالی",
-    short_name: "مهرجامه",
-    description: "سیستم مدیریت فروش، انبار و مالی مهرجامه",
+    name: `${BRAND_NAME} — ${BRAND_TAGLINE}`,
+    short_name: BRAND_NAME,
+    description: BRAND_DESCRIPTION,
     start_url: "/dashboard",
     display: "standalone",
     orientation: "portrait",

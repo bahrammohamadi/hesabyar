@@ -14,6 +14,7 @@ import { PhoneLink } from "@/components/shared/phone-link";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
 import { formatToman, rialToToman, toEnDigits, toFaDigits, toJalali, tomanToRial } from "@/lib/utils/format";
+import { BRAND_NAME } from "@/lib/brand";
 
 type InvoiceItemView = {
   id: string;
@@ -234,9 +235,9 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
         <div id="invoice-print" className="card bg-white p-5 sm:p-8">
           <div className="flex items-start justify-between gap-4 border-b-2 border-primary pb-4 mb-5">
             <div className="flex items-center gap-3">
-              <img src="/logo.png" alt="حسابیار" className="w-14 h-14 object-contain rounded-xl" />
+              <img src="/logo.png" alt={BRAND_NAME} className="w-14 h-14 object-contain rounded-xl" />
               <div>
-                <h1 className="text-xl font-bold text-primary">مهرجامه</h1>
+                <h1 className="text-xl font-bold text-primary">{BRAND_NAME}</h1>
                 <p className="text-xs text-muted-foreground mt-1">فاکتور فروش</p>
               </div>
             </div>

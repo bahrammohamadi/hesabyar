@@ -1,15 +1,16 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { BRAND_NAME, BRAND_TITLE, BRAND_DESCRIPTION } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: "مهرجامه | مدیریت فروش و مالی",
-  description: "سیستم مدیریت فروش، انبار و مالی مهرجامه",
+  title: BRAND_TITLE,
+  description: BRAND_DESCRIPTION,
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "مهرجامه",
+    title: BRAND_NAME,
   },
 };
 

@@ -17,6 +17,7 @@ import {
 import { Badge, Card } from "@/src/shared/ui";
 import { toFaDigits } from "@/lib/utils/format";
 import type { MarketingPlan } from "../plans";
+import { BRAND_NAME, BRAND_CONTACT_EMAIL } from "@/lib/brand";
 
 /**
  * قطعات صفحه‌ی معرفی (لندینگ) — مطابق مراجع hero_features و pricing.
@@ -46,7 +47,7 @@ export function MarketingHeader() {
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <Receipt size={18} />
           </span>
-          <span className="text-base font-black text-foreground">حساب‌یار</span>
+          <span className="text-base font-black text-foreground">{BRAND_NAME}</span>
         </div>
 
         <nav className="hidden items-center gap-6 md:flex">
@@ -97,11 +98,11 @@ export function MarketingHero() {
       <h1 className="mx-auto mt-6 max-w-3xl text-2xl font-black leading-[1.7] text-foreground sm:text-4xl sm:leading-[1.6]">
         مدیریت هوشمند فروش و انبارداری،
         <br />
-        <span className="text-primary">ساده‌تر از همیشه با حساب‌یار</span>
+        <span className="text-primary">ساده‌تر از همیشه با {BRAND_NAME}</span>
       </h1>
 
       <p className="mx-auto mt-5 max-w-2xl text-sm leading-8 text-muted-foreground sm:text-base">
-        حساب‌یار به شما کمک می‌کند فاکتورها را سریع صادر کنید، موجودی انبار را در لحظه چک کنید و با
+        {BRAND_NAME} به شما کمک می‌کند فاکتورها را سریع صادر کنید، موجودی انبار را در لحظه چک کنید و با
         گزارش‌های دقیق سود و زیان، بهترین تصمیم‌ها را برای رشد کسب‌وکارتان بگیرید.
       </p>
 
@@ -110,7 +111,7 @@ export function MarketingHero() {
           href="/register"
           className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 text-sm font-black text-primary-foreground shadow-sm transition-all duration-200 hover:bg-primary/90 hover:shadow-md active:scale-95 sm:w-auto"
         >
-          شروع رایگان حساب‌یار
+          شروع رایگان {BRAND_NAME}
         </Link>
         <Link
           href="/login"
@@ -199,7 +200,7 @@ export function MarketingFeatures() {
     <section id="features" className="border-y border-border bg-muted/40 py-12 sm:py-16">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="text-center">
-          <h2 className="text-xl font-black text-foreground sm:text-2xl">چرا حساب‌یار؟</h2>
+          <h2 className="text-xl font-black text-foreground sm:text-2xl">چرا {BRAND_NAME}؟</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             تمام ابزارهایی که برای مدیریت یک فروشگاه موفق نیاز دارید
           </p>
@@ -236,7 +237,7 @@ export function MarketingPricing({ plans }: { plans: MarketingPlan[] }) {
     <section id="pricing" className="py-12 sm:py-16">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="text-center">
-          <h2 className="text-xl font-black text-foreground sm:text-2xl">پلن‌های اشتراک حساب‌یار</h2>
+          <h2 className="text-xl font-black text-foreground sm:text-2xl">پلن‌های اشتراک {BRAND_NAME}</h2>
           <p className="mt-2 text-sm text-muted-foreground">متناسب با نیاز و ابعاد کسب‌وکار شما</p>
         </div>
 
@@ -379,10 +380,10 @@ export function MarketingFooter() {
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               <Receipt size={18} />
             </span>
-            <span className="text-base font-black text-foreground">حساب‌یار</span>
+            <span className="text-base font-black text-foreground">{BRAND_NAME}</span>
           </div>
           <p className="mt-3 text-xs leading-6 text-muted-foreground">
-            حساب‌یار همراه هوشمند شما در مدیریت مالی و انبارداری است. ما با ساده‌سازی فرآیندهای
+            {BRAND_NAME} همراه هوشمند شما در مدیریت مالی و انبارداری است. ما با ساده‌سازی فرآیندهای
             پیچیده حسابداری، فرصت تمرکز روی رشد کسب‌وکارتان را فراهم می‌کنیم.
           </p>
         </div>
@@ -406,14 +407,14 @@ export function MarketingFooter() {
           <h3 className="text-sm font-extrabold text-foreground">ارتباط با ما</h3>
           <ul className="mt-3 space-y-2.5 text-xs text-muted-foreground">
             <ContactRow icon={Phone} text={toFaDigits("021-12345678")} />
-            <ContactRow icon={Mail} text="info@hesabyar.ir" />
+            <ContactRow icon={Mail} text={BRAND_CONTACT_EMAIL} />
             <ContactRow icon={MapPin} text="تهران، خیابان ولیعصر، برج مدیریت" />
           </ul>
         </div>
       </div>
 
       <div className="border-t border-border py-4 text-center text-[11px] text-muted-foreground">
-        © {toFaDigits(1403)} تمامی حقوق برای حساب‌یار محفوظ است.
+        © {toFaDigits(1403)} تمامی حقوق برای {BRAND_NAME} محفوظ است.
       </div>
     </footer>
   );
