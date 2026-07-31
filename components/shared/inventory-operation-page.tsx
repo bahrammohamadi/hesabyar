@@ -166,7 +166,7 @@ export function InventoryOperationPage({ mode }: { mode: InventoryMode }) {
                   <EntityLink type="product" id={m.variant?.product?.id}>{m.variant?.product?.name ?? "کالا"}</EntityLink>
                   <div className="mt-1 text-xs text-muted-foreground">{[m.variant?.color, m.variant?.size].filter(Boolean).join(" / ") || m.reason} • {m.note ?? ""}</div>
                 </div>
-                <div className={`text-left font-extrabold tabular-nums ${m.qty >= 0 ? "text-success" : "text-destructive"}`}>{m.qty >= 0 ? "+" : ""}{toFaDigits(m.qty)} <span className="block text-xs font-normal text-muted-foreground">{toJalali(m.created_at)}</span></div>
+                <div className={`text-left font-extrabold tabular-nums ${m.qty >= 0 ? "text-success-onSoft" : "text-destructive"}`}>{m.qty >= 0 ? "+" : ""}{toFaDigits(m.qty)} <span className="block text-xs font-normal text-muted-foreground">{toJalali(m.created_at)}</span></div>
               </div>
             ))}
           </div>

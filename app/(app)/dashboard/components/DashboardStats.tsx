@@ -41,7 +41,7 @@ const kpiToneClass = {
       برخی تم‌ها فقط ۳.۸ کنتراست می‌داد.
     */
     card: "bg-accent text-accent-foreground border-border",
-    label: "text-foreground/75",
+    label: "text-foreground",
     value: "text-foreground",
     sub: "text-muted-foreground",
     icon: "bg-primary/10 text-primary",

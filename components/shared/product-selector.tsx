@@ -266,6 +266,7 @@ export function ProductSelector({
               )}
             </button>
             <select
+              aria-label="مرتب‌سازی"
               className="input text-sm py-3 pr-2 min-h-12"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
@@ -297,25 +298,25 @@ export function ProductSelector({
         {/* فیلترها */}
         {showFilters && (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 rounded-xl bg-muted">
-            <select className="input text-sm" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+            <select aria-label="دسته‌بندی" className="input text-sm" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
               <option value="">همه دسته‌ها</option>
               {categories?.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
-            <select className="input text-sm" value={brandId} onChange={(e) => setBrandId(e.target.value)}>
+            <select aria-label="برند" className="input text-sm" value={brandId} onChange={(e) => setBrandId(e.target.value)}>
               <option value="">همه برندها</option>
               {brands?.map((b) => (
                 <option key={b.id} value={b.id}>{b.name}</option>
               ))}
             </select>
-            <select className="input text-sm" value={color} onChange={(e) => setColor(e.target.value)}>
+            <select aria-label="رنگ" className="input text-sm" value={color} onChange={(e) => setColor(e.target.value)}>
               <option value="">همه رنگ‌ها</option>
               {colors.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
-            <select className="input text-sm" value={size} onChange={(e) => setSize(e.target.value)}>
+            <select aria-label="سایز" className="input text-sm" value={size} onChange={(e) => setSize(e.target.value)}>
               <option value="">همه سایزها</option>
               {sizes.map((s) => (
                 <option key={s} value={s}>{s}</option>
