@@ -1,38 +1,31 @@
 import { NextResponse } from "next/server";
-import { createClient as createServiceClient } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/server";
-import { roleHasPermission } from "@/lib/permissions";
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-function service() {
-  if (!SERVICE_KEY) throw new Error("SUPABASE_SERVICE_ROLE_KEY تنظیم نشده است");
-  return createServiceClient(SUPABASE_URL, SERVICE_KEY, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-}
+import {
+  requireMember,
+  serviceClient,
+  safeError,
+  safeDate,
+} from "@/lib/security/api-guard";
+import { hit, clientIp, tooManyRequests } from "@/lib/security/rate-limit";
 
 export async function GET(request: Request) {
   try {
-    const supabase = createClient();
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const { data: membership, error: memError } = await supabase
-      .from("memberships")
-      .select("org_id, role")
-      .eq("user_id", user.id)
-      .eq("is_active", true)
-      .limit(1)
-      .single();
-    if (memError || !membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    if (!roleHasPermission(membership.role as any, "reports.view")) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    // گزارش سنگین است (تا ۵۰۰۰ ردیف + چند فراخوانی Auth) → سقف پایین‌تر.
+    const rl = hit(`reports-sellers:${clientIp(request)}`, {
+      limit: 20,
+      windowSeconds: 60,
+      blockSeconds: 120,
+    });
+    if (!rl.allowed) return tooManyRequests(rl.retryAfterSeconds);
 
     const url = new URL(request.url);
-    const from = url.searchParams.get("from");
-    const to = url.searchParams.get("to");
-    const svc = service();
+    const auth = await requireMember(url.searchParams.get("org_id"), "reports.view");
+    if ("response" in auth) return auth.response;
+    const { membership } = auth.ctx;
+
+    // تاریخ نامعتبر قبلاً به new Date("...") می‌رفت و Invalid Date تولید می‌کرد.
+    const from = safeDate(url.searchParams.get("from") ? `${url.searchParams.get("from")}T00:00:00` : null);
+    const to = safeDate(url.searchParams.get("to") ? `${url.searchParams.get("to")}T23:59:59` : null);
+    const svc = serviceClient();
 
     let salesQuery = svc
       .from("sales")
@@ -41,8 +34,8 @@ export async function GET(request: Request) {
       .neq("status", "cancelled")
       .order("date", { ascending: false })
       .limit(5000);
-    if (from) salesQuery = salesQuery.gte("date", new Date(`${from}T00:00:00`).toISOString());
-    if (to) salesQuery = salesQuery.lte("date", new Date(`${to}T23:59:59`).toISOString());
+    if (from) salesQuery = salesQuery.gte("date", from);
+    if (to) salesQuery = salesQuery.lte("date", to);
 
     let activityQuery = svc
       .from("activity_logs")
@@ -50,8 +43,8 @@ export async function GET(request: Request) {
       .eq("org_id", membership.org_id)
       .order("created_at", { ascending: false })
       .limit(5000);
-    if (from) activityQuery = activityQuery.gte("created_at", new Date(`${from}T00:00:00`).toISOString());
-    if (to) activityQuery = activityQuery.lte("created_at", new Date(`${to}T23:59:59`).toISOString());
+    if (from) activityQuery = activityQuery.gte("created_at", from);
+    if (to) activityQuery = activityQuery.lte("created_at", to);
 
     const [{ data: sales, error: salesError }, { data: activities, error: activityError }] = await Promise.all([salesQuery, activityQuery]);
     if (salesError) throw salesError;
@@ -105,6 +98,6 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ sellers, sales: sales ?? [] });
   } catch (error) {
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+    return safeError("reports/sellers:GET", error);
   }
 }
