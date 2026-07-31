@@ -11,11 +11,11 @@ import {
   MarketingShell,
 } from "./components/MarketingPieces";
 import { getMarketingPlans } from "./plans";
+import { BRAND_TITLE, BRAND_DESCRIPTION } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: "حساب‌یار | مدیریت هوشمند فروش و انبارداری",
-  description:
-    "حساب‌یار به شما کمک می‌کند فاکتورها را سریع صادر کنید، موجودی انبار را در لحظه چک کنید و با گزارش‌های دقیق سود و زیان تصمیم بگیرید.",
+  title: BRAND_TITLE,
+  description: BRAND_DESCRIPTION,
 };
 
 /**

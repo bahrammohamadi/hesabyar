@@ -1,4 +1,12 @@
-export type ThemeId = "mehrjameh" | "emerald" | "royal" | "copper" | "slate" | "violet";
+export type ThemeId = "tarazoo" | "emerald" | "royal" | "copper" | "slate" | "violet";
+
+/**
+ * شناسه‌های قدیمی تم که پیش از تغییر نام برند در localStorage کاربران ذخیره شده‌اند.
+ * برای اینکه انتخاب تم کاربران فعلی از بین نرود، هنگام خواندن به شناسه‌ی جدید نگاشت می‌شوند.
+ */
+const LEGACY_THEME_IDS: Record<string, ThemeId> = {
+  mehrjameh: "tarazoo",
+};
 export type ThemeMode = "light" | "dark" | "system";
 
 export type ThemeDefinition = {
@@ -60,8 +68,8 @@ function brandScale(primary: string[], accent: string[], options?: {
 
 export const THEMES: ThemeDefinition[] = [
   {
-    id: "mehrjameh",
-    name: "مهرجامه اصلی",
+    id: "tarazoo",
+    name: "ترازو اصلی",
     description: "سبز یشمی عمیق + صورتی ملایم، هماهنگ با لوگوی ارسالی",
     swatches: ["#136451", "#0f4f41", "#ec8b98"],
     primaryHsl: "165 65% 24%",
@@ -140,13 +148,32 @@ export const THEMES: ThemeDefinition[] = [
   },
 ];
 
-export const DEFAULT_THEME: ThemeId = "mehrjameh";
+export const DEFAULT_THEME: ThemeId = "tarazoo";
 export const DEFAULT_MODE: ThemeMode = "light";
-export const THEME_STORAGE_KEY = "hesabyar-theme";
-export const MODE_STORAGE_KEY = "hesabyar-mode";
+export const THEME_STORAGE_KEY = "tarazoo-theme";
+export const MODE_STORAGE_KEY = "tarazoo-mode";
+
+/**
+ * کلیدهای قدیمی localStorage از دوران نام پیشین.
+ * فقط برای «خواندن» استفاده می‌شوند تا تنظیمات کاربران فعلی از دست نرود.
+ */
+export const LEGACY_THEME_STORAGE_KEY = "hesabyar-theme";
+export const LEGACY_MODE_STORAGE_KEY = "hesabyar-mode";
+
+/** نام رویدادهای تغییر تم و حالت. */
+export const THEME_CHANGE_EVENT = "tarazoo-theme-change";
+export const MODE_CHANGE_EVENT = "tarazoo-mode-change";
+
+/** شناسه‌ی قدیمی را در صورت وجود به شناسه‌ی فعلی تبدیل می‌کند. */
+export function normalizeThemeId(id?: string | null): ThemeId {
+  if (!id) return DEFAULT_THEME;
+  const mapped = LEGACY_THEME_IDS[id] ?? id;
+  return THEMES.some((theme) => theme.id === mapped) ? (mapped as ThemeId) : DEFAULT_THEME;
+}
 
 export function getTheme(id?: string | null) {
-  return THEMES.find((theme) => theme.id === id) ?? THEMES.find((theme) => theme.id === DEFAULT_THEME)!;
+  const normalized = normalizeThemeId(id);
+  return THEMES.find((theme) => theme.id === normalized) ?? THEMES.find((theme) => theme.id === DEFAULT_THEME)!;
 }
 
 export function isNightTime() {

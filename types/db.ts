@@ -1,4 +1,4 @@
-// تایپ‌های دیتابیس حساب‌یار — مطابق اسکیمای Supabase
+// تایپ‌های دیتابیس ترازو — مطابق اسکیمای Supabase
 
 export type Role = "owner" | "manager" | "cashier" | "inventory" | "accountant";
 export type ContactType = "customer" | "supplier" | "both";

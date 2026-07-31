@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Clock, LogOut, ShieldAlert, ShieldX } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { BRAND_NAME } from "@/lib/brand";
 
 /**
  * صفحه‌ی «در انتظار تأیید».
@@ -98,7 +99,7 @@ export default async function PendingApprovalPage() {
         </div>
 
         <p className="mt-5 text-[11px] leading-6 text-muted-foreground">
-          اگر فکر می‌کنید اشتباهی رخ داده، با پشتیبانی حساب‌یار تماس بگیرید.
+          اگر فکر می‌کنید اشتباهی رخ داده، با پشتیبانی {BRAND_NAME} تماس بگیرید.
         </p>
       </div>
     </main>

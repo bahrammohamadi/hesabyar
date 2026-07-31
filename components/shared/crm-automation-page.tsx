@@ -12,6 +12,7 @@ import { EntityLink } from "@/components/shared/entity-link";
 import { PhoneLink } from "@/components/shared/phone-link";
 import { formatToman, toFaDigits, toJalali } from "@/lib/utils/format";
 import { logActivity } from "@/lib/utils/activity-log";
+import { BRAND_NAME } from "@/lib/brand";
 
 type AutomationType = "inactive" | "birthday" | "vip" | "wallet" | "followup";
 
@@ -101,7 +102,7 @@ export function CrmAutomationPage() {
       const birth = contact.meta?.birth_date;
       if (birth) {
         const days = daysUntil(String(birth));
-        if (days <= 30) birthday.push({ contact, reason: `تولد تا ${toFaDigits(days)} روز آینده`, message: `${contact.name} عزیز، تولدتون نزدیکه؛ هدیه ویژه مهرجامه برای شما آماده است.` });
+        if (days <= 30) birthday.push({ contact, reason: `تولد تا ${toFaDigits(days)} روز آینده`, message: `${contact.name} عزیز، تولدتون نزدیکه؛ هدیه ویژه ${BRAND_NAME} برای شما آماده است.` });
       }
       if (stat.total >= vipAmount) vip.push({ contact, total: stat.total, lastDate: stat.lastDate, reason: `خرید کل ${formatToman(stat.total)}`, message: `${contact.name} عزیز، شما از مشتریان ویژه ما هستید. پیشنهاد اختصاصی برای شما داریم.` });
       const credit = Number(contact.meta?.wallet_credit ?? 0) || 0;

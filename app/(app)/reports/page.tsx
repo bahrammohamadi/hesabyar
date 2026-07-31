@@ -613,7 +613,7 @@ export function ReportsPageContent({ forcedTab }: { forcedTab?: TabId }) {
       if (error) { alert(error.message); return; }
       rows = data ?? [];
     }
-    downloadCsv(`hesabyar-${activeTab}-${new Date().toISOString().slice(0,10)}.csv`, rows);
+    downloadCsv(`tarazoo-${activeTab}-${new Date().toISOString().slice(0,10)}.csv`, rows);
   }
 
   // URL params support

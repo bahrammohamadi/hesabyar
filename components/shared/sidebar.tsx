@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
 import { usePermission } from "@/lib/hooks/usePermission";
+import { BRAND_NAME, BRAND_VERSION } from "@/lib/brand";
 import {
   LayoutDashboard, Package, Warehouse, ShoppingCart, Receipt, Users,
   Wallet, Settings, BarChart3, X, ChevronDown,
@@ -171,12 +172,12 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           <div className="flex items-center gap-2">
             <img 
               src="/logo.png" 
-              alt="حسابیار" 
+              alt={BRAND_NAME} 
               className="w-9 h-9 rounded-xl object-contain bg-white border border-slate-100"
               onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.3'; }}
             />
             <div className="leading-tight">
-              <div className="font-bold text-slate-800 text-sm">مهرجامه</div>
+              <div className="font-bold text-slate-800 text-sm">{BRAND_NAME}</div>
               <div className="text-[10px] text-slate-400">سیستم مدیریت فروش</div>
             </div>
           </div>
@@ -260,7 +261,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         {/* Footer */}
         <div className="p-4 border-t border-slate-100">
           <div className="text-xs text-slate-400 text-center">
-            مهرجامه — نسخه ۱.۰
+            {BRAND_NAME} — نسخه {BRAND_VERSION}
           </div>
         </div>
       </aside>
