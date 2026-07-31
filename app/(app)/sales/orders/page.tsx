@@ -214,7 +214,7 @@ export default function SalesOrdersPage() {
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
           <input className="input pr-9" placeholder="جستجو شماره سفارش یا مشتری..." value={search} onChange={e => setSearch(e.target.value)} />
         </div>
-        <select className="input w-auto" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+        <select aria-label="فیلتر وضعیت" className="input w-auto" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
           <option value="all">همه وضعیت‌ها</option>
           <option value="pending">در انتظار</option>
           <option value="confirmed">تأیید شده</option>
@@ -227,7 +227,7 @@ export default function SalesOrdersPage() {
         <div className="card p-4 text-center"><div className="text-2xl font-bold text-foreground">{toFaDigits(orders.length)}</div><div className="text-xs text-muted-foreground">کل سفارش‌ها</div></div>
         <div className="card p-4 text-center"><div className="text-2xl font-black tabular-nums text-warning">{toFaDigits(orders.filter(o => o.status === "pending").length)}</div><div className="text-xs text-muted-foreground">در انتظار</div></div>
         <div className="card p-4 text-center"><div className="text-2xl font-black tabular-nums text-info">{toFaDigits(orders.filter(o => o.status === "confirmed").length)}</div><div className="text-xs text-muted-foreground">تأیید شده</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-success">{formatToman(orders.filter(o => o.status !== "cancelled").reduce((sum, o) => sum + (o.total || 0), 0))}</div><div className="text-xs text-muted-foreground">مجموع</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-success-onSoft">{formatToman(orders.filter(o => o.status !== "cancelled").reduce((sum, o) => sum + (o.total || 0), 0))}</div><div className="text-xs text-muted-foreground">مجموع</div></div>
       </div>
 
       {loading ? <Spinner label="در حال بارگذاری..." /> :
@@ -285,8 +285,7 @@ export default function SalesOrdersPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="label">مشتری</label>
-                <select className="input" value={customerId} onChange={e => setCustomerId(e.target.value)}>
+                <label className="label">مشتری</label><select aria-label="مشتری" className="input" value={customerId} onChange={e => setCustomerId(e.target.value)}>
                   <option value="">انتخاب مشتری...</option>
                   {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
@@ -341,8 +340,7 @@ export default function SalesOrdersPage() {
             </div>
 
             <div>
-              <label className="label">تخفیف (تومان)</label>
-              <input type="number" className="input" value={discount} onChange={e => setDiscount(e.target.value)} />
+              <label className="label">تخفیف (تومان)</label><input aria-label="تخفیف (تومان)" type="number" className="input" value={discount} onChange={e => setDiscount(e.target.value)} />
             </div>
 
             <div>

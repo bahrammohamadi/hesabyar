@@ -142,7 +142,7 @@ export default function SalesReturnsPage() {
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <div className="card p-4 text-center"><div className="text-2xl font-bold text-foreground">{toFaDigits(returns.length)}</div><div className="text-xs text-muted-foreground">تعداد مرجوعی</div></div>
         <div className="card p-4 text-center"><div className="text-2xl font-bold text-destructive">{formatToman(returns.reduce((sum, r) => sum + (r.total || 0), 0))}</div><div className="text-xs text-muted-foreground">مجموع مرجوعی</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-success">{formatToman(returns.filter(r => r.refund_method === "cash").reduce((sum, r) => sum + (r.total || 0), 0))}</div><div className="text-xs text-muted-foreground">برگشت نقدی</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-success-onSoft">{formatToman(returns.filter(r => r.refund_method === "cash").reduce((sum, r) => sum + (r.total || 0), 0))}</div><div className="text-xs text-muted-foreground">برگشت نقدی</div></div>
       </div>
 
       {loading ? <Spinner label="در حال بارگذاری..." /> :
@@ -186,8 +186,7 @@ export default function SalesReturnsPage() {
         <Modal open onClose={() => setShowForm(false)} title="ثبت مرجوعی فروش" size="lg">
           <div className="space-y-4">
             <div>
-              <label className="label">فاکتور اصلی</label>
-              <select className="input" value={selectedSale} onChange={e => setSelectedSale(e.target.value)}>
+              <label className="label">فاکتور اصلی</label><select aria-label="فاکتور اصلی" className="input" value={selectedSale} onChange={e => setSelectedSale(e.target.value)}>
                 <option value="">انتخاب فاکتور...</option>
                 {sales.map(s => <option key={s.id} value={s.id}>{s.invoice_no} - {s.customer?.name || "بدون مشتری"} - {formatToman(s.total)}</option>)}
               </select>
@@ -212,16 +211,14 @@ export default function SalesReturnsPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="label">روش برگشت</label>
-                <select className="input" value={refundMethod} onChange={e => setRefundMethod(e.target.value)}>
+                <label className="label">روش برگشت</label><select aria-label="روش برگشت" className="input" value={refundMethod} onChange={e => setRefundMethod(e.target.value)}>
                   <option value="cash">نقدی</option>
                   <option value="card">کارت</option>
                   <option value="credit">اعتبار مشتری</option>
                 </select>
               </div>
               <div>
-                <label className="label">دلیل مرجوعی</label>
-                <input className="input" value={reason} onChange={e => setReason(e.target.value)} placeholder="دلیل مرجوعی..." />
+                <label className="label">دلیل مرجوعی</label><input aria-label="دلیل مرجوعی" className="input" value={reason} onChange={e => setReason(e.target.value)} placeholder="دلیل مرجوعی..." />
               </div>
             </div>
 

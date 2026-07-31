@@ -155,9 +155,9 @@ export default function ChecksPage() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-warning-onSoft">{formatToman(totalPendingReceived)}</div><div className="text-xs text-muted-foreground">دریافتی در انتظار</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-warning-onSoft">{formatToman(totalPendingIssued)}</div><div className="text-xs text-muted-foreground">صادره در انتظار</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-success-onSoft">{formatToman(receivedChecks.filter(c => c.status === "cashed").reduce((sum, c) => sum + c.amount, 0))}</div><div className="text-xs text-muted-foreground">وصول شده</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-warning-onSoft-onSoft">{formatToman(totalPendingReceived)}</div><div className="text-xs text-muted-foreground">دریافتی در انتظار</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-warning-onSoft-onSoft">{formatToman(totalPendingIssued)}</div><div className="text-xs text-muted-foreground">صادره در انتظار</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-success-onSoft-onSoft">{formatToman(receivedChecks.filter(c => c.status === "cashed").reduce((sum, c) => sum + c.amount, 0))}</div><div className="text-xs text-muted-foreground">وصول شده</div></div>
         <div className="card p-4 text-center"><div className="text-2xl font-bold text-destructive">{formatToman(receivedChecks.filter(c => c.status === "returned").reduce((sum, c) => sum + c.amount, 0))}</div><div className="text-xs text-muted-foreground">برگشتی</div></div>
       </div>
 
@@ -234,31 +234,26 @@ export default function ChecksPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="label">نوع چک</label>
-                <select className="input" value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })}>
+                <label className="label">نوع چک</label><select aria-label="نوع چک" className="input" value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })}>
                   <option value="received">دریافتی</option>
                   <option value="issued">صادره</option>
                 </select>
               </div>
               <div>
-                <label className="label">شماره چک *</label>
-                <input className="input" value={formData.check_no} onChange={e => setFormData({ ...formData, check_no: e.target.value })} placeholder="شماره چک" />
+                <label className="label">شماره چک *</label><input aria-label="شماره چک *" className="input" value={formData.check_no} onChange={e => setFormData({ ...formData, check_no: e.target.value })} placeholder="شماره چک" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="label">بانک</label>
-                <input className="input" value={formData.bank_name} onChange={e => setFormData({ ...formData, bank_name: e.target.value })} placeholder="نام بانک" />
+                <label className="label">بانک</label><input aria-label="بانک" className="input" value={formData.bank_name} onChange={e => setFormData({ ...formData, bank_name: e.target.value })} placeholder="نام بانک" />
               </div>
               <div>
-                <label className="label">شماره حساب</label>
-                <input className="input" value={formData.account_no} onChange={e => setFormData({ ...formData, account_no: e.target.value })} placeholder="شماره حساب" />
+                <label className="label">شماره حساب</label><input aria-label="شماره حساب" className="input" value={formData.account_no} onChange={e => setFormData({ ...formData, account_no: e.target.value })} placeholder="شماره حساب" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="label">مبلغ (تومان) *</label>
-                <input type="number" className="input" value={formData.amount} onChange={e => setFormData({ ...formData, amount: e.target.value })} placeholder="مبلغ" />
+                <label className="label">مبلغ (تومان) *</label><input aria-label="مبلغ (تومان) *" type="number" className="input" value={formData.amount} onChange={e => setFormData({ ...formData, amount: e.target.value })} placeholder="مبلغ" />
               </div>
               <div>
 <DatePicker 
@@ -269,8 +264,7 @@ export default function ChecksPage() {
               </div>
             </div>
             <div>
-              <label className="label">طرف حساب</label>
-              <select className="input" value={formData.contact_id} onChange={e => setFormData({ ...formData, contact_id: e.target.value })}>
+              <label className="label">طرف حساب</label><select aria-label="طرف حساب" className="input" value={formData.contact_id} onChange={e => setFormData({ ...formData, contact_id: e.target.value })}>
                 <option value="">انتخاب...</option>
                 {contacts.map(c => <option key={c.id} value={c.id}>{c.name} ({c.type === "customer" ? "مشتری" : c.type === "supplier" ? "تامین‌کننده" : "هردو"})</option>)}
               </select>

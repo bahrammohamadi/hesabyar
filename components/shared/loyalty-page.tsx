@@ -156,7 +156,7 @@ export function LoyaltyPage({ mode }: { mode: LoyaltyMode }) {
         <div className="space-y-4">
           {campaignRows.map((campaign) => (
             <div key={campaign.title} className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg">
-              <div className="flex items-center gap-2 mb-3"><MessageCircle size={17} className="text-primary" /><div><h3 className="font-bold text-foreground">{campaign.title}</h3><p className="text-xs text-muted-foreground">{campaign.hint}</p></div></div>
+              <div className="flex items-center gap-2 mb-3"><MessageCircle size={17} className="text-primary" /><div><h2 className="font-bold text-foreground">{campaign.title}</h2><p className="text-xs text-muted-foreground">{campaign.hint}</p></div></div>
               {!campaign.rows.length ? <EmptyState title="موردی وجود ندارد" /> : <CustomerRows rows={campaign.rows} onWallet={setWalletContact} />}
             </div>
           ))}
@@ -204,11 +204,11 @@ function LoyaltySettingsPage({ settings, orgId }: { settings: LoyaltySettings; o
       <PageHeader title={MODE.settings.title} subtitle={MODE.settings.subtitle} />
       <div className="rounded-[24px] border border-white/80 bg-white/90 p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div><label className="label">بازه محاسبه خریدها (روز)</label><input className="input" inputMode="numeric" value={periodDays} onChange={(e) => setPeriodDays(e.target.value)} /><p className="text-xs text-muted-foreground mt-1">مثلاً 365 یعنی خریدهای یک سال اخیر</p></div>
-          <div><label className="label">حداقل خرید VIP (تومان)</label><input className="input" inputMode="numeric" value={vipAmount} onChange={(e) => setVipAmount(e.target.value)} /></div>
-          <div><label className="label">حداقل تعداد فاکتور برای وفادار</label><input className="input" inputMode="numeric" value={loyalCount} onChange={(e) => setLoyalCount(e.target.value)} /></div>
-          <div><label className="label">غیرفعال بعد از چند روز بدون خرید</label><input className="input" inputMode="numeric" value={inactiveDays} onChange={(e) => setInactiveDays(e.target.value)} /></div>
-          <div><label className="label">هر چند تومان = یک امتیاز</label><input className="input" inputMode="numeric" value={pointPerToman} onChange={(e) => setPointPerToman(e.target.value)} /></div>
+          <div><label className="label">بازه محاسبه خریدها (روز)</label><input aria-label="بازه محاسبه خریدها (روز)" className="input" inputMode="numeric" value={periodDays} onChange={(e) => setPeriodDays(e.target.value)} /><p className="text-xs text-muted-foreground mt-1">مثلاً 365 یعنی خریدهای یک سال اخیر</p></div>
+          <div><label className="label">حداقل خرید VIP (تومان)</label><input aria-label="حداقل خرید VIP (تومان)" className="input" inputMode="numeric" value={vipAmount} onChange={(e) => setVipAmount(e.target.value)} /></div>
+          <div><label className="label">حداقل تعداد فاکتور برای وفادار</label><input aria-label="حداقل تعداد فاکتور برای وفادار" className="input" inputMode="numeric" value={loyalCount} onChange={(e) => setLoyalCount(e.target.value)} /></div>
+          <div><label className="label">غیرفعال بعد از چند روز بدون خرید</label><input aria-label="غیرفعال بعد از چند روز بدون خرید" className="input" inputMode="numeric" value={inactiveDays} onChange={(e) => setInactiveDays(e.target.value)} /></div>
+          <div><label className="label">هر چند تومان = یک امتیاز</label><input aria-label="هر چند تومان = یک امتیاز" className="input" inputMode="numeric" value={pointPerToman} onChange={(e) => setPointPerToman(e.target.value)} /></div>
         </div>
         {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3 mt-4">{error}</div>}
         <button onClick={save} disabled={saving} className="btn-primary mt-5">ذخیره قوانین باشگاه</button>
@@ -269,8 +269,8 @@ function WalletModal({ row, onClose }: { row: LoyaltyRow; onClose: () => void })
     <Modal open onClose={onClose} title="اعتبار مشتری" size="md">
       <div className="space-y-4">
         <div className="rounded-xl bg-muted p-3"><EntityLink type="contact" id={row.contact.id}>{row.contact.name}</EntityLink><div className="text-xs text-muted-foreground mt-1">اعتبار فعلی: {formatToman(row.walletCredit)}</div></div>
-        <div><label className="label">اعتبار جدید (تومان)</label><input className="input" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} /></div>
-        <div><label className="label">توضیح</label><input className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
+        <div><label className="label">اعتبار جدید (تومان)</label><input aria-label="اعتبار جدید (تومان)" className="input" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} /></div>
+        <div><label className="label">توضیح</label><input aria-label="توضیح" className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
         {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3">{error}</div>}
         <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">ذخیره اعتبار</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
       </div>

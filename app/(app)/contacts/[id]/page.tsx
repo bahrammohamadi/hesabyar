@@ -342,20 +342,20 @@ function ContactEditModal({ contact, onClose, onSaved }: { contact: any; onClose
     <Modal open onClose={onClose} title="ویرایش شخص" size="lg">
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div><label className="label">نام</label><input className="input" value={firstName} onChange={e=>{setFirstName(e.target.value); setName([e.target.value,lastName].filter(Boolean).join(" "));}} /></div>
-          <div><label className="label">نام خانوادگی</label><input className="input" value={lastName} onChange={e=>{setLastName(e.target.value); setName([firstName,e.target.value].filter(Boolean).join(" "));}} /></div>
-          <div><label className="label">نام نمایشی *</label><input className="input" value={name} onChange={e=>setName(e.target.value)} /></div>
-          <div><label className="label">کد</label><input className="input text-left" dir="ltr" value={code} onChange={e=>setCode(e.target.value)} /></div>
+          <div><label className="label">نام</label><input aria-label="نام" className="input" value={firstName} onChange={e=>{setFirstName(e.target.value); setName([e.target.value,lastName].filter(Boolean).join(" "));}} /></div>
+          <div><label className="label">نام خانوادگی</label><input aria-label="نام خانوادگی" className="input" value={lastName} onChange={e=>{setLastName(e.target.value); setName([firstName,e.target.value].filter(Boolean).join(" "));}} /></div>
+          <div><label className="label">نام نمایشی *</label><input aria-label="نام نمایشی *" className="input" value={name} onChange={e=>setName(e.target.value)} /></div>
+          <div><label className="label">کد</label><input aria-label="کد" className="input text-left" dir="ltr" value={code} onChange={e=>setCode(e.target.value)} /></div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div><label className="label">نوع</label><select className="input" value={type} onChange={e=>setType(e.target.value)}><option value="customer">مشتری</option><option value="supplier">تامین‌کننده</option><option value="both">هر دو</option></select></div>
-          <div><label className="label">تماس</label><input className="input text-left" dir="ltr" value={phone} onChange={e=>setPhone(e.target.value)} /></div>
-          <div><label className="label">ایمیل</label><input className="input text-left" dir="ltr" value={email} onChange={e=>setEmail(e.target.value)} /></div>
+          <div><label className="label">نوع</label><select aria-label="نوع" className="input" value={type} onChange={e=>setType(e.target.value)}><option value="customer">مشتری</option><option value="supplier">تامین‌کننده</option><option value="both">هر دو</option></select></div>
+          <div><label className="label">تماس</label><input aria-label="تماس" className="input text-left" dir="ltr" value={phone} onChange={e=>setPhone(e.target.value)} /></div>
+          <div><label className="label">ایمیل</label><input aria-label="ایمیل" className="input text-left" dir="ltr" value={email} onChange={e=>setEmail(e.target.value)} /></div>
           <div><label className="label">تاریخ تولد</label><DatePicker value={birthDate} onChange={setBirthDate} /></div>
-          <div><label className="label">کد ملی</label><input className="input text-left" dir="ltr" value={nationalCode} onChange={e=>setNationalCode(e.target.value)} /></div>
-          <div><label className="label">شغل</label><input className="input" value={jobTitle} onChange={e=>setJobTitle(e.target.value)} /></div>
+          <div><label className="label">کد ملی</label><input aria-label="کد ملی" className="input text-left" dir="ltr" value={nationalCode} onChange={e=>setNationalCode(e.target.value)} /></div>
+          <div><label className="label">شغل</label><input aria-label="شغل" className="input" value={jobTitle} onChange={e=>setJobTitle(e.target.value)} /></div>
         </div>
-        <div><label className="label">آدرس</label><input className="input" value={address} onChange={e=>setAddress(e.target.value)} /></div>
+        <div><label className="label">آدرس</label><input aria-label="آدرس" className="input" value={address} onChange={e=>setAddress(e.target.value)} /></div>
         <div><label className="label">توضیحات</label><textarea className="input" rows={2} value={desc} onChange={e=>setDesc(e.target.value)} /></div>
         {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm px-4 py-3">{error}</div>}
         <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving&&<Loader2 className="animate-spin" size={18}/>} ذخیره</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>

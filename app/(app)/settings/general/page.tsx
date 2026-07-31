@@ -75,8 +75,7 @@ export default function GeneralSettingsPage() {
           <div className="mb-4 flex items-center gap-2 font-extrabold text-foreground"><Building2 size={18} /> اطلاعات کسب‌وکار</div>
           <div className="grid gap-3 md:grid-cols-[1fr_auto]">
             <div>
-              <label className="label">نام سازمان / فروشگاه</label>
-              <input className="input" value={name} onChange={(event) => setName(event.target.value)} placeholder="نام کسب‌وکار" />
+              <label className="label">نام سازمان / فروشگاه</label><input aria-label="نام سازمان / فروشگاه" className="input" value={name} onChange={(event) => setName(event.target.value)} placeholder="نام کسب‌وکار" />
             </div>
             <button onClick={() => updateOrg.mutate()} disabled={updateOrg.isPending || !name.trim()} className="btn-primary self-end">
               {updateOrg.isPending ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />} ذخیره
