@@ -1,41 +1,44 @@
 import { NextResponse } from "next/server";
-import { createClient as createServiceClient } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/server";
+import {
+  requireMember,
+  serviceClient,
+  safeError,
+  boundedInt,
+} from "@/lib/security/api-guard";
+import { hit, clientIp, tooManyRequests } from "@/lib/security/rate-limit";
 import { roleHasPermission } from "@/lib/permissions";
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-function service() {
-  if (!SERVICE_KEY) throw new Error("SUPABASE_SERVICE_ROLE_KEY تنظیم نشده است");
-  return createServiceClient(SUPABASE_URL, SERVICE_KEY, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-}
 
 export async function GET(request: Request) {
   try {
-    const supabase = createClient();
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const rl = hit(`activity:${clientIp(request)}`, { limit: 60, windowSeconds: 60 });
+    if (!rl.allowed) return tooManyRequests(rl.retryAfterSeconds);
 
-    const { data: membership, error: memError } = await supabase
-      .from("memberships")
-      .select("org_id, role")
-      .eq("user_id", user.id)
-      .eq("is_active", true)
-      .limit(1)
-      .single();
-    if (memError || !membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    if (!roleHasPermission(membership.role as any, "reports.view") && !roleHasPermission(membership.role as any, "settings.manage")) {
+    const url = new URL(request.url);
+    const auth = await requireMember(url.searchParams.get("org_id"));
+    if ("response" in auth) return auth.response;
+    const { membership } = auth.ctx;
+
+    if (
+      !roleHasPermission(membership.role as never, "reports.view") &&
+      !roleHasPermission(membership.role as never, "settings.manage")
+    ) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const url = new URL(request.url);
-    const entityType = url.searchParams.get("entity_type");
-    const action = url.searchParams.get("action");
-    const limit = Math.min(Number(url.searchParams.get("limit") || 100), 200);
-    const svc = service();
+    // فهرست سفید: ورودی آزاد مستقیم وارد فیلتر دیتابیس نمی‌شود.
+    const ALLOWED_ENTITIES = new Set([
+      "sale", "purchase", "contact", "product", "variant",
+      "transaction", "stock_movement", "user", "organization",
+    ]);
+    const ALLOWED_ACTIONS = new Set(["create", "update", "delete", "cancel", "login", "restore"]);
+
+    const rawEntity = url.searchParams.get("entity_type");
+    const rawAction = url.searchParams.get("action");
+    const entityType = rawEntity && ALLOWED_ENTITIES.has(rawEntity) ? rawEntity : null;
+    const action = rawAction && ALLOWED_ACTIONS.has(rawAction) ? rawAction : null;
+    // Number(null) قبلاً می‌توانست NaN بدهد؛ حالا کران‌دار است.
+    const limit = boundedInt(url.searchParams.get("limit"), 1, 200, 100);
+    const svc = serviceClient();
 
     let q = svc
       .from("activity_logs")
@@ -66,6 +69,6 @@ export async function GET(request: Request) {
       })),
     });
   } catch (error) {
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+    return safeError("activity:GET", error);
   }
 }

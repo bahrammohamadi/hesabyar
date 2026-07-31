@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
-import { createClient as createServiceClient } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/server";
+import {
+  requirePlatformAdmin,
+  safeError,
+  isUuid,
+  readJsonBody,
+} from "@/lib/security/api-guard";
+import { hit, clientIp, tooManyRequests } from "@/lib/security/rate-limit";
 
 /**
  * API پنل سوپرادمین — فهرست سازمان‌ها و تأیید/رد آن‌ها.
@@ -11,44 +16,13 @@ import { createClient } from "@/lib/supabase/server";
  *     دوباره چک می‌کنند، پس حتی اگر این لایه دور زده شود، عملیات رد می‌شود.
  */
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-function service() {
-  if (!SERVICE_KEY) throw new Error("SUPABASE_SERVICE_ROLE_KEY تنظیم نشده است");
-  return createServiceClient(SUPABASE_URL, SERVICE_KEY, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-}
-
-/** آیا کاربر جاری سوپرادمین است؟ */
-async function requirePlatformAdmin() {
-  const supabase = createClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-  if (error || !user) {
-    return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
-  }
-
-  const svc = service();
-  const { data: admin } = await svc
-    .from("platform_admins")
-    .select("user_id, role")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  if (!admin) {
-    return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
-  }
-  return { user, admin, svc };
-}
-
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const rl = hit(`admin-orgs-get:${clientIp(request)}`, { limit: 60, windowSeconds: 60 });
+    if (!rl.allowed) return tooManyRequests(rl.retryAfterSeconds);
+
     const auth = await requirePlatformAdmin();
-    if (auth.error) return auth.error;
+    if ("response" in auth) return auth.response;
 
     const { data, error } = await auth.svc
       .from("v_admin_organizations")
@@ -70,23 +44,30 @@ export async function GET() {
       organizations: (data ?? []).map((o: any) => ({ ...o, owner_email: emails[o.owner_id] ?? "" })),
     });
   } catch (e) {
-    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+    return safeError("admin/organizations:GET", e);
   }
 }
 
 export async function POST(request: Request) {
   try {
+    // عملیات تأیید/رد حساس است: سقف سخت‌گیرانه‌تر.
+    const rl = hit(`admin-orgs-post:${clientIp(request)}`, {
+      limit: 20,
+      windowSeconds: 60,
+      blockSeconds: 300,
+    });
+    if (!rl.allowed) return tooManyRequests(rl.retryAfterSeconds);
+
     const auth = await requirePlatformAdmin();
-    if (auth.error) return auth.error;
+    if ("response" in auth) return auth.response;
 
-    const body = await request.json();
-    const { org_id, action, reason } = body as {
-      org_id?: string;
-      action?: "approve" | "reject";
-      reason?: string;
-    };
+    const parsed = await readJsonBody<{ org_id?: string; action?: string; reason?: string }>(request);
+    if ("response" in parsed) return parsed.response;
+    const { org_id, action } = parsed.data;
+    // متن دلیل محدود می‌شود تا ستون متنی با payload چندمگابایتی پر نشود.
+    const reason = typeof parsed.data.reason === "string" ? parsed.data.reason.slice(0, 500) : null;
 
-    if (!org_id || (action !== "approve" && action !== "reject")) {
+    if (!isUuid(org_id) || (action !== "approve" && action !== "reject")) {
       return NextResponse.json({ error: "پارامترهای نامعتبر" }, { status: 400 });
     }
 
@@ -97,11 +78,11 @@ export async function POST(request: Request) {
     */
     const rpc =
       action === "approve"
-        ? auth.svc.rpc("approve_organization", { p_org: org_id, p_actor: auth.user.id })
+        ? auth.svc.rpc("approve_organization", { p_org: org_id, p_actor: auth.userId })
         : auth.svc.rpc("reject_organization", {
             p_org: org_id,
-            p_reason: reason ?? null,
-            p_actor: auth.user.id,
+            p_reason: reason,
+            p_actor: auth.userId,
           });
 
     const { error } = await rpc;
@@ -109,6 +90,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (e) {
-    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+    return safeError("admin/organizations:POST", e);
   }
 }
