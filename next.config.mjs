@@ -24,14 +24,12 @@ const csp = [
   "object-src 'none'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   /*
-    jsDelivr برای فونت Vazirmatn لازم است.
-    globals.css خط اول یک @import از این CDN دارد؛ بدون اجازه‌ی صریح،
-    CSP آن را بلاک می‌کند و کل رابط با فونت پیش‌فرض سیستم رندر می‌شود.
-    (این مورد در تست مرورگر واقعی کشف شد، نه در بیلد.)
+    از زمانی که فونت با next/font سرو می‌شود، دیگر نیازی به
+    اجازه دادن به jsdelivr.net نیست — سطح حمله کمتر شد.
   */
-  "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+  "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://*.supabase.co",
-  "font-src 'self' data: https://cdn.jsdelivr.net",
+  "font-src 'self' data:",
   `connect-src 'self' ${supabaseHost} https://*.supabase.co wss://*.supabase.co`,
   "upgrade-insecure-requests",
 ].join("; ");

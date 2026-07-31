@@ -19,7 +19,10 @@ export default async function MarketingLayout({ children }: { children: ReactNod
   return (
     <SiteShell>
       <SiteHeader isAuthenticated={Boolean(user)} />
-      <main>{children}</main>
+      {/* id هدف لینک «پرش به محتوا»؛ tabIndex={-1} تا فوکوس واقعاً منتقل شود */}
+      <main id="main-content" tabIndex={-1} className="focus:outline-none">
+        {children}
+      </main>
       <SiteFooter />
     </SiteShell>
   );

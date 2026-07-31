@@ -126,8 +126,16 @@ export default function FeaturesPage() {
         description={`${BRAND_NAME} از ثبت فاکتور تا گزارش سود و زیان را در یک سامانه‌ی یکپارچه جمع کرده است.`}
       />
 
-      <section className="py-10 sm:py-14">
+      <section aria-labelledby="highlights-heading" className="py-10 sm:py-14">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          {/*
+            عنوان بصری ندارد ولی برای صفحه‌خوان لازم است:
+            بدون آن، h3 کارت‌ها بلافاصله بعد از h1 می‌آمد و
+            axe آن را heading-order violation گزارش می‌کرد.
+          */}
+          <h2 id="highlights-heading" className="sr-only">
+            ویژگی‌های کلیدی
+          </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {HIGHLIGHTS.map((h) => (
               <div

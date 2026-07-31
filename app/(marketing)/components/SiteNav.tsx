@@ -83,7 +83,7 @@ export function SiteMobileNav({
         onClick={() => setOpen(true)}
         aria-label="باز کردن منو"
         aria-expanded={open}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border text-foreground transition hover:bg-muted lg:hidden"
+        className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border text-foreground transition hover:bg-muted lg:hidden"
       >
         <Menu size={18} />
       </button>
@@ -102,7 +102,7 @@ export function SiteMobileNav({
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="بستن منو"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border text-foreground transition hover:bg-muted"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border text-foreground transition hover:bg-muted"
               >
                 <X size={18} />
               </button>

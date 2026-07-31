@@ -85,7 +85,7 @@ export default async function PricingPage() {
                   {plan.unit ? (
                     <span
                       className={`pb-0.5 text-[11px] ${
-                        plan.featured ? "text-primary-foreground/70" : "text-muted-foreground"
+                        plan.featured ? "text-primary-foreground/85" : "text-muted-foreground"
                       }`}
                     >
                       {plan.unit}
@@ -95,7 +95,7 @@ export default async function PricingPage() {
 
                 <p
                   className={`mt-2 text-xs leading-7 ${
-                    plan.featured ? "text-primary-foreground/75" : "text-muted-foreground"
+                    plan.featured ? "text-primary-foreground/85" : "text-muted-foreground"
                   }`}
                 >
                   {plan.note}

@@ -59,7 +59,7 @@ function ConfirmDialog({ state, onCancel, onConfirm }: { state: ConfirmState | n
   const isDanger = tone === "danger";
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm" style={{ zIndex: "var(--z-confirm)" }} dir="rtl" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
-      <div className="w-full max-w-md overflow-hidden rounded-3xl border border-white/70 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+      <div className="w-full max-w-md overflow-hidden rounded-2xl border border-white/70 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
         <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
           <div className="flex items-start gap-3">
             <div className={isDanger ? "flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-50 text-destructive" : "flex h-11 w-11 items-center justify-center rounded-2xl bg-info-soft text-info"}>

@@ -34,45 +34,63 @@ export const SITE_NAV = [
  */
 export function SiteHeader({ isAuthenticated }: { isAuthenticated: boolean }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-        <Link href="/" className="flex shrink-0 items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Receipt size={18} />
-          </span>
-          <span className="text-base font-black text-foreground">{BRAND_NAME}</span>
-        </Link>
+    <>
+      {/*
+        پرش به محتوا — WCAG 2.4.1.
+        فقط هنگام فوکوس کیبورد ظاهر می‌شود و به کاربر اجازه می‌دهد
+        از ۷ لینک ناوبری رد شود.
+      */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:right-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-primary-foreground"
+      >
+        پرش به محتوای اصلی
+      </a>
 
-        <SiteNav items={SITE_NAV} />
+      <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
+          <Link
+            href="/"
+            aria-label={`${BRAND_NAME} — صفحه اصلی`}
+            className="flex min-h-11 shrink-0 items-center gap-2"
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+              <Receipt size={18} aria-hidden />
+            </span>
+            <span className="text-base font-black text-foreground">{BRAND_NAME}</span>
+          </Link>
 
-        <div className="flex shrink-0 items-center gap-2">
-          {isAuthenticated ? (
-            <Link
-              href="/dashboard"
-              className="inline-flex min-h-9 items-center rounded-xl bg-primary px-3.5 text-sm font-bold text-primary-foreground transition hover:bg-primary/90 active:scale-95"
-            >
-              ورود به پنل
-            </Link>
-          ) : (
-            <>
+          <SiteNav items={SITE_NAV} />
+
+          <div className="flex shrink-0 items-center gap-2">
+            {isAuthenticated ? (
               <Link
-                href="/login"
-                className="hidden min-h-9 items-center rounded-xl px-3 text-sm font-bold text-foreground/80 transition hover:bg-muted hover:text-foreground sm:inline-flex"
+                href="/dashboard"
+                className="inline-flex min-h-11 items-center rounded-xl bg-primary px-3.5 text-sm font-bold text-primary-foreground transition hover:bg-primary/90 active:scale-95"
               >
-                ورود
+                ورود به پنل
               </Link>
-              <Link
-                href="/register"
-                className="inline-flex min-h-9 items-center rounded-xl bg-primary px-3.5 text-sm font-bold text-primary-foreground transition hover:bg-primary/90 active:scale-95"
-              >
-                ثبت‌نام رایگان
-              </Link>
-            </>
-          )}
-          <SiteMobileNav items={SITE_NAV} isAuthenticated={isAuthenticated} />
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="hidden min-h-11 items-center rounded-xl px-3 text-sm font-bold text-foreground/80 transition hover:bg-muted hover:text-foreground sm:inline-flex"
+                >
+                  ورود
+                </Link>
+                <Link
+                  href="/register"
+                  className="inline-flex min-h-11 items-center rounded-xl bg-primary px-3.5 text-sm font-bold text-primary-foreground transition hover:bg-primary/90 active:scale-95"
+                >
+                  ثبت‌نام رایگان
+                </Link>
+              </>
+            )}
+            <SiteMobileNav items={SITE_NAV} isAuthenticated={isAuthenticated} />
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 }
 
@@ -102,7 +120,7 @@ export function SiteFooter() {
         <div>
           <div className="flex items-center gap-2">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-              <Receipt size={18} />
+              <Receipt size={18} aria-hidden />
             </span>
             <span className="text-base font-black text-foreground">{BRAND_NAME}</span>
           </div>
@@ -127,7 +145,7 @@ export function SiteFooter() {
               <li key={l.href}>
                 <Link
                   href={l.href}
-                  className="text-xs text-muted-foreground transition hover:text-primary"
+                  className="inline-flex min-h-11 items-center text-xs text-muted-foreground transition hover:text-primary"
                 >
                   {l.label}
                 </Link>
@@ -154,12 +172,12 @@ function FooterColumn({
   return (
     <div>
       <h3 className="text-sm font-black text-foreground">{title}</h3>
-      <ul className="mt-3 space-y-2.5">
+      <ul className="mt-1">
         {links.map((l) => (
           <li key={l.href}>
             <Link
               href={l.href}
-              className="text-xs text-muted-foreground transition hover:text-primary"
+              className="inline-flex min-h-11 items-center text-xs text-muted-foreground transition hover:text-primary"
             >
               {l.label}
             </Link>
@@ -173,7 +191,7 @@ function FooterColumn({
 function ContactRow({ icon: Icon, text }: { icon: React.ElementType; text: string }) {
   return (
     <li className="flex items-center gap-2 text-xs text-muted-foreground">
-      <Icon size={14} className="shrink-0 text-primary" />
+      <Icon size={14} className="shrink-0 text-primary" aria-hidden />
       <span>{text}</span>
     </li>
   );
@@ -202,7 +220,7 @@ export function PageHero({
         {eyebrow ? (
           <span className="text-xs font-bold uppercase tracking-wider text-primary">{eyebrow}</span>
         ) : null}
-        <h1 className="mt-2 text-2xl font-black leading-[1.7] text-foreground sm:text-3xl">
+        <h1 className="mt-2 text-2xl font-black leading-[1.7] text-foreground sm:text-3xl text-balance">
           {title}
         </h1>
         {description ? (

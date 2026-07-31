@@ -1,4 +1,4 @@
-@import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css');
+/* فونت از طریق next/font در app/layout.tsx بارگذاری می‌شود (self-hosted). */
 
 @tailwind base;
 @tailwind components;
@@ -7,7 +7,7 @@
 @layer base {
   :root {
     /* Base Colors - FIXED: proper HSL values */
-    --background: 220 26% 97%; /* #f5f7fb - light gray blue */
+    --background: 220 20% 98%; /* هماهنگ با مقداری که تم قبلاً inline می‌نوشت */
     --foreground: 215 25% 27%;
     
     --card: 0 0% 100%;
@@ -23,7 +23,7 @@
     --secondary-foreground: 215 25% 27%;
     
     --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted-foreground: 215 16% 43%; /* WCAG AA: 47% فقط ۴.۴۴ می‌داد */
     
     --accent: 210 40% 96%;
     --accent-foreground: 215 25% 27%;
@@ -35,17 +35,28 @@
     --input: 214 32% 91%;
     --ring: 165 65% 32%;
     --radius: 0.75rem;
+    /* مقیاس شعاع — همه از --radius مشتق می‌شوند تا یکپارچه بمانند */
+    --radius-sm: calc(var(--radius) - 4px);   /* 8px  */
+    --radius-md: calc(var(--radius) - 2px);   /* 10px */
+    --radius-lg: var(--radius);               /* 12px */
+    --radius-xl: calc(var(--radius) + 4px);   /* 16px */
+    --radius-2xl: calc(var(--radius) + 8px);  /* 20px */
 
     /* ERP semantic tokens */
     --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
     --success-soft: 152 76% 96%;
+    /* متن روی پس‌زمینه‌ی نرم: تیره‌تر از خود رنگ، تا WCAG AA رعایت شود.
+       (رنگ اصلی success روی success-soft فقط ۲.۴۶ می‌داد) */
+    --success-on-soft: 160 84% 25%;
     --warning: 38 92% 50%;
     --warning-foreground: 30 90% 12%;
     --warning-soft: 48 96% 89%;
+    --warning-on-soft: 30 90% 26%;
     --info: 217 91% 60%;
     --info-foreground: 0 0% 100%;
     --info-soft: 214 100% 97%;
+    --info-on-soft: 217 91% 38%;
     --finance-profit: 160 84% 39%;
     --finance-loss: 0 84% 60%;
     --finance-debt: 346 77% 50%;
@@ -98,7 +109,7 @@
     --secondary-foreground: 210 40% 98%;
     
     --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted-foreground: 215 20% 72%; /* بالا بردن کنتراست روی پس‌زمینه تیره */
     
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
@@ -113,12 +124,15 @@
     --success: 160 84% 45%;
     --success-foreground: 0 0% 100%;
     --success-soft: 160 50% 12%;
+    --success-on-soft: 160 70% 70%;
     --warning: 38 92% 55%;
     --warning-foreground: 30 90% 10%;
     --warning-soft: 38 60% 14%;
+    --warning-on-soft: 38 90% 72%;
     --info: 217 91% 65%;
     --info-foreground: 0 0% 100%;
     --info-soft: 217 40% 14%;
+    --info-on-soft: 217 90% 75%;
     --finance-profit: 160 84% 45%;
     --finance-loss: 0 84% 65%;
     --finance-debt: 346 77% 60%;
@@ -130,8 +144,41 @@
   box-sizing: border-box;
 }
 
+/* ───────────── دسترس‌پذیری سراسری ─────────────
+   پیش از این هیچ استایل :focus-visible در پروژه نبود و مرورگر
+   حلقه‌ی پیش‌فرض خودش را می‌کشید که روی پس‌زمینه‌ی سبز برند
+   تقریباً نامرئی بود. حالا یک حلقه‌ی یکسان و پرکنتراست داریم.
+
+   از :focus-visible استفاده شده نه :focus، تا کاربر ماوس
+   حلقه نبیند و فقط کاربر کیبورد آن را دریافت کند. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* کاربرانی که در سیستم‌عامل «کاهش حرکت» را فعال کرده‌اند
+   (حساسیت به حرکت، سرگیجه) نباید انیمیشن ببینند — WCAG 2.3.3 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* پرش چیدمان هنگام بارگذاری فونت را کم می‌کند */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 html {
-  font-family: "Vazirmatn", Tahoma, sans-serif;
+  font-family: var(--font-vazirmatn), Vazirmatn, Tahoma, sans-serif;
   background-color: #f5f7fb;
   background-color: hsl(220 26% 97%);
 }

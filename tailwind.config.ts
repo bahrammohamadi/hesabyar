@@ -12,8 +12,20 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      /*
+        شعاع گوشه از توکن CSS مشتق می‌شود.
+        پیش از این ۸ مقدار پراکنده در کد بود (rounded-[24px]، rounded-3xl، …)
+        که تغییر یکپارچه‌ی ظاهر را غیرممکن می‌کرد.
+      */
+      borderRadius: {
+        sm: "var(--radius-sm)",
+        md: "var(--radius-md)",
+        lg: "var(--radius-lg)",
+        xl: "var(--radius-xl)",
+        "2xl": "var(--radius-2xl)",
+      },
       fontFamily: {
-        sans: ["Vazirmatn", "Tahoma", "sans-serif"],
+        sans: ["var(--font-vazirmatn)", "Vazirmatn", "Tahoma", "sans-serif"],
       },
       boxShadow: {
         panel: "var(--shadow-panel)",
@@ -53,16 +65,19 @@ const config: Config = {
           DEFAULT: "hsl(var(--success) / <alpha-value>)",
           foreground: "hsl(var(--success-foreground) / <alpha-value>)",
           soft: "hsl(var(--success-soft) / <alpha-value>)",
+          onSoft: "hsl(var(--success-on-soft))",
         },
         warning: {
           DEFAULT: "hsl(var(--warning) / <alpha-value>)",
           foreground: "hsl(var(--warning-foreground) / <alpha-value>)",
           soft: "hsl(var(--warning-soft) / <alpha-value>)",
+          onSoft: "hsl(var(--warning-on-soft))",
         },
         info: {
           DEFAULT: "hsl(var(--info) / <alpha-value>)",
           foreground: "hsl(var(--info-foreground) / <alpha-value>)",
           soft: "hsl(var(--info-soft) / <alpha-value>)",
+          onSoft: "hsl(var(--info-on-soft))",
         },
         finance: {
           profit: "hsl(var(--finance-profit) / <alpha-value>)",
