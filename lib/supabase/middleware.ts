@@ -91,15 +91,38 @@ export async function updateSession(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   const isAuthPage = path.startsWith("/login") || path.startsWith("/register");
-  // صفحه‌ی معرفی عمومی؛ بازدیدکننده‌ی مهمان باید بتواند ببیندش.
-  // خودِ صفحه اگر کاربر واردشده باشد او را به داشبورد می‌فرستد.
-  const isLanding = path === "/";
+
+  /*
+    صفحات وب‌سایت عمومی (معرفی محصول).
+
+    ⚠️ هر صفحه‌ی جدیدی که به وب‌سایت اضافه می‌شود باید اینجا هم ثبت شود،
+    وگرنه middleware بازدیدکننده‌ی مهمان را به /login می‌فرستد.
+    این دقیقاً همان باگی بود که پیش‌تر باعث شد لندینگ دیده نشود.
+
+    از تطبیق دقیق (نه startsWith) استفاده می‌کنیم تا مسیری مثل
+    «/features-secret» ناخواسته عمومی نشود.
+  */
+  const PUBLIC_SITE_PATHS = new Set([
+    "/",
+    "/features",
+    "/pricing",
+    "/about",
+    "/contact",
+    "/faq",
+    "/guide",
+    "/privacy",
+    "/terms",
+  ]);
+  const isPublicSite = PUBLIC_SITE_PATHS.has(path);
+
   const isPublic =
     isAuthPage ||
-    isLanding ||
+    isPublicSite ||
     path.startsWith("/_next") ||
     path.startsWith("/api/public") ||
     path === "/manifest.webmanifest" ||
+    path === "/robots.txt" ||
+    path === "/sitemap.xml" ||
     path.startsWith("/icons");
 
   // کاربر وارد نشده و در صفحه/API محافظت‌شده است

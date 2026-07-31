@@ -1,15 +1,11 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import {
   MarketingCta,
   MarketingFeatures,
-  MarketingFooter,
-  MarketingHeader,
   MarketingHero,
   MarketingPricing,
-  MarketingShell,
 } from "./components/MarketingPieces";
+import { HomeExtras } from "./components/HomeExtras";
 import { getMarketingPlans } from "./plans";
 import { BRAND_TITLE, BRAND_DESCRIPTION } from "@/lib/brand";
 
@@ -19,34 +15,22 @@ export const metadata: Metadata = {
 };
 
 /**
- * صفحه‌ی معرفی عمومی (لندینگ).
+ * صفحه‌ی اصلی وب‌سایت معرفی.
  *
- * سرور-کامپوننت است تا کاربر واردشده پیش از رندر به داشبورد هدایت شود.
- * مسیرهای /login و /register و /setup دست‌نخورده باقی مانده‌اند.
+ * هدر و فوتر از layout می‌آیند. کاربر واردشده دیگر ریدایرکت نمی‌شود —
+ * هدر برایش دکمه‌ی «ورود به پنل» نشان می‌دهد.
  */
-export default async function MarketingPage() {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (user) {
-    redirect("/dashboard");
-  }
-
+export default async function HomePage() {
   // پلن‌ها از دیتابیس؛ در صورت خطا به داده‌ی پشتیبان برمی‌گردد.
   const plans = await getMarketingPlans();
 
   return (
-    <MarketingShell>
-      <MarketingHeader />
-      <main>
-        <MarketingHero />
-        <MarketingFeatures />
-        <MarketingPricing plans={plans} />
-        <MarketingCta />
-      </main>
-      <MarketingFooter />
-    </MarketingShell>
+    <>
+      <MarketingHero />
+      <MarketingFeatures />
+      <HomeExtras />
+      <MarketingPricing plans={plans} />
+      <MarketingCta />
+    </>
   );
 }

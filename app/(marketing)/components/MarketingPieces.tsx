@@ -5,10 +5,7 @@ import {
   Check,
   CloudCog,
   Diamond,
-  Mail,
-  MapPin,
   Package,
-  Phone,
   Receipt,
   ScanBarcode,
   ShieldCheck,
@@ -33,53 +30,7 @@ import { BRAND_NAME, BRAND_CONTACT_EMAIL } from "@/lib/brand";
 /* هدر عمومی                                                           */
 /* ------------------------------------------------------------------ */
 
-const NAV = [
-  { href: "#features", label: "ویژگی‌ها" },
-  { href: "#pricing", label: "تعرفه‌ها" },
-  { href: "#about", label: "درباره ما" },
-];
 
-export function MarketingHeader() {
-  return (
-    <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-        <div className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Receipt size={18} />
-          </span>
-          <span className="text-base font-black text-foreground">{BRAND_NAME}</span>
-        </div>
-
-        <nav className="hidden items-center gap-6 md:flex">
-          {NAV.map((n) => (
-            <a
-              key={n.href}
-              href={n.href}
-              className="text-sm font-bold text-muted-foreground transition hover:text-primary"
-            >
-              {n.label}
-            </a>
-          ))}
-        </nav>
-
-        <div className="flex items-center gap-2">
-          <Link
-            href="/login"
-            className="inline-flex min-h-9 items-center rounded-xl px-3 text-sm font-bold text-foreground/80 transition hover:bg-muted hover:text-foreground"
-          >
-            ورود
-          </Link>
-          <Link
-            href="/register"
-            className="inline-flex min-h-9 items-center rounded-xl bg-primary px-3.5 text-sm font-bold text-primary-foreground transition hover:bg-primary/90"
-          >
-            ثبت‌نام رایگان
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
-}
 
 /* ------------------------------------------------------------------ */
 /* بخش قهرمان (Hero)                                                   */
@@ -122,15 +73,14 @@ export function MarketingHero() {
       </div>
 
       {/*
-        آمار — مطابق مرجع موبایل.
-        ⚠️ عدد «+۱۰٬۰۰۰ کسب‌وکار فعال» از متن مرجع Stitch آمده و داده‌ی
-        واقعی نیست. پیش از انتشار عمومی باید یا با عدد واقعی جایگزین شود
-        یا حذف گردد (ادعای تبلیغاتی اثبات‌نشده).
+        این کارت‌ها عمداً فقط ویژگی‌های واقعی محصول را می‌گویند.
+        ادعای «+۱۰٬۰۰۰ کسب‌وکار فعال» که از ماک‌آپ اولیه آمده بود حذف شد،
+        چون داده‌ی پشتیبانی‌کننده‌ای ندارد.
       */}
       <div className="mx-auto mt-10 grid max-w-3xl grid-cols-1 gap-3 sm:grid-cols-3">
-        <StatTile value={`+${toFaDigits("10,000")}`} label="کسب‌وکار فعال" icon={Users} highlight />
-        <StatTile value="امنیت بالا" label="تضمین داده‌ها" icon={ShieldCheck} />
-        <StatTile value="همگام‌سازی" label="دسترسی آنی" icon={CloudCog} />
+        <StatTile value="کاملاً فارسی" label="تقویم شمسی و راست‌به‌چپ" icon={Users} highlight />
+        <StatTile value="ایزوله‌سازی داده" label="هر کسب‌وکار جدا" icon={ShieldCheck} />
+        <StatTile value="تحت وب" label="بدون نصب، همه‌جا" icon={CloudCog} />
       </div>
     </section>
   );
@@ -325,9 +275,9 @@ export function MarketingCta() {
       <div className="mx-auto max-w-5xl overflow-hidden rounded-[1.75rem] bg-primary p-6 text-center text-primary-foreground shadow-sm sm:p-10">
         <h2 className="text-lg font-black sm:text-2xl">همین امروز کسب‌وکارت را متحول کن</h2>
         <p className="mx-auto mt-3 max-w-xl text-xs leading-7 text-primary-foreground/75 sm:text-sm">
-          {/* ⚠️ «۱۴ روز تست رایگان» هنوز مکانیزم واقعی ندارد (نه جدول
-              subscriptions، نه شمارش انقضا). قبل از فروش باید پیاده یا حذف شود. */}
-          ۱۴ روز تست رایگان بدون نیاز به کارت بانکی. تمام امکانات را امتحان کنید.
+          {/* پلن پایه واقعاً رایگان است (جدول plans)، پس این ادعا قابل اثبات است.
+              ادعای «۱۴ روز تست رایگان» حذف شد چون منطق انقضا پیاده‌سازی نشده. */}
+          با پلن رایگان شروع کنید؛ بدون نیاز به کارت بانکی. هر زمان خواستید ارتقا دهید.
         </p>
         <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
@@ -337,7 +287,7 @@ export function MarketingCta() {
             ایجاد حساب کاربری
           </Link>
           <Link
-            href="/login"
+            href="/contact"
             className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-primary-foreground/25 px-6 text-sm font-bold text-primary-foreground transition-all duration-200 hover:bg-primary-foreground/10 active:scale-95 sm:w-auto"
           >
             تماس با واحد فروش
@@ -346,90 +296,4 @@ export function MarketingCta() {
       </div>
     </section>
   );
-}
-
-/* ------------------------------------------------------------------ */
-/* پاورقی                                                              */
-/* ------------------------------------------------------------------ */
-
-const FOOTER_LINKS: { title: string; items: { label: string; href: string }[] }[] = [
-  {
-    title: "لینک‌های سریع",
-    items: [
-      { label: "داشبورد", href: "/dashboard" },
-      { label: "امکانات سیستم", href: "#features" },
-      { label: "پلن‌های فروش", href: "#pricing" },
-    ],
-  },
-  {
-    title: "راهنمای کاربران",
-    items: [
-      { label: "آموزش کار با پنل", href: "#features" },
-      { label: "حریم خصوصی", href: "#about" },
-      { label: "قوانین و مقررات", href: "#about" },
-    ],
-  },
-];
-
-export function MarketingFooter() {
-  return (
-    <footer id="about" className="border-t border-border bg-card">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-              <Receipt size={18} />
-            </span>
-            <span className="text-base font-black text-foreground">{BRAND_NAME}</span>
-          </div>
-          <p className="mt-3 text-xs leading-6 text-muted-foreground">
-            {BRAND_NAME} همراه هوشمند شما در مدیریت مالی و انبارداری است. ما با ساده‌سازی فرآیندهای
-            پیچیده حسابداری، فرصت تمرکز روی رشد کسب‌وکارتان را فراهم می‌کنیم.
-          </p>
-        </div>
-
-        {FOOTER_LINKS.map((col) => (
-          <div key={col.title}>
-            <h3 className="text-sm font-extrabold text-foreground">{col.title}</h3>
-            <ul className="mt-3 space-y-2">
-              {col.items.map((it) => (
-                <li key={it.label}>
-                  <Link href={it.href} className="text-xs text-muted-foreground transition hover:text-primary">
-                    {it.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-
-        <div>
-          <h3 className="text-sm font-extrabold text-foreground">ارتباط با ما</h3>
-          <ul className="mt-3 space-y-2.5 text-xs text-muted-foreground">
-            <ContactRow icon={Phone} text={toFaDigits("021-12345678")} />
-            <ContactRow icon={Mail} text={BRAND_CONTACT_EMAIL} />
-            <ContactRow icon={MapPin} text="تهران، خیابان ولیعصر، برج مدیریت" />
-          </ul>
-        </div>
-      </div>
-
-      <div className="border-t border-border py-4 text-center text-[11px] text-muted-foreground">
-        © {toFaDigits(1403)} تمامی حقوق برای {BRAND_NAME} محفوظ است.
-      </div>
-    </footer>
-  );
-}
-
-function ContactRow({ icon: Icon, text }: { icon: React.ElementType; text: string }) {
-  return (
-    <li className="flex items-center gap-2">
-      <Icon size={14} className="shrink-0 text-primary" />
-      <span className="tabular-nums">{text}</span>
-    </li>
-  );
-}
-
-/** بسته‌بندی مشترک بخش‌ها */
-export function MarketingShell({ children }: { children: ReactNode }) {
-  return <div className="min-h-screen bg-background">{children}</div>;
 }
