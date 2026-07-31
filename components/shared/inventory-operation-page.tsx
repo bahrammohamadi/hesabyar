@@ -147,7 +147,7 @@ export function InventoryOperationPage({ mode }: { mode: InventoryMode }) {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div><label className="label">{mode === "adjust" ? "موجودی واقعی" : "تعداد"}</label><QuantityStepper value={qty || 1} min={mode === "adjust" ? 0 : 1} onChange={(value) => setQty(String(value))} /></div>
-                <div><label className="label">توضیح</label><input className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
+                <div><label className="label">توضیح</label><input aria-label="توضیح" className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
               </div>
               {error && <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
               <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary"><Plus size={16}/>{saving && <Loader2 className="animate-spin" size={16}/>} ثبت</button><button onClick={() => setSelected(null)} className="btn-secondary">تغییر کالا</button></div>

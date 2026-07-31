@@ -115,9 +115,9 @@ export default function PriceListsPage() {
 
       <div className="card p-4 mb-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <div><label className="label">نام لیست</label><input className="input" value={name} onChange={(e) => setName(e.target.value)} /></div>
-          <div><label className="label">نوع</label><select className="input" value={type} onChange={(e) => setType(e.target.value)}><option value="sale">فروش</option><option value="purchase">خرید</option><option value="vip">VIP</option></select></div>
-          <div><label className="label">درصد تخفیف عمومی</label><input className="input" inputMode="numeric" value={discount} onChange={(e) => setDiscount(e.target.value)} /></div>
+          <div><label className="label">نام لیست</label><input aria-label="نام لیست" className="input" value={name} onChange={(e) => setName(e.target.value)} /></div>
+          <div><label className="label">نوع</label><select aria-label="نوع لیست قیمت" className="input" value={type} onChange={(e) => setType(e.target.value)}><option value="sale">فروش</option><option value="purchase">خرید</option><option value="vip">VIP</option></select></div>
+          <div><label className="label">درصد تخفیف عمومی</label><input aria-label="درصد تخفیف عمومی" className="input" inputMode="numeric" value={discount} onChange={(e) => setDiscount(e.target.value)} /></div>
           <div className="flex items-end"><button onClick={addList} disabled={saving} className="btn-primary w-full"><Plus size={16}/> افزودن لیست</button></div>
         </div>
         {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3 mt-3">{error}</div>}

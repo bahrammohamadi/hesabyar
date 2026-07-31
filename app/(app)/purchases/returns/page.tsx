@@ -180,8 +180,7 @@ function PurchaseReturnModal({ orgId, branchId, onClose }: { orgId: string | nul
     <Modal open onClose={onClose} title="ثبت مرجوعی خرید" size="lg" mobileFullscreen>
       <div className="space-y-4">
         <div>
-          <label className="label">فاکتور خرید</label>
-          <select className="input" value={purchaseId} onChange={(e) => loadItems(e.target.value)}>
+          <label className="label">فاکتور خرید</label><select aria-label="فاکتور خرید" className="input" value={purchaseId} onChange={(e) => loadItems(e.target.value)}>
             <option value="">انتخاب...</option>
             {purchases?.map((p: any) => <option key={p.id} value={p.id}>{p.invoice_no} - {p.supplier?.name ?? "بدون تأمین‌کننده"} - {formatToman(p.total)}</option>)}
           </select>
@@ -203,10 +202,10 @@ function PurchaseReturnModal({ orgId, branchId, onClose }: { orgId: string | nul
           </div>
         )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div><label className="label">روش برگشت وجه</label><select className="input" value={refundMethod} onChange={(e) => setRefundMethod(e.target.value)}><option value="credit">اعتباری/حسابی</option><option value="cash">نقد</option><option value="transfer">انتقال</option></select></div>
-          <div><label className="label">دلیل</label><input className="input" value={reason} onChange={(e) => setReason(e.target.value)} /></div>
+          <div><label className="label">روش برگشت وجه</label><select aria-label="روش برگشت وجه" className="input" value={refundMethod} onChange={(e) => setRefundMethod(e.target.value)}><option value="credit">اعتباری/حسابی</option><option value="cash">نقد</option><option value="transfer">انتقال</option></select></div>
+          <div><label className="label">دلیل</label><input aria-label="دلیل" className="input" value={reason} onChange={(e) => setReason(e.target.value)} /></div>
         </div>
-        <div><label className="label">توضیح</label><input className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
+        <div><label className="label">توضیح</label><input aria-label="توضیح" className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
         <div className="rounded-xl bg-destructive/10 text-destructive p-3 text-sm flex justify-between"><span>جمع مرجوعی</span><b>{formatToman(total)}</b></div>
         {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3">{error}</div>}
         <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving && <Loader2 className="animate-spin" size={16}/>} ثبت مرجوعی خرید</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>

@@ -191,7 +191,7 @@ function ManageableList({
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && add()}
         />
-        <button onClick={add} disabled={adding || !name.trim()} className="btn-primary shrink-0">
+        <button onClick={add} disabled={adding || !name.trim()} aria-label="افزودن" className="btn-primary shrink-0">
           {adding ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
         </button>
       </div>
@@ -386,8 +386,7 @@ function AccountModal({
     <Modal open onClose={onClose} title="حساب جدید">
       <div className="space-y-4">
         <div>
-          <label className="label">نام حساب *</label>
-          <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="مثلاً: صندوق شعبه ۱" />
+          <label className="label">نام حساب *</label><input aria-label="نام حساب *" className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="مثلاً: صندوق شعبه ۱" />
         </div>
         <div>
           <label className="label">نوع</label>
@@ -399,12 +398,10 @@ function AccountModal({
         {type === "bank" && (
           <>
             <div>
-              <label className="label">نام بانک</label>
-              <input className="input" value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="مثلاً: ملی، سپه" />
+              <label className="label">نام بانک</label><input aria-label="نام بانک" className="input" value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="مثلاً: ملی، سپه" />
             </div>
             <div>
-              <label className="label">شماره حساب</label>
-              <input className="input" dir="ltr" value={accountNo} onChange={(e) => setAccountNo(e.target.value)} placeholder="شماره حساب بانکی" />
+              <label className="label">شماره حساب</label><input aria-label="شماره حساب" className="input" dir="ltr" value={accountNo} onChange={(e) => setAccountNo(e.target.value)} placeholder="شماره حساب بانکی" />
             </div>
           </>
         )}
@@ -622,10 +619,10 @@ function CreateUserModal({ onClose }: { onClose: () => void }) {
     <Modal open onClose={onClose} title="ساخت کاربر جدید" size="lg">
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div><label className="label">نام</label><input className="input" value={name} onChange={(e) => setName(e.target.value)} /></div>
-          <div><label className="label">ایمیل *</label><input className="input text-left" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-          <div><label className="label">رمز عبور *</label><input className="input text-left" dir="ltr" type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
-          <div><label className="label">نقش</label><select className="input" value={role} onChange={(e) => { setRole(e.target.value); setPermissions(defaultPermissions(e.target.value)); }}>{Object.entries(ROLE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+          <div><label className="label">نام</label><input aria-label="نام" className="input" value={name} onChange={(e) => setName(e.target.value)} /></div>
+          <div><label className="label">ایمیل *</label><input aria-label="ایمیل *" className="input text-left" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+          <div><label className="label">رمز عبور *</label><input aria-label="رمز عبور *" className="input text-left" dir="ltr" type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
+          <div><label className="label">نقش</label><select aria-label="نقش" className="input" value={role} onChange={(e) => { setRole(e.target.value); setPermissions(defaultPermissions(e.target.value)); }}>{Object.entries(ROLE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
         </div>
         <div>
           <div className="text-sm font-medium text-foreground mb-2">دسترسی‌ها</div>

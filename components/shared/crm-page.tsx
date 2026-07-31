@@ -205,7 +205,7 @@ function SegmentExportCard({ title, value, options, onChange, rows, filename, em
     <div className="rounded-[24px] border border-white/80 bg-white/90 p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-black text-foreground">{title}</h3>
+          <h2 className="font-black text-foreground">{title}</h2>
           <p className="mt-1 text-xs text-muted-foreground">{toFaDigits(exportRows.length)} مشتری یافت شد</p>
         </div>
         <Download className="text-primary" size={20} />
@@ -267,9 +267,9 @@ function InteractionModal({ contact, contacts, onClose }: { contact: any | null;
   return (
     <Modal open onClose={onClose} title="ثبت تعامل مشتری" size="md">
       <div className="space-y-4">
-        <div><label className="label">مشتری</label><select className="input" value={contactId} onChange={(e) => setContactId(e.target.value)}><option value="">انتخاب...</option>{contacts.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
-        <div><label className="label">نوع تعامل</label><select className="input" value={type} onChange={(e) => setType(e.target.value)}><option value="note">یادداشت</option><option value="call">تماس</option><option value="sms">پیامک</option><option value="follow_up">پیگیری</option><option value="complaint">شکایت</option></select></div>
-        <div><label className="label">عنوان</label><input className="input" value={title} onChange={(e) => setTitle(e.target.value)} /></div>
+        <div><label className="label">مشتری</label><select aria-label="مشتری" className="input" value={contactId} onChange={(e) => setContactId(e.target.value)}><option value="">انتخاب...</option>{contacts.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+        <div><label className="label">نوع تعامل</label><select aria-label="نوع تعامل" className="input" value={type} onChange={(e) => setType(e.target.value)}><option value="note">یادداشت</option><option value="call">تماس</option><option value="sms">پیامک</option><option value="follow_up">پیگیری</option><option value="complaint">شکایت</option></select></div>
+        <div><label className="label">عنوان</label><input aria-label="عنوان" className="input" value={title} onChange={(e) => setTitle(e.target.value)} /></div>
         <div><label className="label">توضیحات</label><textarea className="input" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} /></div>
         {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3">{error}</div>}
         <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">ثبت</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>

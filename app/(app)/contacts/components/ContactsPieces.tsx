@@ -42,7 +42,7 @@ const KPI_TONE = {
   },
   info: {
     card: "bg-info-soft text-foreground border-info/20",
-    label: "text-info/80",
+    label: "text-info-onSoft",
     value: "text-foreground",
     icon: "bg-info-soft text-info-onSoft",
     chip: "bg-info-soft text-info-onSoft",

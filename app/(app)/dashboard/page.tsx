@@ -405,8 +405,7 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
           )}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="label">حساب</label>
-              <select className="input" value={accountId} onChange={(e) => setAccountId(e.target.value)}>
+              <label className="label">حساب</label><select aria-label="حساب" className="input" value={accountId} onChange={(e) => setAccountId(e.target.value)}>
                 <option value="">انتخاب...</option>
                 {accounts?.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}
               </select>
@@ -428,17 +427,14 @@ function QuickSaleModal({ orgId, onClose }: { orgId: string | null; onClose: () 
               این فروش نسیه است / پرداخت خودکار نقدی را غیرفعال کن
             </label>
             <div>
-              <label className="label">نقدی (تومان)</label>
-              <input className="input" inputMode="numeric" value={paidCash} onChange={(e) => setPaidCash(e.target.value)} />
+              <label className="label">نقدی (تومان)</label><input aria-label="نقدی (تومان)" className="input" inputMode="numeric" value={paidCash} onChange={(e) => setPaidCash(e.target.value)} />
             </div>
             <div>
-              <label className="label">کارتی (تومان)</label>
-              <input className="input" inputMode="numeric" value={paidCard} onChange={(e) => setPaidCard(e.target.value)} />
+              <label className="label">کارتی (تومان)</label><input aria-label="کارتی (تومان)" className="input" inputMode="numeric" value={paidCard} onChange={(e) => setPaidCard(e.target.value)} />
             </div>
             {customer && (
               <div>
-                <label className="label">اعتبار مشتری (تومان)</label>
-                <input className="input" inputMode="numeric" value={paidWallet} onChange={(e) => setPaidWallet(e.target.value)} />
+                <label className="label">اعتبار مشتری (تومان)</label><input aria-label="اعتبار مشتری (تومان)" className="input" inputMode="numeric" value={paidWallet} onChange={(e) => setPaidWallet(e.target.value)} />
                 <div className="text-xs text-muted-foreground mt-1">اعتبار موجود: {formatToman(walletCredit ?? 0)}</div>
               </div>
             )}
@@ -538,20 +534,17 @@ function QuickTxModal({ orgId, type, onClose }: { orgId: string | null; type: "e
     <Modal open onClose={onClose} title={title}>
       <div className="space-y-4">
         <div>
-          <label className="label">مبلغ (تومان) *</label>
-          <input autoFocus className="input" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          <label className="label">مبلغ (تومان) *</label><input aria-label="مبلغ (تومان) *" autoFocus className="input" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} />
         </div>
         <div>
-          <label className="label">حساب</label>
-          <select className="input" value={accountId} onChange={(e) => setAccountId(e.target.value)}>
+          <label className="label">حساب</label><select aria-label="حساب" className="input" value={accountId} onChange={(e) => setAccountId(e.target.value)}>
             <option value="">انتخاب...</option>
             {accounts?.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
         </div>
         {type === "receipt" && (
           <div>
-            <label className="label">از</label>
-            <select className="input" value={contactId} onChange={(e) => setContactId(e.target.value)}>
+            <label className="label">از</label><select aria-label="از" className="input" value={contactId} onChange={(e) => setContactId(e.target.value)}>
               <option value="">—</option>
               {contacts?.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
@@ -559,16 +552,14 @@ function QuickTxModal({ orgId, type, onClose }: { orgId: string | null; type: "e
         )}
         {type === "expense" && (
           <div>
-            <label className="label">دسته هزینه</label>
-            <select className="input" value={expenseCatId} onChange={(e) => setExpenseCatId(e.target.value)}>
+            <label className="label">دسته هزینه</label><select aria-label="دسته هزینه" className="input" value={expenseCatId} onChange={(e) => setExpenseCatId(e.target.value)}>
               <option value="">—</option>
               {expCats?.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
         )}
         <div>
-          <label className="label">توضیحات</label>
-          <input className="input" value={note} onChange={(e) => setNote(e.target.value)} />
+          <label className="label">توضیحات</label><input aria-label="توضیحات" className="input" value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
         {error && <div className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>}
         <div className="flex gap-2">

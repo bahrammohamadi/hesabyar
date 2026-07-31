@@ -307,12 +307,10 @@ function PurchaseModal({ orgId, onClose }: { orgId: string | null; onClose: () =
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-border pt-4">
             <div>
-              <label className="label">مبلغ پرداختی (تومان)</label>
-              <input className="input" inputMode="numeric" value={paid} onChange={(e) => setPaid(e.target.value)} />
+              <label className="label">مبلغ پرداختی (تومان)</label><input aria-label="مبلغ پرداختی (تومان)" className="input" inputMode="numeric" value={paid} onChange={(e) => setPaid(e.target.value)} />
             </div>
             <div>
-              <label className="label">از حساب</label>
-              <select className="input" value={accountId} onChange={(e) => setAccountId(e.target.value)}>
+              <label className="label">از حساب</label><select aria-label="از حساب" className="input" value={accountId} onChange={(e) => setAccountId(e.target.value)}>
                 <option value="">—</option>
                 {accounts?.map((a) => (
                   <option key={a.id} value={a.id}>{a.name}</option>
