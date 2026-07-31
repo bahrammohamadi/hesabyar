@@ -92,7 +92,7 @@ export default function SalesPage() {
           <div className="w-14 h-14 rounded-2xl bg-primary/[0.06] text-primary flex items-center justify-center mx-auto mb-4">
             <ShoppingCart size={26} />
           </div>
-          <h3 className="font-semibold text-foreground">هنوز فروشی ثبت نشده</h3>
+          <p className="font-semibold text-foreground">هنوز فروشی ثبت نشده</p>
           <p className="mt-1 text-sm text-muted-foreground">اولین فاکتور فروش خود را صادر کنید.</p>
           <button onClick={() => setPosOpen(true)} className="btn-primary mt-4 mx-auto">
             <Plus size={18} /> فروش جدید

@@ -17,7 +17,7 @@ type Accent = "primary" | "emerald" | "blue" | "slate" | "cyan" | "violet";
 // همه‌ی رنگ‌ها از توکن‌های معنایی پروژه — سازگار با دارک‌مود و تعویض تم.
 const ACCENT: Record<Accent, { icon: string; label: string; ring: string }> = {
   primary: { icon: "bg-primary/10 text-primary", label: "text-primary", ring: "hover:ring-primary/20" },
-  emerald: { icon: "bg-success/10 text-success", label: "text-success", ring: "hover:ring-success/20" },
+  emerald: { icon: "bg-success/10 text-success", label: "text-success-onSoft", ring: "hover:ring-success/20" },
   blue:    { icon: "bg-info/10 text-info",       label: "text-info",    ring: "hover:ring-info/20" },
   slate:   { icon: "bg-muted text-foreground/70",label: "text-foreground/70", ring: "hover:ring-border" },
   cyan:    { icon: "bg-info/10 text-info",       label: "text-info",    ring: "hover:ring-info/20" },

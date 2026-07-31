@@ -113,9 +113,9 @@ export function ChartLegend({ items }: { items: { label: string; color: string }
 const REPORT_KPI_TONE = {
   primary: {
     card: "bg-primary text-primary-foreground border-primary",
-    label: "text-primary-foreground/70",
+    label: "text-primary-foreground/90",
     value: "text-primary-foreground",
-    unit: "text-primary-foreground/70",
+    unit: "text-primary-foreground/90",
     icon: "bg-primary-foreground/15 text-primary-foreground",
     chip: "bg-primary-foreground/15 text-primary-foreground",
   },

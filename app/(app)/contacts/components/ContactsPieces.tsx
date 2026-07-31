@@ -18,7 +18,7 @@ import { toFaDigits } from "@/lib/utils/format";
 const KPI_TONE = {
   primary: {
     card: "bg-primary text-primary-foreground border-primary",
-    label: "text-primary-foreground/70",
+    label: "text-primary-foreground/90",
     value: "text-primary-foreground",
     icon: "bg-primary-foreground/15 text-primary-foreground",
     chip: "bg-primary-foreground/15 text-primary-foreground",
@@ -34,7 +34,7 @@ const KPI_TONE = {
   },
   danger: {
     card: "bg-destructive/[0.07] text-foreground border-destructive/20",
-    label: "text-destructive/80",
+    label: "text-destructive",
     value: "text-destructive",
     icon: "bg-destructive/10 text-destructive",
     chip: "bg-destructive/10 text-destructive",
@@ -44,8 +44,8 @@ const KPI_TONE = {
     card: "bg-info-soft text-foreground border-info/20",
     label: "text-info/80",
     value: "text-foreground",
-    icon: "bg-info/15 text-info",
-    chip: "bg-info/15 text-info",
+    icon: "bg-info-soft text-info-onSoft",
+    chip: "bg-info-soft text-info-onSoft",
     blob: "bg-info",
   },
 } as const;

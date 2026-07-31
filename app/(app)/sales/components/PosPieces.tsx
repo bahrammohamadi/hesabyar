@@ -283,10 +283,10 @@ export function PosSummaryCard({
       {credit > 0 && <SummaryRow label="باقیمانده (نسیه):" value={formatToman(credit, false)} />}
 
       <div className="mt-3 border-t border-primary-foreground/20 pt-3">
-        <div className="text-xs text-primary-foreground/70">مبلغ قابل پرداخت:</div>
+        <div className="text-xs text-primary-foreground/90">مبلغ قابل پرداخت:</div>
         <div className="mt-1 flex items-baseline gap-1.5">
           <span className="text-2xl font-black tabular-nums sm:text-[28px]">{formatToman(total, false)}</span>
-          <span className="text-xs text-primary-foreground/70">تومان</span>
+          <span className="text-xs text-primary-foreground/90">تومان</span>
         </div>
       </div>
 
@@ -298,7 +298,7 @@ export function PosSummaryCard({
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-2 border-b border-primary-foreground/10 py-2 text-sm last:border-0">
-      <span className="text-primary-foreground/70">{label}</span>
+      <span className="text-primary-foreground/90">{label}</span>
       <span className="font-bold tabular-nums">{value}</span>
     </div>
   );

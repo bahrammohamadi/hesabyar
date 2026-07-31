@@ -47,7 +47,7 @@ export function actionMeta(action: string) {
 
 /** رنگ حلقهٔ آیکون تایم‌لاین، هم‌راستا با تون عملیات */
 const RING_CLASS: Record<ActionTone, string> = {
-  success: "bg-success/10 text-success",
+  success: "bg-success-soft text-success-onSoft",
   warning: "bg-warning/10 text-warning",
   danger: "bg-destructive/10 text-destructive",
   info: "bg-info/10 text-info",
