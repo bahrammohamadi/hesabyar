@@ -22,7 +22,7 @@ export function PhoneLink({
   const tel = normalizePhoneForTel(phone);
 
   if (!phone || !tel) {
-    return <span className={cn("text-slate-400", className)}>{fallback}</span>;
+    return <span className={cn("text-muted-foreground", className)}>{fallback}</span>;
   }
 
   return (

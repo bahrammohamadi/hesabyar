@@ -143,24 +143,24 @@ export default function CustomerProfitabilityReportPage() {
       <div className="card p-4 mb-4 grid grid-cols-1 md:grid-cols-5 gap-3">
         <div><label className="label">از تاریخ</label><DatePicker value={from} onChange={setFrom} /></div>
         <div><label className="label">تا تاریخ</label><DatePicker value={to} onChange={setTo} /></div>
-        <label className="flex items-end gap-2 text-sm text-slate-600 pb-3"><input type="checkbox" checked={onlyWithCustomer} onChange={(e) => setOnlyWithCustomer(e.target.checked)} /> فقط مشتریان ثبت‌شده</label>
-        <div className="rounded-xl bg-slate-50 p-3"><div className="text-xs text-slate-500">تعداد فاکتور</div><div className="font-bold text-slate-800 mt-1">{toFaDigits(totals.invoices)}</div></div>
-        <div className="rounded-xl bg-slate-50 p-3"><div className="text-xs text-slate-500">سود کل</div><div className={totals.profit >= 0 ? "font-bold text-emerald-600 mt-1" : "font-bold text-rose-600 mt-1"}>{formatToman(totals.profit)}</div></div>
+        <label className="flex items-end gap-2 text-sm text-muted-foreground pb-3"><input type="checkbox" checked={onlyWithCustomer} onChange={(e) => setOnlyWithCustomer(e.target.checked)} /> فقط مشتریان ثبت‌شده</label>
+        <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">تعداد فاکتور</div><div className="font-bold text-foreground mt-1">{toFaDigits(totals.invoices)}</div></div>
+        <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">سود کل</div><div className={totals.profit >= 0 ? "font-bold text-success-onSoft mt-1" : "font-bold text-destructive mt-1"}>{formatToman(totals.profit)}</div></div>
       </div>
 
-      {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-rose-50 text-rose-700 text-sm p-4">{(error as Error).message}</div> : !rows.length ? <EmptyState icon={Users} title="داده‌ای برای این بازه وجود ندارد" /> : (
+      {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-4">{(error as Error).message}</div> : !rows.length ? <EmptyState icon={Users} title="داده‌ای برای این بازه وجود ندارد" /> : (
         <div className="card overflow-x-auto">
           <table className="table-base">
             <thead><tr><th>مشتری</th><th>فاکتور</th><th>تعداد کالا</th><th>فروش</th><th>بها</th><th>سود</th><th>حاشیه</th><th>میانگین فاکتور</th><th>آخرین خرید</th><th>عملیات</th></tr></thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={row.customer_id ?? "walk-in"} className="hover:bg-slate-50">
-                  <td>{row.customer_id ? <EntityLink type="contact" id={row.customer_id}>{row.customer_name}</EntityLink> : <span className="text-slate-500">مشتری نقدی</span>}<div className="text-xs text-slate-400" dir="ltr">{row.phone}</div></td>
+                <tr key={row.customer_id ?? "walk-in"} className="hover:bg-muted">
+                  <td>{row.customer_id ? <EntityLink type="contact" id={row.customer_id}>{row.customer_name}</EntityLink> : <span className="text-muted-foreground">مشتری نقدی</span>}<div className="text-xs text-muted-foreground" dir="ltr">{row.phone}</div></td>
                   <td>{toFaDigits(row.invoice_count)}</td>
                   <td>{toFaDigits(row.qty)}</td>
                   <td>{formatToman(row.revenue, false)}</td>
                   <td>{formatToman(row.cost, false)}</td>
-                  <td className={row.profit >= 0 ? "text-emerald-600 font-bold" : "text-rose-600 font-bold"}>{formatToman(row.profit, false)}</td>
+                  <td className={row.profit >= 0 ? "text-success-onSoft font-bold" : "text-destructive font-bold"}>{formatToman(row.profit, false)}</td>
                   <td>{toFaDigits(row.margin)}٪</td>
                   <td>{formatToman(row.average_invoice, false)}</td>
                   <td>{row.last_sale_at ? toJalali(row.last_sale_at) : "—"}</td>

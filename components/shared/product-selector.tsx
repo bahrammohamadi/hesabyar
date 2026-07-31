@@ -231,7 +231,7 @@ export function ProductSelector({
       <div className="flex h-full min-h-0 flex-col gap-3">
         {/* جستجو */}
         <div className="relative">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
           <input
             ref={inputRef}
             className="input pr-10"
@@ -240,7 +240,7 @@ export function ProductSelector({
             onChange={(e) => setTerm(e.target.value)}
           />
           {term && (
-            <button onClick={() => setTerm("")} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+            <button onClick={() => setTerm("")} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
               <X size={16} />
             </button>
           )}
@@ -257,7 +257,7 @@ export function ProductSelector({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowFilters((s) => !s)}
-              className="flex items-center gap-1.5 text-sm text-slate-600"
+              className="flex items-center gap-1.5 text-sm text-muted-foreground"
             >
               <Filter size={16} />
               فیلترها
@@ -277,18 +277,18 @@ export function ProductSelector({
               <option value="name_asc">نام الفبا</option>
               <option value="newest">جدیدترین</option>
             </select>
-            <label className="flex items-center gap-1.5 text-sm text-slate-600 cursor-pointer">
+            <label className="flex items-center gap-1.5 text-sm text-muted-foreground cursor-pointer">
               <input
                 type="checkbox"
                 checked={onlyInStock}
                 onChange={(e) => setOnlyInStock(e.target.checked)}
-                className="rounded border-slate-300 text-primary focus:ring-primary"
+                className="rounded border-border text-primary focus:ring-primary"
               />
               فقط موجود
             </label>
           </div>
           {activeFilters > 0 && (
-            <button onClick={reset} className="text-xs text-rose-500">
+            <button onClick={reset} className="text-xs text-destructive">
               پاک‌کردن
             </button>
           )}
@@ -296,7 +296,7 @@ export function ProductSelector({
 
         {/* فیلترها */}
         {showFilters && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 rounded-xl bg-slate-50">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 rounded-xl bg-muted">
             <select className="input text-sm" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
               <option value="">همه دسته‌ها</option>
               {categories?.map((c) => (
@@ -332,13 +332,13 @@ export function ProductSelector({
         )}
 
         {/* نتایج */}
-        <div className="text-xs text-slate-400">
+        <div className="text-xs text-muted-foreground">
           {isLoading ? "در حال بارگذاری..." : `${toFaDigits(filtered.length)} کالا`}
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto -mx-1 px-1 space-y-1.5 pb-3">
           {filtered.length === 0 && !isLoading ? (
-            <div className="text-center text-sm text-slate-400 py-10">کالایی یافت نشد.</div>
+            <div className="text-center text-sm text-muted-foreground py-10">کالایی یافت نشد.</div>
           ) : (
             filtered.map((v) => {
               const price = priceMode === "sale" ? v.sale_price : v.purchase_price;
@@ -349,14 +349,14 @@ export function ProductSelector({
                   onClick={() => {
                     onSelect(v);
                   }}
-                  className="w-full text-right rounded-xl border border-slate-100 hover:border-primary/30 hover:bg-primary/[0.04] p-3 transition flex items-center gap-3"
+                  className="w-full text-right rounded-xl border border-border hover:border-primary/30 hover:bg-primary/[0.04] p-3 transition flex items-center gap-3"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-lg bg-muted text-muted-foreground flex items-center justify-center shrink-0">
                     <Package size={18} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="font-medium text-sm text-slate-800 truncate">{v.product_name}</div>
-                    <div className="text-xs text-slate-400 flex flex-wrap gap-x-2 mt-0.5">
+                    <div className="font-medium text-sm text-foreground truncate">{v.product_name}</div>
+                    <div className="text-xs text-muted-foreground flex flex-wrap gap-x-2 mt-0.5">
                       {v.product_code && (
                         <span className="flex items-center gap-1">
                           <Barcode size={11} /> {v.product_code}
@@ -368,8 +368,8 @@ export function ProductSelector({
                     </div>
                   </div>
                   <div className="text-left shrink-0">
-                    <div className="text-sm font-medium text-slate-700">{formatToman(price, false)}</div>
-                    <div className={`text-xs ${out ? "text-rose-500" : "text-emerald-600"}`}>
+                    <div className="text-sm font-medium text-foreground">{formatToman(price, false)}</div>
+                    <div className={`text-xs ${out ? "text-destructive" : "text-success-onSoft"}`}>
                       موجودی {toFaDigits(v.stock_qty)}
                     </div>
                   </div>

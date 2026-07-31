@@ -196,7 +196,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
       <Card className="overflow-hidden">
         <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <h3 className="text-sm font-extrabold text-foreground">فهرست جامع مشتریان</h3>
+            <h2 className="text-sm font-extrabold text-foreground">فهرست جامع مشتریان</h2>
             <p className="mt-0.5 text-xs text-muted-foreground">مدیریت مالی و گروه‌بندی مخاطبین</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">

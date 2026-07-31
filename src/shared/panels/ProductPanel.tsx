@@ -512,7 +512,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
         <div className="mt-4 rounded-2xl border border-dashed border-primary/20 bg-primary/[0.03] p-3">
           <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="text-sm font-extrabold text-slate-800">تنوع‌های اولیه</div>
+              <div className="text-sm font-extrabold text-foreground">تنوع‌های اولیه</div>
               <p className="text-xs text-muted-foreground">اختیاری؛ چند واریانت را همراه ساخت کالا با یک ذخیره ثبت کنید.</p>
             </div>
             <Button size="sm" variant="secondary" onClick={addBatchVariantRow}><Plus size={16} /> افزودن ردیف دیگر</Button>
@@ -520,7 +520,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
           {renderBatchVariantRows()}
         </div>
       )}
-      {formError && productForm.name.trim() && <div className="mt-3 rounded-xl bg-rose-50 p-3 text-sm text-destructive">{formError}</div>}
+      {formError && productForm.name.trim() && <div className="mt-3 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{formError}</div>}
       <div className="mt-4 flex gap-2">
         <Button loading={savingProduct} onClick={handleProductSave}>ذخیره</Button>
         <Button variant="secondary" onClick={() => (isCreate ? closeTop() : setMode("view"))}>انصراف</Button>
@@ -548,9 +548,9 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
           productMoney.rialToTomanNumber(row.sale_price),
         );
         return p !== null ? (
-          <span className="text-emerald-600 font-medium">{toPersianDigits(p)}٪</span>
+          <span className="text-success-onSoft font-medium">{toPersianDigits(p)}٪</span>
         ) : (
-          <span className="text-slate-300">—</span>
+          <span className="text-muted-foreground">—</span>
         );
       },
     },
@@ -612,9 +612,9 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
     return (
       <div className="space-y-3">
         {batchVariantForms.map((row, index) => (
-          <div key={index} className="rounded-2xl border border-border bg-slate-50/50 p-3">
+          <div key={index} className="rounded-2xl border border-border bg-muted/50 p-3">
             <div className="mb-3 flex items-center justify-between gap-2">
-              <div className="text-sm font-bold text-slate-700">ردیف {toPersianDigits(index + 1)}</div>
+              <div className="text-sm font-bold text-foreground">ردیف {toPersianDigits(index + 1)}</div>
               <Button size="sm" variant="ghost" onClick={() => removeBatchVariantRow(index)}><Trash2 size={15} /> حذف</Button>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -688,7 +688,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
                 <div className="space-y-4">
                   <Section title="اطلاعات کالا">
                     <dl className="grid gap-3 text-sm sm:grid-cols-2">
-                      <div><dt className="text-muted-foreground">نام</dt><dd className="font-bold text-slate-800">{product!.name}</dd></div>
+                      <div><dt className="text-muted-foreground">نام</dt><dd className="font-bold text-foreground">{product!.name}</dd></div>
                       <div><dt className="text-muted-foreground">کد</dt><dd className="font-mono" dir="ltr">{product!.code ?? "—"}</dd></div>
                       <div><dt className="text-muted-foreground">فصل</dt><dd>{product!.season ?? "—"}</dd></div>
                       <div><dt className="text-muted-foreground">جنس</dt><dd>{product!.material ?? "—"}</dd></div>
@@ -702,7 +702,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
                       </div>
                       <div className="rounded-xl border border-border p-3">
                         <div className="text-sm text-muted-foreground">درصد سود</div>
-                        <span className="font-bold text-emerald-600">
+                        <span className="font-bold text-success-onSoft">
                           {(() => {
                             const p = calcProfitPercent(
                               productMoney.rialToTomanNumber(product!.base_purchase_price),
@@ -741,7 +741,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
                         </Field>
                         <Field label="دلیل" className="sm:col-span-2"><Input value={stockAdjustForm.reason} onChange={(event) => setStockAdjustForm((prev) => ({ ...prev, reason: event.target.value }))} placeholder="مثلاً: انبارگردانی" /></Field>
                       </div>
-                      {formError && <div className="mt-3 rounded-xl bg-rose-50 p-3 text-sm text-destructive">{formError}</div>}
+                      {formError && <div className="mt-3 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{formError}</div>}
                       <div className="mt-4 flex gap-2"><Button loading={adjustProductStock.isPending} onClick={handleAdjustStock}>ثبت تعدیل</Button><Button variant="secondary" onClick={() => setStockAdjustForm(emptyStockAdjustForm())}>انصراف</Button></div>
                     </Section>
                   )}
@@ -815,11 +815,11 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
                           </Field>
                           <Field label="دلیل تغییر" hint={productHelp.priceChangeReason} className="sm:col-span-2"><Input value={priceForm.reason} onChange={(event) => setPriceForm((prev) => ({ ...prev, reason: event.target.value }))} placeholder="مثلاً: بروزرسانی لیست قیمت" /></Field>
                         </div>
-                        <label className="flex items-center gap-2 text-sm text-slate-600">
+                        <label className="flex items-center gap-2 text-sm text-muted-foreground">
                           <input type="checkbox" checked={priceForm.applyToVariants} onChange={(event) => setPriceForm((prev) => ({ ...prev, applyToVariants: event.target.checked }))} />
                           اعمال قیمت روی همه واریانت‌های فعال کالا
                         </label>
-                        {formError && <div className="rounded-xl bg-rose-50 p-3 text-sm text-destructive">{formError}</div>}
+                        {formError && <div className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{formError}</div>}
                         <div className="flex gap-2"><Button loading={changeProductPrice.isPending} onClick={handleChangePrice}>ذخیره قیمت</Button><Button variant="secondary" onClick={() => setPriceFormOpen(false)}>انصراف</Button></div>
                       </div>
                     )}

@@ -38,7 +38,7 @@ export function EmptyState({
   return (
     <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border p-8 text-center">
       <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">{Icon ? <Icon size={24} /> : <Inbox size={24} />}</div>
-      <div className="font-extrabold text-slate-700 dark:text-slate-200">{displayTitle}</div>
+      <div className="font-extrabold text-foreground">{displayTitle}</div>
       {description && <p className="mt-1 max-w-sm text-sm leading-6 text-muted-foreground">{description}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>

@@ -36,7 +36,7 @@ export function DashboardTopProducts({
             <TrendingUp size={17} strokeWidth={2.2} />
           </div>
           <div className="min-w-0">
-            <h3 className="truncate text-sm font-extrabold text-foreground">پرفروش‌ترین کالاها</h3>
+            <h2 className="truncate text-sm font-extrabold text-foreground">پرفروش‌ترین کالاها</h2>
             <p className="text-[11px] text-muted-foreground">بر اساس تعداد فروش</p>
           </div>
         </div>

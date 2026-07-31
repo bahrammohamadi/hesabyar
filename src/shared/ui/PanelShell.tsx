@@ -12,7 +12,7 @@ export function PanelShell({ title, subtitle, icon, onClose, actions, footer, ch
         <div className="flex min-w-0 items-center gap-3">
           {icon && <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">{icon}</div>}
           <div className="min-w-0">
-            <h2 className="truncate text-base font-extrabold text-slate-800 dark:text-slate-100">{title}</h2>
+            <h2 className="truncate text-base font-extrabold text-foreground">{title}</h2>
             {subtitle && <div className="mt-0.5 truncate text-xs text-muted-foreground">{subtitle}</div>}
           </div>
         </div>

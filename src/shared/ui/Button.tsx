@@ -9,9 +9,9 @@ export type ButtonSize = "sm" | "md";
 
 const variantClass: Record<ButtonVariant, string> = {
   primary: "bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-primary/25",
-  secondary: "border border-border bg-card text-slate-700 hover:bg-muted focus:ring-primary/20 dark:text-slate-100",
+  secondary: "border border-border bg-card text-foreground hover:bg-muted focus:ring-primary/20",
   danger: "bg-destructive text-destructive-foreground hover:bg-destructive/90 focus:ring-destructive/25",
-  ghost: "text-slate-600 hover:bg-muted hover:text-slate-900 focus:ring-primary/20 dark:text-slate-300",
+  ghost: "text-muted-foreground hover:bg-muted hover:text-foreground focus:ring-primary/20 dark:text-muted-foreground",
 };
 
 const sizeClass: Record<ButtonSize, string> = {

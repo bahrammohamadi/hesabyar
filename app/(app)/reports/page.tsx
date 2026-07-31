@@ -136,7 +136,7 @@ function SalesReport({ orgId }: { orgId: string }) {
 
       {/* نمودار */}
       <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-6">
-        <h3 className="mb-4 text-sm font-extrabold text-foreground">نمودار فروش</h3>
+        <h2 className="mb-4 text-sm font-extrabold text-foreground">نمودار فروش</h2>
         {isLoading ? (
           <Spinner />
         ) : !chartData?.length ? (
@@ -218,7 +218,7 @@ function ProductsReport({ orgId }: { orgId: string }) {
     <div className="space-y-6">
       {/* پرفروش‌ترین‌ها */}
       <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-6">
-        <h3 className="mb-4 text-sm font-extrabold text-foreground">پرفروش‌ترین محصولات (۳۰ روز)</h3>
+        <h2 className="mb-4 text-sm font-extrabold text-foreground">پرفروش‌ترین محصولات (۳۰ روز)</h2>
         {isLoading ? (
           <Spinner />
         ) : !topProducts?.length ? (
@@ -243,7 +243,7 @@ function ProductsReport({ orgId }: { orgId: string }) {
 
       {/* کالاهای کم‌موجود */}
       <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-6">
-        <h3 className="mb-4 text-sm font-extrabold text-foreground">کالاهای کم‌موجود</h3>
+        <h2 className="mb-4 text-sm font-extrabold text-foreground">کالاهای کم‌موجود</h2>
         {!lowStock?.length ? (
           <EmptyState icon={Package} message="همه کالاها موجودی کافی دارند" />
         ) : (
@@ -316,7 +316,7 @@ function FinancialReport({ orgId }: { orgId: string }) {
       {/* نمودار دایره‌ای */}
       {pieData.length > 0 && (
         <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-6">
-          <h3 className="mb-4 text-sm font-extrabold text-foreground">توزیع حساب‌ها</h3>
+          <h2 className="mb-4 text-sm font-extrabold text-foreground">توزیع حساب‌ها</h2>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -400,7 +400,7 @@ function ContactsReport({ orgId }: { orgId: string }) {
 
       {/* نمودار دایره‌ای */}
       <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-6">
-        <h3 className="mb-4 text-sm font-extrabold text-foreground">توزیع اشخاص</h3>
+        <h2 className="mb-4 text-sm font-extrabold text-foreground">توزیع اشخاص</h2>
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -426,7 +426,7 @@ function ContactsReport({ orgId }: { orgId: string }) {
 
       {/* لیست اشخاص */}
       <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-6">
-        <h3 className="mb-4 text-sm font-extrabold text-foreground">لیست اشخاص</h3>
+        <h2 className="mb-4 text-sm font-extrabold text-foreground">لیست اشخاص</h2>
         {!contactBalances?.length ? (
           <EmptyState icon={Users} message="شخصی ثبت نشده است" />
         ) : (
@@ -509,7 +509,7 @@ function ProfitReport({ orgId }: { orgId: string }) {
   return (
     <div className="space-y-6">
       <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-6">
-        <h3 className="mb-4 text-sm font-extrabold text-foreground">فروش بر اساس رنگ</h3>
+        <h2 className="mb-4 text-sm font-extrabold text-foreground">فروش بر اساس رنگ</h2>
         {(!salesByColor || !salesByColor.length) ? (
           <EmptyState icon={Package} message="داده‌ای موجود نیست" />
         ) : (
@@ -528,7 +528,7 @@ function ProfitReport({ orgId }: { orgId: string }) {
       </div>
 
       <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-6">
-        <h3 className="mb-4 text-sm font-extrabold text-foreground">فروش بر اساس سایز</h3>
+        <h2 className="mb-4 text-sm font-extrabold text-foreground">فروش بر اساس سایز</h2>
         {!salesBySize || !salesBySize.length ? (
           <EmptyState icon={Package} message="داده‌ای موجود نیست" />
         ) : (
@@ -545,7 +545,7 @@ function ProfitReport({ orgId }: { orgId: string }) {
       </div>
 
       <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-6">
-        <h3 className="mb-4 text-sm font-extrabold text-foreground">پرفروش‌ترین محصولات</h3>
+        <h2 className="mb-4 text-sm font-extrabold text-foreground">پرفروش‌ترین محصولات</h2>
         {isLoading ? (
           <Spinner />
         ) : !topProducts?.length ? (

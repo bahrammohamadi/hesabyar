@@ -39,7 +39,7 @@ export function PosPaymentMethods({
     <Card className="p-3 sm:p-4">
       <div className="mb-3 flex items-center gap-2">
         <CreditCard size={16} className="text-primary" />
-        <h3 className="text-sm font-extrabold text-foreground">روش پرداخت</h3>
+        <h2 className="text-sm font-extrabold text-foreground">روش پرداخت</h2>
       </div>
       <div className="grid grid-cols-3 gap-2" role="group" aria-label="روش پرداخت">
         {METHODS.map(({ id, label, icon: Icon }) => {

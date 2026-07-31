@@ -15,7 +15,7 @@ export function formatJalali(date: string | Date | null | undefined, withTime = 
 
 export function Money({ value, tone = "neutral", className }: { value: number | null | undefined; tone?: "neutral" | "positive" | "negative" | "debt" | "credit"; className?: string }) {
   const toneClass = {
-    neutral: "text-slate-800 dark:text-slate-100",
+    neutral: "text-foreground",
     positive: "text-finance-profit",
     negative: "text-finance-loss",
     debt: "text-finance-debt",

@@ -178,10 +178,10 @@ export function ActivityFeedCard({
   return (
     <Card className="p-4 sm:p-5">
       <div className="mb-5 flex items-center justify-between gap-3">
-        <h3 className="flex items-center gap-2 text-sm font-extrabold text-foreground">
+        <h2 className="flex items-center gap-2 text-sm font-extrabold text-foreground">
           {Icon && <Icon size={17} className="text-muted-foreground" />}
           {title}
-        </h3>
+        </h2>
         {action}
       </div>
       {children}

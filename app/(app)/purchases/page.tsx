@@ -112,7 +112,7 @@ export default function PurchasesPage() {
             onClick: (event) => handlePurchaseRowClick(event, p.id),
             onAuxClick: (event) => handlePurchaseRowAuxClick(event, p.id),
             onKeyDown: (event) => { if (event.key === "Enter") openPurchase(p.id); },
-            className: "cursor-pointer odd:bg-white even:bg-slate-50/60 hover:bg-primary/[0.06] hover:shadow-sm",
+            className: "cursor-pointer odd:bg-white even:bg-muted/60 hover:bg-primary/[0.06] hover:shadow-sm",
           })}
           columns={[
             {
@@ -133,7 +133,7 @@ export default function PurchasesPage() {
                 </Link>
               ),
             },
-            { key: "date", header: "تاریخ", render: (p) => <span className="text-slate-500">{toJalali(p.date)}</span> },
+            { key: "date", header: "تاریخ", render: (p) => <span className="text-muted-foreground">{toJalali(p.date)}</span> },
             {
               key: "supplier",
               header: "تامین‌کننده",
@@ -142,7 +142,7 @@ export default function PurchasesPage() {
                   <EntityLink type="contact" id={p.supplier_id}>{p.supplier?.name ?? "تامین‌کننده"}</EntityLink>
                   <span onClick={(event) => event.stopPropagation()}><EntityActionMenu type="contact" id={p.supplier_id} label={p.supplier?.name ?? "تامین‌کننده"} /></span>
                 </div>
-              ) : <span className="text-slate-400">—</span>,
+              ) : <span className="text-muted-foreground">—</span>,
             },
             { key: "total", header: "مبلغ", align: "left", render: (p) => <span className="font-semibold tabular-nums">{formatToman(p.total)}</span> },
             { key: "paid", header: "پرداخت‌شده", align: "left", render: (p) => <span className="tabular-nums">{formatToman(p.paid)}</span> },
@@ -254,16 +254,16 @@ function PurchaseModal({ orgId, onClose }: { orgId: string | null; onClose: () =
           <div>
             <label className="label">تامین‌کننده</label>
             {supplier ? (
-              <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3.5 py-2.5">
-                <span className="font-medium text-sm text-slate-800">{supplier.name}</span>
-                <button onClick={() => setSupplier(null)} className="text-slate-400 hover:text-rose-500">
+              <div className="flex items-center justify-between rounded-xl border border-border px-3.5 py-2.5">
+                <span className="font-medium text-sm text-foreground">{supplier.name}</span>
+                <button onClick={() => setSupplier(null)} className="text-muted-foreground hover:text-destructive">
                   <X size={18} />
                 </button>
               </div>
             ) : (
               <button
                 onClick={() => setSupplierPickerOpen(true)}
-                className="w-full flex items-center gap-2 rounded-xl border border-dashed border-slate-300 px-3.5 py-2.5 text-sm text-slate-500 hover:border-primary/30 hover:text-primary"
+                className="w-full flex items-center gap-2 rounded-xl border border-dashed border-border px-3.5 py-2.5 text-sm text-muted-foreground hover:border-primary/30 hover:text-primary"
               >
                 <UserPlus size={18} /> انتخاب تامین‌کننده
               </button>
@@ -278,34 +278,34 @@ function PurchaseModal({ orgId, onClose }: { orgId: string | null; onClose: () =
           </button>
 
           {items.length === 0 ? (
-            <div className="text-center text-sm text-slate-400 py-6 border border-dashed border-slate-200 rounded-xl">
+            <div className="text-center text-sm text-muted-foreground py-6 border border-dashed border-border rounded-xl">
               کالایی انتخاب نشده.
             </div>
           ) : (
-            <div className="max-h-[42vh] overflow-y-auto rounded-2xl border border-slate-100 bg-white">
-              <div className="hidden grid-cols-[minmax(220px,1.6fr)_120px_120px_88px_120px_120px_44px] gap-2 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-500 md:grid">
+            <div className="max-h-[42vh] overflow-y-auto rounded-2xl border border-border bg-white">
+              <div className="hidden grid-cols-[minmax(220px,1.6fr)_120px_120px_88px_120px_120px_44px] gap-2 bg-muted px-3 py-2 text-xs font-bold text-muted-foreground md:grid">
                 <span>کالا</span><span>قیمت خرید</span><span>قیمت فروش</span><span className="text-center">سود٪</span><span className="text-center">تعداد</span><span className="text-left">جمع خرید</span><span />
               </div>
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-border">
                 {items.map((it, idx) => (
                   <div key={it.variant_id} className="p-3">
                     <div className="hidden grid-cols-[minmax(220px,1.6fr)_120px_120px_88px_120px_120px_44px] items-center gap-2 md:grid">
                       <div className="min-w-0"><span className="inline-flex min-w-0 items-center gap-2 text-sm font-semibold"><EntityLink type="product" id={it.product_id} className="truncate">{it.label}</EntityLink><EntityActionMenu type="product" id={it.product_id} label={it.label} /></span></div>
                       <input className="input h-10 min-h-10 text-left text-sm" inputMode="numeric" value={String(rialToToman(it.unit_price))} onChange={(e) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, unit_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x)))} />
                       <input className="input h-10 min-h-10 text-left text-sm" inputMode="numeric" value={String(rialToToman(it.sale_price))} onChange={(e) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, sale_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x)))} />
-                      <input className={(it.sale_price - it.unit_price) >= 0 ? "input h-10 min-h-10 text-center text-xs font-bold text-emerald-600" : "input h-10 min-h-10 text-center text-xs font-bold text-rose-600"} inputMode="numeric" value={String(it.unit_price > 0 ? Math.round(((it.sale_price - it.unit_price) / it.unit_price) * 100) : 0)} onChange={(e) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, sale_price: Math.round(x.unit_price * (1 + (Number(toEnDigits(e.target.value)) || 0) / 100)) } : x)))} />
+                      <input className={(it.sale_price - it.unit_price) >= 0 ? "input h-10 min-h-10 text-center text-xs font-bold text-success-onSoft" : "input h-10 min-h-10 text-center text-xs font-bold text-destructive"} inputMode="numeric" value={String(it.unit_price > 0 ? Math.round(((it.sale_price - it.unit_price) / it.unit_price) * 100) : 0)} onChange={(e) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, sale_price: Math.round(x.unit_price * (1 + (Number(toEnDigits(e.target.value)) || 0) / 100)) } : x)))} />
                       <QuantityStepper value={it.qty} onChange={(qty) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, qty } : x)))} />
-                      <span className="text-left text-sm font-black text-slate-800 tabular-nums">{formatToman(it.unit_price * it.qty, false)}</span>
-                      <button onClick={() => setItems((p) => p.filter((_, i) => i !== idx))} className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-rose-400 hover:bg-rose-50 hover:text-rose-600"><Trash2 size={16} /></button>
+                      <span className="text-left text-sm font-black text-foreground tabular-nums">{formatToman(it.unit_price * it.qty, false)}</span>
+                      <button onClick={() => setItems((p) => p.filter((_, i) => i !== idx))} className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive"><Trash2 size={16} /></button>
                     </div>
-                    <div className="md:hidden"><div className="flex items-center justify-between gap-2"><EntityLink type="product" id={it.product_id} className="truncate text-sm font-semibold">{it.label}</EntityLink><button onClick={() => setItems((p) => p.filter((_, i) => i !== idx))} className="text-rose-400"><Trash2 size={16} /></button></div><div className="mt-2 grid grid-cols-2 gap-2 text-sm"><div><span className="text-xs text-slate-400">خرید</span><input className="input h-10 min-h-10 text-left text-sm" inputMode="numeric" value={String(rialToToman(it.unit_price))} onChange={(e) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, unit_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x)))} /></div><div><span className="text-xs text-slate-400">فروش</span><input className="input h-10 min-h-10 text-left text-sm" inputMode="numeric" value={String(rialToToman(it.sale_price))} onChange={(e) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, sale_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x)))} /></div></div><div className="mt-2 flex items-center justify-between gap-2 text-sm"><label className="flex items-center gap-2"><span>سود٪</span><input className="input h-9 min-h-9 w-20 text-center text-xs" inputMode="numeric" value={String(it.unit_price > 0 ? Math.round(((it.sale_price - it.unit_price) / it.unit_price) * 100) : 0)} onChange={(e) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, sale_price: Math.round(x.unit_price * (1 + (Number(toEnDigits(e.target.value)) || 0) / 100)) } : x)))} /></label><strong>{formatToman(it.unit_price * it.qty, false)}</strong></div></div>
+                    <div className="md:hidden"><div className="flex items-center justify-between gap-2"><EntityLink type="product" id={it.product_id} className="truncate text-sm font-semibold">{it.label}</EntityLink><button onClick={() => setItems((p) => p.filter((_, i) => i !== idx))} className="text-destructive"><Trash2 size={16} /></button></div><div className="mt-2 grid grid-cols-2 gap-2 text-sm"><div><span className="text-xs text-muted-foreground">خرید</span><input className="input h-10 min-h-10 text-left text-sm" inputMode="numeric" value={String(rialToToman(it.unit_price))} onChange={(e) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, unit_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x)))} /></div><div><span className="text-xs text-muted-foreground">فروش</span><input className="input h-10 min-h-10 text-left text-sm" inputMode="numeric" value={String(rialToToman(it.sale_price))} onChange={(e) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, sale_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x)))} /></div></div><div className="mt-2 flex items-center justify-between gap-2 text-sm"><label className="flex items-center gap-2"><span>سود٪</span><input className="input h-9 min-h-9 w-20 text-center text-xs" inputMode="numeric" value={String(it.unit_price > 0 ? Math.round(((it.sale_price - it.unit_price) / it.unit_price) * 100) : 0)} onChange={(e) => setItems((p) => p.map((x, i) => (i === idx ? { ...x, sale_price: Math.round(x.unit_price * (1 + (Number(toEnDigits(e.target.value)) || 0) / 100)) } : x)))} /></label><strong>{formatToman(it.unit_price * it.qty, false)}</strong></div></div>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-slate-100 pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-border pt-4">
             <div>
               <label className="label">مبلغ پرداختی (تومان)</label>
               <input className="input" inputMode="numeric" value={paid} onChange={(e) => setPaid(e.target.value)} />
@@ -321,12 +321,12 @@ function PurchaseModal({ orgId, onClose }: { orgId: string | null; onClose: () =
             </div>
           </div>
 
-          <div className="rounded-xl bg-slate-50 p-4 flex justify-between font-bold text-slate-800">
+          <div className="rounded-xl bg-muted p-4 flex justify-between font-bold text-foreground">
             <span>جمع کل خرید</span>
             <span>{formatToman(total)}</span>
           </div>
 
-          {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
+          {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm px-4 py-3">{error}</div>}
 
           <div className="flex gap-2">
             <button onClick={handleSave} disabled={saving} className="btn-primary flex-1">

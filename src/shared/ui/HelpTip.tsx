@@ -14,7 +14,7 @@ export function HelpTip({ text, className }: { text?: string | null; className?:
       >
         <HelpCircle size={13} />
       </button>
-      <span className="pointer-events-none absolute right-0 top-7 z-[1600] hidden w-64 rounded-2xl border border-slate-200 bg-white p-3 text-right text-xs leading-6 text-slate-600 shadow-2xl group-hover:block group-focus-within:block">
+      <span className="pointer-events-none absolute right-0 top-7 z-[1600] hidden w-64 rounded-2xl border border-border bg-card p-3 text-right text-xs leading-6 text-muted-foreground shadow-2xl group-hover:block group-focus-within:block">
         {text}
       </span>
     </span>

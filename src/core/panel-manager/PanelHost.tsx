@@ -105,7 +105,7 @@ export function PanelHost() {
   return createPortal(
     <div data-panel-host-root="true" className="fixed inset-0 isolate overflow-hidden overscroll-contain" style={{ zIndex: "var(--z-panel)", height: "100dvh" }} aria-live="polite">
       <button
-        className="absolute inset-0 bg-slate-950/30 backdrop-blur-[1px] pointer-events-auto"
+        className="absolute inset-0 bg-foreground/30 backdrop-blur-[1px] pointer-events-auto"
         style={{ zIndex: 0 }}
         onClick={closeTop}
         aria-label="بستن پنل فعال"
@@ -122,7 +122,7 @@ export function PanelHost() {
             onWheel={(event) => event.stopPropagation()}
             onTouchMove={(event) => event.stopPropagation()}
             className={cn(
-              "pointer-events-auto fixed bottom-0 top-0 right-0 overscroll-contain overflow-hidden border-l border-slate-200 bg-white shadow-2xl transition-all duration-200 ease-out",
+              "pointer-events-auto fixed bottom-0 top-0 right-0 overscroll-contain overflow-hidden border-l border-border bg-card shadow-2xl transition-all duration-200 ease-out",
               isTop ? "translate-x-0 opacity-100" : "translate-x-6 opacity-75 pointer-events-none"
             )}
             style={{

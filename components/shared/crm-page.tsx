@@ -205,16 +205,16 @@ function SegmentExportCard({ title, value, options, onChange, rows, filename, em
     <div className="rounded-[24px] border border-white/80 bg-white/90 p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-black text-slate-800">{title}</h3>
-          <p className="mt-1 text-xs text-slate-500">{toFaDigits(exportRows.length)} مشتری یافت شد</p>
+          <h3 className="font-black text-foreground">{title}</h3>
+          <p className="mt-1 text-xs text-muted-foreground">{toFaDigits(exportRows.length)} مشتری یافت شد</p>
         </div>
         <Download className="text-primary" size={20} />
       </div>
-      <select className="input mb-3" value={value} onChange={(event) => onChange(Number(event.target.value))}>
+      <select aria-label="انتخاب بازه" className="input mb-3" value={value} onChange={(event) => onChange(Number(event.target.value))}>
         {options.map((option) => <option key={option} value={option}>{toFaDigits(option)} {suffix}</option>)}
       </select>
-      {exportRows.length === 0 ? <div className="rounded-2xl border border-dashed border-slate-200 p-4 text-center text-sm text-slate-400">{emptyText}</div> : (
-        <div className="mb-3 rounded-2xl bg-slate-50 p-3 text-xs text-slate-500">
+      {exportRows.length === 0 ? <div className="rounded-2xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">{emptyText}</div> : (
+        <div className="mb-3 rounded-2xl bg-muted p-3 text-xs text-muted-foreground">
           نمونه: {exportRows.slice(0, 3).map((row) => `${row.name} (${row.phone})`).join("، ")}
         </div>
       )}
@@ -233,9 +233,9 @@ function InteractionsList({ interactions, contacts }: { interactions: any[]; con
         return (
           <div key={interaction.id} className="flex items-center justify-between gap-3 rounded-[1.75rem] border border-border bg-card p-4 shadow-sm transition hover:border-primary/25 hover:bg-primary/[0.03]">
             <div>
-              <div className="font-medium text-slate-800">{interaction.title || interaction.type}</div>
-              <div className="text-xs text-slate-400 mt-1">{contact ? <EntityLink type="contact" id={contact.id}>{contact.name}</EntityLink> : "—"} • {toJalali(interaction.created_at, true)}</div>
-              {interaction.description && <div className="text-sm text-slate-500 mt-2">{interaction.description}</div>}
+              <div className="font-medium text-foreground">{interaction.title || interaction.type}</div>
+              <div className="text-xs text-muted-foreground mt-1">{contact ? <EntityLink type="contact" id={contact.id}>{contact.name}</EntityLink> : "—"} • {toJalali(interaction.created_at, true)}</div>
+              {interaction.description && <div className="text-sm text-muted-foreground mt-2">{interaction.description}</div>}
             </div>
           </div>
         );
@@ -271,7 +271,7 @@ function InteractionModal({ contact, contacts, onClose }: { contact: any | null;
         <div><label className="label">نوع تعامل</label><select className="input" value={type} onChange={(e) => setType(e.target.value)}><option value="note">یادداشت</option><option value="call">تماس</option><option value="sms">پیامک</option><option value="follow_up">پیگیری</option><option value="complaint">شکایت</option></select></div>
         <div><label className="label">عنوان</label><input className="input" value={title} onChange={(e) => setTitle(e.target.value)} /></div>
         <div><label className="label">توضیحات</label><textarea className="input" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} /></div>
-        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm p-3">{error}</div>}
+        {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3">{error}</div>}
         <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">ثبت</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
       </div>
     </Modal>

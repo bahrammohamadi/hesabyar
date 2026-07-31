@@ -388,7 +388,7 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
             <Textarea value={form.description} onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))} />
           </Field>
         </div>
-        {formError && form.name.trim() && <div className="mt-3 rounded-xl bg-rose-50 p-3 text-sm text-destructive">{formError}</div>}
+        {formError && form.name.trim() && <div className="mt-3 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{formError}</div>}
         <div className="mt-4 flex gap-2">
           <Button loading={isSaving} onClick={handleSave}>ذخیره</Button>
           <Button variant="secondary" onClick={() => (isCreate ? closeTop() : setMode("view"))}>انصراف</Button>
@@ -432,7 +432,7 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
                 <div className="space-y-4">
                   <Section title="اطلاعات شخص">
                     <dl className="grid gap-3 text-sm sm:grid-cols-2">
-                      <div><dt className="text-muted-foreground">نام</dt><dd className="font-bold text-slate-800">{contact!.name}</dd></div>
+                      <div><dt className="text-muted-foreground">نام</dt><dd className="font-bold text-foreground">{contact!.name}</dd></div>
                       <div><dt className="text-muted-foreground">کد</dt><dd className="font-mono" dir="ltr">{contact!.code ?? "—"}</dd></div>
                       <div><dt className="text-muted-foreground">تلفن</dt><dd dir="ltr" className="text-left sm:text-right">{contact!.phone ?? "—"}</dd></div>
                       <div><dt className="text-muted-foreground">موبایل</dt><dd dir="ltr" className="text-left sm:text-right">{contact!.mobile ?? "—"}</dd></div>
@@ -478,7 +478,7 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
                       <Field label="عنوان" className="sm:col-span-2"><Input value={interactionForm.title} onChange={(e) => setInteractionForm((p) => ({ ...p, title: e.target.value }))} /></Field>
                       <Field label="یادداشت" className="sm:col-span-2"><Textarea value={interactionForm.description} onChange={(e) => setInteractionForm((p) => ({ ...p, description: e.target.value }))} /></Field>
                     </div>
-                    {formError && <div className="mt-3 rounded-xl bg-rose-50 p-3 text-sm text-destructive">{formError}</div>}
+                    {formError && <div className="mt-3 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{formError}</div>}
                     <div className="mt-4"><Button loading={createInteractionMutation.isPending} onClick={handleCreateInteraction}>ثبت تعامل</Button></div>
                   </Section>
                   {interactionsQuery.isLoading ? <Spinner /> : interactionsQuery.error ? <EmptyState title="خطا در دریافت تعاملات" description={(interactionsQuery.error as Error).message} /> : <DataTable rows={interactionsQuery.data ?? []} columns={interactionColumns} keyExtractor={(row) => row.id} empty={<EmptyState title="تعاملی برای این مخاطب ثبت نشده" />} />}
@@ -498,7 +498,7 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
                       <Field label="روش"><Select value={transactionForm.method} onChange={(e) => setTransactionForm((p) => ({ ...p, method: e.target.value }))}><option value="cash">نقد</option><option value="card">کارت</option><option value="transfer">انتقال</option><option value="cheque">چک</option><option value="other">سایر</option></Select></Field>
                       <Field label="یادداشت" className="sm:col-span-2"><Input value={transactionForm.note} onChange={(e) => setTransactionForm((p) => ({ ...p, note: e.target.value }))} /></Field>
                     </div>
-                    {formError && <div className="mt-3 rounded-xl bg-rose-50 p-3 text-sm text-destructive">{formError}</div>}
+                    {formError && <div className="mt-3 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{formError}</div>}
                     <div className="mt-4"><Button loading={createTransactionMutation.isPending} onClick={handleCreateTransaction}>ثبت تراکنش</Button></div>
                   </Section>
                   {transactionsQuery.isLoading ? <Spinner /> : transactionsQuery.error ? <EmptyState title="خطا در دریافت تراکنش‌ها" description={(transactionsQuery.error as Error).message} /> : <DataTable rows={transactionsQuery.data ?? []} columns={transactionColumns} keyExtractor={(row) => row.id} empty={<EmptyState title="تراکنشی برای این مخاطب ثبت نشده" />} />}

@@ -52,8 +52,8 @@ export function BottomNav({ onMoreClick }: { onMoreClick: () => void }) {
               <span className="max-w-full truncate px-1 text-[10px] font-bold">{item.label}</span>
             </>
           );
-          if (item.more) return <button key="more" onClick={onMoreClick} className="flex min-h-16 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl text-slate-400 transition-colors active:scale-95">{content}</button>;
-          return <Link key={item.href} href={item.href} className={cn("flex min-h-16 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl transition-colors active:scale-95", active ? "text-primary" : "text-slate-400")}>{content}</Link>;
+          if (item.more) return <button key="more" onClick={onMoreClick} className="flex min-h-16 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl text-muted-foreground transition-colors active:scale-95">{content}</button>;
+          return <Link key={item.href} href={item.href} className={cn("flex min-h-16 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl transition-colors active:scale-95", active ? "text-primary" : "text-muted-foreground")}>{content}</Link>;
         })}
       </div>
     </nav>

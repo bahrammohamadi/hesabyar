@@ -47,7 +47,7 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-xl border border-border bg-white p-3 text-xs shadow-lg" dir="rtl">
-      <div className="mb-1 font-bold text-slate-700">{label}</div>
+      <div className="mb-1 font-bold text-foreground">{label}</div>
       {payload.map((item) => <div key={item.name}>{item.name}: {toPersianDigits(item.value.toLocaleString("en-US"))}</div>)}
     </div>
   );
@@ -168,7 +168,7 @@ export default function ReportsOverviewV2Page() {
       <div className="flex items-center gap-3">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary"><FileBarChart2 size={24} /></div>
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-800">گزارش‌های جدید</h1>
+          <h1 className="text-2xl font-extrabold text-foreground">گزارش‌های جدید</h1>
           <p className="mt-1 text-sm text-muted-foreground">گزارش‌های view-based بر پایه فاز A، بدون تغییر صفحات گزارش legacy.</p>
         </div>
       </div>

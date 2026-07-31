@@ -49,7 +49,7 @@ export default function PurchaseReturnsPage() {
     <div>
       <PageHeader title="مرجوعی خرید" subtitle="ثبت برگشت کالا به تأمین‌کننده و خروج موجودی" action={<button onClick={() => setOpen(true)} className="btn-primary"><Plus size={16} /> مرجوعی جدید</button>} />
       <div className="relative mb-4">
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
+        <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={17} />
         <input className="input pr-10" placeholder="جستجو شماره مرجوعی یا تأمین‌کننده..." value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
       {isLoading ? <Spinner /> : !filtered.length ? <EmptyState icon={ArrowLeftRight} title="مرجوعی خرید ثبت نشده" /> : (
@@ -57,14 +57,14 @@ export default function PurchaseReturnsPage() {
           {filtered.map((ret: any) => (
             <div key={ret.id} className="card p-4 flex items-center justify-between gap-3">
               <div>
-                <div className="font-bold text-slate-800">{ret.return_no ?? "بدون شماره"}</div>
-                <div className="text-xs text-slate-400 mt-1">{ret.supplier_id ? <EntityLink type="contact" id={ret.supplier_id}>{ret.supplier?.name ?? "تأمین‌کننده"}</EntityLink> : "بدون تأمین‌کننده"} • {toJalali(ret.date)}</div>
-                {ret.reason && <div className="text-xs text-slate-500 mt-1">دلیل: {ret.reason}</div>}
+                <div className="font-bold text-foreground">{ret.return_no ?? "بدون شماره"}</div>
+                <div className="text-xs text-muted-foreground mt-1">{ret.supplier_id ? <EntityLink type="contact" id={ret.supplier_id}>{ret.supplier?.name ?? "تأمین‌کننده"}</EntityLink> : "بدون تأمین‌کننده"} • {toJalali(ret.date)}</div>
+                {ret.reason && <div className="text-xs text-muted-foreground mt-1">دلیل: {ret.reason}</div>}
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {ret.supplier_id && <EntityActionMenu type="contact" id={ret.supplier_id} label={ret.supplier?.name ?? "تأمین‌کننده"} />}
-                <div className="text-left"><div className="font-bold text-rose-600">{formatToman(ret.total)}</div><div className="text-xs text-slate-400">{ret.refund_method}</div></div>
-                <button onClick={() => deleteReturn(ret.id)} className="text-slate-400 hover:text-rose-600"><Trash2 size={17} /></button>
+                <div className="text-left"><div className="font-bold text-destructive">{formatToman(ret.total)}</div><div className="text-xs text-muted-foreground">{ret.refund_method}</div></div>
+                <button onClick={() => deleteReturn(ret.id)} className="text-muted-foreground hover:text-destructive"><Trash2 size={17} /></button>
               </div>
             </div>
           ))}
@@ -189,14 +189,14 @@ function PurchaseReturnModal({ orgId, branchId, onClose }: { orgId: string | nul
         {items.length > 0 && (
           <div className="space-y-2 max-h-[42vh] overflow-y-auto">
             {items.map((item) => (
-              <div key={item.id} className="rounded-xl border border-slate-100 p-3">
+              <div key={item.id} className="rounded-xl border border-border p-3">
                 <div className="flex items-center justify-between gap-2">
-                  <div><EntityLink type="product" id={item.variant?.product?.id}>{item.variant?.product?.name ?? "کالا"}</EntityLink><div className="text-xs text-slate-400 mt-1">خرید: {toFaDigits(item.qty)} • موجودی: {toFaDigits(item.variant?.stock_qty ?? 0)}</div></div>
-                  <div className="font-bold text-slate-700">{formatToman(item.unit_price)}</div>
+                  <div><EntityLink type="product" id={item.variant?.product?.id}>{item.variant?.product?.name ?? "کالا"}</EntityLink><div className="text-xs text-muted-foreground mt-1">خرید: {toFaDigits(item.qty)} • موجودی: {toFaDigits(item.variant?.stock_qty ?? 0)}</div></div>
+                  <div className="font-bold text-foreground">{formatToman(item.unit_price)}</div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 mt-2">
-                  <div><label className="text-xs text-slate-400">تعداد مرجوعی</label><input className="input" inputMode="numeric" value={String(item.return_qty)} onChange={(e) => setItems((prev) => prev.map((x) => x.id === item.id ? { ...x, return_qty: Number(toEnDigits(e.target.value)) || 0 } : x))} /></div>
-                  <div><label className="text-xs text-slate-400">قیمت مرجوعی</label><input className="input" inputMode="numeric" value={String(Math.round(item.return_price / 10))} onChange={(e) => setItems((prev) => prev.map((x) => x.id === item.id ? { ...x, return_price: (Number(toEnDigits(e.target.value)) || 0) * 10 } : x))} /></div>
+                  <div><label className="text-xs text-muted-foreground">تعداد مرجوعی</label><input className="input" inputMode="numeric" value={String(item.return_qty)} onChange={(e) => setItems((prev) => prev.map((x) => x.id === item.id ? { ...x, return_qty: Number(toEnDigits(e.target.value)) || 0 } : x))} /></div>
+                  <div><label className="text-xs text-muted-foreground">قیمت مرجوعی</label><input className="input" inputMode="numeric" value={String(Math.round(item.return_price / 10))} onChange={(e) => setItems((prev) => prev.map((x) => x.id === item.id ? { ...x, return_price: (Number(toEnDigits(e.target.value)) || 0) * 10 } : x))} /></div>
                 </div>
               </div>
             ))}
@@ -207,8 +207,8 @@ function PurchaseReturnModal({ orgId, branchId, onClose }: { orgId: string | nul
           <div><label className="label">دلیل</label><input className="input" value={reason} onChange={(e) => setReason(e.target.value)} /></div>
         </div>
         <div><label className="label">توضیح</label><input className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
-        <div className="rounded-xl bg-rose-50 text-rose-700 p-3 text-sm flex justify-between"><span>جمع مرجوعی</span><b>{formatToman(total)}</b></div>
-        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm p-3">{error}</div>}
+        <div className="rounded-xl bg-destructive/10 text-destructive p-3 text-sm flex justify-between"><span>جمع مرجوعی</span><b>{formatToman(total)}</b></div>
+        {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3">{error}</div>}
         <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving && <Loader2 className="animate-spin" size={16}/>} ثبت مرجوعی خرید</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
       </div>
     </Modal>

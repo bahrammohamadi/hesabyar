@@ -37,7 +37,7 @@ export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTex
 export function Field({ label, required, error, hint, children, className }: { label: string; required?: boolean; error?: string | null; hint?: string; children: ReactNode; className?: string }) {
   return (
     <div className={cn("block space-y-1.5", className)}>
-      <span className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-200">
+      <span className="flex items-center gap-1.5 text-sm font-bold text-foreground">
         <span>{label} {required && <span className="text-destructive">*</span>}</span>
         <HelpTip text={hint} />
       </span>

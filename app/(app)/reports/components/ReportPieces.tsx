@@ -75,7 +75,7 @@ export function ChartCard({
     <Card className={`p-4 sm:p-5 ${className ?? ""}`}>
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h3 className="truncate text-sm font-extrabold text-foreground">{title}</h3>
+          <h2 className="truncate text-sm font-extrabold text-foreground">{title}</h2>
           {description && (
             <p className="mt-0.5 text-xs leading-5 text-muted-foreground">{description}</p>
           )}

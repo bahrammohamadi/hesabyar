@@ -57,7 +57,7 @@ function ToastCard({ item, onClose }: { item: ToastItem; onClose: () => void }) 
   }[item.tone];
   const toneClass = {
     success: "border-success/20 bg-success-soft text-success",
-    error: "border-destructive/20 bg-rose-50 text-destructive dark:bg-rose-950/30",
+    error: "border-destructive/20 bg-destructive/10 text-destructive",
     warning: "border-warning/25 bg-warning-soft text-warning",
     info: "border-info/20 bg-info-soft text-info",
   }[item.tone];

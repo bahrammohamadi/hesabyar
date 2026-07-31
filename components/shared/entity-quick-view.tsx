@@ -14,10 +14,10 @@ import { cn } from "@/lib/utils/cn";
 
 function SummaryCell({ label, value, tone = "default" }: { label: string; value: React.ReactNode; tone?: "default" | "green" | "red" | "amber" | "blue" }) {
   const tones = {
-    default: "bg-slate-50 text-slate-800",
-    green: "bg-emerald-50 text-emerald-700",
-    red: "bg-rose-50 text-rose-700",
-    amber: "bg-amber-50 text-amber-700",
+    default: "bg-muted text-foreground",
+    green: "bg-success-soft text-success-onSoft",
+    red: "bg-destructive/10 text-destructive",
+    amber: "bg-warning-soft text-warning-onSoft",
     blue: "bg-primary/[0.06] text-primary",
   };
   return (
@@ -40,24 +40,24 @@ function TimelineIcon({ item }: { item: EntityTimelineItem }) {
 
 function TimelineList({ items }: { items?: EntityTimelineItem[] }) {
   if (!items || items.length === 0) {
-    return <div className="rounded-xl bg-slate-50 p-4 text-center text-sm text-slate-400">تایملاینی برای نمایش وجود ندارد.</div>;
+    return <div className="rounded-xl bg-muted p-4 text-center text-sm text-muted-foreground">تایملاینی برای نمایش وجود ندارد.</div>;
   }
 
   return (
     <div className="space-y-2">
       {items.slice(0, 8).map((item) => {
         const content = (
-          <div className="flex items-start gap-3 rounded-xl border border-slate-100 p-3 hover:bg-slate-50 transition">
-            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+          <div className="flex items-start gap-3 rounded-xl border border-border p-3 hover:bg-muted transition">
+            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
               <TimelineIcon item={item} />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-2">
-                <div className="truncate text-sm font-medium text-slate-800">{item.title}</div>
-                <div className="shrink-0 text-[11px] text-slate-400">{toJalali(item.date)}</div>
+                <div className="truncate text-sm font-medium text-foreground">{item.title}</div>
+                <div className="shrink-0 text-[11px] text-muted-foreground">{toJalali(item.date)}</div>
               </div>
               {(item.description || item.amount || item.qty) && (
-                <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500">
+                <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
                   {item.description && <span className="truncate">{item.description}</span>}
                   {typeof item.amount === "number" && item.amount !== 0 && <span>{formatToman(item.amount, false)}</span>}
                   {typeof item.qty === "number" && <span>تعداد: {toFaDigits(item.qty)}</span>}
@@ -86,8 +86,8 @@ function QuickAction({ href, children, tone = "default" }: { href: string; child
       className={cn(
         "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition",
         tone === "primary" ? "bg-primary text-white hover:bg-primary" :
-        tone === "green" ? "bg-emerald-600 text-white hover:bg-emerald-700" :
-        "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+        tone === "green" ? "bg-success text-white hover:bg-success" :
+        "border border-border bg-card text-foreground hover:bg-muted"
       )}
     >
       {children}
@@ -113,9 +113,9 @@ function ContactQuickView({ id, open }: { id?: string | null; open: boolean }) {
           <User size={25} />
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-lg font-bold text-slate-800">{contact.name}</h3>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-            <span className="badge bg-slate-100 text-slate-600">{contact.type === "customer" ? "مشتری" : contact.type === "supplier" ? "تأمین‌کننده" : "مشتری/تأمین‌کننده"}</span>
+          <h3 className="truncate text-lg font-bold text-foreground">{contact.name}</h3>
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <span className="badge bg-muted text-muted-foreground">{contact.type === "customer" ? "مشتری" : contact.type === "supplier" ? "تأمین‌کننده" : "مشتری/تأمین‌کننده"}</span>
             {contact.phone && <PhoneLink phone={contact.phone} />}
           </div>
         </div>
@@ -132,7 +132,7 @@ function ContactQuickView({ id, open }: { id?: string | null; open: boolean }) {
 
       <div className="grid grid-cols-2 gap-2">
         {contact.phone && (
-          <a href={`tel:${contact.phone.trim().replace(/[^\d+]/g, "")}`} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700">
+          <a href={`tel:${contact.phone.trim().replace(/[^\d+]/g, "")}`} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-success px-3 py-2 text-sm font-medium text-white hover:bg-success">
             <Phone size={16} /> تماس
           </a>
         )}
@@ -148,7 +148,7 @@ function ContactQuickView({ id, open }: { id?: string | null; open: boolean }) {
       </div>
 
       <div>
-        <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
+        <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
           <CalendarClock size={16} /> تایملاین مشتری
         </div>
         {timeline.isLoading ? <Spinner /> : <TimelineList items={timeline.data} />}
@@ -171,13 +171,13 @@ function ProductQuickView({ id, open }: { id?: string | null; open: boolean }) {
   return (
     <div className="space-y-4">
       <div className="flex items-start gap-3">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-100 text-slate-400">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-muted text-muted-foreground">
           {product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" /> : <Package size={28} />}
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-lg font-bold text-slate-800">{product.name}</h3>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-            {product.code && <span className="rounded-lg bg-slate-100 px-2 py-0.5 font-mono text-xs text-primary">{product.code}</span>}
+          <h3 className="truncate text-lg font-bold text-foreground">{product.name}</h3>
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            {product.code && <span className="rounded-lg bg-muted px-2 py-0.5 font-mono text-xs text-primary">{product.code}</span>}
             <span>{toFaDigits(product.variantCount)} تنوع</span>
           </div>
         </div>
@@ -208,7 +208,7 @@ function ProductQuickView({ id, open }: { id?: string | null; open: boolean }) {
       </div>
 
       <div>
-        <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
+        <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
           <CalendarClock size={16} /> تایملاین کالا
         </div>
         {timeline.isLoading ? <Spinner /> : <TimelineList items={timeline.data} />}

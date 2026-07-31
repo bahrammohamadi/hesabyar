@@ -33,45 +33,65 @@ export function StatCard({
   const displayTitle = label ?? title ?? "";
   const displayHint = subValue ?? hint;
 
-  // تعیین رنگ بر اساس trend یا color prop یا tone
+  /*
+    نگاشت تونالیته → توکن معنایی.
+
+    قبلاً هر تونالیته رنگ خام Tailwind بود (bg-emerald-50، text-rose-600، …)
+    که سه مشکل داشت: در دارک‌مود نمی‌چرخید، به تعویض تم واکنش نمی‌داد و
+    کنتراست متن روی پس‌زمینه‌ی نرم زیر حد WCAG بود (مثلاً emerald-600
+    روی سفید ۳.۷۶). حالا از توکن‌های on-soft استفاده می‌شود که
+    برای همین منظور تعریف شده‌اند.
+
+    تمایز بصری بین تونالیته‌ها حفظ شده — فقط منبع رنگ عوض شده.
+  */
   type ColorCfg = { bg: string; text: string; soft: string; border: string; accent: string };
+
+  const TOKENS: Record<string, ColorCfg> = {
+    primary: { bg: "bg-primary/10", text: "text-primary", soft: "bg-primary/5", border: "border-primary/20", accent: "bg-primary" },
+    success: { bg: "bg-success-soft", text: "text-success-onSoft", soft: "bg-success-soft/50", border: "border-success/20", accent: "bg-success" },
+    danger:  { bg: "bg-destructive/10", text: "text-destructive", soft: "bg-destructive/5", border: "border-destructive/20", accent: "bg-destructive" },
+    warning: { bg: "bg-warning-soft", text: "text-warning-onSoft", soft: "bg-warning-soft/50", border: "border-warning/25", accent: "bg-warning" },
+    info:    { bg: "bg-info-soft", text: "text-info-onSoft", soft: "bg-info-soft/50", border: "border-info/20", accent: "bg-info" },
+    neutral: { bg: "bg-muted", text: "text-muted-foreground", soft: "bg-muted/50", border: "border-border", accent: "bg-muted-foreground" },
+  };
+
   const getColorConfig = (): ColorCfg => {
     // اولویت: color prop > trend > tone
     if (color) {
-      const map: Record<string, { bg: string; text: string; soft: string; border: string; accent: string }> = {
-        primary: { bg: "bg-primary/10", text: "text-primary", soft: "bg-primary/5", border: "border-primary/20", accent: "bg-primary" },
-        emerald: { bg: "bg-emerald-50", text: "text-emerald-600", soft: "bg-emerald-50/50", border: "border-emerald-100", accent: "bg-emerald-600" },
-        blue: { bg: "bg-blue-50", text: "text-blue-600", soft: "bg-blue-50/50", border: "border-blue-100", accent: "bg-blue-600" },
-        amber: { bg: "bg-amber-50", text: "text-amber-600", soft: "bg-amber-50/50", border: "border-amber-100", accent: "bg-amber-600" },
-        rose: { bg: "bg-rose-50", text: "text-rose-600", soft: "bg-rose-50/50", border: "border-rose-100", accent: "bg-rose-600" },
-        violet: { bg: "bg-violet-50", text: "text-violet-600", soft: "bg-violet-50/50", border: "border-violet-100", accent: "bg-violet-600" },
-        cyan: { bg: "bg-cyan-50", text: "text-cyan-600", soft: "bg-cyan-50/50", border: "border-cyan-100", accent: "bg-cyan-600" },
-        slate: { bg: "bg-slate-100", text: "text-slate-600", soft: "bg-slate-50", border: "border-slate-200", accent: "bg-slate-600" },
+      const byColor: Record<string, ColorCfg> = {
+        primary: TOKENS.primary,
+        emerald: TOKENS.success,
+        blue: TOKENS.info,
+        cyan: TOKENS.info,
+        amber: TOKENS.warning,
+        rose: TOKENS.danger,
+        violet: TOKENS.primary,
+        slate: TOKENS.neutral,
       };
-      return map[color] ?? map.primary;
+      return byColor[color] ?? TOKENS.primary;
     }
-    if (trend === "up") return { bg: "bg-emerald-50", text: "text-emerald-600", soft: "bg-emerald-50/50", border: "border-emerald-100", accent: "bg-emerald-600" };
-    if (trend === "down") return { bg: "bg-rose-50", text: "text-rose-600", soft: "bg-rose-50/50", border: "border-rose-100", accent: "bg-rose-600" };
-    // tone mapping
-    const toneMap: Record<string, ColorCfg> = {
-      green: { bg: "bg-emerald-50", text: "text-emerald-600", soft: "bg-emerald-50/50", border: "border-emerald-100", accent: "bg-emerald-600" },
-      red: { bg: "bg-rose-50", text: "text-rose-600", soft: "bg-rose-50/50", border: "border-rose-100", accent: "bg-rose-600" },
-      amber: { bg: "bg-amber-50", text: "text-amber-600", soft: "bg-amber-50/50", border: "border-amber-100", accent: "bg-amber-600" },
-      blue: { bg: "bg-blue-50", text: "text-blue-600", soft: "bg-blue-50/50", border: "border-blue-100", accent: "bg-blue-600" },
-      primary: { bg: "bg-primary/10", text: "text-primary", soft: "bg-primary/5", border: "border-primary/20", accent: "bg-primary" },
-      violet: { bg: "bg-violet-50", text: "text-violet-600", soft: "bg-violet-50/50", border: "border-violet-100", accent: "bg-violet-600" },
-      cyan: { bg: "bg-cyan-50", text: "text-cyan-600", soft: "bg-cyan-50/50", border: "border-cyan-100", accent: "bg-cyan-600" },
-      default: { bg: "bg-primary/10", text: "text-primary", soft: "bg-muted/50", border: "border-border", accent: "bg-primary" },
+    if (trend === "up") return TOKENS.success;
+    if (trend === "down") return TOKENS.danger;
+
+    const byTone: Record<string, ColorCfg> = {
+      green: TOKENS.success,
+      red: TOKENS.danger,
+      amber: TOKENS.warning,
+      blue: TOKENS.info,
+      cyan: TOKENS.info,
+      primary: TOKENS.primary,
+      violet: TOKENS.primary,
+      default: TOKENS.primary,
     };
-    return toneMap[tone] ?? toneMap.default;
+    return byTone[tone] ?? byTone.default;
   };
 
   const colors = getColorConfig();
 
   const trendBadge = trend ? {
-    up: { text: "text-emerald-700", bg: "bg-emerald-50", icon: "↗", label: "صعودی" },
-    down: { text: "text-rose-700", bg: "bg-rose-50", icon: "↘", label: "نزولی" },
-    neutral: { text: "text-slate-500", bg: "bg-slate-50", icon: "→", label: "پایدار" },
+    up: { text: "text-success-onSoft", bg: "bg-success-soft", icon: "↗", label: "صعودی" },
+    down: { text: "text-destructive", bg: "bg-destructive/10", icon: "↘", label: "نزولی" },
+    neutral: { text: "text-muted-foreground", bg: "bg-muted", icon: "→", label: "پایدار" },
   }[trend] : null;
 
   const renderIcon = () => {
@@ -98,8 +118,8 @@ export function StatCard({
 
   const cardInner = (
     <div className={cn(
-      "relative overflow-hidden rounded-2xl bg-white/90 border border-white/80 p-4 sm:p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur transition-all duration-200",
-      "hover:shadow-xl hover:shadow-slate-900/[0.08] hover:-translate-y-0.5",
+      "relative overflow-hidden rounded-2xl bg-card/90 border border-border p-4 sm:p-5 shadow-sm backdrop-blur transition-all duration-200",
+      "hover:shadow-xl hover:-translate-y-0.5",
       "hover:border-primary/25",
       href && "cursor-pointer group"
     )}>
@@ -109,7 +129,7 @@ export function StatCard({
       <div className="flex items-start justify-between mb-3 pt-1">
         <div className="flex-1 min-w-0">
           <div className="text-[13px] font-medium text-muted-foreground mb-1">{displayTitle}</div>
-          <div className="text-2xl sm:text-[26px] font-black text-slate-900 tracking-tight leading-tight tabular-nums">
+          <div className="text-2xl sm:text-[26px] font-black text-foreground tracking-tight leading-tight tabular-nums">
             {value ?? "—"}
           </div>
         </div>
@@ -119,7 +139,7 @@ export function StatCard({
       <div className="flex items-center justify-between gap-2 min-h-[22px]">
         <div className="flex-1 min-w-0">
           {displayHint && (
-            <div className="text-xs text-slate-500 truncate">{displayHint}</div>
+            <div className="text-xs text-muted-foreground truncate">{displayHint}</div>
           )}
         </div>
         {trendBadge && (

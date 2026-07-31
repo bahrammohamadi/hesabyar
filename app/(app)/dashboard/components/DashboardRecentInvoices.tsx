@@ -40,7 +40,7 @@ export function DashboardRecentInvoices({
             <Receipt size={16} strokeWidth={2.2} />
           </div>
           <div>
-            <h3 className="text-sm font-extrabold text-foreground">فاکتورهای اخیر</h3>
+            <h2 className="text-sm font-extrabold text-foreground">فاکتورهای اخیر</h2>
             <p className="text-[11px] text-muted-foreground">آخرین ۵ فاکتور</p>
           </div>
         </div>

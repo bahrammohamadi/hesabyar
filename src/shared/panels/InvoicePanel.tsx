@@ -142,7 +142,7 @@ export function InvoicePanel({ panel }: { panel: PanelInstance }) {
               <Badge tone={contact.contact.type === "supplier" ? "info" : "primary"}>{contact.contact.type === "supplier" ? "تأمین‌کننده" : contact.contact.type === "both" ? "هر دو" : "مشتری"}</Badge>
             </div>
           ) : (
-            <div className="text-sm font-bold text-slate-600">مشتری نقدی / پیش‌فرض</div>
+            <div className="text-sm font-bold text-muted-foreground">مشتری نقدی / پیش‌فرض</div>
           )}
         </Section>
 

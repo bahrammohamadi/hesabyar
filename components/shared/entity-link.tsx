@@ -31,7 +31,7 @@ export function EntityLink({
   const href = getEntityHref(type, id);
 
   if (!href || !canNavigateToEntity(type, id, allowUnimplementedRoute)) {
-    return <span className={cn("text-slate-500", fallbackClassName)}>{content}</span>;
+    return <span className={cn("text-muted-foreground", fallbackClassName)}>{content}</span>;
   }
 
   return (

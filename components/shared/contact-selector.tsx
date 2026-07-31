@@ -104,7 +104,7 @@ export function ContactSelector({
     <Modal open={open} onClose={onClose} title={title} size="md" mobileFullscreen>
         <div className="flex h-full min-h-0 flex-col gap-3">
           <div className="relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
             <input
               ref={inputRef}
               className="input pr-10"
@@ -113,7 +113,7 @@ export function ContactSelector({
               onChange={(e) => setTerm(e.target.value)}
             />
             {term && (
-              <button onClick={() => setTerm("")} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+              <button onClick={() => setTerm("")} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                 <X size={16} />
               </button>
             )}
@@ -125,7 +125,7 @@ export function ContactSelector({
             {term && ` («${term}»)`}
           </button>
 
-          <div className="text-xs text-slate-400">
+          <div className="text-xs text-muted-foreground">
             {isLoading ? "در حال بارگذاری..." : `${filtered.length} مورد`}
           </div>
 
@@ -133,26 +133,26 @@ export function ContactSelector({
             {filtered.map((c) => (
               <div
                 key={c.id}
-                className="w-full rounded-xl border border-slate-100 hover:border-primary/30 hover:bg-primary/[0.04] p-3 transition flex items-center gap-3"
+                className="w-full rounded-xl border border-border hover:border-primary/30 hover:bg-primary/[0.04] p-3 transition flex items-center gap-3"
               >
                 <button
                   type="button"
                   onClick={() => onSelect(c)}
                   className="min-w-0 flex-1 text-right flex items-center gap-3"
                 >
-                  <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-muted text-muted-foreground flex items-center justify-center shrink-0">
                     <User size={17} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="font-medium text-sm text-slate-800 truncate">{c.name || "بدون نام"}</div>
-                    {c.phone && <div className="text-xs text-slate-400 mt-0.5">برای انتخاب روی نام بزنید</div>}
+                    <div className="font-medium text-sm text-foreground truncate">{c.name || "بدون نام"}</div>
+                    {c.phone && <div className="text-xs text-muted-foreground mt-0.5">برای انتخاب روی نام بزنید</div>}
                   </div>
                 </button>
                 {c.phone && <PhoneLink phone={c.phone} className="shrink-0 text-xs" />}
               </div>
             ))}
             {filtered.length === 0 && !isLoading && (
-              <div className="text-center text-sm text-slate-400 py-8">موردی یافت نشد.</div>
+              <div className="text-center text-sm text-muted-foreground py-8">موردی یافت نشد.</div>
             )}
           </div>
         </div>

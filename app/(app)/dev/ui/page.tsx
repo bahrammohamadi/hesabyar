@@ -14,7 +14,7 @@ export default function DesignSystemShowcasePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-extrabold text-slate-800">Design System فاز B</h1>
+        <h1 className="text-2xl font-extrabold text-foreground">Design System فاز B</h1>
         <p className="mt-1 text-sm text-muted-foreground">نمایش کامپوننت‌های پایه برای Panelها و Workspaceهای آینده.</p>
       </div>
 

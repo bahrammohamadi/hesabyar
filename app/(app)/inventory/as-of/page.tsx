@@ -119,27 +119,27 @@ export default function InventoryAsOfPage() {
       <div className="card p-4 mb-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <div><label className="label">تاریخ</label><DatePicker value={date} onChange={setDate} /></div>
-          <div className="md:col-span-2"><label className="label">جستجو</label><div className="relative"><Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} /><input className="input pr-10" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="نام، کد، بارکد، SKU..." /></div></div>
-          <label className="flex items-end gap-2 text-sm text-slate-600 pb-3"><input type="checkbox" checked={onlyPositive} onChange={(e) => setOnlyPositive(e.target.checked)} /> فقط موجودی مثبت</label>
+          <div className="md:col-span-2"><label className="label">جستجو</label><div className="relative"><Search className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} /><input className="input pr-10" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="نام، کد، بارکد، SKU..." /></div></div>
+          <label className="flex items-end gap-2 text-sm text-muted-foreground pb-3"><input type="checkbox" checked={onlyPositive} onChange={(e) => setOnlyPositive(e.target.checked)} /> فقط موجودی مثبت</label>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="card p-4 text-center"><div className="text-xs text-slate-500">تعداد کل</div><div className="font-bold text-slate-800 mt-1">{toFaDigits(totalQty)}</div></div>
-        <div className="card p-4 text-center"><div className="text-xs text-slate-500">ارزش خرید</div><div className="font-bold text-emerald-600 mt-1">{formatToman(totalValue)}</div></div>
-        <div className="card p-4 text-center"><div className="text-xs text-slate-500">کم‌موجود</div><div className="font-bold text-amber-600 mt-1">{toFaDigits(lowCount)}</div></div>
+        <div className="card p-4 text-center"><div className="text-xs text-muted-foreground">تعداد کل</div><div className="font-bold text-foreground mt-1">{toFaDigits(totalQty)}</div></div>
+        <div className="card p-4 text-center"><div className="text-xs text-muted-foreground">ارزش خرید</div><div className="font-bold text-success-onSoft mt-1">{formatToman(totalValue)}</div></div>
+        <div className="card p-4 text-center"><div className="text-xs text-muted-foreground">کم‌موجود</div><div className="font-bold text-warning-onSoft mt-1">{toFaDigits(lowCount)}</div></div>
       </div>
 
-      {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-rose-50 text-rose-700 text-sm p-4">{(error as Error).message}</div> : rows.length === 0 ? <EmptyState icon={CalendarDays} title="موجودی برای نمایش وجود ندارد" /> : (
+      {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-4">{(error as Error).message}</div> : rows.length === 0 ? <EmptyState icon={CalendarDays} title="موجودی برای نمایش وجود ندارد" /> : (
         <DataTable
           rows={rows}
           keyExtractor={(row: any) => row.variant_id}
           className="bg-white/90"
           columns={[
             { key: "product", header: "کالا", render: (row: any) => <EntityLink type="product" id={row.product_id}>{row.product_name}</EntityLink> },
-            { key: "variant", header: "تنوع", render: (row: any) => <span className="text-slate-500">{[row.color, row.size].filter(Boolean).join(" / ") || "ساده"}</span> },
-            { key: "code", header: "کد/SKU", render: (row: any) => <span className="font-mono text-xs text-slate-400">{row.sku || row.product_code || row.barcode || "—"}</span> },
-            { key: "stock", header: "موجودی", render: (row: any) => <span className={row.stock_qty <= row.low_stock_threshold ? "font-bold text-amber-600" : "font-bold text-slate-800"}>{toFaDigits(row.stock_qty)}</span> },
+            { key: "variant", header: "تنوع", render: (row: any) => <span className="text-muted-foreground">{[row.color, row.size].filter(Boolean).join(" / ") || "ساده"}</span> },
+            { key: "code", header: "کد/SKU", render: (row: any) => <span className="font-mono text-xs text-muted-foreground">{row.sku || row.product_code || row.barcode || "—"}</span> },
+            { key: "stock", header: "موجودی", render: (row: any) => <span className={row.stock_qty <= row.low_stock_threshold ? "font-bold text-warning-onSoft" : "font-bold text-foreground"}>{toFaDigits(row.stock_qty)}</span> },
             { key: "purchase", header: "قیمت خرید", render: (row: any) => formatToman(row.purchase_price, false) },
             { key: "value", header: "ارزش", render: (row: any) => formatToman(row.stock_qty * row.purchase_price, false) },
             { key: "actions", header: "عملیات", render: (row: any) => <EntityActionMenu type="product" id={row.product_id} label={row.product_name} /> },

@@ -101,7 +101,7 @@ export function GlobalSearchBar() {
 
   return (
     <div ref={rootRef} className="relative hidden min-w-[280px] max-w-xl flex-1 md:block" dir="rtl">
-      <Search className="absolute right-3 top-1/2 z-10 -translate-y-1/2 text-slate-400" size={17} />
+      <Search className="absolute right-3 top-1/2 z-10 -translate-y-1/2 text-muted-foreground" size={17} />
       <Input
         ref={inputRef}
         value={query}
@@ -125,12 +125,12 @@ export function GlobalSearchBar() {
             selectResult(results[activeIndex]);
           }
         }}
-        className="h-10 min-h-10 rounded-2xl bg-slate-50 pr-9 text-sm"
+        className="h-10 min-h-10 rounded-2xl bg-muted pr-9 text-sm"
         placeholder="جستجوی مشتری، کالا، سند...  Ctrl+K"
       />
 
       {open && (query.trim() || loading) && (
-        <div className="absolute right-0 top-12 z-[60] w-full overflow-hidden rounded-2xl border border-border bg-white shadow-xl dark:bg-slate-900">
+        <div className="absolute right-0 top-12 z-[60] w-full overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
           {loading ? (
             <Spinner label="در حال جستجو..." />
           ) : results.length === 0 ? (
@@ -147,7 +147,7 @@ export function GlobalSearchBar() {
                 >
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">{resultIcon(item.result_type)}</div>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-extrabold text-slate-800 dark:text-slate-100">{item.title}</div>
+                    <div className="truncate text-sm font-extrabold text-foreground">{item.title}</div>
                     {item.subtitle && <div className="mt-0.5 truncate text-xs text-muted-foreground">{item.subtitle}</div>}
                   </div>
                   <Badge tone={resultTone(item.result_type)}>{item.result_type}</Badge>

@@ -71,12 +71,12 @@ export default function PurchaseDetailPage({ params }: { params: { id: string } 
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-4 no-print">
-        <Link href="/purchases" className="flex items-center gap-1 text-slate-500 text-sm hover:text-primary">
+        <Link href="/purchases" className="flex items-center gap-1 text-muted-foreground text-sm hover:text-primary">
           <ArrowRight size={18} /> بازگشت به خریدها
         </Link>
         <div className="flex items-center gap-2">
           {purchase.status !== "cancelled" && <button onClick={() => setEditOpen(true)} className="btn-secondary flex items-center gap-2"><Pencil size={16} /> ویرایش خرید</button>}
-          {purchase.status !== "cancelled" && <button onClick={() => setCancelOpen(true)} className="btn-secondary text-rose-600 flex items-center gap-2"><X size={16} /> ابطال</button>}
+          {purchase.status !== "cancelled" && <button onClick={() => setCancelOpen(true)} className="btn-secondary text-destructive flex items-center gap-2"><X size={16} /> ابطال</button>}
           {remaining > 0 && purchase.status !== "cancelled" && <button onClick={() => setPaymentOpen(true)} className="btn-secondary flex items-center gap-2"><Plus size={16} /> ثبت پرداخت</button>}
           <button onClick={() => window.print()} className="btn-primary flex items-center gap-2">
             <Printer size={18} /> چاپ
@@ -87,39 +87,39 @@ export default function PurchaseDetailPage({ params }: { params: { id: string } 
       <div className="card p-5 sm:p-6 mb-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3 min-w-0">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <div className="w-14 h-14 rounded-2xl bg-success-soft text-success-onSoft flex items-center justify-center shrink-0">
               <ShoppingCart size={26} />
             </div>
             <div className="min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-800">فاکتور خرید {purchase.invoice_no ?? "—"}</h1>
-              <div className="mt-2 flex flex-wrap gap-3 text-sm text-slate-500">
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">فاکتور خرید {purchase.invoice_no ?? "—"}</h1>
+              <div className="mt-2 flex flex-wrap gap-3 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1"><Calendar size={14} /> {toJalali(purchase.date)}</span>
-                <span className="badge bg-slate-100 text-slate-600">{purchase.status === "confirmed" ? "ثبت‌شده" : purchase.status ?? "—"}</span>
+                <span className="badge bg-muted text-muted-foreground">{purchase.status === "confirmed" ? "ثبت‌شده" : purchase.status ?? "—"}</span>
               </div>
             </div>
           </div>
           <div className="text-left shrink-0">
-            <div className="text-xl font-bold text-slate-800">{formatToman(purchase.total)}</div>
-            <div className="text-xs text-slate-400">مبلغ کل</div>
+            <div className="text-xl font-bold text-foreground">{formatToman(purchase.total)}</div>
+            <div className="text-xs text-muted-foreground">مبلغ کل</div>
           </div>
         </div>
 
         <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div className="rounded-xl bg-slate-50 p-3">
-            <div className="text-xs text-slate-400 mb-1">تأمین‌کننده</div>
+          <div className="rounded-xl bg-muted p-3">
+            <div className="text-xs text-muted-foreground mb-1">تأمین‌کننده</div>
             {purchase.supplier_id ? (
               <div className="flex items-center gap-2">
-                <Truck size={15} className="text-slate-400" />
+                <Truck size={15} className="text-muted-foreground" />
                 <EntityLink type="contact" id={purchase.supplier_id}>{purchase.supplier?.name ?? "تأمین‌کننده"}</EntityLink>
                 <EntityActionMenu type="contact" id={purchase.supplier_id} label={purchase.supplier?.name ?? "تأمین‌کننده"} phone={purchase.supplier?.phone} />
               </div>
-            ) : <span className="text-slate-400">—</span>}
+            ) : <span className="text-muted-foreground">—</span>}
           </div>
-          <div className="rounded-xl bg-emerald-50 p-3 text-emerald-700">
+          <div className="rounded-xl bg-success-soft p-3 text-success-onSoft">
             <div className="text-xs opacity-70 mb-1">پرداخت‌شده</div>
             <div className="font-bold">{formatToman(paid, false)}</div>
           </div>
-          <div className="rounded-xl bg-rose-50 p-3 text-rose-700">
+          <div className="rounded-xl bg-destructive/10 p-3 text-destructive">
             <div className="text-xs opacity-70 mb-1">باقی‌مانده</div>
             <div className="font-bold">{formatToman(remaining, false)}</div>
           </div>
@@ -127,11 +127,11 @@ export default function PurchaseDetailPage({ params }: { params: { id: string } 
       </div>
 
       <div className="card overflow-hidden mb-4">
-        <div className="p-4 border-b border-slate-100 font-semibold text-slate-700 flex items-center gap-2">
+        <div className="p-4 border-b border-border font-semibold text-foreground flex items-center gap-2">
           <Package size={16} /> آیتم‌های خرید ({toFaDigits(items.length)})
         </div>
         {items.length === 0 ? <EmptyState title="آیتمی ثبت نشده" /> : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-border">
             {items.map((item: any) => (
               <div key={item.id} className="p-4 flex items-center justify-between gap-3">
                 <div className="min-w-0">
@@ -139,13 +139,13 @@ export default function PurchaseDetailPage({ params }: { params: { id: string } 
                     <EntityLink type="product" id={item.variant?.product?.id}>{item.variant?.product?.name ?? "کالا"}</EntityLink>
                     <EntityActionMenu type="product" id={item.variant?.product?.id} label={item.variant?.product?.name ?? "کالا"} />
                   </div>
-                  <div className="text-xs text-slate-400 mt-1">
+                  <div className="text-xs text-muted-foreground mt-1">
                     {[item.variant?.color, item.variant?.size].filter(Boolean).join(" / ") || item.variant?.sku || item.variant?.barcode || "تنوع ساده"}
                   </div>
                 </div>
                 <div className="text-left shrink-0">
-                  <div className="text-sm font-medium text-slate-800">{toFaDigits(item.qty)} × {formatToman(item.unit_price, false)}</div>
-                  <div className="text-sm font-bold text-emerald-600">{formatToman(item.line_total, false)}</div>
+                  <div className="text-sm font-medium text-foreground">{toFaDigits(item.qty)} × {formatToman(item.unit_price, false)}</div>
+                  <div className="text-sm font-bold text-success-onSoft">{formatToman(item.line_total, false)}</div>
                 </div>
               </div>
             ))}
@@ -155,11 +155,11 @@ export default function PurchaseDetailPage({ params }: { params: { id: string } 
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="card p-4">
-          <h2 className="font-semibold text-slate-700 mb-3 flex items-center gap-2"><CreditCard size={16} /> پرداخت‌ها</h2>
-          {data.txs.length === 0 ? <div className="text-sm text-slate-400">پرداختی ثبت نشده است.</div> : (
+          <h2 className="font-semibold text-foreground mb-3 flex items-center gap-2"><CreditCard size={16} /> پرداخت‌ها</h2>
+          {data.txs.length === 0 ? <div className="text-sm text-muted-foreground">پرداختی ثبت نشده است.</div> : (
             <div className="space-y-2">
               {data.txs.map((tx: any) => (
-                <div key={tx.id} className="flex items-center justify-between rounded-xl bg-slate-50 p-3 text-sm">
+                <div key={tx.id} className="flex items-center justify-between rounded-xl bg-muted p-3 text-sm">
                   <span>{tx.note ?? (tx.type === "payment" ? "پرداخت" : "تراکنش")}</span>
                   <span className="font-medium">{formatToman(tx.amount, false)} • {toJalali(tx.date)}</span>
                 </div>
@@ -169,13 +169,13 @@ export default function PurchaseDetailPage({ params }: { params: { id: string } 
         </div>
 
         <div className="card p-4">
-          <h2 className="font-semibold text-slate-700 mb-3 flex items-center gap-2"><Package size={16} /> تاریخچه انبار</h2>
-          {data.movements.length === 0 ? <div className="text-sm text-slate-400">حرکت انباری ثبت نشده است.</div> : (
+          <h2 className="font-semibold text-foreground mb-3 flex items-center gap-2"><Package size={16} /> تاریخچه انبار</h2>
+          {data.movements.length === 0 ? <div className="text-sm text-muted-foreground">حرکت انباری ثبت نشده است.</div> : (
             <div className="space-y-2">
               {data.movements.map((m: any) => (
-                <div key={m.id} className="flex items-center justify-between rounded-xl bg-slate-50 p-3 text-sm">
+                <div key={m.id} className="flex items-center justify-between rounded-xl bg-muted p-3 text-sm">
                   <span>{m.reason === "purchase" ? "ورود خرید" : m.reason}</span>
-                  <span className={m.qty >= 0 ? "text-emerald-600 font-medium" : "text-rose-600 font-medium"}>{m.qty >= 0 ? "+" : ""}{toFaDigits(m.qty)} • {toJalali(m.created_at)}</span>
+                  <span className={m.qty >= 0 ? "text-success-onSoft font-medium" : "text-destructive font-medium"}>{m.qty >= 0 ? "+" : ""}{toFaDigits(m.qty)} • {toJalali(m.created_at)}</span>
                 </div>
               ))}
             </div>
@@ -183,7 +183,7 @@ export default function PurchaseDetailPage({ params }: { params: { id: string } 
         </div>
       </div>
 
-      {purchase.note && <div className="card p-4 mt-4 text-sm text-slate-600"><span className="text-slate-400">توضیح:</span> {purchase.note}</div>}
+      {purchase.note && <div className="card p-4 mt-4 text-sm text-muted-foreground"><span className="text-muted-foreground">توضیح:</span> {purchase.note}</div>}
 
       {editOpen && (
         <EditPurchaseModal
@@ -300,29 +300,29 @@ function EditPurchaseModal({ purchase, supplier, items, onClose }: { purchase: a
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div><label className="label">تاریخ خرید</label><DatePicker value={date} onChange={setDate} /></div>
-            <div><label className="label">تأمین‌کننده</label>{selectedSupplier ? <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3.5 py-2.5"><span>{selectedSupplier.name}</span><button onClick={() => setSelectedSupplier(null)} className="text-rose-500"><X size={16}/></button></div> : <button onClick={() => setSupplierOpen(true)} className="btn-secondary w-full">انتخاب تأمین‌کننده</button>}</div>
+            <div><label className="label">تأمین‌کننده</label>{selectedSupplier ? <div className="flex items-center justify-between rounded-xl border border-border px-3.5 py-2.5"><span>{selectedSupplier.name}</span><button onClick={() => setSelectedSupplier(null)} className="text-destructive"><X size={16}/></button></div> : <button onClick={() => setSupplierOpen(true)} className="btn-secondary w-full">انتخاب تأمین‌کننده</button>}</div>
           </div>
           <button onClick={() => setProductOpen(true)} className="w-full rounded-xl border-2 border-dashed border-primary/20 bg-primary/[0.04] px-4 py-3 text-sm font-medium text-primary">+ افزودن کالا</button>
           <div className="space-y-2 max-h-[40vh] overflow-y-auto">
             {cart.map((item) => (
-              <div key={item.variant_id} className="rounded-xl border border-slate-100 p-3">
-                <div className="flex items-center justify-between gap-2"><div><div className="font-medium text-sm">{item.product_name}</div><div className="text-xs text-slate-400">{item.variant_label || "ساده"}</div></div><button onClick={() => setCart((prev) => prev.filter((x) => x.variant_id !== item.variant_id))} className="text-rose-500"><Trash2 size={16}/></button></div>
+              <div key={item.variant_id} className="rounded-xl border border-border p-3">
+                <div className="flex items-center justify-between gap-2"><div><div className="font-medium text-sm">{item.product_name}</div><div className="text-xs text-muted-foreground">{item.variant_label || "ساده"}</div></div><button onClick={() => setCart((prev) => prev.filter((x) => x.variant_id !== item.variant_id))} className="text-destructive"><Trash2 size={16}/></button></div>
                 <div className="grid grid-cols-3 gap-2 mt-2">
-                  <div><label className="text-xs text-slate-400">تعداد</label><input className="input" inputMode="numeric" value={String(item.qty)} onChange={(e) => setCart((prev) => prev.map((x) => x.variant_id === item.variant_id ? { ...x, qty: Number(toEnDigits(e.target.value)) || 1 } : x))} /></div>
-                  <div><label className="text-xs text-slate-400">قیمت خرید</label><input className="input" inputMode="numeric" value={String(rialToToman(item.unit_price))} onChange={(e) => setCart((prev) => prev.map((x) => x.variant_id === item.variant_id ? { ...x, unit_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x))} /></div>
-                  <div><label className="text-xs text-slate-400">قیمت فروش</label><input className="input" inputMode="numeric" value={String(rialToToman(item.sale_price))} onChange={(e) => setCart((prev) => prev.map((x) => x.variant_id === item.variant_id ? { ...x, sale_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x))} /></div>
+                  <div><label className="text-xs text-muted-foreground">تعداد</label><input className="input" inputMode="numeric" value={String(item.qty)} onChange={(e) => setCart((prev) => prev.map((x) => x.variant_id === item.variant_id ? { ...x, qty: Number(toEnDigits(e.target.value)) || 1 } : x))} /></div>
+                  <div><label className="text-xs text-muted-foreground">قیمت خرید</label><input className="input" inputMode="numeric" value={String(rialToToman(item.unit_price))} onChange={(e) => setCart((prev) => prev.map((x) => x.variant_id === item.variant_id ? { ...x, unit_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x))} /></div>
+                  <div><label className="text-xs text-muted-foreground">قیمت فروش</label><input className="input" inputMode="numeric" value={String(rialToToman(item.sale_price))} onChange={(e) => setCart((prev) => prev.map((x) => x.variant_id === item.variant_id ? { ...x, sale_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x))} /></div>
                 </div>
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 border-t border-slate-100 pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 border-t border-border pt-4">
             <div><label className="label">هزینه اضافه</label><input className="input" inputMode="numeric" value={extraTotal} onChange={(e) => setExtraTotal(e.target.value)} /></div>
-            <div><label className="label">تخفیف</label><div className="flex gap-2"><input className="input" inputMode="numeric" value={discountValue} onChange={(e) => setDiscountValue(e.target.value)} /><select className="input w-24" value={discountType} onChange={(e) => setDiscountType(e.target.value as any)}><option value="fixed">تومان</option><option value="percent">٪</option></select></div></div>
+            <div><label className="label">تخفیف</label><div className="flex gap-2"><input className="input" inputMode="numeric" value={discountValue} onChange={(e) => setDiscountValue(e.target.value)} /><select aria-label="واحد تخفیف" className="input w-24" value={discountType} onChange={(e) => setDiscountType(e.target.value as any)}><option value="fixed">تومان</option><option value="percent">٪</option></select></div></div>
             <div><label className="label">مالیات</label><input className="input" inputMode="numeric" value={tax} onChange={(e) => setTax(e.target.value)} /></div>
-            <div><label className="label">جمع نهایی</label><div className="rounded-xl bg-slate-50 px-3.5 py-2.5 font-bold text-slate-800">{formatToman(total)}</div></div>
+            <div><label className="label">جمع نهایی</label><div className="rounded-xl bg-muted px-3.5 py-2.5 font-bold text-foreground">{formatToman(total)}</div></div>
           </div>
           <div><label className="label">توضیح</label><input className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
-          {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm p-3">{error}</div>}
+          {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3">{error}</div>}
           <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving && <Loader2 className="animate-spin" size={16}/>} ذخیره تغییرات</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
         </div>
       </Modal>
@@ -347,7 +347,7 @@ function CancelPurchaseModal({ purchaseId, invoiceNo, onClose }: { purchaseId: s
       onClose();
     } catch (e) { setError("خطا در ابطال: " + (e as Error).message); setSaving(false); }
   }
-  return <Modal open onClose={onClose} title="ابطال فاکتور خرید" size="md"><div className="space-y-4"><div className="rounded-xl bg-rose-50 text-rose-700 p-3 text-sm">خرید {invoiceNo ?? ""} باطل می‌شود؛ موجودی کالاها و پرداخت‌ها خنثی می‌شوند.</div><div><label className="label">دلیل ابطال</label><textarea className="input" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} /></div>{error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm p-3">{error}</div>}<div className="flex gap-2"><button onClick={cancel} disabled={saving} className="btn-danger flex-1">{saving && <Loader2 className="animate-spin" size={16}/>} ابطال خرید</button><button onClick={onClose} className="btn-secondary">انصراف</button></div></div></Modal>;
+  return <Modal open onClose={onClose} title="ابطال فاکتور خرید" size="md"><div className="space-y-4"><div className="rounded-xl bg-destructive/10 text-destructive p-3 text-sm">خرید {invoiceNo ?? ""} باطل می‌شود؛ موجودی کالاها و پرداخت‌ها خنثی می‌شوند.</div><div><label className="label">دلیل ابطال</label><textarea className="input" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} /></div>{error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3">{error}</div>}<div className="flex gap-2"><button onClick={cancel} disabled={saving} className="btn-danger flex-1">{saving && <Loader2 className="animate-spin" size={16}/>} ابطال خرید</button><button onClick={onClose} className="btn-secondary">انصراف</button></div></div></Modal>;
 }
 
 function PurchasePaymentModal({ purchaseId, balance, onClose }: { purchaseId: string; balance: number; onClose: () => void }) {
@@ -391,12 +391,12 @@ function PurchasePaymentModal({ purchaseId, balance, onClose }: { purchaseId: st
   return (
     <Modal open onClose={onClose} title="ثبت پرداخت خرید" size="md">
       <div className="space-y-4">
-        <div className="rounded-xl bg-rose-50 p-3 text-sm text-rose-700">مانده فعلی: <b>{formatToman(balance)}</b></div>
+        <div className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">مانده فعلی: <b>{formatToman(balance)}</b></div>
         <div><label className="label">مبلغ پرداخت (تومان)</label><input className="input" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} /></div>
         <div><label className="label">روش پرداخت</label><select className="input" value={method} onChange={(e) => setMethod(e.target.value)}><option value="cash">نقد</option><option value="card">کارت</option><option value="transfer">انتقال</option><option value="cheque">چک</option></select></div>
         <div><label className="label">حساب</label><select className="input" value={accountId} onChange={(e) => setAccountId(e.target.value)}><option value="">انتخاب...</option>{accounts?.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
         <div><label className="label">توضیح</label><input className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
-        {error && <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>}
+        {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm px-4 py-3">{error}</div>}
         <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving && <Loader2 className="animate-spin" size={18} />} ثبت پرداخت</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
       </div>
     </Modal>

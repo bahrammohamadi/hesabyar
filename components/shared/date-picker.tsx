@@ -99,11 +99,11 @@ export function DatePicker({ value, onChange, label, placeholder = "انتخاب
     <div className="relative w-full">
       {label && <label className="label">{label}</label>}
       <button type="button" className="input flex items-center justify-between text-right" onClick={() => setOpen((state) => !state)}>
-        <span className={display ? "font-medium text-slate-800" : "text-slate-400"}>{display || placeholder}</span>
-        <CalendarDays size={18} className="text-slate-400" />
+        <span className={display ? "font-medium text-foreground" : "text-muted-foreground"}>{display || placeholder}</span>
+        <CalendarDays size={18} className="text-muted-foreground" />
       </button>
       {open && (
-        <div className="absolute z-[1500] mt-2 w-full min-w-[280px] rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl" dir="rtl">
+        <div className="absolute z-[1500] mt-2 w-full min-w-[280px] rounded-2xl border border-border bg-card p-3 shadow-2xl" dir="rtl">
           <div className="mb-3">
             <input
               className="input h-10 min-h-10 text-center text-sm"
@@ -115,31 +115,31 @@ export function DatePicker({ value, onChange, label, placeholder = "انتخاب
                 applyTypedDate(event.target.value);
               }}
             />
-            <div className="mt-1 text-[10px] text-slate-400">تاریخ را می‌توانید تایپ کنید یا از تقویم انتخاب کنید.</div>
+            <div className="mt-1 text-[10px] text-muted-foreground">تاریخ را می‌توانید تایپ کنید یا از تقویم انتخاب کنید.</div>
           </div>
           <div className="mb-3 flex items-center justify-between gap-2">
-            <button type="button" onClick={() => shiftMonth(-1)} className="rounded-xl p-2 text-slate-500 hover:bg-slate-50"><ChevronRight size={18} /></button>
+            <button type="button" onClick={() => shiftMonth(-1)} className="rounded-xl p-2 text-muted-foreground hover:bg-muted"><ChevronRight size={18} /></button>
             <div className="flex flex-1 gap-2">
-              <select className="input h-10 min-h-10 py-1 text-sm" value={viewMonth} onChange={(event) => setViewMonth(Number(event.target.value))}>
+              <select aria-label="ماه" className="input h-10 min-h-10 py-1 text-sm" value={viewMonth} onChange={(event) => setViewMonth(Number(event.target.value))}>
                 {JALALI_MONTHS.map((month, index) => <option key={month} value={index}>{month}</option>)}
               </select>
-              <select className="input h-10 min-h-10 py-1 text-sm" value={viewYear} onChange={(event) => setViewYear(Number(event.target.value))}>
+              <select aria-label="سال" className="input h-10 min-h-10 py-1 text-sm" value={viewYear} onChange={(event) => setViewYear(Number(event.target.value))}>
                 {years.map((year) => <option key={year} value={year}>{toFaDigits(year)}</option>)}
               </select>
             </div>
-            <button type="button" onClick={() => shiftMonth(1)} className="rounded-xl p-2 text-slate-500 hover:bg-slate-50"><ChevronLeft size={18} /></button>
+            <button type="button" onClick={() => shiftMonth(1)} className="rounded-xl p-2 text-muted-foreground hover:bg-muted"><ChevronLeft size={18} /></button>
           </div>
-          <div className="mb-1 grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-slate-400">
+          <div className="mb-1 grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-muted-foreground">
             {WEEKDAYS.map((day) => <div key={day}>{day}</div>)}
           </div>
           <div className="grid grid-cols-7 gap-1">
             {Array.from({ length: firstDayOffset }, (_, index) => <div key={`empty-${index}`} className="h-9" />)}
             {Array.from({ length: days }, (_, index) => index + 1).map((day) => {
               const active = selected?.year === viewYear && selected?.month === viewMonth && selected?.day === day;
-              return <button key={day} type="button" onClick={() => choose(day)} className={`h-9 rounded-xl text-sm font-bold transition ${active ? "bg-primary text-white" : "text-slate-700 hover:bg-primary/10 hover:text-primary"}`}>{toFaDigits(day)}</button>;
+              return <button key={day} type="button" onClick={() => choose(day)} className={`h-9 rounded-xl text-sm font-bold transition ${active ? "bg-primary text-white" : "text-foreground hover:bg-primary/10 hover:text-primary"}`}>{toFaDigits(day)}</button>;
             })}
           </div>
-          <div className="mt-3 flex gap-2 border-t border-slate-100 pt-3">
+          <div className="mt-3 flex gap-2 border-t border-border pt-3">
             <button type="button" className="btn-secondary h-10 min-h-10 flex-1 text-xs" onClick={() => { const today = gregorianToJalali(dayjs().format("YYYY-MM-DD")); if (today) { setViewYear(today.year); setViewMonth(today.month); onChange(jalaliToGregorian(today)); } setOpen(false); }}>امروز</button>
             <button type="button" className="btn-secondary h-10 min-h-10 flex-1 text-xs" onClick={() => { onChange(""); setOpen(false); }}>پاک کردن</button>
             <button type="button" className="btn-secondary h-10 min-h-10 flex-1 text-xs" onClick={() => setOpen(false)}>بستن</button>
