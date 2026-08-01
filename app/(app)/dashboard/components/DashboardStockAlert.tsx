@@ -96,7 +96,7 @@ export function DashboardStockAlert({
                   </span>
                 )}
               </span>
-              <span className="shrink-0 rounded-lg bg-destructive/10 px-2 py-0.5 font-extrabold tabular-nums text-destructive-text-text">
+              <span className="shrink-0 rounded-lg bg-destructive/10 px-2 py-0.5 font-extrabold tabular-nums text-destructive-text">
                 {toFaDigits(item.stock_qty)}
               </span>
             </li>

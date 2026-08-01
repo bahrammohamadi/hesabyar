@@ -158,7 +158,7 @@ export default function ChecksPage() {
         <div className="card p-4 text-center"><div className="text-2xl font-bold text-warning-onSoft-onSoft">{formatToman(totalPendingReceived)}</div><div className="text-xs text-muted-foreground">دریافتی در انتظار</div></div>
         <div className="card p-4 text-center"><div className="text-2xl font-bold text-warning-onSoft-onSoft">{formatToman(totalPendingIssued)}</div><div className="text-xs text-muted-foreground">صادره در انتظار</div></div>
         <div className="card p-4 text-center"><div className="text-2xl font-bold text-success-onSoft-onSoft">{formatToman(receivedChecks.filter(c => c.status === "cashed").reduce((sum, c) => sum + c.amount, 0))}</div><div className="text-xs text-muted-foreground">وصول شده</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-destructive">{formatToman(receivedChecks.filter(c => c.status === "returned").reduce((sum, c) => sum + c.amount, 0))}</div><div className="text-xs text-muted-foreground">برگشتی</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-destructive-text">{formatToman(receivedChecks.filter(c => c.status === "returned").reduce((sum, c) => sum + c.amount, 0))}</div><div className="text-xs text-muted-foreground">برگشتی</div></div>
       </div>
 
       {/* Tabs */}

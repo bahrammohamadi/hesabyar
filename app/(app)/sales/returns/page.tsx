@@ -141,7 +141,7 @@ export default function SalesReturnsPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <div className="card p-4 text-center"><div className="text-2xl font-bold text-foreground">{toFaDigits(returns.length)}</div><div className="text-xs text-muted-foreground">تعداد مرجوعی</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-destructive">{formatToman(returns.reduce((sum, r) => sum + (r.total || 0), 0))}</div><div className="text-xs text-muted-foreground">مجموع مرجوعی</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-destructive-text">{formatToman(returns.reduce((sum, r) => sum + (r.total || 0), 0))}</div><div className="text-xs text-muted-foreground">مجموع مرجوعی</div></div>
         <div className="card p-4 text-center"><div className="text-2xl font-bold text-success-onSoft">{formatToman(returns.filter(r => r.refund_method === "cash").reduce((sum, r) => sum + (r.total || 0), 0))}</div><div className="text-xs text-muted-foreground">برگشت نقدی</div></div>
       </div>
 
@@ -170,7 +170,7 @@ export default function SalesReturnsPage() {
                   {ret.reason && <div className="text-xs text-muted-foreground mt-1">دلیل: {ret.reason}</div>}
                 </div>
                 <div className="text-left">
-                  <div className="text-lg font-bold text-destructive">{formatToman(ret.total)}</div>
+                  <div className="text-lg font-bold text-destructive-text">{formatToman(ret.total)}</div>
                   <div className="text-xs text-muted-foreground">{ret.refund_method === "cash" ? "نقدی" : ret.refund_method === "card" ? "کارت" : "اعتبار"}</div>
                 </div>
               </div>
@@ -229,7 +229,7 @@ export default function SalesReturnsPage() {
 
             <div className="flex items-center justify-between p-4 bg-destructive/10 rounded-xl">
               <span className="font-medium text-destructive">جمع مرجوعی:</span>
-              <span className="text-xl font-bold text-destructive">{formatToman(returnItems.filter(i => i.return_qty > 0).reduce((sum, i) => sum + (i.return_qty * i.return_price), 0))}</span>
+              <span className="text-xl font-bold text-destructive-text">{formatToman(returnItems.filter(i => i.return_qty > 0).reduce((sum, i) => sum + (i.return_qty * i.return_price), 0))}</span>
             </div>
 
             <div className="flex gap-2">
