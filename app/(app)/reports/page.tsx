@@ -665,7 +665,7 @@ export function ReportsPageContent({ forcedTab }: { forcedTab?: TabId }) {
       </div>
 
       {/* تب‌ها */}
-      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:rounded-[1.5rem] sm:border sm:border-border sm:bg-card sm:p-2 sm:shadow-sm">
+      <div className="-mx-3 flex gap-2 overflow-x-auto px-3 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:rounded-2xl sm:border sm:border-border sm:bg-card sm:p-2 sm:shadow-sm">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           return (

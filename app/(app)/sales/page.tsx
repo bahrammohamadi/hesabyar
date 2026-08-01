@@ -114,6 +114,7 @@ export default function SalesPage() {
           columns={[
             {
               key: "invoice_no",
+              mobile: "title",
               header: "شماره فاکتور",
               render: (s) => (
                 <Link
@@ -130,7 +131,7 @@ export default function SalesPage() {
                 </Link>
               ),
             },
-            { key: "date", header: "تاریخ", render: (s) => <span className="tabular-nums text-muted-foreground">{toJalali(s.date)}</span> },
+            { key: "date", header: "تاریخ", mobile: "subtitle", render: (s) => <span className="tabular-nums text-muted-foreground">{toJalali(s.date)}</span> },
             {
               key: "customer",
               header: "مشتری",
@@ -141,7 +142,7 @@ export default function SalesPage() {
                 </div>
               ) : <span className="text-muted-foreground">مشتری نقدی</span>,
             },
-            { key: "total", header: "مبلغ", align: "left", render: (s) => <span className="font-semibold tabular-nums">{formatToman(s.total)}</span> },
+            { key: "total", header: "مبلغ", align: "left", mobile: "amount", render: (s) => <span className="font-semibold tabular-nums">{formatToman(s.total)}</span> },
             { key: "credit", header: "نسیه", render: (s) => s.paid_credit > 0 ? <span className="font-bold tabular-nums text-finance-debt">{formatToman(s.paid_credit, false)}</span> : <span className="text-muted-foreground">—</span> },
             { key: "status", header: "وضعیت", render: (s) => <span className="badge bg-info-soft text-info-text border border-info/20">{s.status === "settled" ? "تسویه‌شده" : s.status === "reversed" ? "برگشت‌خورده" : "ثبت‌شده"}</span> },
           ] satisfies Column<(typeof sales)[number]>[]}

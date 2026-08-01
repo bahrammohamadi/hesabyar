@@ -71,7 +71,7 @@ export function EntityActionMenu({
           event.stopPropagation();
           setOpen((value) => !value);
         }}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:border-primary/20 hover:bg-primary/[0.06] hover:text-primary active:scale-95"
+        className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition hover:border-primary/20 hover:bg-primary/[0.06] hover:text-primary active:scale-95 sm:h-9 sm:w-9"
         aria-label={label ? `عملیات ${label}` : "عملیات موجودیت"}
       >
         <MoreVertical size={17} />
