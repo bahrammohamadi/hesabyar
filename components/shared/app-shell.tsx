@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
 import { BottomNav } from "./bottom-nav";
@@ -8,6 +9,34 @@ import { DemoBanner } from "./demo-banner";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { openDocument } = usePanelManager();
+
+  /*
+    میانبر F2 برای فروش جدید.
+
+    این میانبر در دو جا به کاربر وعده داده شده بود — برچسب «F2» روی دکمه‌ی
+    داشبورد و صفحه‌ی راهنما — ولی هرگز پیاده‌سازی نشده بود. حالا که ساخت
+    فاکتور یک پنل مشترک دارد، در سطح پوسته قابل اتصال است.
+
+    وقتی کاربر در حال تایپ است نادیده گرفته می‌شود تا با فرم‌ها تداخل نکند.
+  */
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== "F2") return;
+      const el = document.activeElement as HTMLElement | null;
+      const typing =
+        el &&
+        (el.tagName === "INPUT" ||
+          el.tagName === "TEXTAREA" ||
+          el.tagName === "SELECT" ||
+          el.isContentEditable);
+      if (typing) return;
+      event.preventDefault();
+      openDocument("sale", undefined, { mode: "create", context: "workspace" });
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [openDocument]);
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.08),transparent_30%),linear-gradient(180deg,hsl(var(--background)),#fff)] text-foreground lg:flex">

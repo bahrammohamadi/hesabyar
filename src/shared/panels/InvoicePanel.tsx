@@ -11,6 +11,7 @@ import { Badge, Button, DataTable, EmptyState, Field, NumberInput, PanelShell, S
 import { Money, PersianDate, toPersianDigits } from "@/src/shared/format";
 import { rialToToman, tomanToRial } from "@/lib/utils/format";
 import { PanelExitLink } from "@/src/core/panel-manager/PanelExitLink";
+import { InvoiceCreateForm } from "./InvoiceCreateForm";
 
 function docTypeLabel(type: InvoiceDocType) {
   return type === "sale" ? "فروش" : "خرید";
@@ -36,10 +37,36 @@ export function InvoicePanel({ panel }: { panel: PanelInstance }) {
     if (remaining > 0) setPaymentAmountToman(rialToToman(remaining));
   }, [invoiceQuery.data?.balance?.remaining]);
 
+  /*
+    حالت ایجاد.
+
+    بدون شناسه یعنی سند تازه. پیش از این پیام «هنوز فعال نیست» نشان داده
+    می‌شد و هر صفحه مجبور بود Modal اختصاصی خودش را بسازد — نتیجه دو
+    پیاده‌سازی ناهماهنگ بود. حالا همان فرم مشترک اینجا رندر می‌شود، پس
+    داشبورد، فهرست فروش و هر نقطه‌ی دیگری یک UI یکسان می‌بینند.
+
+    فعلاً فقط فروش پشتیبانی می‌شود؛ ایجاد فاکتور خرید مسیر جدای خودش را
+    دارد و اینجا صراحتاً اعلام می‌شود تا رفتار مبهم نماند.
+  */
   if (!docId) {
+    if (docType !== "sale") {
+      return (
+        <PanelShell title="سند جدید" icon={<Receipt size={20} />} onClose={closeTop}>
+          <EmptyState
+            title="ایجاد فاکتور خرید از این مسیر ممکن نیست"
+            description="برای ثبت خرید جدید از صفحه‌ی «خرید» استفاده کنید."
+          />
+        </PanelShell>
+      );
+    }
     return (
-      <PanelShell title="سند جدید" subtitle="حالت ایجاد در مرحله بعد فعال می‌شود" icon={<Receipt size={20} />} onClose={closeTop}>
-        <EmptyState title="حالت ایجاد هنوز فعال نیست" description="این زیرمرحله فقط view-mode است." />
+      <PanelShell
+        title="ثبت فاکتور فروش جدید"
+        subtitle="افزودن کالا، انتخاب مشتری و ثبت پرداخت"
+        icon={<Receipt size={20} />}
+        onClose={closeTop}
+      >
+        <InvoiceCreateForm onClose={closeTop} />
       </PanelShell>
     );
   }

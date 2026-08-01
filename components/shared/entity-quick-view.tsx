@@ -11,6 +11,7 @@ import { useProductSummary } from "@/lib/hooks/useProductSummary";
 import { useEntityTimeline, type EntityTimelineItem } from "@/lib/hooks/useEntityTimeline";
 import { formatToman, toFaDigits, toJalali } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
+import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 
 function SummaryCell({ label, value, tone = "default" }: { label: string; value: React.ReactNode; tone?: "default" | "green" | "red" | "amber" | "blue" }) {
   const tones = {
@@ -96,6 +97,7 @@ function QuickAction({ href, children, tone = "default" }: { href: string; child
 }
 
 function ContactQuickView({ id, open }: { id?: string | null; open: boolean }) {
+  const { openDocument } = usePanelManager();
   const summary = useContactSummary(id, { enabled: open });
   const timeline = useEntityTimeline("contact", id, { enabled: open, limit: 12 });
 
@@ -139,9 +141,19 @@ function ContactQuickView({ id, open }: { id?: string | null; open: boolean }) {
         <QuickAction href={`/contacts/${contact.id}?action=interaction`}>
           <Plus size={16} /> ثبت تعامل
         </QuickAction>
-        <QuickAction href={`/sales?contact=${contact.id}`} tone="primary">
+        {/*
+          پیش از این یک <Link> به /sales?contact=X بود، ولی آن صفحه
+          پارامتر contact را نمی‌خواند؛ عملاً کاربر فقط به فهرست فروش
+          می‌رفت و هیچ فاکتوری باز نمی‌شد. حالا همان پنل مشترک ساخت
+          فاکتور باز می‌شود.
+        */}
+        <button
+          type="button"
+          onClick={() => openDocument("sale", undefined, { mode: "create", context: "entity-link" })}
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 active:scale-95"
+        >
           <ShoppingCart size={16} /> فروش جدید
-        </QuickAction>
+        </button>
         <QuickAction href={detailHref}>
           <Eye size={16} /> مشاهده جزئیات
         </QuickAction>
