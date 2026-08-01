@@ -382,7 +382,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                             tabIndex={isExpanded && !rail ? undefined : -1}
                             aria-current={childActive ? "page" : undefined}
                             className={cn(
-                              "flex min-h-10 items-center gap-2.5 rounded-lg px-3 text-sm transition-colors",
+                              "flex min-h-11 items-center gap-2.5 rounded-lg px-3 text-sm transition-colors lg:min-h-10",
                               childActive
                                 ? "bg-primary/10 font-bold text-primary"
                                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
