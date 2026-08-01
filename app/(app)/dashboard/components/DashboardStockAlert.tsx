@@ -66,7 +66,7 @@ export function DashboardStockAlert({
 
           <div className="mt-2.5 flex items-baseline gap-2">
             <span
-              className={`text-[28px] font-black leading-none tabular-nums ${
+              className={`text-3xl font-black leading-none tabular-nums ${
                 hasAlert ? "text-destructive" : "text-muted-foreground/40"
               }`}
             >

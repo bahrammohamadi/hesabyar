@@ -146,7 +146,7 @@ export function ActivityTimelineItem({
           </div>
           {trailing}
         </div>
-        <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-2xs text-muted-foreground">
           <span className="tabular-nums">{time}</span>
           {meta && (
             <>

@@ -58,7 +58,7 @@ export function PosPaymentMethods({
               ].join(" ")}
             >
               <Icon size={18} />
-              <span className="text-[11px] font-bold leading-tight">{label}</span>
+              <span className="text-2xs font-bold leading-tight">{label}</span>
             </button>
           );
         })}

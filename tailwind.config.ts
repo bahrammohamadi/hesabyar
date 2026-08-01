@@ -24,6 +24,27 @@ const config: Config = {
         xl: "var(--radius-xl)",
         "2xl": "var(--radius-2xl)",
       },
+      /*
+        مقیاس تایپوگرافی.
+
+        چرا لازم بود: ۴۶۳ عنصر با متن زیر ۱۲px در پنل بود
+        (۴۲۴ مورد ۱۱px، ۳۸ مورد ۱۰px، یکی ۹px). برای نرم‌افزاری که
+        کاربرش ساعت‌ها اعداد مالی را می‌خواند، این خستگی چشم است و
+        زیر حداقل توصیه‌شده‌ی ۱۲px قرار دارد.
+
+        هر اندازه ارتفاع خط متناسب خودش را دارد تا متن‌های چندخطی
+        فارسی (که ارتفاع حروف بیشتری دارند) تنگ نشوند.
+      */
+      fontSize: {
+        "2xs": ["0.75rem", { lineHeight: "1.125rem" }],   // 12px — کمینه‌ی مجاز
+        xs:    ["0.8125rem", { lineHeight: "1.25rem" }],  // 13px
+        sm:    ["0.875rem", { lineHeight: "1.5rem" }],    // 14px
+        base:  ["1rem", { lineHeight: "1.75rem" }],       // 16px
+        lg:    ["1.125rem", { lineHeight: "1.875rem" }],  // 18px
+        xl:    ["1.25rem", { lineHeight: "2rem" }],       // 20px
+        "2xl": ["1.5rem", { lineHeight: "2.25rem" }],     // 24px
+        "3xl": ["1.875rem", { lineHeight: "2.5rem" }],    // 30px
+      },
       fontFamily: {
         sans: ["var(--font-vazirmatn)", "Vazirmatn", "Tahoma", "sans-serif"],
       },

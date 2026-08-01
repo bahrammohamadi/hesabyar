@@ -23,7 +23,7 @@ export function SettingsContent({ section = "all" }: { section?: "all" | "catalo
       { title: "پیشرفته", desc: "گزارش فعالیت، تنظیمات باشگاه و امکانات مدیریتی", href: "/activity", icon: SlidersHorizontal, tone: "bg-muted text-foreground" },
     ];
     return (
-      <div className="space-y-5">
+      <div className="space-y-4">
         <PageHeader title="تنظیمات" subtitle="داشبورد تنظیمات سیستم؛ برای ویرایش جزئیات وارد هر بخش شوید" />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           {cards.map((card) => {
@@ -480,7 +480,7 @@ function PermissionTreeEditor({ value, disabled, onChange }: { value: string[]; 
           <TreeCheckbox checked={checked} indeterminate={indeterminate} disabled={disabled} onChange={(nextChecked) => onChange(togglePermissions(effective, groupPermissions, nextChecked))} />
         </label>
         {group.warning && <div className="mt-2 rounded-xl bg-warning-soft px-3 py-2 text-xs leading-5 text-warning-onSoft">⚠️ {group.warning}</div>}
-        {group.recommendedWith?.length ? <div className="mt-2 text-[11px] text-muted-foreground">پیشنهاد پیش‌نیاز: {group.recommendedWith.join("، ")}</div> : null}
+        {group.recommendedWith?.length ? <div className="mt-2 text-2xs text-muted-foreground">پیشنهاد پیش‌نیاز: {group.recommendedWith.join("، ")}</div> : null}
         {group.children?.length ? (
           <div className="mt-3 grid gap-2 md:grid-cols-2">
             {group.children.map((child) => {
@@ -490,8 +490,8 @@ function PermissionTreeEditor({ value, disabled, onChange }: { value: string[]; 
                   <TreeCheckbox checked={childChecked} disabled={disabled} onChange={(nextChecked) => onChange(togglePermissions(effective, child.permissions, nextChecked))} />
                   <span className="min-w-0 flex-1">
                     <span className="block font-medium text-foreground">{child.label}</span>
-                    {child.warning && <span className="mt-1 block text-[11px] leading-5 text-warning-onSoft">⚠️ {child.warning}</span>}
-                    {child.recommendedWith?.length ? <span className="mt-1 block text-[11px] text-muted-foreground">پیشنهاد: {child.recommendedWith.join("، ")}</span> : null}
+                    {child.warning && <span className="mt-1 block text-2xs leading-5 text-warning-onSoft">⚠️ {child.warning}</span>}
+                    {child.recommendedWith?.length ? <span className="mt-1 block text-2xs text-muted-foreground">پیشنهاد: {child.recommendedWith.join("، ")}</span> : null}
                   </span>
                 </label>
               );

@@ -285,7 +285,7 @@ export function PosSummaryCard({
       <div className="mt-3 border-t border-primary-foreground/20 pt-3">
         <div className="text-xs text-primary-foreground/90">مبلغ قابل پرداخت:</div>
         <div className="mt-1 flex items-baseline gap-1.5">
-          <span className="text-2xl font-black tabular-nums sm:text-[28px]">{formatToman(total, false)}</span>
+          <span className="text-2xl font-black tabular-nums sm:text-3xl">{formatToman(total, false)}</span>
           <span className="text-xs text-primary-foreground/90">تومان</span>
         </div>
       </div>

@@ -135,7 +135,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* هدر */}
       <div className="flex items-center justify-between">
         <div>
@@ -148,7 +148,7 @@ export default function DashboardPage() {
         >
           <Plus size={18} />
           <span className="hidden sm:inline">فروش جدید</span>
-          <span className="hidden rounded bg-primary-foreground px-1.5 py-0.5 text-[10px] font-bold text-primary lg:inline">F2</span>
+          <span className="hidden rounded bg-primary-foreground px-1.5 py-0.5 text-2xs font-bold text-primary lg:inline">F2</span>
         </button>
       </div>
 

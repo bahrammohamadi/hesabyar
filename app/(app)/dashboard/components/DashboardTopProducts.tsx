@@ -37,12 +37,12 @@ export function DashboardTopProducts({
           </div>
           <div className="min-w-0">
             <h2 className="truncate text-sm font-extrabold text-foreground">پرفروش‌ترین کالاها</h2>
-            <p className="text-[11px] text-muted-foreground">بر اساس تعداد فروش</p>
+            <p className="text-2xs text-muted-foreground">بر اساس تعداد فروش</p>
           </div>
         </div>
         <Link
           href="/reports/products"
-          className="shrink-0 rounded-xl bg-muted px-3 py-1.5 text-[11px] font-medium text-muted-foreground transition hover:bg-primary/10 hover:text-primary"
+          className="shrink-0 rounded-xl bg-muted px-3 py-1.5 text-2xs font-medium text-muted-foreground transition hover:bg-primary/10 hover:text-primary"
         >
           مشاهده همه
         </Link>
@@ -71,7 +71,7 @@ export function DashboardTopProducts({
 
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-bold text-foreground">{item.product_name}</p>
-                <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                <p className="mt-0.5 truncate text-2xs text-muted-foreground">
                   فروش: {toFaDigits(item.qty_sold)} عدد
                   {item.sku && <span className="hidden sm:inline"> · {item.sku}</span>}
                 </p>
@@ -81,7 +81,7 @@ export function DashboardTopProducts({
                 <div className="text-sm font-extrabold tabular-nums text-primary">
                   {formatToman(item.sales_amount, false)}
                 </div>
-                <div className="text-[10px] text-muted-foreground">تومان</div>
+                <div className="text-2xs text-muted-foreground">تومان</div>
               </div>
             </li>
           ))}

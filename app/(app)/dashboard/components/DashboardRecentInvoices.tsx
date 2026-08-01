@@ -41,12 +41,12 @@ export function DashboardRecentInvoices({
           </div>
           <div>
             <h2 className="text-sm font-extrabold text-foreground">فاکتورهای اخیر</h2>
-            <p className="text-[11px] text-muted-foreground">آخرین ۵ فاکتور</p>
+            <p className="text-2xs text-muted-foreground">آخرین ۵ فاکتور</p>
           </div>
         </div>
         <Link
           href="/sales"
-          className="rounded-xl bg-muted px-3 py-1.5 text-[11px] font-medium text-muted-foreground transition hover:bg-primary/10 hover:text-primary"
+          className="rounded-xl bg-muted px-3 py-1.5 text-2xs font-medium text-muted-foreground transition hover:bg-primary/10 hover:text-primary"
         >
           همه فاکتورها
         </Link>
@@ -83,9 +83,9 @@ export function DashboardRecentInvoices({
                     >
                       {sale.invoice_no}
                     </Link>
-                    <span className="text-[10px] tabular-nums text-muted-foreground">{toJalali(sale.date)}</span>
+                    <span className="text-2xs tabular-nums text-muted-foreground">{toJalali(sale.date)}</span>
                   </div>
-                  <div className="mt-0.5 text-[11px] text-muted-foreground">
+                  <div className="mt-0.5 text-2xs text-muted-foreground">
                     {sale.customer_id ? (
                       <EntityLink type="contact" id={sale.customer_id}>
                         {customerName ?? "مشتری"}

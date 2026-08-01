@@ -98,7 +98,7 @@ function KpiCard({
           <p className={`mb-1.5 text-xs font-medium ${t.label}`}>{label}</p>
           <p className={`truncate text-xl font-black tracking-tight tabular-nums sm:text-2xl ${t.value}`}>{value}</p>
           {sub && (
-            <div className={`mt-1.5 flex items-center gap-1 text-[11px] ${t.sub}`}>
+            <div className={`mt-1.5 flex items-center gap-1 text-2xs ${t.sub}`}>
               {trendIcon}
               <span className="truncate">{sub}</span>
             </div>
@@ -130,7 +130,7 @@ function SectionLabel({ color, label }: { color: string; label: string }) {
   return (
     <div className="mb-3 flex items-center gap-2">
       <div className={`h-4 w-1 rounded-full ${color}`} />
-      <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{label}</span>
+      <span className="text-2xs font-bold uppercase tracking-widest text-muted-foreground">{label}</span>
     </div>
   );
 }

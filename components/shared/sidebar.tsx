@@ -250,7 +250,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             />
             <span className={cn("min-w-0 leading-tight", rail && "lg:hidden")}>
               <span className="block truncate text-sm font-bold text-foreground">{BRAND_NAME}</span>
-              <span className="block truncate text-[10px] text-muted-foreground">سیستم مدیریت فروش</span>
+              <span className="block truncate text-2xs text-muted-foreground">سیستم مدیریت فروش</span>
             </span>
           </Link>
 

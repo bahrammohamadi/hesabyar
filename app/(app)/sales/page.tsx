@@ -530,9 +530,9 @@ function PosModal({ orgId, onClose }: { orgId: string | null; onClose: () => voi
           <div className={`sticky bottom-0 -mx-5 mt-3 border-t border-border bg-card px-5 py-3 lg:hidden ${step === "payment" ? "hidden" : ""}`}>
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-[11px] text-muted-foreground">مبلغ قابل پرداخت</div>
+                <div className="text-2xs text-muted-foreground">مبلغ قابل پرداخت</div>
                 <div className="truncate text-lg font-black tabular-nums text-foreground">
-                  {formatToman(total, false)} <span className="text-[11px] font-normal text-muted-foreground">تومان</span>
+                  {formatToman(total, false)} <span className="text-2xs font-normal text-muted-foreground">تومان</span>
                 </div>
               </div>
               <Button onClick={() => setStep("payment")} disabled={cart.length === 0} className="shrink-0">

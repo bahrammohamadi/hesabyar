@@ -54,7 +54,7 @@ function TimelineList({ items }: { items?: EntityTimelineItem[] }) {
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-2">
                 <div className="truncate text-sm font-medium text-foreground">{item.title}</div>
-                <div className="shrink-0 text-[11px] text-muted-foreground">{toJalali(item.date)}</div>
+                <div className="shrink-0 text-2xs text-muted-foreground">{toJalali(item.date)}</div>
               </div>
               {(item.description || item.amount || item.qty) && (
                 <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">

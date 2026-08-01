@@ -81,7 +81,7 @@ export default function AdminOrganizationsPage() {
   const pendingCount = (data ?? []).filter((o) => o.approval_status === "pending").length;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader
         title="مدیریت کسب‌وکارها"
         subtitle="تأیید، رد و نظارت بر سازمان‌های ثبت‌شده در پلتفرم"
@@ -140,7 +140,7 @@ export default function AdminOrganizationsPage() {
                   <tr key={o.id} className="border-b border-border last:border-0">
                     <td className="px-4 py-3">
                       <div className="font-bold text-foreground">{o.name}</div>
-                      <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <div className="mt-0.5 flex items-center gap-1.5 text-2xs text-muted-foreground">
                         <Clock size={11} />
                         {toJalali(o.created_at)}
                         {o.is_demo && <Badge tone="info">دمو</Badge>}
@@ -184,7 +184,7 @@ export default function AdminOrganizationsPage() {
                     <div className="mt-1.5 flex flex-wrap items-center gap-2">
                       <Badge tone={STATUS[o.approval_status].tone}>{STATUS[o.approval_status].label}</Badge>
                       {o.is_demo && <Badge tone="info">دمو</Badge>}
-                      <span className="text-[11px] tabular-nums text-muted-foreground">
+                      <span className="text-2xs tabular-nums text-muted-foreground">
                         {toFaDigits(o.members_count ?? 0)} عضو · {toFaDigits(o.sales_count ?? 0)} فاکتور
                       </span>
                     </div>

@@ -74,7 +74,7 @@ export function CrmKpiCard({
           <Icon size={18} strokeWidth={2.2} />
         </div>
         {chip && (
-          <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${t.chip}`}>{chip}</span>
+          <span className={`rounded-full px-2 py-0.5 text-2xs font-extrabold ${t.chip}`}>{chip}</span>
         )}
       </div>
       <div className="relative mt-3">
@@ -140,7 +140,7 @@ export function CrmCompositionCard({
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-xl font-black tabular-nums text-foreground">{toFaDigits(total)}</span>
-            <span className="text-[11px] text-muted-foreground">مجموع</span>
+            <span className="text-2xs text-muted-foreground">مجموع</span>
           </div>
         </div>
       </div>
@@ -195,7 +195,7 @@ export function CrmActivityCard({
                   <p className="mt-0.5 line-clamp-2 text-xs leading-5 text-muted-foreground">{description}</p>
                 )}
               </div>
-              {time && <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">{time}</span>}
+              {time && <span className="shrink-0 text-2xs tabular-nums text-muted-foreground">{time}</span>}
             </li>
           ))}
         </ul>

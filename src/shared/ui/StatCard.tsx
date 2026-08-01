@@ -128,8 +128,8 @@ export function StatCard({
       
       <div className="flex items-start justify-between mb-3 pt-1">
         <div className="flex-1 min-w-0">
-          <div className="text-[13px] font-medium text-muted-foreground mb-1">{displayTitle}</div>
-          <div className="text-2xl sm:text-[26px] font-black text-foreground tracking-tight leading-tight tabular-nums">
+          <div className="text-xs font-medium text-muted-foreground mb-1">{displayTitle}</div>
+          <div className="text-2xl sm:text-2xl font-black text-foreground tracking-tight leading-tight tabular-nums">
             {value ?? "—"}
           </div>
         </div>
@@ -143,7 +143,7 @@ export function StatCard({
           )}
         </div>
         {trendBadge && (
-          <div className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold", trendBadge.bg, trendBadge.text)}>
+          <div className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-2xs font-bold", trendBadge.bg, trendBadge.text)}>
             <span>{trendBadge.icon}</span>
             <span className="hidden sm:inline">{trendBadge.label}</span>
           </div>

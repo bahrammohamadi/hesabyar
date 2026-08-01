@@ -164,7 +164,7 @@ function PurchaseSummarySection() {
 
 export default function ReportsOverviewV2Page() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center gap-3">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary"><FileBarChart2 size={24} /></div>
         <div>

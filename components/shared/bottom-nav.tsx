@@ -44,12 +44,12 @@ export function BottomNav({ onMoreClick }: { onMoreClick: () => void }) {
           const content = item.primary ? (
             <>
               <div className={cn("-mt-6 flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-xl shadow-primary/25 transition-transform active:scale-95", active ? "bg-primary" : "bg-primary/95")}><Icon size={25} /></div>
-              <span className="mt-0.5 text-[10px] font-extrabold text-primary">{item.label}</span>
+              <span className="mt-0.5 text-2xs font-extrabold text-primary">{item.label}</span>
             </>
           ) : (
             <>
               <span className={cn("rounded-xl p-1.5", active && "bg-primary/10")}><Icon size={21} /></span>
-              <span className="max-w-full truncate px-1 text-[10px] font-bold">{item.label}</span>
+              <span className="max-w-full truncate px-1 text-2xs font-bold">{item.label}</span>
             </>
           );
           if (item.more) return <button key="more" onClick={onMoreClick} className="flex min-h-16 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl text-muted-foreground transition-colors active:scale-95">{content}</button>;

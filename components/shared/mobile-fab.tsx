@@ -45,7 +45,7 @@ export function MobileFab() {
                   </span>
                   <span className="whitespace-nowrap text-right">
                     <span className="block text-sm font-extrabold text-foreground">{action.label}</span>
-                    <span className="block text-[11px] text-muted-foreground">{action.hint}</span>
+                    <span className="block text-2xs text-muted-foreground">{action.hint}</span>
                   </span>
                 </Link>
               );
