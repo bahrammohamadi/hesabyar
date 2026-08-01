@@ -29,3 +29,15 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# ─── داده‌های شخصی مشتریان (PII) ───
+# این فایل‌ها نام، شماره موبایل و تاریخ تولد مشتریان واقعی را دارند
+# و هرگز نباید وارد مخزن شوند. نسخه‌ی کاری‌شان را خارج از ریپو نگه دارید.
+data/customers-ready.csv
+data/import-customers.sql
+contacts_from_00_pdf.csv
+
+# الگوی کلی: هر فایل ورودی مخاطبین
+**/contacts_from_*.csv
+**/customers-*.csv
+**/import-customers*.sql
