@@ -228,7 +228,7 @@ function ContactSales({ sales }: { sales: any[] }) {
     <div>
       <div className="grid grid-cols-3 gap-3 mb-4">
         <div className="card p-4 text-center"><div className="text-xl font-bold text-success-onSoft">{formatToman(total, false)}</div><div className="text-xs text-muted-foreground">مجموع</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-destructive">{formatToman(credit, false)}</div><div className="text-xs text-muted-foreground">نسیه</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-destructive-text">{formatToman(credit, false)}</div><div className="text-xs text-muted-foreground">نسیه</div></div>
         <div className="card p-4 text-center"><div className="text-xl font-bold text-muted-foreground">{toFaDigits(sales.length)}</div><div className="text-xs text-muted-foreground">فاکتور</div></div>
       </div>
       <div className="card overflow-x-auto">
@@ -260,7 +260,7 @@ function ContactPurchases({ purchases }: { purchases: any[] }) {
       <div className="grid grid-cols-3 gap-3 mb-4">
         <div className="card p-4 text-center"><div className="text-xl font-bold text-success-onSoft">{formatToman(total, false)}</div><div className="text-xs text-muted-foreground">مجموع</div></div>
         <div className="card p-4 text-center"><div className="text-xl font-bold text-primary">{formatToman(paid, false)}</div><div className="text-xs text-muted-foreground">پرداخت‌شده</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-destructive">{formatToman(total-paid, false)}</div><div className="text-xs text-muted-foreground">باقیمانده</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-destructive-text">{formatToman(total-paid, false)}</div><div className="text-xs text-muted-foreground">باقیمانده</div></div>
       </div>
       <div className="card overflow-x-auto">
         {purchases.length === 0 ? <EmptyState title="خریدی ثبت نشده" />
@@ -293,7 +293,7 @@ function ContactTx({ txs }: { txs: any[] }) {
     <div>
       <div className="grid grid-cols-3 gap-3 mb-4">
         <div className="card p-4 text-center"><div className="text-xl font-bold text-success-onSoft">{formatToman(recv, false)}</div><div className="text-xs text-muted-foreground">دریافتی</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-destructive">{formatToman(pay, false)}</div><div className="text-xs text-muted-foreground">پرداختی</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-destructive-text">{formatToman(pay, false)}</div><div className="text-xs text-muted-foreground">پرداختی</div></div>
         <div className="card p-4 text-center"><div className="text-xl font-bold text-muted-foreground">{toFaDigits(txs.length)}</div><div className="text-xs text-muted-foreground">تراکنش</div></div>
       </div>
       <div className="card overflow-x-auto">

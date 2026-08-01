@@ -251,7 +251,7 @@ function ProductsReport({ orgId }: { orgId: string }) {
             {lowStock.map((v: any, i: number) => (
               <div key={i} className="flex items-center justify-between rounded-xl bg-muted/60 p-3">
                 <span className="text-sm font-medium"><EntityLink type="product" id={v.product?.id}>{v.product?.name ?? "نامعلوم"}</EntityLink></span>
-                <span className="text-sm font-bold tabular-nums text-destructive-text-text">{toFaDigits(v.stock_qty)} عدد</span>
+                <span className="text-sm font-bold tabular-nums text-destructive-text">{toFaDigits(v.stock_qty)} عدد</span>
               </div>
             ))}
           </div>
@@ -308,7 +308,7 @@ function FinancialReport({ orgId }: { orgId: string }) {
           <div className="mt-1 text-xs text-muted-foreground">طلب از تأمین‌کنندگان</div>
         </div>
         <div className="rounded-[1.5rem] border border-border bg-card p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-          <div className="text-2xl font-black tabular-nums text-warning">{formatToman(summary?.inventory_value ?? 0)}</div>
+          <div className="text-2xl font-black tabular-nums text-warning-onSoft">{formatToman(summary?.inventory_value ?? 0)}</div>
           <div className="mt-1 text-xs text-muted-foreground">ارزش موجودی انبار</div>
         </div>
       </div>

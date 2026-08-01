@@ -225,7 +225,7 @@ export default function SalesOrdersPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="card p-4 text-center"><div className="text-2xl font-bold text-foreground">{toFaDigits(orders.length)}</div><div className="text-xs text-muted-foreground">کل سفارش‌ها</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-black tabular-nums text-warning">{toFaDigits(orders.filter(o => o.status === "pending").length)}</div><div className="text-xs text-muted-foreground">در انتظار</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-black tabular-nums text-warning-onSoft">{toFaDigits(orders.filter(o => o.status === "pending").length)}</div><div className="text-xs text-muted-foreground">در انتظار</div></div>
         <div className="card p-4 text-center"><div className="text-2xl font-black tabular-nums text-info">{toFaDigits(orders.filter(o => o.status === "confirmed").length)}</div><div className="text-xs text-muted-foreground">تأیید شده</div></div>
         <div className="card p-4 text-center"><div className="text-2xl font-bold text-success-onSoft">{formatToman(orders.filter(o => o.status !== "cancelled").reduce((sum, o) => sum + (o.total || 0), 0))}</div><div className="text-xs text-muted-foreground">مجموع</div></div>
       </div>
