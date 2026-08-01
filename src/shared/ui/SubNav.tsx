@@ -57,7 +57,7 @@ export function SubNav({ items, className }: { items: SubNavItem[]; className?: 
               {item.badge !== undefined && (
                 <span
                   className={cn(
-                    "rounded-full px-1.5 py-0.5 text-[10px] font-extrabold tabular-nums",
+                    "rounded-full px-1.5 py-0.5 text-2xs font-extrabold tabular-nums",
                     active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
                   )}
                 >

@@ -87,7 +87,7 @@ export default function ActivityPage() {
   });
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader title="گزارش فعالیت کاربران" subtitle="مشاهده اینکه چه کسی فاکتور زده، پرداخت ثبت کرده یا عملیات انجام داده است" />
 
       {/* فیلترها */}
@@ -149,7 +149,7 @@ export default function ActivityPage() {
                   time={relativeTimeFa(log.created_at)}
                   meta={
                     <span className="flex items-center gap-1.5">
-                      <ActorAvatar name={actorName} className="h-5 w-5 text-[10px]" />
+                      <ActorAvatar name={actorName} className="h-5 w-5 text-2xs" />
                       {actorName}
                     </span>
                   }
@@ -168,7 +168,7 @@ export default function ActivityPage() {
                   }
                   detail={detailText !== "—" ? detailText : undefined}
                   trailing={
-                    <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
+                    <span className="shrink-0 text-2xs tabular-nums text-muted-foreground">
                       {toJalali(log.created_at, true)}
                     </span>
                   }

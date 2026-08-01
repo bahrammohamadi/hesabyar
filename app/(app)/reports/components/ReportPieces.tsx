@@ -97,7 +97,7 @@ export function ChartLegend({ items }: { items: { label: string; color: string }
   return (
     <ul className="flex flex-wrap items-center gap-3">
       {items.map((it) => (
-        <li key={it.label} className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+        <li key={it.label} className="flex items-center gap-1.5 text-2xs text-muted-foreground">
           <span className="h-2.5 w-2.5 rounded-full" style={{ background: it.color }} />
           {it.label}
         </li>
@@ -154,7 +154,7 @@ export function ReportKpiCard({
           </div>
         )}
         {chip && (
-          <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold tabular-nums ${t.chip}`}>
+          <span className={`rounded-full px-2 py-0.5 text-2xs font-extrabold tabular-nums ${t.chip}`}>
             {chip}
           </span>
         )}
@@ -162,7 +162,7 @@ export function ReportKpiCard({
       <p className={`mt-3 text-xs font-medium ${t.label}`}>{label}</p>
       <div className="mt-1 flex items-baseline gap-1.5">
         <span className={`truncate text-xl font-black tabular-nums ${t.value}`}>{value}</span>
-        {unit && <span className={`text-[11px] ${t.unit}`}>{unit}</span>}
+        {unit && <span className={`text-2xs ${t.unit}`}>{unit}</span>}
       </div>
     </div>
   );

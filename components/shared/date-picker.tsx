@@ -115,7 +115,7 @@ export function DatePicker({ value, onChange, label, placeholder = "انتخاب
                 applyTypedDate(event.target.value);
               }}
             />
-            <div className="mt-1 text-[10px] text-muted-foreground">تاریخ را می‌توانید تایپ کنید یا از تقویم انتخاب کنید.</div>
+            <div className="mt-1 text-2xs text-muted-foreground">تاریخ را می‌توانید تایپ کنید یا از تقویم انتخاب کنید.</div>
           </div>
           <div className="mb-3 flex items-center justify-between gap-2">
             <button type="button" onClick={() => shiftMonth(-1)} className="rounded-xl p-2 text-muted-foreground hover:bg-muted"><ChevronRight size={18} /></button>
@@ -129,7 +129,7 @@ export function DatePicker({ value, onChange, label, placeholder = "انتخاب
             </div>
             <button type="button" onClick={() => shiftMonth(1)} className="rounded-xl p-2 text-muted-foreground hover:bg-muted"><ChevronLeft size={18} /></button>
           </div>
-          <div className="mb-1 grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-muted-foreground">
+          <div className="mb-1 grid grid-cols-7 gap-1 text-center text-2xs font-bold text-muted-foreground">
             {WEEKDAYS.map((day) => <div key={day}>{day}</div>)}
           </div>
           <div className="grid grid-cols-7 gap-1">

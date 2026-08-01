@@ -134,7 +134,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
       </div>
 
       {/* کارت اصلی */}
-      <div className="card p-6 mb-4">
+      <div className="card p-4 sm:p-5 mb-4">
         <div className="flex items-start gap-4">
           <div className="w-16 h-16 rounded-2xl bg-primary/[0.06] text-primary flex items-center justify-center shrink-0">
             <User size={28} />
@@ -196,7 +196,7 @@ function ContactInfo({ contact, sales, purchases, totalSales, totalPurchases }: 
         <div className="card p-4 text-center"><div className="text-xl font-bold text-muted-foreground">{toFaDigits(sales.length)}</div><div className="text-xs text-muted-foreground">فاکتور فروش</div></div>
         <div className="card p-4 text-center"><div className="text-xl font-bold text-muted-foreground">{toFaDigits(purchases.length)}</div><div className="text-xs text-muted-foreground">فاکتور خرید</div></div>
       </div>
-      <div className="card p-5">
+      <div className="card p-4">
         <h3 className="font-semibold text-foreground mb-4">اطلاعات کامل</h3>
         <div className="grid grid-cols-2 gap-3">
           {[

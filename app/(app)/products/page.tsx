@@ -95,7 +95,7 @@ export default function ProductsPage() {
   })();
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader
         title="لیست محصولات"
         subtitle="مدیریت محصولات، تنوع‌ها (رنگ/سایز) و موجودی"
@@ -255,7 +255,7 @@ export default function ProductsPage() {
                               <span className="font-bold tabular-nums text-foreground">
                                 {formatToman(displaySalePrice, false)}
                               </span>
-                              <span className="mr-1 text-[11px] text-muted-foreground">تومان</span>
+                              <span className="mr-1 text-2xs text-muted-foreground">تومان</span>
                             </div>
                           ) : (
                             <span className="text-muted-foreground">—</span>

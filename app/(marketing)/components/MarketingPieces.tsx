@@ -213,7 +213,7 @@ function PlanCard({ plan }: { plan: MarketingPlan }) {
       ].join(" ")}
     >
       {featured && (
-        <span className="absolute -top-3 right-5 inline-flex items-center gap-1 rounded-full bg-primary-foreground px-3 py-1 text-[11px] font-black text-primary shadow-sm">
+        <span className="absolute -top-3 right-5 inline-flex items-center gap-1 rounded-full bg-primary-foreground px-3 py-1 text-2xs font-black text-primary shadow-sm">
           <Diamond size={12} />
           پیشنهاد ویژه
         </span>
@@ -228,7 +228,7 @@ function PlanCard({ plan }: { plan: MarketingPlan }) {
           {plan.price}
         </span>
         {plan.unit && (
-          <span className={`text-[11px] ${featured ? "text-primary-foreground/85" : "text-muted-foreground"}`}>
+          <span className={`text-2xs ${featured ? "text-primary-foreground/85" : "text-muted-foreground"}`}>
             {plan.unit}
           </span>
         )}

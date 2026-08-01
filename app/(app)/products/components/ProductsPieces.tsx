@@ -50,7 +50,7 @@ export function ProductKpiCard({
       </div>
       <div className="mt-2 flex items-baseline gap-1.5 pr-2">
         <span className={`text-2xl font-black tabular-nums ${a.value}`}>{value}</span>
-        {unit && <span className="text-[11px] text-muted-foreground">{unit}</span>}
+        {unit && <span className="text-2xs text-muted-foreground">{unit}</span>}
       </div>
     </Card>
   );

@@ -12,7 +12,7 @@ const rows = [
 export default function DesignSystemShowcasePage() {
   const { toast } = useToast();
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-extrabold text-foreground">Design System فاز B</h1>
         <p className="mt-1 text-sm text-muted-foreground">نمایش کامپوننت‌های پایه برای Panelها و Workspaceهای آینده.</p>

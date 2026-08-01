@@ -130,7 +130,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
       </div>
 
       {/* کارت اصلی */}
-      <div className="card p-6 mb-4">
+      <div className="card p-4 sm:p-5 mb-4">
         <div className="flex items-start gap-4">
           <div className="w-16 h-16 rounded-2xl bg-primary/[0.06] text-primary flex items-center justify-center shrink-0">
             <Package size={28} />
@@ -199,7 +199,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 function ProductInfo({ product, variants, onEdit }: { product: any; variants: any[]; onEdit: () => void }) {
   return (
     <div className="space-y-4">
-      <div className="card p-5">
+      <div className="card p-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-foreground">اطلاعات کالا</h2>
           <button onClick={onEdit} className="text-sm text-primary hover:underline">ویرایش</button>

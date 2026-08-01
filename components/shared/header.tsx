@@ -52,7 +52,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
             <UserCircle size={18} className="shrink-0 text-primary" />
             <div className="min-w-0 leading-tight text-right">
               <div className="max-w-36 truncate font-bold">{currentUser?.name ?? "کاربر"}</div>
-              {currentUser?.email && <div className="max-w-40 truncate text-[11px] text-muted-foreground" dir="ltr">{displayUsername(currentUser.email)}</div>}
+              {currentUser?.email && <div className="max-w-40 truncate text-2xs text-muted-foreground" dir="ltr">{displayUsername(currentUser.email)}</div>}
             </div>
           </div>
           <button

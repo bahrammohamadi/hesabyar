@@ -169,7 +169,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
   );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader
         title="مدیریت مشتریان (CRM)"
         subtitle="مدیریت مالی و گروه‌بندی مخاطبین"

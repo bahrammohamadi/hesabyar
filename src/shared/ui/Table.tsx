@@ -196,7 +196,7 @@ export function DataTable<T>({
                   <dl className="mt-3 space-y-1.5 border-t border-border pt-2.5">
                     {metaCols.map((column) => (
                       <div key={column.key} className="flex items-center justify-between gap-3">
-                        <dt className="shrink-0 text-[11px] text-muted-foreground">{column.header}</dt>
+                        <dt className="shrink-0 text-2xs text-muted-foreground">{column.header}</dt>
                         <dd className="min-w-0 truncate text-xs font-bold text-foreground">
                           {column.render(row)}
                         </dd>

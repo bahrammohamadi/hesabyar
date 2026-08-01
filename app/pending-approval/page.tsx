@@ -77,7 +77,7 @@ export default async function PendingApprovalPage() {
 
         {isRejected && org.rejection_note && (
           <div className="mt-4 rounded-xl border border-destructive/20 bg-destructive/[0.06] p-3 text-right">
-            <div className="text-[11px] font-bold text-destructive">دلیل:</div>
+            <div className="text-2xs font-bold text-destructive">دلیل:</div>
             <div className="mt-0.5 text-xs leading-6 text-foreground/80">{org.rejection_note}</div>
           </div>
         )}
@@ -98,7 +98,7 @@ export default async function PendingApprovalPage() {
           </Link>
         </div>
 
-        <p className="mt-5 text-[11px] leading-6 text-muted-foreground">
+        <p className="mt-5 text-2xs leading-6 text-muted-foreground">
           اگر فکر می‌کنید اشتباهی رخ داده، با پشتیبانی {BRAND_NAME} تماس بگیرید.
         </p>
       </div>

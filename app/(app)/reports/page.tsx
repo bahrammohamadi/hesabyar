@@ -108,7 +108,7 @@ function SalesReport({ orgId }: { orgId: string }) {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* خلاصه آمار */}
       <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4">
         <ReportKpiCard label="فروش امروز" value={formatToman(summary?.sales_today ?? 0, false)} unit="تومان" icon={TrendingUp} tone="primary" />

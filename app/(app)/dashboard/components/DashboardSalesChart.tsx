@@ -33,12 +33,12 @@ export function DashboardSalesChart({
           </div>
           <div>
             <h2 className="text-sm font-extrabold text-foreground">روند فروش</h2>
-            <p className="text-[11px] text-muted-foreground">۳۰ روز اخیر</p>
+            <p className="text-2xs text-muted-foreground">۳۰ روز اخیر</p>
           </div>
         </div>
         <Link
           href="/reports"
-          className="rounded-xl bg-muted px-3 py-1.5 text-[11px] font-medium text-muted-foreground transition hover:bg-primary/10 hover:text-primary"
+          className="rounded-xl bg-muted px-3 py-1.5 text-2xs font-medium text-muted-foreground transition hover:bg-primary/10 hover:text-primary"
         >
           گزارش کامل
         </Link>
@@ -67,12 +67,12 @@ export function DashboardSalesChart({
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis
                 dataKey="day"
-                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={(v: number) =>

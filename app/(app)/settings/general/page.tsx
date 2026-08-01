@@ -68,7 +68,7 @@ export default function GeneralSettingsPage() {
   });
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader title="تنظیمات عمومی" subtitle="نام کسب‌وکار، ظاهر برنامه و تنظیمات عمومی" />
       {orgQuery.isLoading ? <Spinner /> : (
         <div className="rounded-[24px] border border-white/80 bg-white/90 p-5 shadow-sm shadow-slate-900/[0.04] backdrop-blur">

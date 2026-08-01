@@ -56,11 +56,11 @@ function QuickBtn({
       </div>
 
       {/* لیبل */}
-      <span className="text-center text-[12px] font-bold leading-tight text-foreground/80">{label}</span>
+      <span className="text-center text-2xs font-bold leading-tight text-foreground/80">{label}</span>
 
       {/* badge کیبورد */}
       {badge && (
-        <span className="absolute left-2 top-2 hidden rounded-md bg-muted px-1.5 py-0.5 text-[9px] font-bold text-muted-foreground lg:block">
+        <span className="absolute left-2 top-2 hidden rounded-md bg-muted px-1.5 py-0.5 text-2xs font-bold text-muted-foreground lg:block">
           {badge}
         </span>
       )}
@@ -84,7 +84,7 @@ export function DashboardQuickActions({
     <section>
       <div className="mb-3 flex items-center gap-2">
         <div className="h-4 w-1 rounded-full bg-primary" />
-        <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">عملیات سریع</span>
+        <span className="text-2xs font-bold uppercase tracking-widest text-muted-foreground">عملیات سریع</span>
       </div>
       <div className="grid grid-cols-3 gap-2.5 md:grid-cols-6">
         <QuickBtn label="فروش جدید"   icon={Receipt}        accent="primary" badge="F2" onClick={onOpenQuickSale} />

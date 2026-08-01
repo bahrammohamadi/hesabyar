@@ -26,7 +26,7 @@ export function CoreRuntimeDevButton() {
       <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
         <Layers3 size={15} /> Core Runtime PoC · Stack: {stack.length}
       </div>
-      {lastSelection && <div className="max-w-56 truncate text-[11px] text-muted-foreground">آخرین انتخاب: {lastSelection}</div>}
+      {lastSelection && <div className="max-w-56 truncate text-2xs text-muted-foreground">آخرین انتخاب: {lastSelection}</div>}
       <button
         className="btn-primary h-10 min-h-10 px-3 py-2 text-xs"
         onClick={() =>

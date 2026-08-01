@@ -84,7 +84,7 @@ export default function PurchaseDetailPage({ params }: { params: { id: string } 
         </div>
       </div>
 
-      <div className="card p-5 sm:p-6 mb-4">
+      <div className="card p-4 sm:p-5 mb-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3 min-w-0">
             <div className="w-14 h-14 rounded-2xl bg-success-soft text-success-onSoft flex items-center justify-center shrink-0">

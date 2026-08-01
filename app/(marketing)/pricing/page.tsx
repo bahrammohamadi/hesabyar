@@ -60,7 +60,7 @@ export default async function PricingPage() {
                 }`}
               >
                 {plan.featured ? (
-                  <span className="absolute -top-3 right-1/2 inline-flex translate-x-1/2 items-center gap-1 rounded-full bg-warning px-3 py-1 text-[11px] font-black text-warning-foreground">
+                  <span className="absolute -top-3 right-1/2 inline-flex translate-x-1/2 items-center gap-1 rounded-full bg-warning px-3 py-1 text-2xs font-black text-warning-foreground">
                     <Diamond size={12} />
                     پیشنهاد ویژه
                   </span>
@@ -84,7 +84,7 @@ export default async function PricingPage() {
                   </span>
                   {plan.unit ? (
                     <span
-                      className={`pb-0.5 text-[11px] ${
+                      className={`pb-0.5 text-2xs ${
                         plan.featured ? "text-primary-foreground/85" : "text-muted-foreground"
                       }`}
                     >
