@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils/cn";
 import React, { type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { useDismissPanels } from "@/lib/hooks/useDismissPanels";
 
 /**
  * دیالوگ overlay با backdrop، رندرشده در document.body از طریق createPortal.
@@ -32,6 +33,33 @@ export function Modal({
 }) {
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
+
+  /*
+    باز شدن مودال، کشوهای کناری باز را می‌بندد.
+    بدون این، مودال روی کشو می‌نشست و هر دو هم‌زمان روی صفحه می‌ماندند.
+  */
+  useDismissPanels(open);
+
+  // بستن با Escape — انتظار استاندارد کاربر از هر دیالوگ.
+  React.useEffect(() => {
+    if (!open) return;
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  // قفل اسکرول پس‌زمینه تا صفحه پشت دیالوگ جابه‌جا نشود.
+  React.useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
+
   if (!open || !mounted) return null;
 
   return createPortal(

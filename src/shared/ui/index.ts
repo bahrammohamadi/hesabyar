@@ -9,6 +9,7 @@ export * from "./Card";
 export * from "./Table";
 export * from "./PanelShell";
 export * from "./Tabs";
+export * from "./SubNav";
 export * from "./Feedback";
 export * from "./Toast";
 export * from "./ConfirmDialog";

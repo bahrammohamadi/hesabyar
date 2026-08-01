@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
 import { usePermission } from "@/lib/hooks/usePermission";
 import { BRAND_NAME, BRAND_VERSION } from "@/lib/brand";
 import {
+  PanelRightClose, PanelRightOpen,
   LayoutDashboard, Package, Warehouse, ShoppingCart, Receipt, Users,
   Wallet, Settings, BarChart3, X, ChevronDown,
   PackageSearch, Plus as PlusIcon, Layers, ArrowDownToLine,
@@ -114,15 +115,72 @@ export const NAV = [
   },
 ];
 
+/** کلید ذخیره‌ی حالت جمع‌شده در مرورگر کاربر. */
+const RAIL_STORAGE_KEY = "tarazoo-sidebar-rail";
+
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
   const { can } = usePermission();
-  const [expanded, setExpanded] = useState<Record<number, boolean>>({});
 
-  function toggle(i: number) {
-    setExpanded(prev => ({ ...prev, [i]: !prev[i] }));
+  /*
+    آکاردئون تک‌بازشو.
+
+    پیش از این هر گروه state جدا داشت و شرط `expanded[i] || active` باعث
+    می‌شد گروه صفحه‌ی جاری هرگز بسته نشود. نتیجه: تا ۴ گروه هم‌زمان باز
+    و ارتفاع محتوا (۱۰۵۴px) بیشتر از فضای موجود (۷۸۲px) — کاربر مجبور
+    به اسکرول طولانی می‌شد.
+
+    حالا فقط یک شناسه نگهداری می‌شود؛ باز کردن یک گروه بقیه را می‌بندد.
+  */
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+
+  /** حالت باریک فقط-آیکون (دسکتاپ). ترجیح کاربر ذخیره می‌شود. */
+  const [rail, setRail] = useState(false);
+
+  useEffect(() => {
+    try {
+      setRail(window.localStorage.getItem(RAIL_STORAGE_KEY) === "1");
+    } catch {
+      /* دسترسی به localStorage ممکن است مسدود باشد */
+    }
+  }, []);
+
+  function toggleRail() {
+    setRail((value) => {
+      const next = !value;
+      try {
+        window.localStorage.setItem(RAIL_STORAGE_KEY, next ? "1" : "0");
+      } catch {
+        /* بی‌اهمیت */
+      }
+      return next;
+    });
   }
 
+  function toggle(key: string) {
+    // باز کردن یک گروه، گروه قبلی را می‌بندد؛ کلیک دوباره آن را می‌بندد.
+    setOpenGroup((current) => (current === key ? null : key));
+  }
+
+
+  /*
+    وقتی کاربر مسیر عوض می‌کند، گروهِ صفحه‌ی جاری خودکار باز می‌شود.
+    این با تک‌بازشو بودن تناقض ندارد: فقط همان یک گروه باز می‌ماند.
+  */
+  const activeGroupKey = useMemo(() => {
+    for (const item of NAV) {
+      const children = (item as { children?: { href: string }[] }).children;
+      if (!children?.length) continue;
+      if (children.some((child) => pathname.startsWith(child.href.split("?")[0]))) {
+        return (item as { label: string }).label;
+      }
+    }
+    return null;
+  }, [pathname]);
+
+  useEffect(() => {
+    if (activeGroupKey) setOpenGroup(activeGroupKey);
+  }, [activeGroupKey]);
 
   function permissionForHref(href?: string) {
     if (!href) return null;
@@ -158,30 +216,61 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
   return (
     <>
       {open && (
-        <div className="fixed inset-0 bg-black/40 lg:hidden" style={{ zIndex: "calc(var(--z-sidebar) - 10)" }} onClick={onClose} />
+        <div className="fixed inset-0 bg-foreground/40 backdrop-blur-[1px] lg:hidden" style={{ zIndex: "calc(var(--z-sidebar) - 10)" }} onClick={onClose} aria-hidden />
       )}
 
-      <aside className={cn(
-        "fixed lg:sticky top-0 right-0 h-screen w-64 bg-card border-l border-border flex flex-col transition-transform duration-200",
-        open ? "translate-x-0" : "translate-x-full lg:translate-x-0"
-      )}
+      <aside
+        aria-label="ناوبری اصلی"
+        data-rail={rail ? "true" : "false"}
+        className={cn(
+          "fixed lg:sticky top-0 right-0 h-screen bg-card border-l border-border flex flex-col",
+          "transition-[transform,width] duration-200 ease-out",
+          // موبایل همیشه عرض کامل دارد؛ ریل فقط روی دسکتاپ معنا دارد.
+          rail ? "w-[264px] lg:w-[68px]" : "w-[264px]",
+          open ? "translate-x-0" : "translate-x-full lg:translate-x-0"
+        )}
         style={{ zIndex: "var(--z-sidebar)" }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <div className="flex items-center gap-2">
-            <img 
-              src="/logo.png" 
-              alt={BRAND_NAME} 
-              className="w-9 h-9 rounded-xl object-contain bg-card border border-border"
-              onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.3'; }}
+        <div className={cn(
+          "flex items-center gap-2 border-b border-border p-3",
+          rail && "lg:flex-col lg:gap-1.5 lg:px-2"
+        )}>
+          <Link
+            href="/dashboard"
+            onClick={onClose}
+            aria-label={`${BRAND_NAME} — داشبورد`}
+            className={cn("flex min-w-0 flex-1 items-center gap-2", rail && "lg:flex-none")}
+          >
+            <img
+              src="/logo.png"
+              alt={BRAND_NAME}
+              className="h-9 w-9 shrink-0 rounded-xl border border-border bg-card object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
             />
-            <div className="leading-tight">
-              <div className="font-bold text-foreground text-sm">{BRAND_NAME}</div>
-              <div className="text-[10px] text-muted-foreground">سیستم مدیریت فروش</div>
-            </div>
-          </div>
-          <button onClick={onClose} className="lg:hidden text-muted-foreground hover:text-muted-foreground">
+            <span className={cn("min-w-0 leading-tight", rail && "lg:hidden")}>
+              <span className="block truncate text-sm font-bold text-foreground">{BRAND_NAME}</span>
+              <span className="block truncate text-[10px] text-muted-foreground">سیستم مدیریت فروش</span>
+            </span>
+          </Link>
+
+          {/* جمع/باز کردن ریل — فقط دسکتاپ */}
+          <button
+            type="button"
+            onClick={toggleRail}
+            aria-label={rail ? "باز کردن منو" : "جمع کردن منو"}
+            title={rail ? "باز کردن منو" : "جمع کردن منو"}
+            className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground lg:inline-flex"
+          >
+            {rail ? <PanelRightOpen size={17} /> : <PanelRightClose size={17} />}
+          </button>
+
+          {/* بستن کشو — فقط موبایل */}
+          <button
+            onClick={onClose}
+            aria-label="بستن منو"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground lg:hidden"
+          >
             <X size={20} />
           </button>
         </div>
@@ -199,68 +288,122 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
             if (!hasChildren) {
               return (
-                <Link key={item.href} href={item.href ?? "#"} onClick={onClose}
+                <Link
+                  key={item.href}
+                  href={item.href ?? "#"}
+                  onClick={onClose}
+                  aria-current={active ? "page" : undefined}
+                  title={rail ? item.label : undefined}
                   className={cn(
-                    "flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all",
-                    active 
-                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" 
+                    "relative flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-all",
+                    rail && "lg:justify-center lg:px-0",
+                    active
+                      ? "bg-primary text-primary-foreground shadow-sm"
                       : isHighlight
                       ? "bg-success-soft text-success-onSoft hover:bg-success-soft"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  )}>
-                  <Icon size={18} />
-                  {item.label}
+                  )}
+                >
+                  <Icon size={18} className="shrink-0" />
+                  <span className={cn("truncate", rail && "lg:hidden")}>{item.label}</span>
                 </Link>
               );
             }
 
-            const isExpanded = expanded[i] || active;
+            const groupKey = item.label;
+            const isExpanded = openGroup === groupKey;
+            const panelId = `nav-group-${i}`;
+
+            /*
+              در حالت ریل، زیرمنو جایی برای نمایش ندارد.
+              کلیک روی گروه ابتدا ریل را باز می‌کند تا کاربر گم نشود.
+            */
+            function handleGroupClick() {
+              if (rail) {
+                toggleRail();
+                setOpenGroup(groupKey);
+                return;
+              }
+              toggle(groupKey);
+            }
 
             return (
-              <div key={item.label}>
-                <button onClick={() => toggle(i)}
+              <div key={groupKey}>
+                <button
+                  type="button"
+                  onClick={handleGroupClick}
+                  aria-expanded={isExpanded}
+                  aria-controls={panelId}
+                  title={rail ? item.label : undefined}
                   className={cn(
-                    "w-full flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors",
-                    active 
-                      ? "bg-primary/10 text-primary" 
-                      : "text-muted-foreground hover:bg-muted"
-                  )}>
-                  <Icon size={18} />
-                  <span className="flex-1 text-right">{item.label}</span>
-                  <ChevronDown 
-                    size={14} 
-                    className={cn("transition-transform duration-200 shrink-0", isExpanded ? "rotate-180" : "")} 
+                    "flex w-full min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors",
+                    rail && "lg:justify-center lg:px-0",
+                    active || isExpanded
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <Icon size={18} className="shrink-0" />
+                  <span className={cn("flex-1 truncate text-right", rail && "lg:hidden")}>{item.label}</span>
+                  <ChevronDown
+                    size={14}
+                    aria-hidden
+                    className={cn(
+                      "shrink-0 transition-transform duration-200",
+                      rail && "lg:hidden",
+                      isExpanded && "rotate-180"
+                    )}
                   />
                 </button>
 
-                {isExpanded && hasChildren && (
-                  <div className="mr-2 mt-1 space-y-0.5 pr-3 border-r-2 border-border">
-                    {children.map((child: any) => {
-                      const childActive = isActive(child.href);
-                      const ChildIcon = child.icon;
-                      return (
-                        <Link key={child.href + child.label} href={child.href} onClick={onClose}
-                          className={cn(
-                            "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
-                            childActive 
-                              ? "bg-primary/10 text-primary font-bold" 
-                              : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                          )}>
-                          <ChildIcon size={14} />
-                          {child.label}
-                        </Link>
-                      );
-                    })}
+                {/*
+                  انیمیشن باز/بسته با grid-template-rows انجام می‌شود
+                  چون ارتفاع محتوا از قبل معلوم نیست و height:auto
+                  قابل ترنزیشن نیست.
+                */}
+                <div
+                  id={panelId}
+                  className={cn(
+                    "grid transition-[grid-template-rows,opacity] duration-200 ease-out motion-reduce:transition-none",
+                    isExpanded && !rail ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+                    rail && "lg:hidden"
+                  )}
+                >
+                  <div className="overflow-hidden">
+                    <div className="mr-3 mt-1 space-y-0.5 border-r-2 border-border pr-2">
+                      {children.map((child: { href: string; label: string; icon: React.ElementType }) => {
+                        const childActive = isActive(child.href);
+                        const ChildIcon = child.icon;
+                        return (
+                          <Link
+                            key={child.href + child.label}
+                            href={child.href}
+                            onClick={onClose}
+                            tabIndex={isExpanded && !rail ? undefined : -1}
+                            aria-current={childActive ? "page" : undefined}
+                            className={cn(
+                              "flex min-h-10 items-center gap-2.5 rounded-lg px-3 text-sm transition-colors",
+                              childActive
+                                ? "bg-primary/10 font-bold text-primary"
+                                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                            )}
+                          >
+                            <ChildIcon size={14} className="shrink-0" />
+                            <span className="truncate">{child.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
             );
           })}
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-border">
-          <div className="text-xs text-muted-foreground text-center">
+        <div className="border-t border-border p-3">
+          <div className={cn("text-center text-xs text-muted-foreground", rail && "lg:hidden")}>
             {BRAND_NAME} — نسخه {BRAND_VERSION}
           </div>
         </div>
