@@ -148,7 +148,7 @@ export default function CustomerProfitabilityReportPage() {
         <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">سود کل</div><div className={totals.profit >= 0 ? "font-bold text-success-onSoft mt-1" : "font-bold text-destructive mt-1"}>{formatToman(totals.profit)}</div></div>
       </div>
 
-      {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-4">{(error as Error).message}</div> : !rows.length ? <EmptyState icon={Users} title="داده‌ای برای این بازه وجود ندارد" /> : (
+      {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-destructive/10 text-destructive-text text-sm p-4">{(error as Error).message}</div> : !rows.length ? <EmptyState icon={Users} title="داده‌ای برای این بازه وجود ندارد" /> : (
         <div className="card overflow-x-auto">
           <table className="table-base">
             <thead><tr><th>مشتری</th><th>فاکتور</th><th>تعداد کالا</th><th>فروش</th><th>بها</th><th>سود</th><th>حاشیه</th><th>میانگین فاکتور</th><th>آخرین خرید</th><th>عملیات</th></tr></thead>

@@ -87,7 +87,7 @@ export default function SellerReportPage() {
         <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">تعداد فاکتور</div><div className="font-bold text-foreground mt-1">{toFaDigits(totals.invoice_count)}</div></div>
       </div>
 
-      {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-4">{(error as Error).message}</div> : !data?.sellers?.length ? <EmptyState icon={UserCheck} title="داده‌ای برای این بازه وجود ندارد" /> : (
+      {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-destructive/10 text-destructive-text text-sm p-4">{(error as Error).message}</div> : !data?.sellers?.length ? <EmptyState icon={UserCheck} title="داده‌ای برای این بازه وجود ندارد" /> : (
         <DataTable
           rows={data.sellers}
           keyExtractor={(seller) => seller.user_id ?? "unknown"}

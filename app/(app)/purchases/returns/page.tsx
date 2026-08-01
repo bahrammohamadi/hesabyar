@@ -206,8 +206,8 @@ function PurchaseReturnModal({ orgId, branchId, onClose }: { orgId: string | nul
           <div><label className="label">دلیل</label><input aria-label="دلیل" className="input" value={reason} onChange={(e) => setReason(e.target.value)} /></div>
         </div>
         <div><label className="label">توضیح</label><input aria-label="توضیح" className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
-        <div className="rounded-xl bg-destructive/10 text-destructive p-3 text-sm flex justify-between"><span>جمع مرجوعی</span><b>{formatToman(total)}</b></div>
-        {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3">{error}</div>}
+        <div className="rounded-xl bg-destructive/10 text-destructive-text p-3 text-sm flex justify-between"><span>جمع مرجوعی</span><b>{formatToman(total)}</b></div>
+        {error && <div className="rounded-xl bg-destructive/10 text-destructive-text text-sm p-3">{error}</div>}
         <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving && <Loader2 className="animate-spin" size={16}/>} ثبت مرجوعی خرید</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
       </div>
     </Modal>

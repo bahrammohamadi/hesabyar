@@ -36,8 +36,8 @@ const KPI_TONE = {
     card: "bg-destructive/[0.07] text-foreground border-destructive/20",
     label: "text-destructive",
     value: "text-destructive",
-    icon: "bg-destructive/10 text-destructive",
-    chip: "bg-destructive/10 text-destructive",
+    icon: "bg-destructive/10 text-destructive-text",
+    chip: "bg-destructive/10 text-destructive-text",
     blob: "bg-destructive",
   },
   info: {

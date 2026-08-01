@@ -244,7 +244,7 @@ export function DashboardStats({
               className="group flex w-full items-center justify-between rounded-2xl border border-border bg-card p-3.5 text-right shadow-sm transition hover:border-destructive/30 hover:bg-destructive/[0.06]"
             >
               <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-destructive/10 text-destructive transition group-hover:scale-105">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-destructive/10 text-destructive-text transition group-hover:scale-105">
                   <ArrowUpRight size={15} />
                 </div>
                 <span className="text-sm font-medium text-foreground/80">ثبت هزینه</span>

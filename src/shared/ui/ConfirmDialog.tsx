@@ -62,7 +62,7 @@ function ConfirmDialog({ state, onCancel, onConfirm }: { state: ConfirmState | n
       <div className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card shadow-2xl animate-dialog-in">
         <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
           <div className="flex items-start gap-3">
-            <div className={isDanger ? "flex h-11 w-11 items-center justify-center rounded-2xl bg-destructive/10 text-destructive" : "flex h-11 w-11 items-center justify-center rounded-2xl bg-info-soft text-info"}>
+            <div className={isDanger ? "flex h-11 w-11 items-center justify-center rounded-2xl bg-destructive/10 text-destructive-text" : "flex h-11 w-11 items-center justify-center rounded-2xl bg-info-soft text-info-text"}>
               {isDanger ? <AlertTriangle size={22} /> : <Info size={22} />}
             </div>
             <div>

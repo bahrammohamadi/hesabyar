@@ -130,7 +130,7 @@ export default function InventoryAsOfPage() {
         <div className="card p-4 text-center"><div className="text-xs text-muted-foreground">کم‌موجود</div><div className="font-bold text-warning-onSoft mt-1">{toFaDigits(lowCount)}</div></div>
       </div>
 
-      {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-4">{(error as Error).message}</div> : rows.length === 0 ? <EmptyState icon={CalendarDays} title="موجودی برای نمایش وجود ندارد" /> : (
+      {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-destructive/10 text-destructive-text text-sm p-4">{(error as Error).message}</div> : rows.length === 0 ? <EmptyState icon={CalendarDays} title="موجودی برای نمایش وجود ندارد" /> : (
         <DataTable
           rows={rows}
           keyExtractor={(row: any) => row.variant_id}

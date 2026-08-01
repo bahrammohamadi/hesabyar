@@ -52,7 +52,7 @@ function labelFor(r: number, f: number, m: number) {
   const sum = r + f + m;
   if (r >= 4 && f >= 4 && m >= 4) return { label: "قهرمان", hint: "حفظ با مزایا و پیام اختصاصی", tone: "bg-success-soft text-success-onSoft" };
   if (r >= 4 && f >= 3) return { label: "وفادار", hint: "پیشنهاد خرید مکمل", tone: "bg-primary/10 text-primary" };
-  if (r <= 2 && f >= 4) return { label: "در خطر ریزش", hint: "کمپین بازگشت فوری", tone: "bg-destructive/15 text-destructive" };
+  if (r <= 2 && f >= 4) return { label: "در خطر ریزش", hint: "کمپین بازگشت فوری", tone: "bg-destructive/15 text-destructive-text" };
   if (r <= 2 && m >= 4) return { label: "ارزشمند خوابیده", hint: "پیام شخصی‌سازی‌شده", tone: "bg-warning-soft text-warning-onSoft" };
   if (sum <= 5) return { label: "کم‌فعال", hint: "کمپین معرفی/تخفیف سبک", tone: "bg-muted text-muted-foreground" };
   return { label: "عادی", hint: "نگهداری و پیگیری معمول", tone: "bg-info-soft text-info-onSoft" };
@@ -140,7 +140,7 @@ export default function RfmPage() {
         <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">قهرمان‌ها</div><div className="font-bold text-success-onSoft mt-1">{toFaDigits(rows.filter((r) => r.segment.label === "قهرمان").length)}</div></div>
       </div>
 
-      {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-destructive/10 text-destructive p-4 text-sm">{(error as Error).message}</div> : rows.length === 0 ? <EmptyState icon={Target} title="داده‌ای برای تحلیل وجود ندارد" /> : (
+      {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-destructive/10 text-destructive-text p-4 text-sm">{(error as Error).message}</div> : rows.length === 0 ? <EmptyState icon={Target} title="داده‌ای برای تحلیل وجود ندارد" /> : (
         <DataTable
           rows={rows}
           keyExtractor={(row) => row.contact?.id ?? row.contact?.name ?? "unknown"}

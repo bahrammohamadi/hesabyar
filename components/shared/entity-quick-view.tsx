@@ -16,7 +16,7 @@ function SummaryCell({ label, value, tone = "default" }: { label: string; value:
   const tones = {
     default: "bg-muted text-foreground",
     green: "bg-success-soft text-success-onSoft",
-    red: "bg-destructive/10 text-destructive",
+    red: "bg-destructive/10 text-destructive-text",
     amber: "bg-warning-soft text-warning-onSoft",
     blue: "bg-primary/[0.06] text-primary",
   };

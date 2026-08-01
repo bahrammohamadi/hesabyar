@@ -120,7 +120,7 @@ export default function PriceListsPage() {
           <div><label className="label">درصد تخفیف عمومی</label><input aria-label="درصد تخفیف عمومی" className="input" inputMode="numeric" value={discount} onChange={(e) => setDiscount(e.target.value)} /></div>
           <div className="flex items-end"><button onClick={addList} disabled={saving} className="btn-primary w-full"><Plus size={16}/> افزودن لیست</button></div>
         </div>
-        {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3 mt-3">{error}</div>}
+        {error && <div className="rounded-xl bg-destructive/10 text-destructive-text text-sm p-3 mt-3">{error}</div>}
       </div>
 
       {isLoading ? <Spinner /> : !lists?.length ? <EmptyState icon={Tags} title="لیست قیمتی ثبت نشده" /> : (

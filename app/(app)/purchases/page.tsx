@@ -324,7 +324,7 @@ function PurchaseModal({ orgId, onClose }: { orgId: string | null; onClose: () =
             <span>{formatToman(total)}</span>
           </div>
 
-          {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm px-4 py-3">{error}</div>}
+          {error && <div className="rounded-xl bg-destructive/10 text-destructive-text text-sm px-4 py-3">{error}</div>}
 
           <div className="flex gap-2">
             <button onClick={handleSave} disabled={saving} className="btn-primary flex-1">

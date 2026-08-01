@@ -29,6 +29,8 @@
     --accent-foreground: 215 25% 27%;
     
     --destructive: 0 84% 60%;
+    /* متن قرمز روی سطح روشن: 60% فقط ۳.۷۸ می‌داد (WCAG AA ≥ ۴.۵) */
+    --destructive-text: 0 84% 45%;
     --destructive-foreground: 0 0% 98%;
     
     --border: 214 32% 91%;
@@ -54,13 +56,15 @@
     --warning-soft: 48 96% 89%;
     --warning-on-soft: 30 90% 26%;
     --info: 217 91% 60%;
+    --info-text: 217 91% 38%;
     --info-foreground: 0 0% 100%;
     --info-soft: 214 100% 97%;
     --info-on-soft: 217 91% 38%;
-    --finance-profit: 160 84% 39%;
-    --finance-loss: 0 84% 60%;
-    --finance-debt: 346 77% 50%;
-    --finance-credit: 38 92% 50%;
+    /* اعداد مالی همیشه متن‌اند، پس مقادیرشان از ابتدا متن‌ایمن است. */
+    --finance-profit: 160 84% 27%;
+    --finance-loss: 0 84% 45%;
+    --finance-debt: 346 77% 45%;
+    --finance-credit: 38 92% 30%;
     --shadow-panel: 0 24px 60px rgb(15 23 42 / 0.16);
     --z-base: 0;
     --z-header: 30;
@@ -115,6 +119,7 @@
     --accent-foreground: 210 40% 98%;
     
     --destructive: 0 62.8% 30.6%;
+    --destructive-text: 0 84% 70%;
     --destructive-foreground: 0 0% 100%;
     
     --border: 217.2 32.6% 17.5%;
@@ -130,13 +135,14 @@
     --warning-soft: 38 60% 14%;
     --warning-on-soft: 38 90% 72%;
     --info: 217 91% 65%;
+    --info-text: 217 91% 72%;
     --info-foreground: 0 0% 100%;
     --info-soft: 217 40% 14%;
     --info-on-soft: 217 90% 75%;
-    --finance-profit: 160 84% 45%;
-    --finance-loss: 0 84% 65%;
-    --finance-debt: 346 77% 60%;
-    --finance-credit: 38 92% 55%;
+    --finance-profit: 160 84% 55%;
+    --finance-loss: 0 84% 70%;
+    --finance-debt: 346 77% 68%;
+    --finance-credit: 38 92% 62%;
   }
 }
 

@@ -405,7 +405,7 @@ function AccountModal({
             </div>
           </>
         )}
-        {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm px-4 py-3">{error}</div>}
+        {error && <div className="rounded-xl bg-destructive/10 text-destructive-text text-sm px-4 py-3">{error}</div>}
         <button onClick={save} disabled={saving || !name.trim()} className="btn-primary w-full">
           {saving && <Loader2 className="animate-spin" size={18} />} ذخیره
         </button>
@@ -555,7 +555,7 @@ function UsersAccessManager() {
       </div>
 
       {isLoading ? <Spinner /> : error ? (
-        <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-4">{(error as Error).message}</div>
+        <div className="rounded-xl bg-destructive/10 text-destructive-text text-sm p-4">{(error as Error).message}</div>
       ) : (
         <div className="space-y-3">
           {data?.map((u) => {
@@ -628,7 +628,7 @@ function CreateUserModal({ onClose }: { onClose: () => void }) {
           <div className="text-sm font-medium text-foreground mb-2">دسترسی‌ها</div>
           <PermissionTreeEditor value={permissions} disabled={role === "owner"} onChange={setPermissions} />
         </div>
-        {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm px-4 py-3">{error}</div>}
+        {error && <div className="rounded-xl bg-destructive/10 text-destructive-text text-sm px-4 py-3">{error}</div>}
         <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving && <Loader2 className="animate-spin" size={18} />} ساخت کاربر</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
       </div>
     </Modal>

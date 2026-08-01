@@ -322,7 +322,7 @@ function EditPurchaseModal({ purchase, supplier, items, onClose }: { purchase: a
             <div><label className="label">جمع نهایی</label><div className="rounded-xl bg-muted px-3.5 py-2.5 font-bold text-foreground">{formatToman(total)}</div></div>
           </div>
           <div><label className="label">توضیح</label><input aria-label="توضیح" className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
-          {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3">{error}</div>}
+          {error && <div className="rounded-xl bg-destructive/10 text-destructive-text text-sm p-3">{error}</div>}
           <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving && <Loader2 className="animate-spin" size={16}/>} ذخیره تغییرات</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
         </div>
       </Modal>
@@ -347,7 +347,7 @@ function CancelPurchaseModal({ purchaseId, invoiceNo, onClose }: { purchaseId: s
       onClose();
     } catch (e) { setError("خطا در ابطال: " + (e as Error).message); setSaving(false); }
   }
-  return <Modal open onClose={onClose} title="ابطال فاکتور خرید" size="md"><div className="space-y-4"><div className="rounded-xl bg-destructive/10 text-destructive p-3 text-sm">خرید {invoiceNo ?? ""} باطل می‌شود؛ موجودی کالاها و پرداخت‌ها خنثی می‌شوند.</div><div><label className="label">دلیل ابطال</label><textarea className="input" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} /></div>{error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3">{error}</div>}<div className="flex gap-2"><button onClick={cancel} disabled={saving} className="btn-danger flex-1">{saving && <Loader2 className="animate-spin" size={16}/>} ابطال خرید</button><button onClick={onClose} className="btn-secondary">انصراف</button></div></div></Modal>;
+  return <Modal open onClose={onClose} title="ابطال فاکتور خرید" size="md"><div className="space-y-4"><div className="rounded-xl bg-destructive/10 text-destructive-text p-3 text-sm">خرید {invoiceNo ?? ""} باطل می‌شود؛ موجودی کالاها و پرداخت‌ها خنثی می‌شوند.</div><div><label className="label">دلیل ابطال</label><textarea className="input" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} /></div>{error && <div className="rounded-xl bg-destructive/10 text-destructive-text text-sm p-3">{error}</div>}<div className="flex gap-2"><button onClick={cancel} disabled={saving} className="btn-danger flex-1">{saving && <Loader2 className="animate-spin" size={16}/>} ابطال خرید</button><button onClick={onClose} className="btn-secondary">انصراف</button></div></div></Modal>;
 }
 
 function PurchasePaymentModal({ purchaseId, balance, onClose }: { purchaseId: string; balance: number; onClose: () => void }) {
@@ -396,7 +396,7 @@ function PurchasePaymentModal({ purchaseId, balance, onClose }: { purchaseId: st
         <div><label className="label">روش پرداخت</label><select aria-label="روش پرداخت" className="input" value={method} onChange={(e) => setMethod(e.target.value)}><option value="cash">نقد</option><option value="card">کارت</option><option value="transfer">انتقال</option><option value="cheque">چک</option></select></div>
         <div><label className="label">حساب</label><select aria-label="حساب" className="input" value={accountId} onChange={(e) => setAccountId(e.target.value)}><option value="">انتخاب...</option>{accounts?.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
         <div><label className="label">توضیح</label><input aria-label="توضیح" className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
-        {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm px-4 py-3">{error}</div>}
+        {error && <div className="rounded-xl bg-destructive/10 text-destructive-text text-sm px-4 py-3">{error}</div>}
         <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving && <Loader2 className="animate-spin" size={18} />} ثبت پرداخت</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
       </div>
     </Modal>

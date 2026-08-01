@@ -178,7 +178,7 @@ export default function ProfitabilityReportPage() {
         <button onClick={() => setTab("invoices")} className={tab === "invoices" ? "btn-primary" : "btn-secondary"}>سود فاکتور</button>
       </div>
 
-      {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-4">{(error as Error).message}</div> : tab === "products" ? (
+      {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-destructive/10 text-destructive-text text-sm p-4">{(error as Error).message}</div> : tab === "products" ? (
         !productRows.length ? <EmptyState icon={TrendingUp} title="داده‌ای برای این بازه نیست" /> : (
           <div className="card overflow-x-auto">
             <table className="table-base"><thead><tr><th>کالا</th><th>تعداد</th><th>فاکتور</th><th>فروش</th><th>بها</th><th>سود</th><th>حاشیه</th><th>عملیات</th></tr></thead><tbody>

@@ -60,6 +60,7 @@ const config: Config = {
         destructive: {
           DEFAULT: "hsl(var(--destructive) / <alpha-value>)",
           foreground: "hsl(var(--destructive-foreground) / <alpha-value>)",
+          text: "hsl(var(--destructive-text))",
         },
         success: {
           DEFAULT: "hsl(var(--success) / <alpha-value>)",
@@ -78,6 +79,7 @@ const config: Config = {
           foreground: "hsl(var(--info-foreground) / <alpha-value>)",
           soft: "hsl(var(--info-soft) / <alpha-value>)",
           onSoft: "hsl(var(--info-on-soft))",
+          text: "hsl(var(--info-text))",
         },
         finance: {
           profit: "hsl(var(--finance-profit) / <alpha-value>)",

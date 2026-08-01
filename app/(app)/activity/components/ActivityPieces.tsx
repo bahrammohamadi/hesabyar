@@ -49,7 +49,7 @@ export function actionMeta(action: string) {
 const RING_CLASS: Record<ActionTone, string> = {
   success: "bg-success-soft text-success-onSoft",
   warning: "bg-warning/10 text-warning",
-  danger: "bg-destructive/10 text-destructive",
+  danger: "bg-destructive/10 text-destructive-text",
   info: "bg-info/10 text-info",
   primary: "bg-primary/10 text-primary",
   neutral: "bg-muted text-muted-foreground",
