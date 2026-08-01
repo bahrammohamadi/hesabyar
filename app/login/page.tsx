@@ -45,7 +45,17 @@ export default function LoginPage() {
   return (
     <main className="min-h-dvh overflow-y-auto bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.14),transparent_32%),linear-gradient(180deg,#f8fafc,white)] text-slate-900" dir="rtl">
       <div className="mx-auto grid min-h-dvh max-w-6xl grid-cols-1 items-center gap-8 px-4 py-8 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
-        <section className="relative order-2 hidden max-h-[calc(100dvh-4rem)] min-h-0 overflow-y-auto rounded-[36px] border border-white/70 bg-primary p-8 text-primary-foreground shadow-2xl shadow-primary/20 lg:block">
+        {/*
+          tabIndex={0} چون این ناحیه overflow-y-auto دارد و اگر محتوایش از
+          ارتفاع بیشتر شود، کاربر کیبورد راهی برای اسکرول آن ندارد
+          (قاعده‌ی scrollable-region-focusable). محتوایش تزئینی است،
+          پس یک برچسب توصیفی هم می‌گیرد.
+        */}
+        <section
+          tabIndex={0}
+          aria-label="معرفی امکانات"
+          className="relative order-2 hidden max-h-[calc(100dvh-4rem)] min-h-0 overflow-y-auto rounded-[36px] border border-white/70 bg-primary p-8 text-primary-foreground shadow-2xl shadow-primary/20 lg:block"
+        >
           <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
           <div className="absolute -bottom-24 right-8 h-72 w-72 rounded-full bg-white/10 blur-2xl" />
           <div className="relative z-10 flex min-h-[560px] flex-col justify-between">
