@@ -87,9 +87,11 @@ export function StockStatusBadge({ state }: { state: StockState }) {
 
 /** رنگ عدد موجودی، هم‌راستا با وضعیت */
 export function stockQtyClass(state: StockState) {
+  // این مقدار به‌صورت عدد در جدول رندر می‌شود، پس باید متن‌ایمن باشد:
+  // text-destructive روی سفید ۳.۷۸ و text-warning ۲.۱ می‌داد.
   return state === "out"
-    ? "text-destructive"
+    ? "text-destructive-text"
     : state === "low"
-      ? "text-warning"
+      ? "text-warning-onSoft"
       : "text-foreground";
 }
