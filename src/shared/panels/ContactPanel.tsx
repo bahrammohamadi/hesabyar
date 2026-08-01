@@ -29,6 +29,7 @@ import { DatePicker } from "@/components/shared/date-picker";
 import { Badge, Button, DataTable, EmptyState, Field, Input, NumberInput, PanelShell, Section, Select, Spinner, StatusPill, Tabs, Textarea, type Column } from "@/src/shared/ui";
 import { Money, PersianDate } from "@/src/shared/format";
 import { contactHelp } from "@/lib/help/contacts";
+import { PanelExitLink } from "@/src/core/panel-manager/PanelExitLink";
 
 const TYPE_LABEL: Record<ContactType, string> = {
   customer: "مشتری",
@@ -415,9 +416,9 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
           {contact!.phone && <Badge tone="neutral"><Phone size={12} /> {contact!.phone}</Badge>}
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href={`/contacts/${contact!.id}`} className="btn-secondary min-h-9 rounded-xl px-3 py-1.5 text-xs">
+          <PanelExitLink href={`/contacts/${contact!.id}`} className="btn-secondary min-h-9 rounded-xl px-3 py-1.5 text-xs">
             مشاهده صفحه کامل
-          </Link>
+          </PanelExitLink>
           <Button size="sm" variant="secondary" onClick={() => setMode("edit")}>ویرایش</Button>
           <Button size="sm" variant={contact!.is_active ? "danger" : "secondary"} loading={isToggling} onClick={toggleActive}>{contact!.is_active ? "غیرفعال‌سازی" : "فعال‌سازی"}</Button>
         </div>

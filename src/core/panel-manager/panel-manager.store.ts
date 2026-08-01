@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import type {
   DocumentType,
   EntityPanelType,
@@ -168,6 +169,7 @@ const PanelManagerContext = createContext<PanelManagerApi | null>(null);
 export function PanelManagerStoreProvider({ children }: { children: ReactNode }) {
   const [stack, dispatch] = useReducer(panelReducer, undefined, parsePanelsFromUrl);
   const resultResolvers = useRef(new Map<string, (result: PanelResult | null) => void>());
+  const pathname = usePathname();
 
   useEffect(() => {
     function handlePopState() {
@@ -176,6 +178,24 @@ export function PanelManagerStoreProvider({ children }: { children: ReactNode })
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
+
+  /*
+    محافظ نهایی: اگر مسیر صفحه عوض شد ولی پنل‌ها همچنان بازند، بسته شوند.
+
+    PanelExitLink این کار را برای لینک‌های شناخته‌شده انجام می‌دهد، اما
+    ناوبری می‌تواند از هر جایی رخ دهد (router.push در یک هندلر، لینک
+    داخل محتوای پنل، …). بدون این محافظ، کاربر روی صفحه‌ی جدید می‌ماند
+    در حالی که یک کشوی تمام‌صفحه جلویش را گرفته است.
+
+    مقایسه با مسیرِ ثبت‌شده انجام می‌شود تا باز/بسته شدن خود پنل‌ها —
+    که فقط query string را عوض می‌کند — این افکت را فعال نکند.
+  */
+  const lastPathRef = useRef(pathname);
+  useEffect(() => {
+    if (lastPathRef.current === pathname) return;
+    lastPathRef.current = pathname;
+    dispatch({ type: "SET_STACK", stack: [] });
+  }, [pathname]);
 
   const setStack = useCallback((nextStack: PanelInstance[], urlMode: "push" | "replace") => {
     const normalized = normalizeStack(stripStack(nextStack));

@@ -170,6 +170,62 @@
   }
 }
 
+
+/* ───────────── حرکت و انیمیشن ─────────────
+   همه با CSS خالص است: هیچ کتابخانه‌ای اضافه نشد و بار جاوااسکریپت
+   صفر است. فقط transform و opacity انیمیت می‌شوند چون این دو روی
+   لایه‌ی کامپوزیت اجرا می‌شوند و باعث reflow نمی‌شوند (۶۰fps پایدار).
+
+   منحنی‌ها عمداً «اُورشوت» ندارند؛ در ابزار کاری، حرکت باید سریع و
+   قاطع باشد نه بازیگوش. */
+
+@keyframes tarazoo-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* کشوی راست: از لبه وارد می‌شود */
+@keyframes tarazoo-slide-in-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* دیالوگ وسط: کمی از پایین و با مقیاس جزئی */
+@keyframes tarazoo-dialog-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* شیت موبایل: از پایین بالا می‌آید */
+@keyframes tarazoo-sheet-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* منوی شناور کنار دکمه */
+@keyframes tarazoo-pop-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-fade-in    { animation: tarazoo-fade-in 160ms ease-out both; }
+.animate-slide-in   { animation: tarazoo-slide-in-right 220ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-dialog-in  { animation: tarazoo-dialog-in 180ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-sheet-up   { animation: tarazoo-sheet-up 260ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-pop-in     { animation: tarazoo-pop-in 140ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* ورود پلکانی فهرست‌ها — حس «چیده شدن» می‌دهد بدون کند کردن صفحه.
+   فقط ۶ آیتم اول تأخیر می‌گیرند تا فهرست‌های بلند دیر رندر نشوند. */
+.stagger-in > *:nth-child(1) { animation: tarazoo-fade-in 200ms ease-out both; animation-delay: 0ms; }
+.stagger-in > *:nth-child(2) { animation: tarazoo-fade-in 200ms ease-out both; animation-delay: 30ms; }
+.stagger-in > *:nth-child(3) { animation: tarazoo-fade-in 200ms ease-out both; animation-delay: 60ms; }
+.stagger-in > *:nth-child(4) { animation: tarazoo-fade-in 200ms ease-out both; animation-delay: 90ms; }
+.stagger-in > *:nth-child(5) { animation: tarazoo-fade-in 200ms ease-out both; animation-delay: 120ms; }
+.stagger-in > *:nth-child(6) { animation: tarazoo-fade-in 200ms ease-out both; animation-delay: 150ms; }
+
+/* کاربرانی که «کاهش حرکت» را فعال کرده‌اند هیچ‌کدام را نمی‌بینند
+   (بلوک prefers-reduced-motion بالاتر همه را خنثی می‌کند). */
+
 /* پرش چیدمان هنگام بارگذاری فونت را کم می‌کند */
 @media (prefers-reduced-motion: no-preference) {
   html {

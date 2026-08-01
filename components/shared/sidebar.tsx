@@ -216,7 +216,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
   return (
     <>
       {open && (
-        <div className="fixed inset-0 bg-foreground/40 backdrop-blur-[1px] lg:hidden" style={{ zIndex: "calc(var(--z-sidebar) - 10)" }} onClick={onClose} aria-hidden />
+        <div className="fixed inset-0 bg-foreground/40 backdrop-blur-[2px] animate-fade-in lg:hidden" style={{ zIndex: "calc(var(--z-sidebar) - 10)" }} onClick={onClose} aria-hidden />
       )}
 
       <aside

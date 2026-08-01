@@ -64,7 +64,7 @@ export function Modal({
 
   return createPortal(
     <div className="fixed inset-0 flex items-end sm:items-center justify-center p-0 sm:p-4" style={{ zIndex: "var(--z-modal)" }}>
-      <div className="absolute inset-0 bg-foreground/40" onClick={onClose} aria-hidden />
+      <div className="absolute inset-0 bg-foreground/40 backdrop-blur-[2px] animate-fade-in" onClick={onClose} aria-hidden />
       {/*
         role=dialog + aria-modal یک landmark می‌سازد؛ بدون آن، محتوای
         مودال «خارج از landmark» شمرده می‌شد (region violation).
@@ -74,7 +74,9 @@ export function Modal({
         aria-modal="true"
         aria-label={typeof title === "string" ? title : undefined}
         className={cn(
-          "relative w-full overflow-hidden rounded-t-[24px] bg-card shadow-2xl max-h-[92vh] sm:rounded-2xl",
+          "relative w-full overflow-hidden rounded-t-2xl bg-card shadow-2xl max-h-[92vh] sm:rounded-2xl",
+          // موبایل از پایین بالا می‌آید، دسکتاپ با مقیاس جزئی ظاهر می‌شود.
+          "animate-sheet-up sm:animate-dialog-in",
           mobileFullscreen ? "flex h-[92vh] flex-col sm:h-auto" : "overflow-y-auto",
           size === "xl" ? "sm:max-w-6xl" : size === "lg" ? "sm:max-w-2xl" : "sm:max-w-md"
         )}
