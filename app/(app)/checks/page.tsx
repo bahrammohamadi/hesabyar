@@ -31,7 +31,7 @@ type Check = {
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   pending: { label: "در انتظار", color: "bg-warning-soft text-warning-onSoft" },
   deposited: { label: "واریز شده", color: "bg-info-soft text-info-onSoft" },
-  returned: { label: "برگشت خورده", color: "bg-destructive/15 text-destructive" },
+  returned: { label: "برگشت خورده", color: "bg-destructive/15 text-destructive-text" },
   cashed: { label: "وصول شده", color: "bg-success-soft text-success-onSoft" },
   cancelled: { label: "لغو شده", color: "bg-muted text-muted-foreground" },
 };

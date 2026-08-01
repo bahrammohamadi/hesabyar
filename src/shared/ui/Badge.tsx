@@ -9,7 +9,7 @@ const toneClass: Record<BadgeTone, string> = {
   neutral: "bg-muted text-muted-foreground border-border",
   success: "bg-success-soft text-success-onSoft border-success/25",
   warning: "bg-warning-soft text-warning-onSoft border-warning/30",
-  danger: "bg-destructive/10 text-destructive border-destructive/25",
+  danger: "bg-destructive/10 text-destructive-text border-destructive/25",
   info: "bg-info-soft text-info-onSoft border-info/25",
   primary: "bg-primary/10 text-primary border-primary/20",
 };

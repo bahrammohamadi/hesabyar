@@ -143,7 +143,7 @@ export default function SalesPage() {
             },
             { key: "total", header: "مبلغ", align: "left", render: (s) => <span className="font-semibold tabular-nums">{formatToman(s.total)}</span> },
             { key: "credit", header: "نسیه", render: (s) => s.paid_credit > 0 ? <span className="font-bold tabular-nums text-finance-debt">{formatToman(s.paid_credit, false)}</span> : <span className="text-muted-foreground">—</span> },
-            { key: "status", header: "وضعیت", render: (s) => <span className="badge bg-info-soft text-info border border-info/20">{s.status === "settled" ? "تسویه‌شده" : s.status === "reversed" ? "برگشت‌خورده" : "ثبت‌شده"}</span> },
+            { key: "status", header: "وضعیت", render: (s) => <span className="badge bg-info-soft text-info-text border border-info/20">{s.status === "settled" ? "تسویه‌شده" : s.status === "reversed" ? "برگشت‌خورده" : "ثبت‌شده"}</span> },
           ] satisfies Column<(typeof sales)[number]>[]}
         />
       )}

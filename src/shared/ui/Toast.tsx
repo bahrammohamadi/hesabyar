@@ -57,9 +57,9 @@ function ToastCard({ item, onClose }: { item: ToastItem; onClose: () => void }) 
   }[item.tone];
   const toneClass = {
     success: "border-success/20 bg-success-soft text-success",
-    error: "border-destructive/20 bg-destructive/10 text-destructive",
+    error: "border-destructive/20 bg-destructive/10 text-destructive-text",
     warning: "border-warning/25 bg-warning-soft text-warning",
-    info: "border-info/20 bg-info-soft text-info",
+    info: "border-info/20 bg-info-soft text-info-text",
   }[item.tone];
   return (
     <div className={cn("flex items-start gap-3 rounded-2xl border p-3 shadow-lg backdrop-blur", toneClass)}>

@@ -136,7 +136,7 @@ export default function StockCardPage() {
       </div>
 
       {!selected ? <EmptyState icon={PackageSearch} title="برای نمایش کاردکس، کالا را انتخاب کنید" /> : isLoading ? <Spinner /> : error ? (
-        <div className="rounded-xl bg-destructive/10 text-destructive p-4 text-sm">{(error as Error).message}</div>
+        <div className="rounded-xl bg-destructive/10 text-destructive-text p-4 text-sm">{(error as Error).message}</div>
       ) : !rows.length ? <EmptyState title="گردشی برای این کالا ثبت نشده" /> : (
         <DataTable
           rows={rows}
@@ -144,7 +144,7 @@ export default function StockCardPage() {
           className="bg-white/90"
           columns={[
             { key: "date", header: "تاریخ", render: (row: any) => toJalali(row.created_at, true) },
-            { key: "type", header: "نوع", render: (row: any) => <span className={`badge ${(row.qty ?? 0) >= 0 ? "bg-success-soft text-success-onSoft" : "bg-destructive/15 text-destructive"}`}>{TYPE_LABEL[row.type] ?? row.type}</span> },
+            { key: "type", header: "نوع", render: (row: any) => <span className={`badge ${(row.qty ?? 0) >= 0 ? "bg-success-soft text-success-onSoft" : "bg-destructive/15 text-destructive-text"}`}>{TYPE_LABEL[row.type] ?? row.type}</span> },
             { key: "reason", header: "دلیل", render: (row: any) => <span className="text-muted-foreground">{REASON_LABEL[row.reason] ?? row.reason}</span> },
             { key: "qty", header: "تعداد", render: (row: any) => <span className={(row.qty ?? 0) >= 0 ? "font-bold text-success-onSoft" : "font-bold text-destructive"}>{(row.qty ?? 0) >= 0 ? "+" : ""}{toFaDigits(row.qty ?? 0)}</span> },
             { key: "balance", header: "مانده", render: (row: any) => <span className="font-bold text-foreground">{toFaDigits(row.balance)}</span> },

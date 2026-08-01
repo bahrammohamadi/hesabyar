@@ -305,7 +305,7 @@ function ContactTx({ txs }: { txs: any[] }) {
               const isIn = t.type === "receipt" || t.type === "income";
               return (
                 <tr key={t.id} className="hover:bg-muted">
-                  <td><span className={`badge ${isIn ? "bg-success-soft text-success-onSoft" : "bg-destructive/15 text-destructive"}`}>{isIn ? "دریافت" : "پرداخت"}</span></td>
+                  <td><span className={`badge ${isIn ? "bg-success-soft text-success-onSoft" : "bg-destructive/15 text-destructive-text"}`}>{isIn ? "دریافت" : "پرداخت"}</span></td>
                   <td className={`font-medium ${isIn ? "text-success-onSoft" : "text-destructive"}`}>{isIn ? "+" : "-"}{formatToman(t.amount, false)}</td>
                   <td className="text-muted-foreground text-sm">{t.account?.name ?? "—"}</td>
                   <td className="text-muted-foreground text-sm">{toJalali(t.date)}</td>
@@ -357,7 +357,7 @@ function ContactEditModal({ contact, onClose, onSaved }: { contact: any; onClose
         </div>
         <div><label className="label">آدرس</label><input aria-label="آدرس" className="input" value={address} onChange={e=>setAddress(e.target.value)} /></div>
         <div><label className="label">توضیحات</label><textarea className="input" rows={2} value={desc} onChange={e=>setDesc(e.target.value)} /></div>
-        {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm px-4 py-3">{error}</div>}
+        {error && <div className="rounded-xl bg-destructive/10 text-destructive-text text-sm px-4 py-3">{error}</div>}
         <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">{saving&&<Loader2 className="animate-spin" size={18}/>} ذخیره</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
       </div>
     </Modal>

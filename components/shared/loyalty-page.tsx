@@ -118,7 +118,7 @@ export function LoyaltyPage({ mode }: { mode: LoyaltyMode }) {
   if (mode === "settings") return <LoyaltySettingsPage settings={data?.settings ?? DEFAULT_LOYALTY_SETTINGS} orgId={orgId} />;
 
   if (isLoading) return <Spinner label="در حال بارگذاری باشگاه مشتریان..." />;
-  if (error) return <div className="rounded-xl bg-destructive/10 text-destructive p-4 text-sm">{(error as Error).message}</div>;
+  if (error) return <div className="rounded-xl bg-destructive/10 text-destructive-text p-4 text-sm">{(error as Error).message}</div>;
 
   const totalPoints = rows.reduce((sum, row) => sum + row.points, 0);
   const totalWallet = rows.reduce((sum, row) => sum + row.walletCredit, 0);
@@ -210,7 +210,7 @@ function LoyaltySettingsPage({ settings, orgId }: { settings: LoyaltySettings; o
           <div><label className="label">غیرفعال بعد از چند روز بدون خرید</label><input aria-label="غیرفعال بعد از چند روز بدون خرید" className="input" inputMode="numeric" value={inactiveDays} onChange={(e) => setInactiveDays(e.target.value)} /></div>
           <div><label className="label">هر چند تومان = یک امتیاز</label><input aria-label="هر چند تومان = یک امتیاز" className="input" inputMode="numeric" value={pointPerToman} onChange={(e) => setPointPerToman(e.target.value)} /></div>
         </div>
-        {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3 mt-4">{error}</div>}
+        {error && <div className="rounded-xl bg-destructive/10 text-destructive-text text-sm p-3 mt-4">{error}</div>}
         <button onClick={save} disabled={saving} className="btn-primary mt-5">ذخیره قوانین باشگاه</button>
       </div>
     </div>
@@ -271,7 +271,7 @@ function WalletModal({ row, onClose }: { row: LoyaltyRow; onClose: () => void })
         <div className="rounded-xl bg-muted p-3"><EntityLink type="contact" id={row.contact.id}>{row.contact.name}</EntityLink><div className="text-xs text-muted-foreground mt-1">اعتبار فعلی: {formatToman(row.walletCredit)}</div></div>
         <div><label className="label">اعتبار جدید (تومان)</label><input aria-label="اعتبار جدید (تومان)" className="input" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} /></div>
         <div><label className="label">توضیح</label><input aria-label="توضیح" className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
-        {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3">{error}</div>}
+        {error && <div className="rounded-xl bg-destructive/10 text-destructive-text text-sm p-3">{error}</div>}
         <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">ذخیره اعتبار</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
       </div>
     </Modal>

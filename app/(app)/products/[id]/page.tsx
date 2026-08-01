@@ -272,7 +272,7 @@ function MovementsList({ movements }: { movements: any[] }) {
               const isIn = m.qty >= 0;
               return (
                 <tr key={m.id} className="hover:bg-muted">
-                  <td><span className={`badge ${isIn ? "bg-success-soft text-success-onSoft" : "bg-destructive/15 text-destructive"}`}>{isIn ? "ورود" : "خروج"}</span></td>
+                  <td><span className={`badge ${isIn ? "bg-success-soft text-success-onSoft" : "bg-destructive/15 text-destructive-text"}`}>{isIn ? "ورود" : "خروج"}</span></td>
                   <td className="text-muted-foreground text-sm">{REASON_LABELS[m.reason] ?? m.reason}</td>
                   <td className={`font-bold ${isIn ? "text-success-onSoft" : "text-destructive"}`}>{isIn ? "+" : ""}{toFaDigits(m.qty)}</td>
                   <td className="text-muted-foreground text-sm max-w-[150px] truncate">{m.note ?? "—"}</td>

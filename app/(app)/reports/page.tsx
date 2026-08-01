@@ -251,7 +251,7 @@ function ProductsReport({ orgId }: { orgId: string }) {
             {lowStock.map((v: any, i: number) => (
               <div key={i} className="flex items-center justify-between rounded-xl bg-muted/60 p-3">
                 <span className="text-sm font-medium"><EntityLink type="product" id={v.product?.id}>{v.product?.name ?? "نامعلوم"}</EntityLink></span>
-                <span className="text-sm font-bold tabular-nums text-destructive">{toFaDigits(v.stock_qty)} عدد</span>
+                <span className="text-sm font-bold tabular-nums text-destructive-text-text">{toFaDigits(v.stock_qty)} عدد</span>
               </div>
             ))}
           </div>

@@ -271,7 +271,7 @@ function InteractionModal({ contact, contacts, onClose }: { contact: any | null;
         <div><label className="label">نوع تعامل</label><select aria-label="نوع تعامل" className="input" value={type} onChange={(e) => setType(e.target.value)}><option value="note">یادداشت</option><option value="call">تماس</option><option value="sms">پیامک</option><option value="follow_up">پیگیری</option><option value="complaint">شکایت</option></select></div>
         <div><label className="label">عنوان</label><input aria-label="عنوان" className="input" value={title} onChange={(e) => setTitle(e.target.value)} /></div>
         <div><label className="label">توضیحات</label><textarea className="input" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} /></div>
-        {error && <div className="rounded-xl bg-destructive/10 text-destructive text-sm p-3">{error}</div>}
+        {error && <div className="rounded-xl bg-destructive/10 text-destructive-text text-sm p-3">{error}</div>}
         <div className="flex gap-2"><button onClick={save} disabled={saving} className="btn-primary flex-1">ثبت</button><button onClick={onClose} className="btn-secondary">انصراف</button></div>
       </div>
     </Modal>
