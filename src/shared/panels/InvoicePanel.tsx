@@ -10,6 +10,7 @@ import { useDocumentEntity, useRegisterPayment, useTransitionDocument, type Docu
 import { Badge, Button, DataTable, EmptyState, Field, NumberInput, PanelShell, Section, Select, Spinner, StatusPill, Tabs, useConfirm, type Column } from "@/src/shared/ui";
 import { Money, PersianDate, toPersianDigits } from "@/src/shared/format";
 import { rialToToman, tomanToRial } from "@/lib/utils/format";
+import { PanelExitLink } from "@/src/core/panel-manager/PanelExitLink";
 
 function docTypeLabel(type: InvoiceDocType) {
   return type === "sale" ? "فروش" : "خرید";
@@ -129,9 +130,9 @@ export function InvoicePanel({ panel }: { panel: PanelInstance }) {
     >
       <div className="space-y-4">
         <Section title="دسترسی کامل" description="برای ویرایش اقلام، چاپ، CSV و عملیات legacy از صفحه کامل استفاده کنید.">
-          <Link href={`/${document.doc_type === "sale" ? "sales" : "purchases"}/${document.doc_id}`} className="btn-secondary inline-flex min-h-9 rounded-xl px-3 py-1.5 text-xs">
+          <PanelExitLink href={`/${document.doc_type === "sale" ? "sales" : "purchases"}/${document.doc_id}`} className="btn-secondary inline-flex min-h-9 rounded-xl px-3 py-1.5 text-xs">
             مشاهده/ویرایش کامل در صفحه اختصاصی
-          </Link>
+          </PanelExitLink>
         </Section>
 
         <Section title="طرف حساب" description="از این لینک می‌توانید به ContactPanel برگردید.">

@@ -28,6 +28,7 @@ import {
 import { Badge, Button, DataTable, EmptyState, Field, Input, NumberInput, PanelShell, Section, Select, Spinner, Tabs, useToast, type Column } from "@/src/shared/ui";
 import { Money, PersianDate, toPersianDigits } from "@/src/shared/format";
 import { productHelp } from "@/lib/help/products";
+import { PanelExitLink } from "@/src/core/panel-manager/PanelExitLink";
 
 function stockTone(stock: number) {
   if (stock <= 0) return "danger" as const;
@@ -671,9 +672,9 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
           <Badge tone={stockTone(totalStock)}>موجودی کل: {toPersianDigits(totalStock)}</Badge>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href={`/products/${product!.id}`} className="btn-secondary min-h-9 rounded-xl px-3 py-1.5 text-xs">
+          <PanelExitLink href={`/products/${product!.id}`} className="btn-secondary min-h-9 rounded-xl px-3 py-1.5 text-xs">
             مشاهده صفحه کامل
-          </Link>
+          </PanelExitLink>
           <Button size="sm" variant="secondary" onClick={() => setMode("edit")}>ویرایش</Button>
           <Button size="sm" variant="danger" loading={deactivateProduct.isPending} onClick={handleDeactivate}>غیرفعال‌سازی</Button>
         </div>

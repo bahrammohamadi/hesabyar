@@ -82,7 +82,7 @@ export function PickerHost() {
   }
 
   return createPortal(
-    <div className="fixed inset-0 flex items-start justify-center bg-foreground/35 p-3 pt-[10vh] backdrop-blur-sm" style={{ zIndex: "var(--z-picker)" }} dir="rtl">
+    <div className="fixed inset-0 flex items-start justify-center bg-foreground/35 p-3 pt-[10vh] backdrop-blur-sm animate-fade-in" style={{ zIndex: "var(--z-picker)" }} dir="rtl">
       <div className="w-full max-w-2xl overflow-hidden rounded-[24px] border border-white/70 bg-card shadow-2xl">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div>

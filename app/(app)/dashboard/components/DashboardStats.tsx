@@ -147,7 +147,7 @@ export function DashboardStats({
   return (
     <div className="space-y-6">
       {/* ردیف اول — ۴ KPI اصلی */}
-      <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4 lg:gap-4">
+      <div className="stagger-in grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4 lg:gap-4">
         <KpiCard
           label="فروش امروز"
           value={formatToman(summary?.sales_today)}

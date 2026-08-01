@@ -58,8 +58,8 @@ function ConfirmDialog({ state, onCancel, onConfirm }: { state: ConfirmState | n
   const tone = state.tone ?? "default";
   const isDanger = tone === "danger";
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-foreground/40 p-4 backdrop-blur-sm" style={{ zIndex: "var(--z-confirm)" }} dir="rtl" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl border border-white/70 bg-card shadow-2xl">
+    <div className="fixed inset-0 flex items-center justify-center bg-foreground/40 p-4 backdrop-blur-sm animate-fade-in" style={{ zIndex: "var(--z-confirm)" }} dir="rtl" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+      <div className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card shadow-2xl animate-dialog-in">
         <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
           <div className="flex items-start gap-3">
             <div className={isDanger ? "flex h-11 w-11 items-center justify-center rounded-2xl bg-destructive/10 text-destructive" : "flex h-11 w-11 items-center justify-center rounded-2xl bg-info-soft text-info"}>
