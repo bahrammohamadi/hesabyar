@@ -12,6 +12,7 @@ import { ProductKpiCard, StockStatusBadge, stockQtyClass, stockStateOf } from ".
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { formatToman, toFaDigits } from "@/lib/utils/format";
 import { Plus, Search, Package, Pencil } from "lucide-react";
+import { Pagination, usePagination } from "@/src/shared/ui";
 
 
 export default function ProductsPage() {
@@ -30,6 +31,7 @@ export default function ProductsPage() {
     if (sortBy === "name_asc") return a.name.localeCompare(b.name, "fa");
     if (sortBy === "name_desc") return b.name.localeCompare(a.name, "fa");
     if (sortBy === "code_asc") return String(a.code ?? "").localeCompare(String(b.code ?? ""), "fa", { numeric: true });
+
     if (sortBy === "code_desc") return String(b.code ?? "").localeCompare(String(a.code ?? ""), "fa", { numeric: true });
     if (sortBy === "stock_high") return stockB - stockA;
     if (sortBy === "stock_low") return stockA - stockB;
@@ -37,6 +39,10 @@ export default function ProductsPage() {
     if (sortBy === "price_low") return priceA - priceB;
     return 0;
   });
+
+  // صفحه‌بندی سمت کلاینت — ۳۷۵ محصول همزمان رندر می‌شد (۱۷٬۹۶۳ گره DOM).
+  const { paged, page, setPage, pageSize, setPageSize, totalPages } = usePagination(sortedProducts);
+
   function openNew() {
     openEntity("product", undefined, { mode: "create", context: "workspace", title: "کالای جدید" });
   }
@@ -197,7 +203,7 @@ export default function ProductsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedProducts.map((p) => {
+                  {paged.map((p) => {
                     const totalStock = p.product_variants.reduce((s, v) => s + v.stock_qty, 0);
                     const state = stockStateOf(totalStock, p.low_stock_threshold);
                     const displaySalePrice = p.base_sale_price || p.product_variants.find((variant) => variant.sale_price)?.sale_price || 0;
@@ -285,7 +291,7 @@ export default function ProductsPage() {
 
             {/* موبایل و تبلت — کارت */}
             <ul className="divide-y divide-border lg:hidden">
-              {sortedProducts.map((p) => {
+              {paged.map((p) => {
                 const totalStock = p.product_variants.reduce((s, v) => s + v.stock_qty, 0);
                 const state = stockStateOf(totalStock, p.low_stock_threshold);
                 const displaySalePrice = p.base_sale_price || p.product_variants.find((variant) => variant.sale_price)?.sale_price || 0;
@@ -335,8 +341,15 @@ export default function ProductsPage() {
           </>
         )}
 
-        <div className="border-t border-border px-4 py-3 text-xs text-muted-foreground">
-          نمایش {toFaDigits(sortedProducts.length)} مورد از مجموع {toFaDigits(products?.length ?? 0)} محصول
+        <div className="px-4 pb-3">
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            total={sortedProducts.length}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+          />
         </div>
       </Card>
     </div>

@@ -16,6 +16,7 @@ import { PhoneLink } from "@/components/shared/phone-link";
 import { formatToman, normalizeSearchText, toFaDigits } from "@/lib/utils/format";
 import { History, Pencil, Plus, Search, Star, Trash2, User, Users, Wallet } from "lucide-react";
 import type { Contact, ContactType } from "@/types/db";
+import { Pagination, usePagination } from "@/src/shared/ui";
 
 const TYPE_LABEL: Record<ContactType, string> = {
   customer: "مشتری",
@@ -113,6 +114,15 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
     });
     return result;
   }, [contacts, search, typeFilter, balanceFilter, balances, sortBy]);
+
+  /*
+    صفحه‌بندی سمت کلاینت.
+    قبل از این، هر ۵۴۳ مخاطب همزمان رندر می‌شد و ۲۵٬۴۴۷ گره DOM
+    می‌ساخت؛ کاربر در هر لحظه حدود ۱۵ ردیف می‌بیند.
+    جستجو و مرتب‌سازی همچنان روی کل مجموعه اجرا می‌شود.
+  */
+  const { paged, page, setPage, pageSize, setPageSize, totalPages } = usePagination(filtered);
+
 
   useEffect(() => {
     const type = forcedType ?? (searchParams.get("type") as ContactType | null);
@@ -262,7 +272,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((c) => {
+                  {paged.map((c) => {
                     const bal = balances?.[c.id] ?? 0;
                     return (
                       <tr
@@ -348,7 +358,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
 
             {/* موبایل و تبلت — کارت */}
             <ul className="divide-y divide-border lg:hidden">
-              {filtered.map((c) => {
+              {paged.map((c) => {
                 const bal = balances?.[c.id] ?? 0;
                 return (
                   <li
@@ -393,10 +403,20 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
           </>
         )}
 
-        <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3 text-xs text-muted-foreground">
-          <span>
-            نمایش {toFaDigits(filtered.length)} مورد از {toFaDigits(totalCount)} مخاطب
-          </span>
+        <div className="px-4 pb-3">
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            total={filtered.length}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+          />
+          {filtered.length !== totalCount && (
+            <p className="pt-2 text-2xs text-muted-foreground">
+              فیلترشده از مجموع {toFaDigits(totalCount)} مخاطب
+            </p>
+          )}
         </div>
       </Card>
     </div>
