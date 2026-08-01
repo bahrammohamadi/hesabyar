@@ -146,9 +146,9 @@ function SalesReport({ orgId }: { orgId: string }) {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke={CHART_TOKENS.grid} />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke={CHART_TOKENS.axis} />
+                <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke={CHART_TOKENS.axis} />
                 <YAxis
-                  tick={{ fontSize: 11 }}
+                  tick={{ fontSize: 12 }}
                   stroke={CHART_TOKENS.axis}
                   tickFormatter={(v) => (v >= 1000000 ? `${v / 1000000}M` : `${v / 1000}k`)}
                 />
@@ -228,8 +228,8 @@ function ProductsReport({ orgId }: { orgId: string }) {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={topProducts} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke={CHART_TOKENS.grid} />
-                <XAxis type="number" tick={{ fontSize: 11 }} stroke={CHART_TOKENS.axis} tickFormatter={(v) => `${v / 1000000}M`} />
-                <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} stroke={CHART_TOKENS.axis} width={100} />
+                <XAxis type="number" tick={{ fontSize: 12 }} stroke={CHART_TOKENS.axis} tickFormatter={(v) => `${v / 1000000}M`} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 12 }} stroke={CHART_TOKENS.axis} width={100} />
                 <Tooltip
                   formatter={(v: number) => [formatNumber(v) + " تومان", "درآمد"]}
                   contentStyle={CHART_TOOLTIP_STYLE}
@@ -517,8 +517,8 @@ function ProfitReport({ orgId }: { orgId: string }) {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={salesByColor}>
                 <CartesianGrid strokeDasharray="3 3" stroke={CHART_TOKENS.grid} />
-                <XAxis dataKey="color" tick={{ fontSize: 11 }} stroke={CHART_TOKENS.axis} />
-                <YAxis tick={{ fontSize: 11 }} stroke={CHART_TOKENS.axis} />
+                <XAxis dataKey="color" tick={{ fontSize: 12 }} stroke={CHART_TOKENS.axis} />
+                <YAxis tick={{ fontSize: 12 }} stroke={CHART_TOKENS.axis} />
                 <Tooltip formatter={(v: number) => [toFaDigits(v) + " عدد", "تعداد فروش"]} contentStyle={CHART_TOOLTIP_STYLE} />
                 <Bar dataKey="total_sold_qty" fill={CHART_TOKENS.success} radius={[4, 4, 0, 0]} />
               </BarChart>

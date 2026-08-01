@@ -71,8 +71,8 @@ function DailySalesSection() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
+                <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip content={<ChartTooltip />} />
                 <Line type="monotone" dataKey="sales" name="فروش" stroke="hsl(var(--primary))" strokeWidth={2} />
               </LineChart>
@@ -127,7 +127,7 @@ function TopProductsSection() {
       {query.isLoading ? <Spinner /> : rows.length === 0 ? <EmptyState title="فروشی برای رتبه‌بندی وجود ندارد" /> : (
         <div className="space-y-4">
           <div className="h-72" dir="ltr">
-            <ResponsiveContainer width="100%" height="100%"><BarChart data={chartData}><CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /><XAxis dataKey="name" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 11 }} /><Tooltip content={<ChartTooltip />} /><Bar dataKey="qty" name="تعداد" fill="hsl(var(--primary))" /></BarChart></ResponsiveContainer>
+            <ResponsiveContainer width="100%" height="100%"><BarChart data={chartData}><CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /><XAxis dataKey="name" tick={{ fontSize: 12 }} /><YAxis tick={{ fontSize: 12 }} /><Tooltip content={<ChartTooltip />} /><Bar dataKey="qty" name="تعداد" fill="hsl(var(--primary))" /></BarChart></ResponsiveContainer>
           </div>
           <Button size="sm" variant="secondary" icon={<Download size={14} />} onClick={() => downloadCsv("top-products.csv", rows.map((r) => ({ product_name: r.product_name, qty_sold: r.qty_sold, sales_amount: r.sales_amount })))}>خروجی CSV</Button>
           <DataTable rows={rows} columns={columns} keyExtractor={(row) => row.product_variant_id} />
@@ -147,7 +147,7 @@ function MonthlyProfitSection() {
     { key: "profit", header: "سود", align: "left", render: (row) => <Money value={row.gross_profit} tone={row.gross_profit >= 0 ? "positive" : "negative"} /> },
   ];
   const chartData = [...rows].reverse().map((row) => ({ month: row.month_start, profit: Math.round(row.gross_profit / 10), sales: Math.round(row.sales_amount / 10) }));
-  return <Section title="سود ماهانه" description="ماه‌ها میلادی در DB هستند؛ نمایش شمسی در UI انجام می‌شود.">{query.isLoading ? <Spinner /> : rows.length === 0 ? <EmptyState title="داده سود ماهانه وجود ندارد" /> : <div className="space-y-4"><div className="h-64" dir="ltr"><ResponsiveContainer width="100%" height="100%"><LineChart data={chartData}><CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /><XAxis dataKey="month" tick={{ fontSize: 11 }} /><YAxis tick={{ fontSize: 11 }} /><Tooltip content={<ChartTooltip />} /><Line type="monotone" dataKey="profit" name="سود" stroke="hsl(var(--success))" strokeWidth={2} /></LineChart></ResponsiveContainer></div><DataTable rows={rows} columns={columns} keyExtractor={(row) => row.month_start} /></div>}</Section>;
+  return <Section title="سود ماهانه" description="ماه‌ها میلادی در DB هستند؛ نمایش شمسی در UI انجام می‌شود.">{query.isLoading ? <Spinner /> : rows.length === 0 ? <EmptyState title="داده سود ماهانه وجود ندارد" /> : <div className="space-y-4"><div className="h-64" dir="ltr"><ResponsiveContainer width="100%" height="100%"><LineChart data={chartData}><CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /><XAxis dataKey="month" tick={{ fontSize: 12 }} /><YAxis tick={{ fontSize: 12 }} /><Tooltip content={<ChartTooltip />} /><Line type="monotone" dataKey="profit" name="سود" stroke="hsl(var(--success))" strokeWidth={2} /></LineChart></ResponsiveContainer></div><DataTable rows={rows} columns={columns} keyExtractor={(row) => row.month_start} /></div>}</Section>;
 }
 
 function PurchaseSummarySection() {
