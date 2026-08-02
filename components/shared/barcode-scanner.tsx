@@ -108,7 +108,9 @@ export function BarcodeScanner({ open, onClose, onDetected, continuous = true }:
         const name = (err as Error)?.name ?? "";
         if (name === "NotAllowedError" || name === "SecurityError") {
           setStatus("denied");
-          setErrorText("اجازه‌ی دسترسی به دوربین داده نشد. از تنظیمات مرورگر آن را فعال کنید یا کد را دستی وارد کنید.");
+          setErrorText(
+            "اجازه‌ی دسترسی به دوربین داده نشد. روی قفل کنار نشانی سایت بزنید، دوربین را روی «اجازه» بگذارید و صفحه را تازه کنید — یا همین‌جا کد را دستی وارد کنید."
+          );
         } else if (name === "NotFoundError") {
           setStatus("error");
           setErrorText("دوربینی روی این دستگاه پیدا نشد.");

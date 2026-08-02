@@ -204,6 +204,40 @@ describe("یکپارچگی با فرم فاکتور", () => {
     expect(voice).toContain('window.addEventListener("keydown", onKey, true)');
   });
 
+  it("پیش از تشخیص گفتار، مجوز میکروفون گرفته می‌شود", () => {
+    /*
+      🔴 باگ گزارش‌شده توسط کاربر روی کروم واقعی:
+      «اجازه‌ی دسترسی به میکروفون داده نشد» بدون اینکه هرگز پنجره‌ی
+      مجوز نشان داده شود.
+
+      علت: SpeechRecognition.start() خودش پنجره‌ی کروم را باز
+      نمی‌کند؛ اگر مجوز از قبل نباشد بی‌صدا not-allowed می‌دهد.
+      (تأییدشده: permissions.query = "prompt" و start() نه onstart
+      می‌داد نه onerror.)
+
+      getUserMedia همان درخواستی است که پنجره را می‌آورد.
+    */
+    expect(voice).toContain("navigator.mediaDevices.getUserMedia({ audio: true })");
+    // جریان بلافاصله بسته می‌شود تا میکروفون دوبار اشغال نشود
+    expect(voice).toContain("probe.getTracks().forEach((t) => t.stop())");
+  });
+
+  it("افکت شروع فقط به open وابسته است", () => {
+    // وگرنه با رسیدن کاتالوگ، start دوباره اجرا و مجوز دوبار
+    // درخواست می‌شد. (اندازه‌گیری‌شده: getUserMedia دو بار)
+    expect(voice).toContain("const startRef = useRef(start)");
+    expect(voice).toContain("void startRef.current()");
+  });
+
+  it("پیام خطا راهنمای عملی می‌دهد نه دستور مبهم", () => {
+    expect(voice).toContain("روی قفل کنار نشانی سایت بزنید");
+  });
+
+  it("کاتالوگ نیامده با «پیدا نشد» اشتباه گرفته نمی‌شود", () => {
+    // گفتن «پیدا نشد» وقتی فهرست خالی است دروغ است.
+    expect(voice).toContain("فهرست کالاها هنوز آماده نیست");
+  });
+
   it("خطاهای میکروفون پیام مشخص دارند", () => {
     expect(voice).toContain('"not-allowed"');
     expect(voice).toContain('"no-speech"');

@@ -85,7 +85,18 @@ export function InvoiceCreateForm({
   const [voiceReady, setVoiceReady] = useState(false);
 
   // کلید کش مشترک با ProductSelector است، پس کوئری اضافه‌ای نمی‌زند.
-  const { data: allVariants } = useAllVariants(orgId, voiceOpen);
+  /*
+    کاتالوگ به‌محض آماده‌بودن قابلیت صدا پیش‌بارگذاری می‌شود، نه در
+    لحظه‌ی باز شدن پنجره.
+
+    🔴 اگر منتظر voiceOpen بمانیم، کاربر پنجره را باز می‌کند، حرف
+    می‌زند، و چون فهرست هنوز خالی است «پیدا نشد» می‌گیرد — با اینکه
+    کالا وجود دارد. (بازتولیدشده: «یک شلوارک لینن» → پیدا نشد.)
+
+    کلید کش با ProductSelector مشترک است، پس این پیش‌بارگذاری هزینه‌ی
+    اضافه ندارد؛ همان داده‌ای است که انتخابگر کالا هم لازم دارد.
+  */
+  const { data: allVariants } = useAllVariants(orgId, voiceReady);
   const [scanMiss, setScanMiss] = useState<string | null>(null);
   const [customerPickerOpen, setCustomerPickerOpen] = useState(false);
   // فقط برای چیدمان موبایل/تبلت — در دسکتاپ هر دو بخش هم‌زمان دیده می‌شوند.

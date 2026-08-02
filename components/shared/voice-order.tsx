@@ -62,7 +62,7 @@ type Props = {
   onConfirm: (variant: SelectableVariant, qty: number) => void;
 };
 
-type Phase = "idle" | "listening" | "matched" | "nomatch" | "denied" | "error";
+type Phase = "idle" | "requesting" | "listening" | "matched" | "nomatch" | "denied" | "error";
 
 export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
   const recRef = useRef<SpeechRecognitionLike | null>(null);
@@ -86,6 +86,17 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
       if (!parsed.term) {
         setMatches([]);
         setPhase("nomatch");
+        return;
+      }
+      /*
+        اگر کاتالوگ هنوز نرسیده، «پیدا نشد» گفتن دروغ است — کالا
+        هست، ما هنوز فهرست را نداریم. تفکیک این دو برای اعتماد کاربر
+        مهم است.
+      */
+      if (variants.length === 0) {
+        setMatches([]);
+        setPhase("error");
+        setErrorText("فهرست کالاها هنوز آماده نیست. یک لحظه صبر کنید و دوباره بگویید.");
         return;
       }
       const ranked = rankMatches(
@@ -147,6 +158,44 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
     }
 
     stop();
+
+    /*
+      🔴 چرا اول getUserMedia؟
+
+      SpeechRecognition.start() خودش پنجره‌ی «اجازه می‌دهید؟» کروم را
+      باز نمی‌کند. اگر کاربر قبلاً به این دامنه اجازه‌ی میکروفون نداده
+      باشد، بی‌صدا با not-allowed شکست می‌خورد — کاربر پیام «اجازه
+      داده نشد» می‌بیند بدون اینکه هرگز چیزی از او پرسیده شده باشد.
+      (تأییدشده: permissions.query وضعیت "prompt" می‌داد و start()
+      نه onstart می‌داد نه onerror.)
+
+      getUserMedia همان درخواستی است که پنجره را می‌آورد. بلافاصله
+      پس از گرفتن مجوز، جریان را می‌بندیم چون خود SpeechRecognition
+      میکروفون را جدا باز می‌کند؛ نگه‌داشتنش یعنی دو بار اشغال
+      میکروفون و روشن ماندن نشانگر ضبط.
+    */
+    if (navigator.mediaDevices?.getUserMedia) {
+      setPhase("requesting");
+      try {
+        const probe = await navigator.mediaDevices.getUserMedia({ audio: true });
+        probe.getTracks().forEach((t) => t.stop());
+      } catch (err) {
+        const name = (err as Error)?.name ?? "";
+        if (name === "NotAllowedError" || name === "SecurityError") {
+          setPhase("denied");
+          setErrorText(
+            "اجازه‌ی دسترسی به میکروفون داده نشد. روی قفل کنار نشانی سایت بزنید، میکروفون را روی «اجازه» بگذارید و صفحه را تازه کنید."
+          );
+        } else if (name === "NotFoundError") {
+          setPhase("error");
+          setErrorText("میکروفونی روی این دستگاه پیدا نشد.");
+        } else {
+          setPhase("error");
+          setErrorText("دسترسی به میکروفون ممکن نشد. دوباره تلاش کنید.");
+        }
+        return;
+      }
+    }
     setInterim("");
     setFinalText("");
     setMatches([]);
@@ -177,6 +226,7 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
     rec.onerror = (e) => {
       if (e.error === "not-allowed" || e.error === "service-not-allowed") {
         setPhase("denied");
+        // متن خالی: بلوک راهنمای بازیابی پایین‌تر جزئیات را نشان می‌دهد.
         setErrorText("");
       } else if (e.error === "no-speech") {
         setPhase("nomatch");
@@ -209,7 +259,19 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
     نمی‌شود و مستقیم راهنمای بازیابی می‌آید.
     permissions.query در همه‌ی مرورگرها نیست؛ در نبودش مثل قبل
     مستقیم تلاش می‌کنیم.
+
+    🔴 چرا start در وابستگی‌های افکت نیست؟
+      start به handleTranscript وابسته است و آن به variants. کاتالوگ
+      با تأخیر می‌رسد، پس هویت start عوض می‌شد و افکت دوباره اجرا
+      می‌گشت — یعنی getUserMedia دو بار صدا زده می‌شد و کاربر
+      احتمالاً دو بار پنجره‌ی مجوز می‌دید.
+      (اندازه‌گیری‌شده: شمارنده ۲ می‌داد، حالا ۱.)
+
+      رفرنس همیشه تازه نگه داشته می‌شود، پس بسته‌شدگی کهنه نداریم.
   */
+  const startRef = useRef(start);
+  useEffect(() => { startRef.current = start; }, [start]);
+
   useEffect(() => {
     if (!open) { stop(); setPhase("idle"); setAdded([]); return; }
     let cancelled = false;
@@ -227,10 +289,11 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
       } catch {
         /* پشتیبانی نمی‌شود — مسیر عادی */
       }
-      if (!cancelled) void start();
+      if (!cancelled) void startRef.current();
     })();
     return () => { cancelled = true; stop(); };
-  }, [open, start, stop]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   // Escape فقط این لایه را می‌بندد، نه پنل زیرین.
   useEffect(() => {
@@ -255,6 +318,7 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
   if (!open || !mounted) return null;
 
   const listening = phase === "listening";
+  const requesting = phase === "requesting";
 
   return createPortal(
     <div
@@ -292,13 +356,15 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
             <button
               type="button"
               onClick={listening ? stop : () => void start()}
+              disabled={requesting}
               aria-label={listening ? "توقف ضبط" : "شروع ضبط"}
               className={cn(
                 "relative flex h-20 w-20 items-center justify-center rounded-full transition",
                 "focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/30",
                 listening
                   ? "bg-destructive text-destructive-foreground"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90",
+                requesting && "opacity-70"
               )}
             >
               {listening && (
@@ -307,14 +373,21 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
                   className="absolute inset-0 animate-ping rounded-full bg-destructive/40 motion-reduce:animate-none"
                 />
               )}
-              {listening ? <MicOff size={30} /> : <Mic size={30} />}
+              {requesting ? (
+                <Loader2 size={30} className="animate-spin motion-reduce:animate-none" />
+              ) : listening ? (
+                <MicOff size={30} />
+              ) : (
+                <Mic size={30} />
+              )}
             </button>
 
             <p role="status" aria-live="polite" className="min-h-6 text-center text-sm font-bold text-foreground">
+              {requesting && "در انتظار اجازه‌ی دسترسی به میکروفون…"}
               {listening && !interim && "بگویید… مثلاً «سه عدد شومیز شانتون»"}
               {listening && interim && <span className="text-muted-foreground">{interim}</span>}
               {!listening && finalText && `شنیدم: «${finalText}»`}
-              {!listening && !finalText && phase === "idle" && "برای گفتن دوباره، میکروفون را بزنید"}
+              {!listening && !requesting && !finalText && phase === "idle" && "برای گفتن دوباره، میکروفون را بزنید"}
             </p>
           </div>
 
