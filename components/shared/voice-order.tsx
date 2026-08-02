@@ -66,6 +66,8 @@ type Phase = "idle" | "requesting" | "listening" | "matched" | "nomatch" | "deni
 
 export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
   const recRef = useRef<SpeechRecognitionLike | null>(null);
+  /** جلوگیری از دو تلاش هم‌زمان راه‌اندازی. */
+  const startingRef = useRef(false);
   const [mounted, setMounted] = useState(false);
   const [phase, setPhase] = useState<Phase>("idle");
   const [interim, setInterim] = useState("");
@@ -116,7 +118,7 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
     recRef.current = null;
   }, []);
 
-  const start = useCallback(async () => {
+  const runStart = useCallback(async () => {
     const Ctor = getRecognitionCtor();
     if (!Ctor) {
       setPhase("error");
@@ -251,6 +253,26 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
       setErrorText("میکروفون در دسترس نیست.");
     }
   }, [handleTranscript, stop]);
+
+  const start = useCallback(async () => {
+    /*
+      🔴 قفل هم‌زمانی.
+
+      حتی با وابستگی [open] در افکت، getUserMedia دو بار صدا زده
+      می‌شد (ردیابی شد: دو نقطه‌ی فراخوانی متفاوت در باندل). برای
+      کاربر یعنی احتمال دیدن دو پنجره‌ی مجوز پشت سر هم.
+
+      رفرنس است نه state، چون باید بلافاصله اثر کند نه در رندر بعدی.
+    */
+    if (startingRef.current) return;
+    startingRef.current = true;
+    try {
+      await runStart();
+    } finally {
+      startingRef.current = false;
+    }
+  }, [runStart]);
+
 
   /*
     با باز شدن، اول وضعیت مجوز پرسیده می‌شود.
