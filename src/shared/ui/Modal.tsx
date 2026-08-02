@@ -23,6 +23,7 @@ export function Modal({
   children,
   size = "md",
   mobileFullscreen = false,
+  ownedByPanel = false,
 }: {
   open: boolean;
   onClose: () => void;
@@ -30,6 +31,14 @@ export function Modal({
   children: ReactNode;
   size?: "md" | "lg" | "xl";
   mobileFullscreen?: boolean;
+  /**
+   * این مودال از دل یک پنل باز شده و باید پس از بسته‌شدن، کاربر را به
+   * همان پنل برگرداند (مثل انتخابگر کالا داخل فرم فاکتور).
+   *
+   * در این حالت پنل‌ها بسته نمی‌شوند؛ وگرنه پنلِ میزبان — و کل فرمِ
+   * نیمه‌کاره‌ی داخلش — از بین می‌رفت.
+   */
+  ownedByPanel?: boolean;
 }) {
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
@@ -37,17 +46,34 @@ export function Modal({
   /*
     باز شدن مودال، کشوهای کناری باز را می‌بندد.
     بدون این، مودال روی کشو می‌نشست و هر دو هم‌زمان روی صفحه می‌ماندند.
-  */
-  useDismissPanels(open);
 
-  // بستن با Escape — انتظار استاندارد کاربر از هر دیالوگ.
+    استثنا: مودال‌های متعلق به پنل (ownedByPanel) — بستن پنل میزبان
+    یعنی نابودکردن فرمی که کاربر در حال پرکردنش است.
+  */
+  useDismissPanels(open, ownedByPanel);
+
+  /*
+    بستن با Escape — انتظار استاندارد کاربر از هر دیالوگ.
+
+    🔴 چرا capture و stopPropagation؟
+      PanelHost هم روی window به Escape گوش می‌دهد و closeTop() می‌زند.
+      وقتی مودال روی یک پنل باز است (مثل انتخابگر کالا داخل فرم
+      فاکتور)، یک بار Escape هر دو را می‌بست: انتخابگر بسته می‌شد و
+      پنلِ حاوی فرم هم با آن از بین می‌رفت.
+
+      مودال بالاترین لایه است، پس باید رویداد را مصرف کند و نگذارد
+      به لایه‌ی زیرین برسد. capture تضمین می‌کند این شنونده پیش از
+      شنونده‌ی PanelHost اجرا شود.
+  */
   React.useEffect(() => {
     if (!open) return;
     function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
+      if (event.key !== "Escape") return;
+      event.stopPropagation();
+      onClose();
     }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
   }, [open, onClose]);
 
   // قفل اسکرول پس‌زمینه تا صفحه پشت دیالوگ جابه‌جا نشود.
@@ -63,7 +89,17 @@ export function Modal({
   if (!open || !mounted) return null;
 
   return createPortal(
-    <div className="fixed inset-0 flex items-end sm:items-center justify-center p-0 sm:p-4" style={{ zIndex: "var(--z-modal)" }}>
+    /*
+      🔴 لایه‌بندی: --z-modal برابر ۱۰۰۰ و --z-panel برابر ۱۱۰۰ است.
+      برای مودالی که *جایگزین* پنل می‌شود این ترتیب درست است، ولی
+      انتخابگری که از *داخل* پنل باز می‌شود زیر پرده‌ی همان پنل
+      می‌افتاد: elementFromPoint در مرکز مودال، دکمه‌ی پرده را
+      برمی‌گرداند، پس کلیک کاربر روی کالا در واقع پنل را می‌بست.
+
+      --z-picker (۱۲۰۰) دقیقاً برای همین حالت تعریف شده بود و
+      PickerHost از قبل از آن استفاده می‌کند.
+    */
+    <div className="fixed inset-0 flex items-end sm:items-center justify-center p-0 sm:p-4" style={{ zIndex: ownedByPanel ? "var(--z-picker)" : "var(--z-modal)" }}>
       <div className="absolute inset-0 bg-foreground/40 backdrop-blur-[2px] animate-fade-in" onClick={onClose} aria-hidden />
       {/*
         role=dialog + aria-modal یک landmark می‌سازد؛ بدون آن، محتوای

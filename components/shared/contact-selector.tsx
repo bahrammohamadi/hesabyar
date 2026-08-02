@@ -28,12 +28,15 @@ export function ContactSelector({
   onSelect,
   filterType = "customer",
   title = "انتخاب مشتری",
+  ownedByPanel = false,
 }: {
   open: boolean;
   onClose: () => void;
   onSelect: (c: SelectableContact) => void;
   filterType?: "customer" | "supplier";
   title?: string;
+  /** از داخل یک پنل باز شده؛ پنل میزبان نباید بسته شود. */
+  ownedByPanel?: boolean;
 }) {
   const { orgId } = useOrg();
   const { openEntityForResult } = usePanelManager();
@@ -101,7 +104,7 @@ export function ContactSelector({
   if (!open) return null;
 
   return (
-    <Modal open={open} onClose={onClose} title={title} size="md" mobileFullscreen>
+    <Modal open={open} onClose={onClose} title={title} size="md" mobileFullscreen ownedByPanel={ownedByPanel}>
         <div className="flex h-full min-h-0 flex-col gap-3">
           <div className="relative">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />

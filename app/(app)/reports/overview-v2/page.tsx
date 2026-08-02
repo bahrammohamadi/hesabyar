@@ -1,6 +1,6 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Download, FileBarChart2 } from "lucide-react";
 import { EntityLink } from "@/src/core/panel-manager/EntityLink";
 import {
@@ -17,7 +17,8 @@ import {
   type PurchaseSummaryReportRow,
   type TopProductReportRow,
 } from "@/src/core/services/reports-service";
-import { Button, DataTable, EmptyState, Section, Spinner, Tabs, type Column } from "@/src/shared/ui";
+import { Button, ChartEmpty, ChartSkeleton, chartGradients, DataTable, EmptyState, Section, Spinner, Tabs, activeDot, axisProps, chartCursor, compactAxisNumber, gradientId, tickInterval, useChartAnimation, type Column } from "@/src/shared/ui";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { Money, PersianDate, toPersianDigits } from "@/src/shared/format";
 import { toJalali, toJalaliMonth, toJalaliShort } from "@/lib/utils/format";
 
@@ -71,6 +72,8 @@ function ChartTooltip({ active, payload, label, labelKind = "text" }: { active?:
 
 function DailySalesSection() {
   const query = useDailySales();
+  const isMobile = useIsMobile();
+  const animate = useChartAnimation();
   const rows = query.data ?? [];
   const columns: Column<DailySalesReportRow>[] = [
     { key: "date", header: "روز", render: (row) => <PersianDate value={row.sale_date} /> },
@@ -81,17 +84,19 @@ function DailySalesSection() {
   const chartData = [...rows].reverse().map((row) => ({ date: row.sale_date, sales: Math.round(row.total_sales / 10), count: row.invoice_count }));
   return (
     <Section title="فروش روزانه" description="بر اساس v_daily_sales؛ تاریخ میلادی از DB و نمایش شمسی در UI">
-      {query.isLoading ? <Spinner /> : rows.length === 0 ? <EmptyState title="فروشی ثبت نشده" /> : (
+      {query.isLoading ? <ChartSkeleton /> : rows.length === 0 ? <ChartEmpty title="فروشی ثبت نشده" description="با ثبت اولین فاکتور، روند فروش اینجا نمایش داده می‌شود." /> : (
         <div className="space-y-4">
-          <div className="h-64" dir="ltr">
+          <div className="h-56 sm:h-64" dir="ltr">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="date" tick={{ fontSize: 12 }} tickFormatter={toJalaliShort} />
-                <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => toPersianDigits(v)} />
-                <Tooltip content={<ChartTooltip labelKind="day" />} />
-                <Line type="monotone" dataKey="sales" name="فروش" stroke="hsl(var(--primary))" strokeWidth={2} />
-              </LineChart>
+              <AreaChart data={chartData} margin={{ top: 6, right: 6, left: 0, bottom: 0 }}>
+                {chartGradients(["primary"])}
+                {/* خطوط عمودی حذف شد؛ شبکه‌ی دوطرفه نمودار را شلوغ می‌کرد. */}
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                <XAxis dataKey="date" {...axisProps} tickFormatter={toJalaliShort} interval={tickInterval(chartData.length, isMobile)} />
+                <YAxis {...axisProps} tickFormatter={compactAxisNumber} width={isMobile ? 46 : 60} />
+                <Tooltip content={<ChartTooltip labelKind="day" />} cursor={chartCursor} />
+                <Area type="monotone" dataKey="sales" name="فروش" stroke="hsl(var(--primary))" strokeWidth={2.5} fill={`url(#${gradientId("primary")})`} dot={false} activeDot={{ ...activeDot, fill: "hsl(var(--primary))" }} isAnimationActive={animate} />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
           <Button size="sm" variant="secondary" icon={<Download size={14} />} onClick={() => downloadCsv("daily-sales.csv", rows.map((r) => ({ date: r.sale_date, invoice_count: r.invoice_count, total_sales: r.total_sales, total_discount: r.total_discount })))}>خروجی CSV</Button>
@@ -131,6 +136,8 @@ function ProductProfitabilitySection() {
 
 function TopProductsSection() {
   const query = useTopProducts(20);
+  const isMobile = useIsMobile();
+  const animate = useChartAnimation();
   const rows = query.data ?? [];
   const columns: Column<TopProductReportRow>[] = [
     { key: "product", header: "کالا", render: (row) => <EntityLink type="product" id={row.product_id}>{row.product_name}</EntityLink> },
@@ -143,7 +150,7 @@ function TopProductsSection() {
       {query.isLoading ? <Spinner /> : rows.length === 0 ? <EmptyState title="فروشی برای رتبه‌بندی وجود ندارد" /> : (
         <div className="space-y-4">
           <div className="h-72" dir="ltr">
-            <ResponsiveContainer width="100%" height="100%"><BarChart data={chartData}><CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /><XAxis dataKey="name" tick={{ fontSize: 12 }} /><YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => toPersianDigits(v)} /><Tooltip content={<ChartTooltip />} /><Bar dataKey="qty" name="تعداد" fill="hsl(var(--primary))" /></BarChart></ResponsiveContainer>
+            <ResponsiveContainer width="100%" height="100%"><BarChart data={chartData} margin={{ top: 6, right: 6, left: 0, bottom: 0 }}><CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} /><XAxis dataKey="name" {...axisProps} interval={0} tickFormatter={(v: string) => (v.length > 12 ? v.slice(0, 11) + "…" : v)} /><YAxis {...axisProps} tickFormatter={compactAxisNumber} width={isMobile ? 46 : 60} /><Tooltip content={<ChartTooltip />} cursor={{ fill: "hsl(var(--primary))", fillOpacity: 0.06 }} /><Bar dataKey="qty" name="تعداد" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} maxBarSize={48} isAnimationActive={animate} /></BarChart></ResponsiveContainer>
           </div>
           <Button size="sm" variant="secondary" icon={<Download size={14} />} onClick={() => downloadCsv("top-products.csv", rows.map((r) => ({ product_name: r.product_name, qty_sold: r.qty_sold, sales_amount: r.sales_amount })))}>خروجی CSV</Button>
           <DataTable rows={rows} columns={columns} keyExtractor={(row) => row.product_variant_id} />
@@ -155,6 +162,8 @@ function TopProductsSection() {
 
 function MonthlyProfitSection() {
   const query = useMonthlyProfit();
+  const isMobile = useIsMobile();
+  const animate = useChartAnimation();
   const rows = query.data ?? [];
   const columns: Column<MonthlyProfitReportRow>[] = [
     { key: "month", header: "ماه", render: (row) => <PersianDate value={row.month_start} /> },
@@ -163,7 +172,7 @@ function MonthlyProfitSection() {
     { key: "profit", header: "سود", align: "left", render: (row) => <Money value={row.gross_profit} tone={row.gross_profit >= 0 ? "positive" : "negative"} /> },
   ];
   const chartData = [...rows].reverse().map((row) => ({ month: row.month_start, profit: Math.round(row.gross_profit / 10), sales: Math.round(row.sales_amount / 10) }));
-  return <Section title="سود ماهانه" description="ماه‌ها میلادی در DB هستند؛ نمایش شمسی در UI انجام می‌شود.">{query.isLoading ? <Spinner /> : rows.length === 0 ? <EmptyState title="داده سود ماهانه وجود ندارد" /> : <div className="space-y-4"><div className="h-64" dir="ltr"><ResponsiveContainer width="100%" height="100%"><LineChart data={chartData}><CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /><XAxis dataKey="month" tick={{ fontSize: 12 }} tickFormatter={toJalaliMonth} /><YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => toPersianDigits(v)} /><Tooltip content={<ChartTooltip labelKind="month" />} /><Line type="monotone" dataKey="profit" name="سود" stroke="hsl(var(--success))" strokeWidth={2} /></LineChart></ResponsiveContainer></div><DataTable rows={rows} columns={columns} keyExtractor={(row) => row.month_start} /></div>}</Section>;
+  return <Section title="سود ماهانه" description="ماه‌ها میلادی در DB هستند؛ نمایش شمسی در UI انجام می‌شود.">{query.isLoading ? <ChartSkeleton /> : rows.length === 0 ? <ChartEmpty title="داده سود ماهانه وجود ندارد" description="پس از ثبت فروش و خرید، سود هر ماه محاسبه می‌شود." /> : <div className="space-y-4"><div className="h-56 sm:h-64" dir="ltr"><ResponsiveContainer width="100%" height="100%"><AreaChart data={chartData} margin={{ top: 6, right: 6, left: 0, bottom: 0 }}>{chartGradients(["success"])}<CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} /><XAxis dataKey="month" {...axisProps} tickFormatter={toJalaliMonth} interval={tickInterval(chartData.length, isMobile)} /><YAxis {...axisProps} tickFormatter={compactAxisNumber} width={isMobile ? 46 : 60} /><Tooltip content={<ChartTooltip labelKind="month" />} cursor={chartCursor} /><Area type="monotone" dataKey="profit" name="سود" stroke="hsl(var(--success))" strokeWidth={2.5} fill={`url(#${gradientId("success")})`} dot={false} activeDot={{ ...activeDot, fill: "hsl(var(--success))" }} isAnimationActive={animate} /></AreaChart></ResponsiveContainer></div><DataTable rows={rows} columns={columns} keyExtractor={(row) => row.month_start} /></div>}</Section>;
 }
 
 function PurchaseSummarySection() {

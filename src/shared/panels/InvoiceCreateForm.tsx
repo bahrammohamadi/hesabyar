@@ -37,11 +37,21 @@ import type { CartItem } from "@/types/db";
 export function InvoiceCreateForm({
   onClose,
   onCreated,
+  insidePanel = true,
 }: {
   /** بستن پنل/پنجره‌ی میزبان. */
   onClose: () => void;
   /** پس از ثبت موفق صدا زده می‌شود تا میزبان کش را باطل کند. */
   onCreated?: (saleId: string) => void;
+  /**
+   * این فرم داخل یک پنل کشویی رندر می‌شود.
+   *
+   * 🔴 اگر true نباشد، باز کردن انتخابگر کالا/مشتری پنل میزبان را
+   * می‌بندد و کل فاکتور نیمه‌کاره از بین می‌رود. پیش‌فرض true است
+   * چون تنها مصرف‌کننده‌ی فعلی InvoicePanel است؛ اگر روزی این فرم
+   * در صفحه‌ی مستقل استفاده شد، false پاس بدهید.
+   */
+  insidePanel?: boolean;
 }) {
   const { orgId, branchId } = useOrg();
   const qc = useQueryClient();
@@ -481,6 +491,7 @@ export function InvoiceCreateForm({
         onClose={() => setProductPickerOpen(false)}
         onSelect={(v) => addToCart(v)}
         priceMode="sale"
+        ownedByPanel={insidePanel}
       />
       <ContactSelector
         open={customerPickerOpen}
@@ -491,6 +502,7 @@ export function InvoiceCreateForm({
         }}
         filterType="customer"
         title="انتخاب مشتری"
+        ownedByPanel={insidePanel}
       />
     </>
   );

@@ -65,11 +65,31 @@ export function PanelHost() {
 
     const previous = new Map<HTMLElement, { inert: boolean; ariaHidden: string | null }>();
 
+    /*
+      کدام عناصرِ خواهرِ پنل نباید inert شوند؟
+
+      وقتی پنلی باز است، بقیه‌ی فرزندان body غیرفعال می‌شوند تا کاربر
+      نتواند با محتوای پشت پنل کار کند. اما لایه‌هایی که *روی* پنل
+      می‌نشینند باید مستثنا بمانند.
+
+      🔴 باگی که این فهرست داشت:
+        فقط confirm و toast مستثنا بودند. انتخابگر کالا/مشتری که از
+        داخل خود فرمِ پنل باز می‌شود، به‌عنوان یک portal تازه به body
+        اضافه می‌شد و MutationObserver بلافاصله inert‌اش می‌کرد.
+        نتیجه: مودال دیده می‌شد ولی هیچ کلیکی روی آن کار نمی‌کرد و
+        کلیک عملاً به پرده‌ی پنل می‌رسید و پنل را می‌بست.
+
+      --z-picker همان لایه‌ای است که برای این حالت تعریف شده بود.
+    */
     function shouldSkip(element: HTMLElement, panelRoot: Element | null) {
       if (panelRoot && element === panelRoot) return true;
       if (panelRoot && panelRoot.contains(element)) return true;
       const zIndex = element.style.zIndex;
-      return zIndex.includes("--z-confirm") || zIndex.includes("--z-toast");
+      return (
+        zIndex.includes("--z-confirm") ||
+        zIndex.includes("--z-toast") ||
+        zIndex.includes("--z-picker")
+      );
     }
 
     function markInactiveSiblings() {

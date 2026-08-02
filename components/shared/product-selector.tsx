@@ -55,11 +55,14 @@ export function ProductSelector({
   onClose,
   onSelect,
   priceMode = "sale",
+  ownedByPanel = false,
 }: {
   open: boolean;
   onClose: () => void;
   onSelect: (v: SelectableVariant) => void;
   priceMode?: "sale" | "purchase";
+  /** از داخل یک پنل باز شده؛ پنل میزبان نباید بسته شود. */
+  ownedByPanel?: boolean;
 }) {
   const { orgId } = useOrg();
   const { openEntityForResult } = usePanelManager();
@@ -227,7 +230,7 @@ export function ProductSelector({
   if (!open) return null;
 
   return (
-    <Modal open={open} onClose={onClose} title="انتخاب کالا" size="lg" mobileFullscreen>
+    <Modal open={open} onClose={onClose} title="انتخاب کالا" size="lg" mobileFullscreen ownedByPanel={ownedByPanel}>
       <div className="flex h-full min-h-0 flex-col gap-3">
         {/* جستجو */}
         <div className="relative">

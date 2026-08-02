@@ -7,6 +7,7 @@ export * from "./Inputs";
 export * from "./Badge";
 export * from "./Card";
 export * from "./Table";
+export * from "./ChartKit";
 export * from "./Pagination";
 export * from "./PanelShell";
 export * from "./Tabs";

@@ -157,14 +157,21 @@ export function PortalMenu({
     };
   }, [open, reposition]);
 
-  // بستن با Escape — انتظار استاندارد از هر منوی شناور.
+  /*
+    بستن با Escape — انتظار استاندارد از هر منوی شناور.
+
+    capture + stopPropagation به همان دلیل Modal: منو بالاترین لایه
+    است و نباید بگذارد PanelHost هم‌زمان پنل زیرین را ببندد.
+  */
   useLayoutEffect(() => {
     if (!open) return;
     function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
+      if (event.key !== "Escape") return;
+      event.stopPropagation();
+      onClose();
     }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
   }, [open, onClose]);
 
   if (!open || !mounted) return null;

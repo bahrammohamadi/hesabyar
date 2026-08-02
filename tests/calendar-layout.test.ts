@@ -42,8 +42,9 @@ describe("نمودارهای گزارش — تقویم فارسی", () => {
 
   it("محورهای تاریخ tickFormatter شمسی دارند", () => {
     // بدون tickFormatter، Recharts مقدار خام «2026-07-12» را چاپ می‌کرد.
-    expect(page).toContain('dataKey="date" tick={{ fontSize: 12 }} tickFormatter={toJalaliShort}');
-    expect(page).toContain('dataKey="month" tick={{ fontSize: 12 }} tickFormatter={toJalaliMonth}');
+    // (پس از یکدست‌سازی ظاهر، تنظیمات تیک از axisProps مشترک می‌آید.)
+    expect(page).toContain('dataKey="date" {...axisProps} tickFormatter={toJalaliShort}');
+    expect(page).toContain('dataKey="month" {...axisProps} tickFormatter={toJalaliMonth}');
   });
 
   it("تولتیپ هم تاریخ را شمسی می‌کند", () => {
@@ -53,8 +54,9 @@ describe("نمودارهای گزارش — تقویم فارسی", () => {
     expect(page).toContain('labelKind === "day" ? toJalali(label)');
   });
 
-  it("ارقام محور Y فارسی است", () => {
-    expect(page).toContain("tickFormatter={(v) => toPersianDigits(v)}");
+  it("ارقام محور Y فارسی و فشرده است", () => {
+    // compactAxisNumber هم فارسی می‌کند هم کوتاه («۱٫۲ م»).
+    expect(page).toContain("tickFormatter={compactAxisNumber}");
   });
 
   it("تولتیپ از توکن معنایی استفاده می‌کند نه bg-white", () => {
