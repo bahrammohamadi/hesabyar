@@ -13,6 +13,8 @@ import { ProductSelector, type SelectableVariant } from "@/components/shared/pro
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
 import { BarcodeScanner } from "@/components/shared/barcode-scanner";
 import { useBarcodeLookup } from "@/lib/hooks/useBarcodeLookup";
+import { VoiceOrder, isVoiceSupported } from "@/components/shared/voice-order";
+import { useAllVariants } from "@/lib/hooks/useAllVariants";
 import { formatToman, toEnDigits, rialToToman, tomanToRial } from "@/lib/utils/format";
 import { logActivity } from "@/lib/utils/activity-log";
 import type { CartItem } from "@/types/db";
@@ -75,6 +77,15 @@ export function InvoiceCreateForm({
 
   const [productPickerOpen, setProductPickerOpen] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
+  /*
+    پشتیبانی مرورگر بعد از mount سنجیده می‌شود تا رندر سرور و کلاینت
+    یکی بماند؛ وگرنه hydration mismatch می‌دهد.
+  */
+  const [voiceReady, setVoiceReady] = useState(false);
+
+  // کلید کش مشترک با ProductSelector است، پس کوئری اضافه‌ای نمی‌زند.
+  const { data: allVariants } = useAllVariants(orgId, voiceOpen);
   const [scanMiss, setScanMiss] = useState<string | null>(null);
   const [customerPickerOpen, setCustomerPickerOpen] = useState(false);
   // فقط برای چیدمان موبایل/تبلت — در دسکتاپ هر دو بخش هم‌زمان دیده می‌شوند.
@@ -172,6 +183,15 @@ export function InvoiceCreateForm({
    * اگر پیدا نشد، اسکنر بسته نمی‌شود؛ فقط پیام می‌دهد تا فروشنده
    * بتواند کالای بعدی را اسکن کند یا خودش دستی جستجو کند.
    */
+  useEffect(() => {
+    setVoiceReady(isVoiceSupported());
+  }, []);
+
+  /** کالای انتخاب‌شده از فهرست صوتی را با تعداد گفته‌شده اضافه می‌کند. */
+  function handleVoiceConfirm(variant: SelectableVariant, count: number) {
+    for (let i = 0; i < count; i++) addToCart(variant);
+  }
+
   async function handleScan(code: string) {
     const found = await lookupBarcode(code);
     if (!found) {
@@ -391,6 +411,7 @@ export function InvoiceCreateForm({
             <PosSearchBar
               onOpenPicker={() => setProductPickerOpen(true)}
               onOpenScanner={() => setScannerOpen(true)}
+              onOpenVoice={voiceReady ? () => setVoiceOpen(true) : undefined}
               scanMiss={scanMiss}
               onDismissMiss={() => setScanMiss(null)}
             />
@@ -511,6 +532,13 @@ export function InvoiceCreateForm({
           </div>
         </div>
       </div>
+
+      <VoiceOrder
+        open={voiceOpen}
+        onClose={() => setVoiceOpen(false)}
+        variants={allVariants ?? []}
+        onConfirm={handleVoiceConfirm}
+      />
 
       <BarcodeScanner
         open={scannerOpen}

@@ -9,7 +9,7 @@
  */
 
 import type { ReactNode } from "react";
-import { Barcode, Package, ScanLine, Trash2, UserPlus, Users, X } from "lucide-react";
+import { Barcode, Mic, Package, ScanLine, Trash2, UserPlus, Users, X } from "lucide-react";
 import { Badge, Button, Card } from "@/src/shared/ui";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
@@ -30,12 +30,19 @@ import type { CartItem } from "@/types/db";
 export function PosSearchBar({
   onOpenPicker,
   onOpenScanner,
+  onOpenVoice,
   scanMiss,
   onDismissMiss,
 }: {
   onOpenPicker: () => void;
   /** باز کردن اسکنر دوربین. اگر داده نشود، دکمه نمایش داده نمی‌شود. */
   onOpenScanner?: () => void;
+  /**
+   * باز کردن ورودی صوتی.
+   * اگر مرورگر تشخیص گفتار نداشته باشد پاس داده نمی‌شود و دکمه
+   * اصلاً رندر نمی‌شود — بهتر از دکمه‌ای که کلیک شود و کار نکند.
+   */
+  onOpenVoice?: () => void;
   /** بارکدی که اسکن شد ولی کالایی با آن پیدا نشد. */
   scanMiss?: string | null;
   onDismissMiss?: () => void;
@@ -68,6 +75,18 @@ export function PosSearchBar({
               aria-label="اسکن بارکد با دوربین"
             >
               اسکن با دوربین
+            </Button>
+          )}
+
+          {onOpenVoice && (
+            <Button
+              variant="secondary"
+              onClick={onOpenVoice}
+              icon={<Mic size={17} />}
+              className="flex-1"
+              aria-label="افزودن کالا با صدا"
+            >
+              افزودن با صدا
             </Button>
           )}
 
