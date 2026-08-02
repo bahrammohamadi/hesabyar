@@ -5,11 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
 import { usePermission } from "@/lib/hooks/usePermission";
+import { usePlatformAdmin } from "@/lib/hooks/usePlatformAdmin";
 import { BRAND_NAME, BRAND_VERSION } from "@/lib/brand";
 import {
   PanelRightClose, PanelRightOpen,
   LayoutDashboard, Package, Warehouse, ShoppingCart, Receipt, Users,
-  Wallet, Settings, BarChart3, X, ChevronDown,
+  Wallet, Settings, BarChart3, X, ChevronDown, ShieldCheck,
   PackageSearch, Plus as PlusIcon, Layers, ArrowDownToLine,
   ArrowUpFromLine, ArrowLeftRight, ClipboardList, UserPlus, Truck,
   ArrowDownCircle, ArrowUpCircle, Scale, Landmark, ReceiptText,
@@ -115,12 +116,29 @@ export const NAV = [
   },
 ];
 
+/**
+ * ناوبری سطح پلتفرم — جدا از NAV.
+ *
+ * چرا داخل NAV نگذاشتیم؟
+ *   NAV بر پایه‌ی مجوزهای درون‌سازمانی فیلتر می‌شود (permissionForHref).
+ *   مسیر /admin هیچ مجوز سازمانی متناظری ندارد، پس can(null) برای آن
+ *   true برمی‌گشت و به *همه* نشان داده می‌شد. جدا نگه‌داشتن باعث می‌شود
+ *   شرط نمایش صریح و غیرقابل‌اشتباه باشد.
+ *
+ *   ضمناً BottomNav روی NAV حلقه می‌زند؛ این جدایی تضمین می‌کند آیتم
+ *   ادمین ناخواسته در نوار پایین موبایل ظاهر نشود.
+ */
+const ADMIN_NAV = [
+  { href: "/admin/organizations", label: "مدیریت کسب‌وکارها", icon: Building },
+];
+
 /** کلید ذخیره‌ی حالت جمع‌شده در مرورگر کاربر. */
 const RAIL_STORAGE_KEY = "tarazoo-sidebar-rail";
 
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
   const { can } = usePermission();
+  const { isPlatformAdmin } = usePlatformAdmin();
 
   /*
     آکاردئون تک‌بازشو.
@@ -399,6 +417,61 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
               </div>
             );
           })}
+
+          {/*
+            بخش سوپرادمین.
+
+            فقط وقتی is_platform_admin برابر true باشد رندر می‌شود. برای
+            کاربر عادی هیچ ردی در DOM نمی‌ماند، پس وجود این بخش را هم
+            حدس نمی‌زند.
+
+            جداکننده‌ی بصری دارد چون این مسیر از جنس «مدیریت پلتفرم» است
+            نه «کار روزمره‌ی کسب‌وکار»؛ قاطی‌شدنشان گیج‌کننده بود.
+          */}
+          {isPlatformAdmin && (
+            <div className="pt-2">
+              <div
+                className={cn(
+                  "mb-1 border-t border-border pt-2.5",
+                  rail && "lg:mx-1"
+                )}
+              >
+                <div
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 pb-1 text-2xs font-extrabold uppercase tracking-wide text-muted-foreground",
+                    rail && "lg:hidden"
+                  )}
+                >
+                  <ShieldCheck size={12} aria-hidden />
+                  مدیریت پلتفرم
+                </div>
+              </div>
+
+              {ADMIN_NAV.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={onClose}
+                    aria-current={active ? "page" : undefined}
+                    title={rail ? item.label : undefined}
+                    className={cn(
+                      "relative flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-all",
+                      rail && "lg:justify-center lg:px-0",
+                      active
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    <Icon size={18} className="shrink-0" />
+                    <span className={cn("truncate", rail && "lg:hidden")}>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </nav>
 
         {/* Footer */}
