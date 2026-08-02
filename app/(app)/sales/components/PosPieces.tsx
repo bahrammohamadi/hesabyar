@@ -9,7 +9,7 @@
  */
 
 import type { ReactNode } from "react";
-import { Barcode, Package, Trash2, UserPlus, Users, X } from "lucide-react";
+import { Barcode, Package, ScanLine, Trash2, UserPlus, Users, X } from "lucide-react";
 import { Badge, Button, Card } from "@/src/shared/ui";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
@@ -27,11 +27,28 @@ import type { CartItem } from "@/types/db";
 /* وجود ندارد به کاربر وعده داده نشود.                                 */
 /* ------------------------------------------------------------------ */
 
-export function PosSearchBar({ onOpenPicker }: { onOpenPicker: () => void }) {
+export function PosSearchBar({
+  onOpenPicker,
+  onOpenScanner,
+  scanMiss,
+  onDismissMiss,
+}: {
+  onOpenPicker: () => void;
+  /** باز کردن اسکنر دوربین. اگر داده نشود، دکمه نمایش داده نمی‌شود. */
+  onOpenScanner?: () => void;
+  /** بارکدی که اسکن شد ولی کالایی با آن پیدا نشد. */
+  scanMiss?: string | null;
+  onDismissMiss?: () => void;
+}) {
   return (
     <Card className="p-3 sm:p-4">
       <p className="mb-2 text-xs font-bold text-muted-foreground">جستجوی کالا یا ورود بارکد</p>
-      <div className="flex flex-col gap-2 sm:flex-row">
+      {/*
+        سه عنصر (نوار جستجو + اسکن + افزودن سریع) در پنل ۵۶۰px کنار هم
+        جا نمی‌شوند و دکمه‌ی اسکن از لبه بیرون می‌زد.
+        نوار جستجو خط اول را کامل می‌گیرد و دکمه‌ها زیرش می‌آیند.
+      */}
+      <div className="flex flex-col gap-2">
         <button
           type="button"
           onClick={onOpenPicker}
@@ -40,10 +57,53 @@ export function PosSearchBar({ onOpenPicker }: { onOpenPicker: () => void }) {
           <Barcode size={18} className="shrink-0 text-muted-foreground" />
           <span className="truncate">نام کالا، کد کالا یا بارکد را وارد کنید (سازگار با بارکدخوان)</span>
         </button>
-        <Button onClick={onOpenPicker} icon={<Package size={17} />} className="shrink-0">
-          افزودن سریع
-        </Button>
+
+        <div className="flex gap-2">
+          {onOpenScanner && (
+            <Button
+              variant="secondary"
+              onClick={onOpenScanner}
+              icon={<ScanLine size={17} />}
+              className="flex-1"
+              aria-label="اسکن بارکد با دوربین"
+            >
+              اسکن با دوربین
+            </Button>
+          )}
+
+          <Button onClick={onOpenPicker} icon={<Package size={17} />} className="flex-1">
+            افزودن سریع
+          </Button>
+        </div>
       </div>
+
+      {/*
+        بارکد خوانده شد ولی کالایی نداشت.
+
+        در داده‌ی واقعی فقط ۴ کالا از ۳۸۵ بارکد دارند، پس این حالت
+        نادر نیست و باید راه خروج روشنی داشته باشد — نه یک پیام
+        بن‌بست.
+      */}
+      {scanMiss && (
+        <div
+          role="status"
+          className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-warning-soft px-3 py-2 text-xs text-warning-onSoft"
+        >
+          <span>
+            کالایی با بارکد <span dir="ltr" className="font-bold tabular-nums">{scanMiss}</span> پیدا نشد.
+          </span>
+          <span className="flex gap-2">
+            <button type="button" onClick={onOpenPicker} className="font-bold underline underline-offset-2">
+              جستجوی دستی
+            </button>
+            {onDismissMiss && (
+              <button type="button" onClick={onDismissMiss} className="font-bold underline underline-offset-2">
+                بستن
+              </button>
+            )}
+          </span>
+        </div>
+      )}
     </Card>
   );
 }

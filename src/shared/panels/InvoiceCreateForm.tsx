@@ -11,6 +11,8 @@ import { PosCartList, PosCustomerCard, PosSearchBar, PosSummaryCard } from "@/ap
 import { PosInvoiceFields, PosPaymentMethods, type PayMethod } from "@/app/(app)/sales/components/PosPayment";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
+import { BarcodeScanner } from "@/components/shared/barcode-scanner";
+import { useBarcodeLookup } from "@/lib/hooks/useBarcodeLookup";
 import { formatToman, toEnDigits, rialToToman, tomanToRial } from "@/lib/utils/format";
 import { logActivity } from "@/lib/utils/activity-log";
 import type { CartItem } from "@/types/db";
@@ -54,6 +56,7 @@ export function InvoiceCreateForm({
   insidePanel?: boolean;
 }) {
   const { orgId, branchId } = useOrg();
+  const lookupBarcode = useBarcodeLookup(orgId);
   const qc = useQueryClient();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [customer, setCustomer] = useState<SelectableContact | null>(null);
@@ -71,6 +74,8 @@ export function InvoiceCreateForm({
   const [done, setDone] = useState<string | null>(null);
 
   const [productPickerOpen, setProductPickerOpen] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [scanMiss, setScanMiss] = useState<string | null>(null);
   const [customerPickerOpen, setCustomerPickerOpen] = useState(false);
   // فقط برای چیدمان موبایل/تبلت — در دسکتاپ هر دو بخش هم‌زمان دیده می‌شوند.
   const [step, setStep] = useState<"items" | "payment">("items");
@@ -159,6 +164,22 @@ export function InvoiceCreateForm({
       ];
     });
     // پنجره باز می‌ماند تا کاربر چند کالا پشت‌سرهم اضافه کند
+  }
+
+  /**
+   * بارکد خوانده‌شده را به کالا تبدیل و به فاکتور اضافه می‌کند.
+   *
+   * اگر پیدا نشد، اسکنر بسته نمی‌شود؛ فقط پیام می‌دهد تا فروشنده
+   * بتواند کالای بعدی را اسکن کند یا خودش دستی جستجو کند.
+   */
+  async function handleScan(code: string) {
+    const found = await lookupBarcode(code);
+    if (!found) {
+      setScanMiss(code);
+      return;
+    }
+    setScanMiss(null);
+    addToCart(found);
   }
 
   function updateQty(id: string, qty: number) {
@@ -367,7 +388,12 @@ export function InvoiceCreateForm({
         <div className="invoice-form-grid">
           {/* ستون اصلی: جستجو/بارکد + اقلام فاکتور */}
           <div className={`space-y-4 ${step === "payment" ? "hidden invoice-step-hidden" : ""}`}>
-            <PosSearchBar onOpenPicker={() => setProductPickerOpen(true)} />
+            <PosSearchBar
+              onOpenPicker={() => setProductPickerOpen(true)}
+              onOpenScanner={() => setScannerOpen(true)}
+              scanMiss={scanMiss}
+              onDismissMiss={() => setScanMiss(null)}
+            />
             <PosCartList
               cart={cart}
               onQtyChange={updateQty}
@@ -485,6 +511,12 @@ export function InvoiceCreateForm({
           </div>
         </div>
       </div>
+
+      <BarcodeScanner
+        open={scannerOpen}
+        onClose={() => { setScannerOpen(false); setScanMiss(null); }}
+        onDetected={handleScan}
+      />
 
       <ProductSelector
         open={productPickerOpen}

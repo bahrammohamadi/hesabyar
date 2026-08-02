@@ -39,10 +39,11 @@ export function Field({ label, required, error, hint, children, className }: { l
     <div className={cn("block space-y-1.5", className)}>
       <span className="flex items-center gap-1.5 text-sm font-bold text-foreground">
         <span>{label} {required && <span className="text-destructive">*</span>}</span>
-        <HelpTip text={hint} />
+        {/* روی موبایل جای متن راهنما نیست؛ فقط آنجا دکمه نشان داده می‌شود. */}
+        <HelpTip text={hint} className="sm:hidden" />
       </span>
       {children}
-      {error ? <span className="block text-xs leading-5 text-destructive">{error}</span> : hint ? <span className="block text-xs leading-5 text-muted-foreground">{hint}</span> : null}
+      {error ? <span className="block text-xs leading-5 text-destructive">{error}</span> : hint ? <span className="hidden text-xs leading-5 text-muted-foreground sm:block">{hint}</span> : null}
     </div>
   );
 }

@@ -45,7 +45,18 @@ const securityHeaders = [
   // دسترسی به سخت‌افزار حساس را می‌بندد.
   {
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
+    /*
+      🔴 پیش از این camera=() بود و دوربین را کاملاً مسدود می‌کرد.
+      اسکنر بارکد با خطای «Permissions policy violation: camera is
+      not allowed in this document» شکست می‌خورد — بدون تست واقعی
+      مرورگر اصلاً دیده نمی‌شد چون کد جاوااسکریپت هیچ استثنایی
+      پرتاب نمی‌کرد، فقط getUserMedia بی‌صدا رد می‌شد.
+
+      camera=(self) یعنی فقط همین دامنه اجازه دارد؛ iframeهای شخص
+      ثالث همچنان مسدودند. microphone هم برای قابلیت «فاکتور با
+      صدا» (پرامپت ۶) باز می‌شود.
+    */
+    value: "camera=(self), microphone=(self), geolocation=(), payment=(), usb=(), interest-cohort=()",
   },
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
   { key: "X-DNS-Prefetch-Control", value: "off" },
