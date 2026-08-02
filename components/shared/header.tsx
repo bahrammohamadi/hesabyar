@@ -55,8 +55,14 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
               {currentUser?.email && <div className="max-w-40 truncate text-2xs text-muted-foreground" dir="ltr">{displayUsername(currentUser.email)}</div>}
             </div>
           </div>
+          {/*
+            aria-label لازم است چون برچسب متنی زیر بریک‌پوینت sm
+            پنهان می‌شود و دکمه فقط یک آیکون می‌ماند — برای صفحه‌خوان
+            بی‌نام. (ایراد critical در axe-core، از قبل روی سایت زنده.)
+          */}
           <button
             onClick={handleLogout}
+            aria-label="خروج از حساب"
             className="flex h-11 items-center justify-center gap-2 rounded-2xl px-2.5 text-sm text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive sm:px-3"
           >
             <LogOut size={18} />

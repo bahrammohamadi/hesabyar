@@ -145,8 +145,10 @@ export default function DashboardPage() {
           <h1 className="text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">داشبورد</h1>
           <p className="mt-0.5 text-xs text-muted-foreground">مرکز کنترل و تحلیل لحظه‌ای کسب‌وکار</p>
         </div>
+        {/* برچسب زیر sm پنهان می‌شود، پس نام دسترس‌پذیر باید صریح باشد. */}
         <button
           onClick={openNewSale}
+          aria-label="فروش جدید"
           className="btn-primary shadow-md shadow-primary/20 transition-shadow hover:shadow-primary/30"
         >
           <Plus size={18} />
