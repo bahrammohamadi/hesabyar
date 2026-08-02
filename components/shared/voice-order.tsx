@@ -105,13 +105,47 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
     recRef.current = null;
   }, []);
 
-  const start = useCallback(() => {
+  const start = useCallback(async () => {
     const Ctor = getRecognitionCtor();
     if (!Ctor) {
       setPhase("error");
       setErrorText("مرورگر شما تشخیص گفتار ندارد. کروم یا سافاری را امتحان کنید.");
       return;
     }
+
+    /*
+      🔴 مجوز میکروفون صریح گرفته می‌شود، پیش از استارت تشخیص.
+
+      چرا لازم شد: SpeechRecognition خودش پنجره‌ی مجوز را نشان
+      می‌دهد، ولی اگر کاربر یک‌بار «Block» زده باشد، دفعات بعد بی‌صدا
+      خطای not-allowed می‌دهد و هیچ راهی برای بازیابی نشان داده
+      نمی‌شود. کاربر فقط یک پیام مبهم می‌دید.
+
+      با getUserMedia:
+        • بار اول پنجره‌ی مجوز مرورگر واقعاً باز می‌شود
+        • در حالت مسدود، از permissions.query وضعیت را می‌فهمیم و
+          راهنمای دقیق نشان می‌دهیم
+      استریم بلافاصله بسته می‌شود؛ فقط برای گرفتن مجوز است.
+    */
+    if (navigator.mediaDevices?.getUserMedia) {
+      try {
+        const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+        s.getTracks().forEach((t) => t.stop());
+      } catch (err) {
+        const name = (err as Error)?.name ?? "";
+        if (name === "NotAllowedError" || name === "SecurityError") {
+          setPhase("denied");
+          setErrorText("");
+          return;
+        }
+        if (name === "NotFoundError") {
+          setPhase("error");
+          setErrorText("میکروفونی روی این دستگاه پیدا نشد.");
+          return;
+        }
+      }
+    }
+
     stop();
     setInterim("");
     setFinalText("");
@@ -143,7 +177,7 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
     rec.onerror = (e) => {
       if (e.error === "not-allowed" || e.error === "service-not-allowed") {
         setPhase("denied");
-        setErrorText("اجازه‌ی دسترسی به میکروفون داده نشد. از تنظیمات مرورگر فعالش کنید.");
+        setErrorText("");
       } else if (e.error === "no-speech") {
         setPhase("nomatch");
         setFinalText("");
@@ -168,11 +202,34 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
     }
   }, [handleTranscript, stop]);
 
-  // با باز شدن، بلافاصله شروع به شنیدن کن.
+  /*
+    با باز شدن، اول وضعیت مجوز پرسیده می‌شود.
+
+    اگر از قبل مسدود است، وقت کاربر با یک تلاش محکوم‌به‌شکست تلف
+    نمی‌شود و مستقیم راهنمای بازیابی می‌آید.
+    permissions.query در همه‌ی مرورگرها نیست؛ در نبودش مثل قبل
+    مستقیم تلاش می‌کنیم.
+  */
   useEffect(() => {
     if (!open) { stop(); setPhase("idle"); setAdded([]); return; }
-    start();
-    return () => stop();
+    let cancelled = false;
+    (async () => {
+      try {
+        const st = await navigator.permissions?.query({
+          name: "microphone" as PermissionName,
+        });
+        if (cancelled) return;
+        if (st?.state === "denied") {
+          setPhase("denied");
+          setErrorText("");
+          return;
+        }
+      } catch {
+        /* پشتیبانی نمی‌شود — مسیر عادی */
+      }
+      if (!cancelled) void start();
+    })();
+    return () => { cancelled = true; stop(); };
   }, [open, start, stop]);
 
   // Escape فقط این لایه را می‌بندد، نه پنل زیرین.
@@ -234,7 +291,7 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
           <div className="flex flex-col items-center gap-3 py-2">
             <button
               type="button"
-              onClick={listening ? stop : start}
+              onClick={listening ? stop : () => void start()}
               aria-label={listening ? "توقف ضبط" : "شروع ضبط"}
               className={cn(
                 "relative flex h-20 w-20 items-center justify-center rounded-full transition",
@@ -261,7 +318,40 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
             </p>
           </div>
 
-          {(phase === "denied" || phase === "error") && (
+          {/*
+            راهنمای بازیابی مجوز.
+
+            پیام «از تنظیمات مرورگر فعالش کنید» عملاً بی‌فایده بود —
+            کاربر نمی‌داند کجای تنظیمات. حالا مسیر دقیق کروم و سافاری
+            نوشته شده و دکمه‌ی «تلاش دوباره» هم هست، چون پس از تغییر
+            مجوز باید دوباره امتحان شود.
+          */}
+          {phase === "denied" && (
+            <div role="alert" className="mt-3 rounded-xl bg-destructive/10 p-3.5 text-xs leading-6 text-destructive-text">
+              <p className="flex items-start gap-2 font-bold">
+                <AlertTriangle size={15} className="mt-0.5 shrink-0" aria-hidden />
+                دسترسی به میکروفون مسدود است
+              </p>
+              <ol className="mt-2 list-inside list-decimal space-y-1 pr-1 text-foreground">
+                <li>روی آیکون قفل 🔒 کنار نشانی سایت در نوار مرورگر بزنید</li>
+                <li>گزینه‌ی «میکروفون» (Microphone) را پیدا کنید</li>
+                <li>آن را روی «اجازه دادن» (Allow) بگذارید</li>
+                <li>صفحه را یک‌بار تازه‌سازی کنید</li>
+              </ol>
+              <p className="mt-2 text-muted-foreground">
+                در سافاری: منوی Safari ← Settings for This Website ← Microphone ← Allow
+              </p>
+              <Button
+                variant="secondary"
+                className="mt-3 w-full"
+                onClick={() => { setErrorText(""); void start(); }}
+              >
+                تلاش دوباره
+              </Button>
+            </div>
+          )}
+
+          {phase === "error" && (
             <div role="alert" className="mt-2 flex items-start gap-2 rounded-xl bg-destructive/10 p-3 text-xs leading-6 text-destructive-text">
               <AlertTriangle size={15} className="mt-0.5 shrink-0" aria-hidden />
               <span>{errorText}</span>

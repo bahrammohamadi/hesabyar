@@ -210,6 +210,29 @@ describe("یکپارچگی با فرم فاکتور", () => {
     expect(voice).toContain('"network"');
   });
 
+  it("مجوز میکروفون صریح درخواست می‌شود", () => {
+    /*
+      🔴 بدون این، SpeechRecognition در حالت مسدود بی‌صدا خطا
+      می‌داد و پنجره‌ی مجوز مرورگر هرگز باز نمی‌شد. کاربر فقط
+      «اجازه داده نشد» می‌دید بدون راه بازیابی.
+    */
+    expect(voice).toContain("navigator.mediaDevices.getUserMedia({ audio: true })");
+    // استریم باید بلافاصله آزاد شود؛ فقط برای گرفتن مجوز است.
+    expect(voice).toContain("s.getTracks().forEach((t) => t.stop())");
+  });
+
+  it("وضعیت مجوز پیش از تلاش بررسی می‌شود", () => {
+    expect(voice).toContain('name: "microphone" as PermissionName');
+    expect(voice).toContain('st?.state === "denied"');
+  });
+
+  it("راهنمای بازیابی مسیر دقیق مرورگر را می‌دهد", () => {
+    // «از تنظیمات مرورگر فعالش کنید» بی‌فایده بود — کاربر نمی‌داند کجا.
+    expect(voice).toContain("آیکون قفل");
+    expect(voice).toContain("Settings for This Website");
+    expect(voice).toContain("تلاش دوباره");
+  });
+
   it("کاتالوگ از کش مشترک می‌آید، نه کوئری جدید", () => {
     const hook = read("lib/hooks/useAllVariants.ts");
     expect(hook).toContain('queryKey: ["all-variants", orgId]');
