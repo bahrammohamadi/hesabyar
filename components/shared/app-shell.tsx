@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
+import { useGlobalShortcut } from "@/lib/hooks/useGlobalShortcut";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
 import { BottomNav } from "./bottom-nav";
@@ -12,31 +13,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { openDocument } = usePanelManager();
 
   /*
-    میانبر F2 برای فروش جدید.
+    میانبر F2 — فروش جدید.
 
-    این میانبر در دو جا به کاربر وعده داده شده بود — برچسب «F2» روی دکمه‌ی
-    داشبورد و صفحه‌ی راهنما — ولی هرگز پیاده‌سازی نشده بود. حالا که ساخت
-    فاکتور یک پنل مشترک دارد، در سطح پوسته قابل اتصال است.
+    برچسب «F2» روی دکمه‌ی داشبورد و در صفحه‌ی راهنما به کاربر وعده داده
+    شده بود ولی هیچ listener‌ای وجود نداشت؛ صرفاً تزئینی بود.
 
-    وقتی کاربر در حال تایپ است نادیده گرفته می‌شود تا با فرم‌ها تداخل نکند.
+    اینجا در AppShell ثبت می‌شود نه در صفحه‌ی داشبورد، چون وعده‌ی راهنما
+    «در هر صفحه‌ای» است. منطق مشترک (نادیده‌گرفتن هنگام تایپ، پاک‌سازی
+    listener) در useGlobalShortcut است تا در میانبرهای بعدی تکرار نشود.
   */
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key !== "F2") return;
-      const el = document.activeElement as HTMLElement | null;
-      const typing =
-        el &&
-        (el.tagName === "INPUT" ||
-          el.tagName === "TEXTAREA" ||
-          el.tagName === "SELECT" ||
-          el.isContentEditable);
-      if (typing) return;
-      event.preventDefault();
-      openDocument("sale", undefined, { mode: "create", context: "workspace" });
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [openDocument]);
+  useGlobalShortcut("F2", () => {
+    openDocument("sale", undefined, { mode: "create", context: "workspace" });
+  });
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.08),transparent_30%),linear-gradient(180deg,hsl(var(--background)),#fff)] text-foreground lg:flex">
