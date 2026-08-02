@@ -128,6 +128,49 @@ export async function requirePlatformAdmin(): Promise<
   return { userId: user.id, svc };
 }
 
+/**
+ * مثل requirePlatformAdmin، ولی مجوز مشخصی را هم بررسی می‌کند.
+ *
+ * چرا لازم شد: تا پیش از این هر ادمینی هر کاری می‌توانست بکند —
+ * نقش 'support' دقیقاً اختیارات سوپرادمین را داشت. ماتریس مجوز در
+ * دیتابیس (تابع platform_admin_can) تک‌منبع حقیقت است تا هر روت
+ * تفسیر خودش را نداشته باشد.
+ *
+ * @param permission یکی از: orgs.view, orgs.approve, orgs.suspend,
+ *   trial.extend, plan.change, invoice.view, invoice.modify,
+ *   audit.view, admins.manage
+ */
+export async function requirePlatformPermission(permission: string): Promise<
+  | { userId: string; role: string; svc: ReturnType<typeof serviceClient> }
+  | { response: NextResponse }
+> {
+  const auth = await requirePlatformAdmin();
+  if ("response" in auth) return auth;
+
+  const { data: allowed, error } = await auth.svc.rpc("platform_admin_can", {
+    p_permission: permission,
+    p_user: auth.userId,
+  });
+  // خطای RPC هم یعنی «مجاز نیست» — fail closed.
+  if (error || allowed !== true) return { response: forbidden() };
+
+  const { data: role } = await auth.svc.rpc("platform_admin_role", {
+    p_user: auth.userId,
+  });
+
+  return { userId: auth.userId, role: String(role ?? ""), svc: auth.svc };
+}
+
+/**
+ * IP درخواست برای ثبت در لاگ ممیزی.
+ * پشت پراکسی (Vercel) آدرس واقعی در x-forwarded-for است.
+ */
+export function requestIp(request: Request): string | null {
+  const fwd = request.headers.get("x-forwarded-for");
+  if (fwd) return fwd.split(",")[0].trim();
+  return request.headers.get("x-real-ip");
+}
+
 /* ────────────────── اعتبارسنجی ورودی ────────────────── */
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

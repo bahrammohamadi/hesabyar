@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building2, CheckCircle2, Clock, ShieldCheck, XCircle } from "lucide-react";
 import { PageHeader, Spinner, EmptyState } from "@/components/shared/ui";
@@ -139,7 +140,12 @@ export default function AdminOrganizationsPage() {
                 {rows.map((o) => (
                   <tr key={o.id} className="border-b border-border last:border-0">
                     <td className="px-4 py-3">
-                      <div className="font-bold text-foreground">{o.name}</div>
+                      <Link
+                        href={`/admin/organizations/${o.id}`}
+                        className="font-bold text-foreground underline-offset-4 transition hover:text-primary hover:underline"
+                      >
+                        {o.name}
+                      </Link>
                       <div className="mt-0.5 flex items-center gap-1.5 text-2xs text-muted-foreground">
                         <Clock size={11} />
                         {toJalali(o.created_at)}
@@ -179,7 +185,12 @@ export default function AdminOrganizationsPage() {
               <li key={o.id} className="p-3.5">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-bold text-foreground">{o.name}</div>
+                    <Link
+                      href={`/admin/organizations/${o.id}`}
+                      className="block truncate text-sm font-bold text-foreground underline-offset-4 hover:text-primary hover:underline"
+                    >
+                      {o.name}
+                    </Link>
                     <div className="mt-0.5 truncate text-xs text-muted-foreground">{displayUsername(o.owner_email) || "—"}</div>
                     <div className="mt-1.5 flex flex-wrap items-center gap-2">
                       <Badge tone={STATUS[o.approval_status].tone}>{STATUS[o.approval_status].label}</Badge>

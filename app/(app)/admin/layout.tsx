@@ -1,5 +1,12 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { SubNav, type SubNavItem } from "@/src/shared/ui";
+
+/** زیربخش‌های پنل مدیریت پلتفرم. */
+const ADMIN_NAV: SubNavItem[] = [
+  { href: "/admin/organizations", label: "کسب‌وکارها" },
+  { href: "/admin/audit", label: "گزارش فعالیت" },
+];
 
 /**
  * گارد سمت سرور برای کل بخش /admin.
@@ -26,5 +33,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // خطای RPC (مثلاً migration اجرا نشده) هم یعنی «مجاز نیست» — fail closed.
   if (error || !isAdmin) notFound();
 
-  return <>{children}</>;
+  return (
+    <>
+      <SubNav items={ADMIN_NAV} />
+      {children}
+    </>
+  );
 }

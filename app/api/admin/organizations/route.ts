@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import {
-  requirePlatformAdmin,
+  requirePlatformPermission,
   safeError,
   isUuid,
   readJsonBody,
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
     const rl = hit(`admin-orgs-get:${clientIp(request)}`, { limit: 60, windowSeconds: 60 });
     if (!rl.allowed) return tooManyRequests(rl.retryAfterSeconds);
 
-    const auth = await requirePlatformAdmin();
+    const auth = await requirePlatformPermission("orgs.view");
     if ("response" in auth) return auth.response;
 
     const { data, error } = await auth.svc
@@ -51,6 +51,8 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       organizations: (data ?? []).map((o: any) => ({ ...o, owner_email: emails[o.owner_id] ?? "" })),
+      // UI با این نقش، دکمه‌هایی را که کاربر مجاز نیست پنهان می‌کند.
+      viewerRole: auth.role,
     });
   } catch (e) {
     return safeError("admin/organizations:GET", e);
@@ -67,7 +69,7 @@ export async function POST(request: Request) {
     });
     if (!rl.allowed) return tooManyRequests(rl.retryAfterSeconds);
 
-    const auth = await requirePlatformAdmin();
+    const auth = await requirePlatformPermission("orgs.approve");
     if ("response" in auth) return auth.response;
 
     const parsed = await readJsonBody<{ org_id?: string; action?: string; reason?: string }>(request);
