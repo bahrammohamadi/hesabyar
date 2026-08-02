@@ -9,7 +9,6 @@ import { BRAND_NAME } from "@/lib/brand";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [orgName, setOrgName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -40,49 +39,36 @@ export default function RegisterPage() {
       return;
     }
 
-    // اگر نشست بلافاصله ساخته شد (تأیید ایمیل خاموش است) → سازمان را بساز
+    /*
+      سازمان دیگر اینجا ساخته نمی‌شود.
+
+      قبلاً bootstrap_org همین‌جا صدا زده می‌شد و کاربر مستقیم به
+      داشبورد می‌رفت. حالا به /onboarding می‌رود تا نوع کسب‌وکار،
+      نام و شماره تماس را بدهد و سازمان همان‌جا با یک فراخوانی
+      ساخته شود — هم داده‌ی بیشتری داریم، هم یک RPC کمتر.
+    */
     if (data.session) {
-      const { error: rpcError } = await supabase.rpc("bootstrap_org", {
-        p_org_name: orgName,
-      });
-      if (rpcError) {
-        setError("خطا در ساخت کسب‌وکار: " + rpcError.message);
-        setLoading(false);
-        return;
-      }
-      router.push("/dashboard");
+      router.push("/onboarding");
       router.refresh();
     } else {
-      // تأیید ایمیل لازم است
+      // تأیید ایمیل روشن است؛ تا کلیک روی لینک، نشستی وجود ندارد.
       setInfo(
-        "ثبت‌نام انجام شد. لطفاً ایمیل خود را برای تأیید بررسی کنید، سپس وارد شوید."
+        "ثبت‌نام انجام شد. لینک تأیید به ایمیل شما ارسال شد. پس از تأیید، وارد شوید تا پنل شما فعال شود."
       );
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <img src="/logo.png" alt={BRAND_NAME} className="w-24 h-24 object-contain mx-auto mb-2" />
-          <h1 className="text-2xl font-bold text-slate-800">ساخت کسب‌وکار جدید</h1>
-          <p className="text-slate-500 mt-1 text-sm">سیستم را برای کسب‌وکار خود راه‌اندازی کنید</p>
+          <h1 className="text-2xl font-bold text-foreground">ساخت حساب کاربری</h1>
+          <p className="text-muted-foreground mt-1 text-sm">۱۴ روز استفاده‌ی رایگان، بدون نیاز به پرداخت</p>
         </div>
 
         <form onSubmit={handleRegister} className="card p-6 space-y-4">
-          <div>
-            <label className="label">نام کسب‌وکار</label>
-            <input
-              type="text"
-              required
-              className="input"
-              placeholder="مثلاً: مزون پوشاک ..."
-              value={orgName}
-              onChange={(e) => setOrgName(e.target.value)}
-            />
-          </div>
-
           <div>
             <label className="label">ایمیل</label>
             <input
@@ -110,18 +96,18 @@ export default function RegisterPage() {
           </div>
 
           {error && (
-            <div className="rounded-xl bg-rose-50 text-rose-700 text-sm px-4 py-3">{error}</div>
+            <div className="rounded-xl bg-destructive/10 text-destructive-text text-sm font-bold px-4 py-3">{error}</div>
           )}
           {info && (
-            <div className="rounded-xl bg-emerald-50 text-emerald-700 text-sm px-4 py-3">{info}</div>
+            <div className="rounded-xl bg-success-soft text-success-onSoft text-sm font-bold px-4 py-3">{info}</div>
           )}
 
           <button type="submit" disabled={loading} className="btn-primary w-full">
             {loading && <Loader2 className="animate-spin" size={18} />}
-            ساخت کسب‌وکار
+            ادامه
           </button>
 
-          <p className="text-center text-sm text-slate-500">
+          <p className="text-center text-sm text-muted-foreground">
             قبلاً ثبت‌نام کرده‌اید؟{" "}
             <Link href="/login" className="text-primary font-medium hover:underline">
               وارد شوید

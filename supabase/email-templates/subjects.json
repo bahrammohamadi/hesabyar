@@ -1,0 +1,7 @@
+{
+  "mailer_subjects_confirmation": "تأیید ایمیل — فعال‌سازی حساب ترازو",
+  "mailer_subjects_recovery": "بازیابی رمز عبور ترازو",
+  "mailer_subjects_magic_link": "لینک ورود به ترازو",
+  "mailer_subjects_invite": "دعوت به همکاری در ترازو",
+  "mailer_subjects_email_change": "تأیید ایمیل جدید — ترازو"
+}

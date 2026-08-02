@@ -127,3 +127,33 @@ export function displayUsername(email: string | null | undefined): string {
   if (!email) return "";
   return email.endsWith("@hesabyar.app") ? email.slice(0, -"@hesabyar.app".length) : email;
 }
+
+/**
+ * نرمال‌سازی و اعتبارسنجی شماره موبایل ایران.
+ *
+ * ورودی کاربر ممکن است هر کدام از این‌ها باشد:
+ *   ۰۹۱۲۳۴۵۶۷۸۹ · 0912 345 6789 · +989123456789 · 989123456789 · 9123456789
+ *
+ * خروجی همیشه شکل یکدست ۰۹xxxxxxxxx با ارقام لاتین است، یا null اگر
+ * شماره معتبر نباشد. ذخیره‌ی یکدست لازم است وگرنه جستجو و
+ * یکتایی شماره بعداً می‌شکند.
+ */
+export function normalizeIranMobile(input: string | null | undefined): string | null {
+  if (!input) return null;
+
+  // ارقام فارسی/عربی → لاتین، سپس حذف هر چیز غیر رقم (فاصله، خط تیره، پرانتز)
+  let s = toEnDigits(String(input)).replace(/\D/g, "");
+
+  // پیش‌شماره‌ی بین‌المللی: +98 و 0098 هر دو به 0 تبدیل می‌شوند
+  if (s.startsWith("0098")) s = s.slice(4);
+  else if (s.startsWith("98") && s.length === 12) s = s.slice(2);
+
+  // کاربرانی که صفر ابتدایی را نمی‌نویسند
+  if (s.length === 10 && s.startsWith("9")) s = "0" + s;
+
+  return /^09\d{9}$/.test(s) ? s : null;
+}
+
+/** true اگر شماره موبایل ایران معتبر باشد. */
+export const isValidIranMobile = (input: string | null | undefined): boolean =>
+  normalizeIranMobile(input) !== null;

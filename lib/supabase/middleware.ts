@@ -115,6 +115,11 @@ export async function updateSession(request: NextRequest) {
   ]);
   const isPublicSite = PUBLIC_SITE_PATHS.has(path);
 
+  /*
+    /onboarding و /setup نیاز به نشست دارند ولی هنوز سازمانی وجود
+    ندارد. اگر عمومی حسابشان نکنیم مشکلی پیش نمی‌آید (کاربر واردشده
+    است)، اما اینجا صریح نگهشان می‌داریم تا منطق واضح بماند.
+  */
   const isPublic =
     isAuthPage ||
     isPublicSite ||
