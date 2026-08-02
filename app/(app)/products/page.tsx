@@ -298,7 +298,13 @@ export default function ProductsPage() {
                 return (
                   <li
                     key={p.id}
-                    role="link"
+                    /*
+                      role="link" اینجا نبود چون li داخل ul باید نقش
+                      ضمنی listitem را حفظ کند؛ بازنویسی آن باعث می‌شد
+                      ul هیچ فرزند معتبری نداشته باشد (ایراد serious
+                      «list» در axe-core). دسترسی با کیبورد از طریق
+                      tabIndex و onKeyDown حفظ شده است.
+                    */
                     tabIndex={0}
                     onClick={(event) => handleProductRowClick(event, p.id, p.name)}
                     onAuxClick={(event) => handleProductRowAuxClick(event, p.id)}

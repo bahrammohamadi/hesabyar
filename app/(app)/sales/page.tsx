@@ -77,7 +77,8 @@ export default function SalesPage() {
         title="فروش"
         subtitle="صدور فاکتور و مدیریت فروش"
         action={
-          <button onClick={openNewSale} className="btn-primary">
+          // برچسب زیر sm پنهان می‌شود، پس نام دسترس‌پذیر صریح لازم است.
+          <button onClick={openNewSale} aria-label="فروش جدید" className="btn-primary">
             <Plus size={18} />
             <span className="hidden sm:inline">فروش جدید</span>
           </button>

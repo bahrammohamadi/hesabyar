@@ -363,7 +363,13 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
                 return (
                   <li
                     key={c.id}
-                    role="link"
+                    /*
+                      role="link" اینجا نبود چون li داخل ul باید نقش
+                      ضمنی listitem را حفظ کند؛ بازنویسی آن باعث می‌شد
+                      ul هیچ فرزند معتبری نداشته باشد (ایراد serious
+                      «list» در axe-core). دسترسی با کیبورد از طریق
+                      tabIndex و onKeyDown حفظ شده است.
+                    */
                     tabIndex={0}
                     onClick={(event) => handleContactRowClick(event, c.id, c.name)}
                     onAuxClick={(event) => handleContactRowAuxClick(event, c.id)}

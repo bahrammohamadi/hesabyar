@@ -19,6 +19,7 @@ import {
 } from "@/src/core/services/reports-service";
 import { Button, DataTable, EmptyState, Section, Spinner, Tabs, type Column } from "@/src/shared/ui";
 import { Money, PersianDate, toPersianDigits } from "@/src/shared/format";
+import { toJalali, toJalaliMonth, toJalaliShort } from "@/lib/utils/format";
 
 function csvEscape(value: unknown) {
   const text = value == null ? "" : String(value);
@@ -43,12 +44,27 @@ function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
   URL.revokeObjectURL(url);
 }
 
-function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number }[]; label?: string }) {
+/**
+ * تولتیپ نمودار.
+ *
+ * `labelKind` تعیین می‌کند برچسب چطور خوانده شود:
+ *   "day"   → تاریخ کامل شمسی (۱۴۰۵/۰۵/۱۱)
+ *   "month" → نام ماه شمسی (مرداد ۱۴۰۵)
+ *   "text"  → همان متن، بدون تبدیل (مثلاً نام کالا)
+ *
+ * پیش‌تر `label` خام چاپ می‌شد، پس در نمودارهای تاریخی کاربر
+ * «2026-07-12» می‌دید — تنها جای باقی‌مانده‌ی تاریخ میلادی در پنل.
+ */
+function ChartTooltip({ active, payload, label, labelKind = "text" }: { active?: boolean; payload?: { name: string; value: number }[]; label?: string; labelKind?: "day" | "month" | "text" }) {
   if (!active || !payload?.length) return null;
+  const heading =
+    labelKind === "day" ? toJalali(label)
+    : labelKind === "month" ? toJalaliMonth(label)
+    : label;
   return (
-    <div className="rounded-xl border border-border bg-white p-3 text-xs shadow-lg" dir="rtl">
-      <div className="mb-1 font-bold text-foreground">{label}</div>
-      {payload.map((item) => <div key={item.name}>{item.name}: {toPersianDigits(item.value.toLocaleString("en-US"))}</div>)}
+    <div className="rounded-xl border border-border bg-card p-3 text-xs shadow-lg" dir="rtl">
+      <div className="mb-1 font-bold text-foreground">{heading}</div>
+      {payload.map((item) => <div key={item.name} className="text-muted-foreground">{item.name}: <span className="font-bold text-foreground tabular-nums">{toPersianDigits(item.value.toLocaleString("en-US"))}</span></div>)}
     </div>
   );
 }
@@ -71,9 +87,9 @@ function DailySalesSection() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip content={<ChartTooltip />} />
+                <XAxis dataKey="date" tick={{ fontSize: 12 }} tickFormatter={toJalaliShort} />
+                <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => toPersianDigits(v)} />
+                <Tooltip content={<ChartTooltip labelKind="day" />} />
                 <Line type="monotone" dataKey="sales" name="فروش" stroke="hsl(var(--primary))" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
@@ -127,7 +143,7 @@ function TopProductsSection() {
       {query.isLoading ? <Spinner /> : rows.length === 0 ? <EmptyState title="فروشی برای رتبه‌بندی وجود ندارد" /> : (
         <div className="space-y-4">
           <div className="h-72" dir="ltr">
-            <ResponsiveContainer width="100%" height="100%"><BarChart data={chartData}><CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /><XAxis dataKey="name" tick={{ fontSize: 12 }} /><YAxis tick={{ fontSize: 12 }} /><Tooltip content={<ChartTooltip />} /><Bar dataKey="qty" name="تعداد" fill="hsl(var(--primary))" /></BarChart></ResponsiveContainer>
+            <ResponsiveContainer width="100%" height="100%"><BarChart data={chartData}><CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /><XAxis dataKey="name" tick={{ fontSize: 12 }} /><YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => toPersianDigits(v)} /><Tooltip content={<ChartTooltip />} /><Bar dataKey="qty" name="تعداد" fill="hsl(var(--primary))" /></BarChart></ResponsiveContainer>
           </div>
           <Button size="sm" variant="secondary" icon={<Download size={14} />} onClick={() => downloadCsv("top-products.csv", rows.map((r) => ({ product_name: r.product_name, qty_sold: r.qty_sold, sales_amount: r.sales_amount })))}>خروجی CSV</Button>
           <DataTable rows={rows} columns={columns} keyExtractor={(row) => row.product_variant_id} />
@@ -147,7 +163,7 @@ function MonthlyProfitSection() {
     { key: "profit", header: "سود", align: "left", render: (row) => <Money value={row.gross_profit} tone={row.gross_profit >= 0 ? "positive" : "negative"} /> },
   ];
   const chartData = [...rows].reverse().map((row) => ({ month: row.month_start, profit: Math.round(row.gross_profit / 10), sales: Math.round(row.sales_amount / 10) }));
-  return <Section title="سود ماهانه" description="ماه‌ها میلادی در DB هستند؛ نمایش شمسی در UI انجام می‌شود.">{query.isLoading ? <Spinner /> : rows.length === 0 ? <EmptyState title="داده سود ماهانه وجود ندارد" /> : <div className="space-y-4"><div className="h-64" dir="ltr"><ResponsiveContainer width="100%" height="100%"><LineChart data={chartData}><CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /><XAxis dataKey="month" tick={{ fontSize: 12 }} /><YAxis tick={{ fontSize: 12 }} /><Tooltip content={<ChartTooltip />} /><Line type="monotone" dataKey="profit" name="سود" stroke="hsl(var(--success))" strokeWidth={2} /></LineChart></ResponsiveContainer></div><DataTable rows={rows} columns={columns} keyExtractor={(row) => row.month_start} /></div>}</Section>;
+  return <Section title="سود ماهانه" description="ماه‌ها میلادی در DB هستند؛ نمایش شمسی در UI انجام می‌شود.">{query.isLoading ? <Spinner /> : rows.length === 0 ? <EmptyState title="داده سود ماهانه وجود ندارد" /> : <div className="space-y-4"><div className="h-64" dir="ltr"><ResponsiveContainer width="100%" height="100%"><LineChart data={chartData}><CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /><XAxis dataKey="month" tick={{ fontSize: 12 }} tickFormatter={toJalaliMonth} /><YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => toPersianDigits(v)} /><Tooltip content={<ChartTooltip labelKind="month" />} /><Line type="monotone" dataKey="profit" name="سود" stroke="hsl(var(--success))" strokeWidth={2} /></LineChart></ResponsiveContainer></div><DataTable rows={rows} columns={columns} keyExtractor={(row) => row.month_start} /></div>}</Section>;
 }
 
 function PurchaseSummarySection() {

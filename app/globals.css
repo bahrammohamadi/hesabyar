@@ -362,3 +362,70 @@ body {
     text-decoration: none !important;
   }
 }
+
+/* ============================================================
+   چیدمان فاکتور فروش — بر پایه‌ی عرض ظرف، نه عرض پنجره
+   ============================================================
+
+   🔴 باگی که این بخش حل می‌کند:
+
+   فرم «فروش جدید» با `lg:grid-cols-[minmax(0,1fr)_340px]` دو ستونی
+   می‌شد. اما بریک‌پوینت `lg` به عرض *پنجره* نگاه می‌کند، در حالی که
+   این فرم داخل پنل کشویی با عرض ثابت `min(100vw, 560px)` رندر
+   می‌شود.
+
+   نتیجه روی دسکتاپ ۱۴۴۰px: شرط lg فعال می‌شد و ۳۴۰px از ۵۶۰px به
+   ستون کناری می‌رفت؛ فقط ۲۲۰px برای جستجوی کالا و لیست اقلام
+   می‌ماند. «۰ قلم کالا» در دو خط می‌شکست و ستون‌ها له می‌شدند.
+   (اندازه‌گیری‌شده روی tarazooapp.vercel.app)
+
+   راه‌حل: container query. چیدمان به عرض واقعی ظرف واکنش نشان
+   می‌دهد، پس چه در پنل ۵۶۰px باشد چه در صفحه‌ی تمام‌عرض، درست
+   می‌ماند.
+
+   چرا CSS خام و نه پلاگین @tailwindcss/container-queries؟
+   افزودن یک وابستگی برای یک کامپوننت توجیه ندارد؛ container query
+   بومی مرورگرهاست و صفر بایت به باندل اضافه می‌کند.
+*/
+.invoice-form-scope {
+  container-type: inline-size;
+  container-name: invoiceform;
+}
+
+/* پیش‌فرض: تک‌ستونی (پنل باریک و موبایل) */
+.invoice-form-grid {
+  display: grid;
+  gap: 1rem;
+  min-height: 0;
+  flex: 1 1 0%;
+  overflow-y: auto;
+}
+
+/*
+  ۸۶۰px آستانه‌ی واقعی است: ستون کناری ۳۴۰px + حداقل ۴۸۰px برای
+  جدول اقلام + فاصله. زیر این عدد، دو ستون از جدول اقلام قربانی
+  می‌گیرد — همان چیزی که در پنل ۵۶۰px اتفاق می‌افتاد.
+*/
+@container invoiceform (min-width: 860px) {
+  .invoice-form-grid {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    overflow: visible;
+  }
+  /* در حالت دوستونی هر دو مرحله هم‌زمان دیده می‌شوند */
+  .invoice-step-hidden {
+    display: block;
+  }
+  .invoice-steps-tabs {
+    display: none;
+  }
+}
+
+/* مرورگر بدون پشتیبانی container query → همان رفتار تک‌ستونی امن */
+@supports not (container-type: inline-size) {
+  @media (min-width: 1280px) {
+    .invoice-form-grid {
+      grid-template-columns: minmax(0, 1fr) 340px;
+      overflow: visible;
+    }
+  }
+}

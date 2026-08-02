@@ -151,8 +151,19 @@ export function DataTable<T>({
                 key={keyExtractor(row, index)}
                 {...(restProps as HTMLAttributes<HTMLDivElement>)}
                 onClick={onClick as HTMLAttributes<HTMLDivElement>["onClick"]}
-                // ردیف قابل کلیک باید با کیبورد هم قابل فعال‌سازی باشد.
-                role={clickable ? "button" : undefined}
+                /*
+                  ردیف قابل کلیک باید با کیبورد هم فعال شود.
+
+                  ⚠️ role اینجا عمداً "button" نیست: کارت داخل خودش
+                  منوی عملیات (یک button واقعی) دارد و button تودرتو
+                  ساختار نامعتبر است — axe آن را nested-interactive
+                  با شدت serious گزارش می‌کرد (۲۰ مورد در /sales).
+
+                  "link" همان معنای «این کارت شما را به جایی می‌برد» را
+                  می‌دهد بدون اینکه تودرتویی بسازد، چون منوی داخلی
+                  button است نه link.
+                */
+                role={clickable ? "link" : undefined}
                 tabIndex={clickable ? 0 : undefined}
                 onKeyDown={
                   clickable

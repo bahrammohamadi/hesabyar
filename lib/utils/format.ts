@@ -157,3 +157,38 @@ export function normalizeIranMobile(input: string | null | undefined): string | 
 /** true اگر شماره موبایل ایران معتبر باشد. */
 export const isValidIranMobile = (input: string | null | undefined): boolean =>
   normalizeIranMobile(input) !== null;
+
+/**
+ * تاریخ شمسی کوتاه برای محور نمودار — «۱۴/۰۵» (روز/ماه).
+ *
+ * محور X جای کمی دارد؛ «۱۴۰۵/۰۵/۱۱» کامل باعث می‌شود برچسب‌ها روی هم
+ * بیفتند یا Recharts آن‌ها را حذف کند. سال حذف می‌شود چون در بازه‌ی
+ * یک نمودار معمولاً ثابت است.
+ */
+export function toJalaliShort(date: string | Date | null | undefined): string {
+  if (!date) return "";
+  const j = toJalaliDayjs(date);
+  if (j) return toFaDigits(j.format("MM/DD"));
+  const g = dayjs(date);
+  return g.isValid() ? toFaDigits(g.format("MM/DD")) : "";
+}
+
+/**
+ * ماه شمسی با نام — «مرداد ۱۴۰۵».
+ * برای نمودارهای ماهانه که «۱۴۰۵/۰۵/۰۱» در آن‌ها گمراه‌کننده است
+ * (کاربر فکر می‌کند داده مربوط به یک روز خاص است، نه کل ماه).
+ */
+export function toJalaliMonth(date: string | Date | null | undefined): string {
+  if (!date) return "";
+  const months = [
+    "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
+    "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند",
+  ];
+  const j = toJalaliDayjs(date);
+  if (!j) {
+    const g = dayjs(date);
+    return g.isValid() ? toFaDigits(g.format("YYYY/MM")) : "";
+  }
+  const name = months[j.month()] ?? "";
+  return `${name} ${toFaDigits(j.format("YYYY"))}`;
+}

@@ -325,9 +325,13 @@ export function InvoiceCreateForm({
   /* ─── فرم اصلی ─── */
   return (
     <>
-      <div className="flex min-h-0 flex-1 flex-col">
-        {/* مرحله‌ها فقط در موبایل/تبلت معنا دارند؛ در دسکتاپ هر دو ستون هم‌زمان دیده می‌شوند */}
-        <div className="mb-3 flex items-center gap-2 lg:hidden">
+      <div className="invoice-form-scope flex min-h-0 flex-1 flex-col">
+        {/*
+          نوار مرحله‌ها وقتی ظرف باریک است دیده می‌شود.
+          شرط با container query کنترل می‌شود نه بریک‌پوینت پنجره، چون
+          این فرم هم در پنل ۵۶۰px رندر می‌شود هم می‌تواند تمام‌عرض باشد.
+        */}
+        <div className="invoice-steps-tabs mb-3 flex items-center gap-2">
           <button
             type="button"
             onClick={() => setStep("items")}
@@ -350,9 +354,9 @@ export function InvoiceCreateForm({
           </button>
         </div>
 
-        <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto lg:grid-cols-[minmax(0,1fr)_340px] lg:overflow-visible">
+        <div className="invoice-form-grid">
           {/* ستون اصلی: جستجو/بارکد + اقلام فاکتور */}
-          <div className={`space-y-4 ${step === "payment" ? "hidden lg:block" : ""}`}>
+          <div className={`space-y-4 ${step === "payment" ? "hidden invoice-step-hidden" : ""}`}>
             <PosSearchBar onOpenPicker={() => setProductPickerOpen(true)} />
             <PosCartList
               cart={cart}
@@ -363,7 +367,7 @@ export function InvoiceCreateForm({
           </div>
 
           {/* ستون کناری: مشتری، روش پرداخت، فیلدها و جمع مبالغ */}
-          <div className={`space-y-4 ${step === "items" ? "hidden lg:block" : ""}`}>
+          <div className={`space-y-4 ${step === "items" ? "hidden invoice-step-hidden" : ""}`}>
             <PosCustomerCard
               customer={customer}
               walletCredit={walletCredit}
