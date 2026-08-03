@@ -6,6 +6,7 @@ import { useGlobalShortcut } from "@/lib/hooks/useGlobalShortcut";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
 import { BottomNav } from "./bottom-nav";
+import { MobileFab } from "./mobile-fab";
 import { DemoBanner } from "./demo-banner";
 import { TrialCountdown } from "./trial-countdown";
 import { AnnouncementBanner } from "./announcement-banner";
@@ -55,6 +56,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </main>
       </div>
 
+      {/*
+        دکمه‌ی شناور «دسترسی سریع» (موبایل).
+
+        ⚠️ این کامپوننت از قبل نوشته شده بود ولی هیچ‌جا رندر نمی‌شد —
+        کد مرده. BottomNav فقط ناوبری است (بین بخش‌ها جابه‌جا می‌شود)،
+        پس در موبایل هیچ راه یک‌کلیکی برای «ساختن» چیزی وجود نداشت.
+
+        جای قرارگیری: bottom-[96px] تا بالای BottomNav بنشیند (ارتفاع
+        ۶۸px + فاصله‌ی ۱۲px) و رویش نیفتد.
+      */}
+      <MobileFab />
       <BottomNav onMoreClick={() => setIsSidebarOpen(true)} />
       <UpdatePrompt />
     </div>

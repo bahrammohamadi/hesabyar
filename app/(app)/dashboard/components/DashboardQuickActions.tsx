@@ -73,10 +73,17 @@ function QuickBtn({
 
 export function DashboardQuickActions({
   onOpenQuickSale,
+  onOpenQuickPurchase,
   onCreateProduct,
   onCreateContact,
 }: {
   onOpenQuickSale: () => void;
+  /*
+    «خرید کالا» قبلاً فقط لینک به /purchases بود: کاربر باید صفحه عوض
+    می‌کرد و بعد دکمه‌ی دیگری می‌زد. حالا مثل «فروش جدید» همان‌جا پنل
+    باز می‌شود.
+  */
+  onOpenQuickPurchase: () => void;
   onCreateProduct: () => void;
   onCreateContact: () => void;
 }) {
@@ -88,7 +95,7 @@ export function DashboardQuickActions({
       </div>
       <div className="grid grid-cols-3 gap-2.5 md:grid-cols-6">
         <QuickBtn label="فروش جدید"   icon={Receipt}        accent="primary" badge="F2" onClick={onOpenQuickSale} />
-        <QuickBtn label="خرید کالا"   icon={ShoppingCart}   accent="emerald"            href="/purchases" />
+        <QuickBtn label="خرید جدید"   icon={ShoppingCart}   accent="emerald"            onClick={onOpenQuickPurchase} />
         <QuickBtn label="تعدیل انبار" icon={ArrowDownToLine} accent="blue"              href="/inventory/adjust" />
         <QuickBtn label="کالای جدید"  icon={Package2}        accent="slate"             onClick={onCreateProduct} />
         <QuickBtn label="مشتری جدید"  icon={UserPlus}        accent="cyan"              onClick={onCreateContact} />

@@ -14,7 +14,7 @@ import { Badge, Button, Card } from "@/src/shared/ui";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { PhoneLink } from "@/components/shared/phone-link";
-import { formatToman, rialToToman, toFaDigits } from "@/lib/utils/format";
+import { formatToman, rialToToman, toEnDigits, toFaDigits } from "@/lib/utils/format";
 import type { CartItem } from "@/types/db";
 
 /* ------------------------------------------------------------------ */
@@ -136,17 +136,21 @@ export function PosCustomerCard({
   walletCredit,
   onPick,
   onClear,
+  variant = "sale",
 }: {
   customer: { id: string; name: string; phone?: string | null } | null;
   walletCredit?: number | null;
   onPick: () => void;
   onClear: () => void;
+  /** در خرید، طرف حساب تأمین‌کننده است نه مشتری. */
+  variant?: "sale" | "purchase";
 }) {
+  const isPurchase = variant === "purchase";
   return (
     <Card className="p-3 sm:p-4">
       <div className="mb-3 flex items-center gap-2">
         <Users size={16} className="text-primary" />
-        <h2 className="text-sm font-extrabold text-foreground">انتخاب مشتری</h2>
+        <h2 className="text-sm font-extrabold text-foreground">{isPurchase ? "انتخاب تأمین‌کننده" : "انتخاب مشتری"}</h2>
       </div>
 
       {customer ? (
@@ -159,7 +163,7 @@ export function PosCustomerCard({
             <button
               type="button"
               onClick={onClear}
-              aria-label="حذف مشتری"
+              aria-label={isPurchase ? "حذف تأمین‌کننده" : "حذف مشتری"}
               className="shrink-0 rounded-lg p-1 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
             >
               <X size={16} />
@@ -178,7 +182,7 @@ export function PosCustomerCard({
           className="flex min-h-11 w-full items-center gap-2 rounded-xl border border-dashed border-input px-3.5 text-sm text-muted-foreground transition hover:border-primary/40 hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring"
         >
           <UserPlus size={17} />
-          جستجوی مشتری یا شماره تماس
+          {isPurchase ? "جستجوی تأمین‌کننده یا شماره تماس" : "جستجوی مشتری یا شماره تماس"}
         </button>
       )}
     </Card>
@@ -189,21 +193,58 @@ export function PosCustomerCard({
 /* لیست اقلام فاکتور — جدول در دسکتاپ، کارت در موبایل                  */
 /* ------------------------------------------------------------------ */
 
+/**
+ * فهرست اقلام سند.
+ *
+ * یک کامپوننت برای هر دو سند، نه دو کپی.
+ *
+ * تفاوت فروش و خرید فقط در دو ستون اضافه است: در خرید، فروشنده همان
+ * لحظه که کالا را می‌خرد قیمت فروش و درصد سودش را هم تعیین می‌کند —
+ * برای فروشگاه پوشاک این کار اصلی است، نه یک قابلیت جانبی.
+ *
+ * چرا prop اختیاری و نه کامپوننت جدا؟
+ *   نسخه‌ی قبلی خرید یک کپی مستقل ۱۰۰ خطی داشت که چیدمان موبایلش با
+ *   فروش فرق می‌کرد. همان چیزی که کاربر از آن شکایت داشت: «هردو یک کار
+ *   انجام می‌دهند ولی ظاهر و فرمشان متفاوت است.»
+ */
 export function PosCartList({
   cart,
   onQtyChange,
   onPriceChange,
   onRemove,
+  variant = "sale",
+  onSalePriceChange,
 }: {
   cart: CartItem[];
   onQtyChange: (variantId: string, qty: number) => void;
   onPriceChange: (variantId: string, tomanValue: string) => void;
   onRemove: (variantId: string) => void;
+  /** حالت خرید ستون‌های «قیمت فروش» و «سود٪» را اضافه می‌کند. */
+  variant?: "sale" | "purchase";
+  /** فقط در حالت خرید لازم است. */
+  onSalePriceChange?: (variantId: string, tomanValue: string) => void;
 }) {
+  const isPurchase = variant === "purchase";
+  /*
+    در حالت خرید دو ستون بیشتر داریم. عرض نام کالا کم شده تا در پنل
+    ۵۶۰ پیکسلی هم چیزی از لبه بیرون نزند.
+  */
+  const gridCols = isPurchase
+    ? "grid-cols-[minmax(150px,1.6fr)_120px_120px_84px_130px_minmax(100px,1fr)_44px]"
+    : "grid-cols-[minmax(200px,2.2fr)_130px_140px_minmax(110px,1fr)_44px]";
+
+  /** درصد سود بر مبنای قیمت خرید. صفر بودن قیمت خرید تقسیم بر صفر می‌دهد. */
+  function marginPercent(item: CartItem) {
+    const buy = item.unit_price;
+    const sell = item.sale_price ?? 0;
+    if (buy <= 0) return 0;
+    return Math.round(((sell - buy) / buy) * 100);
+  }
+
   return (
     <Card className="overflow-hidden">
       <div className="flex items-center justify-between gap-3 p-3 sm:p-4">
-        <h2 className="text-sm font-extrabold text-foreground">لیست اقلام فاکتور</h2>
+        <h2 className="text-sm font-extrabold text-foreground">{isPurchase ? "لیست اقلام خرید" : "لیست اقلام فاکتور"}</h2>
         <Badge tone={cart.length > 0 ? "primary" : "neutral"}>
           {toFaDigits(cart.length)} قلم کالا
         </Badge>
@@ -217,10 +258,13 @@ export function PosCartList({
       ) : (
         <div className="max-h-[46vh] overflow-y-auto px-3 pb-3 sm:px-4 sm:pb-4">
           {/* سربرگ جدول — فقط دسکتاپ، مطابق مرجع (نوار تیره) */}
-          <div className="sticky top-0 z-[1] hidden grid-cols-[minmax(200px,2.2fr)_130px_140px_minmax(110px,1fr)_44px] items-center gap-2 rounded-2xl bg-primary px-3 py-2.5 text-xs font-extrabold text-primary-foreground lg:grid">
+          <div className={`pos-row-desktop${isPurchase ? " pos-row-purchase" : ""} sticky top-0 z-[1] ${gridCols} items-center gap-2 rounded-2xl bg-primary px-3 py-2.5 text-xs font-extrabold text-primary-foreground`}>
             <span>نام محصول</span>
+            {isPurchase && <span>قیمت خرید</span>}
+            {isPurchase && <span>قیمت فروش</span>}
+            {isPurchase && <span className="text-center">سود٪</span>}
             <span className="text-center">تعداد</span>
-            <span>قیمت واحد (تومان)</span>
+            {!isPurchase && <span>قیمت واحد (تومان)</span>}
             <span className="text-left">مجموع (تومان)</span>
             <span />
           </div>
@@ -229,7 +273,7 @@ export function PosCartList({
             {cart.map((c) => (
               <li key={c.variant_id} className="py-3">
                 {/* دسکتاپ */}
-                <div className="hidden grid-cols-[minmax(200px,2.2fr)_130px_140px_minmax(110px,1fr)_44px] items-center gap-2 lg:grid">
+                <div className={`pos-row-desktop${isPurchase ? " pos-row-purchase" : ""} ${gridCols} items-center gap-2`}>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
                       <EntityLink type="product" id={c.product_id} className="truncate text-sm font-bold">
@@ -240,15 +284,56 @@ export function PosCartList({
                     <div className="mt-0.5 truncate text-xs text-muted-foreground">{c.variant_label || "ساده"}</div>
                   </div>
 
+                  {isPurchase && (
+                    <input
+                      className="input h-10 min-h-10 text-left text-sm tabular-nums"
+                      inputMode="numeric"
+                      aria-label={`قیمت خرید ${c.product_name}`}
+                      value={String(rialToToman(c.unit_price))}
+                      onChange={(e) => onPriceChange(c.variant_id, e.target.value)}
+                    />
+                  )}
+                  {isPurchase && (
+                    <input
+                      className="input h-10 min-h-10 text-left text-sm tabular-nums"
+                      inputMode="numeric"
+                      aria-label={`قیمت فروش ${c.product_name}`}
+                      value={String(rialToToman(c.sale_price ?? 0))}
+                      onChange={(e) => onSalePriceChange?.(c.variant_id, e.target.value)}
+                    />
+                  )}
+                  {isPurchase && (
+                    <input
+                      className={`input h-10 min-h-10 text-center text-xs font-bold ${
+                        marginPercent(c) >= 0 ? "text-success-onSoft" : "text-destructive-text"
+                      }`}
+                      inputMode="numeric"
+                      aria-label={`درصد سود ${c.product_name}`}
+                      value={String(marginPercent(c))}
+                      onChange={(e) => {
+                        /*
+                          تایپ درصد، قیمت فروش را می‌سازد — نه برعکس.
+                          فروشنده معمولاً می‌گوید «۴۰ درصد روش بکش»، نه
+                          اینکه عدد نهایی را از قبل بداند.
+                        */
+                        const pct = Number(toEnDigits(e.target.value)) || 0;
+                        const nextSell = Math.round(c.unit_price * (1 + pct / 100));
+                        onSalePriceChange?.(c.variant_id, String(rialToToman(nextSell)));
+                      }}
+                    />
+                  )}
+
                   <QtyStepper qty={c.qty} onChange={(n) => onQtyChange(c.variant_id, n)} />
 
-                  <input
-                    className="input h-10 min-h-10 text-left text-sm tabular-nums"
-                    inputMode="numeric"
-                    aria-label={`قیمت واحد ${c.product_name}`}
-                    value={String(rialToToman(c.unit_price))}
-                    onChange={(e) => onPriceChange(c.variant_id, e.target.value)}
-                  />
+                  {!isPurchase && (
+                    <input
+                      className="input h-10 min-h-10 text-left text-sm tabular-nums"
+                      inputMode="numeric"
+                      aria-label={`قیمت واحد ${c.product_name}`}
+                      value={String(rialToToman(c.unit_price))}
+                      onChange={(e) => onPriceChange(c.variant_id, e.target.value)}
+                    />
+                  )}
 
                   <div className="text-left text-sm font-black tabular-nums text-foreground">
                     {formatToman(c.unit_price * c.qty - c.discount, false)}
@@ -265,7 +350,7 @@ export function PosCartList({
                 </div>
 
                 {/* موبایل و تبلت — کارت، مطابق مرجع step2 */}
-                <div className="lg:hidden">
+                <div className={`pos-row-mobile${isPurchase ? " pos-row-purchase" : ""}`}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
                       <EntityLink type="product" id={c.product_id} className="truncate text-sm font-bold">
@@ -285,6 +370,51 @@ export function PosCartList({
                       <Trash2 size={16} />
                     </button>
                   </div>
+                  {/*
+                    در موبایل، سه فیلد خرید زیر هم می‌آیند نه کنار هم.
+                    نسخه‌ی قبلی خرید اینها را در گرید دوستونی می‌چید و
+                    فیلدها در ۳۹۰px به‌هم می‌ریختند.
+                  */}
+                  {isPurchase && (
+                    <div className="mt-2.5 grid grid-cols-3 gap-2">
+                      <label className="block">
+                        <span className="mb-1 block text-2xs text-muted-foreground">خرید</span>
+                        <input
+                          className="input h-10 min-h-10 text-left text-sm tabular-nums"
+                          inputMode="numeric"
+                          aria-label={`قیمت خرید ${c.product_name}`}
+                          value={String(rialToToman(c.unit_price))}
+                          onChange={(e) => onPriceChange(c.variant_id, e.target.value)}
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="mb-1 block text-2xs text-muted-foreground">فروش</span>
+                        <input
+                          className="input h-10 min-h-10 text-left text-sm tabular-nums"
+                          inputMode="numeric"
+                          aria-label={`قیمت فروش ${c.product_name}`}
+                          value={String(rialToToman(c.sale_price ?? 0))}
+                          onChange={(e) => onSalePriceChange?.(c.variant_id, e.target.value)}
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="mb-1 block text-2xs text-muted-foreground">سود٪</span>
+                        <input
+                          className={`input h-10 min-h-10 text-center text-sm font-bold ${
+                            marginPercent(c) >= 0 ? "text-success-onSoft" : "text-destructive-text"
+                          }`}
+                          inputMode="numeric"
+                          aria-label={`درصد سود ${c.product_name}`}
+                          value={String(marginPercent(c))}
+                          onChange={(e) => {
+                            const pct = Number(toEnDigits(e.target.value)) || 0;
+                            const nextSell = Math.round(c.unit_price * (1 + pct / 100));
+                            onSalePriceChange?.(c.variant_id, String(rialToToman(nextSell)));
+                          }}
+                        />
+                      </label>
+                    </div>
+                  )}
                   <div className="mt-2.5 flex items-center justify-between gap-2">
                     <QtyStepper qty={c.qty} onChange={(n) => onQtyChange(c.variant_id, n)} />
                     <strong className="text-sm font-black tabular-nums text-foreground">
@@ -293,7 +423,12 @@ export function PosCartList({
                   </div>
                 </div>
 
-                {c.qty > c.stock_qty && (
+                {/*
+                  هشدار موجودی فقط در فروش معنا دارد. در خرید، موجودی
+                  قرار است *زیاد* شود؛ نمایش «موجودی کافی نیست» آنجا
+                  فقط کاربر را می‌ترساند.
+                */}
+                {!isPurchase && c.qty > c.stock_qty && (
                   <div className="mt-2 text-xs font-medium text-warning">
                     ⚠ موجودی کافی نیست (موجودی: {toFaDigits(c.stock_qty)})
                   </div>
@@ -342,6 +477,7 @@ export function PosSummaryCard({
   paidWalletRial,
   credit,
   children,
+  variant = "sale",
 }: {
   subtotal: number;
   discountRial: number;
@@ -349,7 +485,9 @@ export function PosSummaryCard({
   paidWalletRial: number;
   credit: number;
   children?: ReactNode;
+  variant?: "sale" | "purchase";
 }) {
+  const isPurchase = variant === "purchase";
   return (
     <div className="rounded-[1.75rem] bg-primary p-4 text-primary-foreground shadow-sm sm:p-5">
       <SummaryRow label="جمع کل اقلام:" value={formatToman(subtotal, false)} />
@@ -359,10 +497,10 @@ export function PosSummaryCard({
       {paidWalletRial > 0 && (
         <SummaryRow label="پرداخت از اعتبار:" value={formatToman(paidWalletRial, false)} />
       )}
-      {credit > 0 && <SummaryRow label="باقیمانده (نسیه):" value={formatToman(credit, false)} />}
+      {credit > 0 && <SummaryRow label={isPurchase ? "بدهی به تأمین‌کننده:" : "باقیمانده (نسیه):"} value={formatToman(credit, false)} />}
 
       <div className="mt-3 border-t border-primary-foreground/20 pt-3">
-        <div className="text-xs text-primary-foreground/90">مبلغ قابل پرداخت:</div>
+        <div className="text-xs text-primary-foreground/90">{isPurchase ? "جمع کل خرید:" : "مبلغ قابل پرداخت:"}</div>
         <div className="mt-1 flex items-baseline gap-1.5">
           <span className="text-2xl font-black tabular-nums sm:text-3xl">{formatToman(total, false)}</span>
           <span className="text-xs text-primary-foreground/90">تومان</span>

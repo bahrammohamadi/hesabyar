@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Receipt } from "lucide-react";
+import { Receipt, ShoppingCart } from "lucide-react";
 import type { PanelInstance } from "@/src/core/panel-manager/types";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { EntityLink } from "@/src/core/panel-manager/EntityLink";
@@ -12,6 +12,7 @@ import { Money, PersianDate, toPersianDigits } from "@/src/shared/format";
 import { rialToToman, tomanToRial } from "@/lib/utils/format";
 import { PanelExitLink } from "@/src/core/panel-manager/PanelExitLink";
 import { InvoiceCreateForm } from "./InvoiceCreateForm";
+import { PurchaseCreateForm } from "./PurchaseCreateForm";
 
 function docTypeLabel(type: InvoiceDocType) {
   return type === "sale" ? "فروش" : "خرید";
@@ -45,17 +46,21 @@ export function InvoicePanel({ panel }: { panel: PanelInstance }) {
     پیاده‌سازی ناهماهنگ بود. حالا همان فرم مشترک اینجا رندر می‌شود، پس
     داشبورد، فهرست فروش و هر نقطه‌ی دیگری یک UI یکسان می‌بینند.
 
-    فعلاً فقط فروش پشتیبانی می‌شود؛ ایجاد فاکتور خرید مسیر جدای خودش را
-    دارد و اینجا صراحتاً اعلام می‌شود تا رفتار مبهم نماند.
+    خرید هم از همین مسیر می‌آید. تا پیش از این اینجا نوشته بود «ایجاد
+    فاکتور خرید از این مسیر ممکن نیست» و کاربر را به صفحه‌ی خرید
+    می‌فرستاد که Modal جداگانه‌ی خودش را داشت — همان ناهماهنگی‌ای که
+    کاربر گزارش کرد.
   */
   if (!docId) {
-    if (docType !== "sale") {
+    if (docType === "purchase") {
       return (
-        <PanelShell title="سند جدید" icon={<Receipt size={20} />} onClose={closeTop}>
-          <EmptyState
-            title="ایجاد فاکتور خرید از این مسیر ممکن نیست"
-            description="برای ثبت خرید جدید از صفحه‌ی «خرید» استفاده کنید."
-          />
+        <PanelShell
+          title="ثبت فاکتور خرید جدید"
+          subtitle="افزودن کالا، تعیین قیمت فروش و ثبت پرداخت"
+          icon={<ShoppingCart size={20} />}
+          onClose={closeTop}
+        >
+          <PurchaseCreateForm onClose={closeTop} />
         </PanelShell>
       );
     }

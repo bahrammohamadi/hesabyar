@@ -395,6 +395,22 @@ body {
 /* پیش‌فرض: تک‌ستونی (پنل باریک و موبایل) */
 .invoice-form-grid {
   display: grid;
+  /*
+    🔴 این خط با اندازه‌گیری واقعی اضافه شد و نبودش یک باگ چیدمانی بود.
+
+    اندازه‌ی پیش‌فرض ستون گرید `auto` است که کف آن `min-content`
+    می‌شود. یعنی اگر محتوا از ظرف پهن‌تر باشد — مثل جدول اقلام با
+    ستون‌های ثابت — خودِ گرید کش می‌آید و از پنل بیرون می‌زند.
+
+    اندازه‌گیری در پنل ۵۶۰px (فضای مفید ۵۱۹px):
+      فروش : scrollWidth ۷۱۴px  → ۲۷ عنصر بیرون از پنل
+      خرید : scrollWidth ۸۵۴px  → ۳۳ عنصر (دو ستون بیشتر دارد)
+
+    با minmax(0, 1fr) ستون اجازه پیدا می‌کند از min-content کوچک‌تر
+    شود و محتوا داخل بماند. مشکل از قبل در فرم فروش هم وجود داشت و
+    فقط چون کسی اندازه‌اش نگرفته بود دیده نشده بود.
+  */
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
   min-height: 0;
   flex: 1 1 0%;
@@ -417,6 +433,61 @@ body {
   }
   .invoice-steps-tabs {
     display: none;
+  }
+}
+
+/*
+  جدول اقلام: نمایش جدولی فقط وقتی *ظرف* جا دارد، نه وقتی پنجره بزرگ است.
+
+  🔴 باگی که با اندازه‌گیری پیدا شد:
+    ردیف‌های اقلام با `lg:grid` کنترل می‌شدند و `lg` به عرض پنجره نگاه
+    می‌کند. روی دسکتاپ ۱۴۴۰px آن شرط فعال بود، پس جدولِ چندستونی داخل
+    پنل ۵۶۰px رندر می‌شد و از لبه بیرون می‌زد:
+
+      فروش: scrollWidth ۶۵۲px داخل ظرف ۴۸۵px
+      خرید: scrollWidth ۷۹۲px (دو ستون بیشتر)
+
+    دقیقاً همان اشتباهی که قبلاً در چیدمان کلی فرم رخ داده بود و با
+    container query حل شد. اینجا هم همان راه‌حل به کار می‌رود.
+
+  آستانه‌ها بر اساس مجموع عرض ستون‌ها انتخاب شده‌اند:
+    فروش  ۲۰۰+۱۳۰+۱۴۰+۱۱۰+۴۴ + فاصله‌ها ≈ ۶۵۰
+    خرید  ۱۵۰+۱۲۰+۱۲۰+۸۴+۱۳۰+۱۰۰+۴۴ + فاصله‌ها ≈ ۷۸۰
+*/
+.pos-row-desktop {
+  display: none;
+}
+.pos-row-mobile {
+  display: block;
+}
+
+@container invoiceform (min-width: 680px) {
+  .pos-row-desktop:not(.pos-row-purchase) {
+    display: grid;
+  }
+  .pos-row-mobile:not(.pos-row-purchase) {
+    display: none;
+  }
+}
+
+@container invoiceform (min-width: 820px) {
+  .pos-row-desktop.pos-row-purchase {
+    display: grid;
+  }
+  .pos-row-mobile.pos-row-purchase {
+    display: none;
+  }
+}
+
+/*
+  بیرون از فرم فاکتور (مثلاً اگر روزی این فهرست جای دیگری استفاده شود)
+  container وجود ندارد و کوئری بالا هرگز فعال نمی‌شود. این fallback
+  رفتار قدیمی مبتنی بر عرض پنجره را نگه می‌دارد.
+*/
+@supports not (container-type: inline-size) {
+  @media (min-width: 1024px) {
+    .pos-row-desktop { display: grid; }
+    .pos-row-mobile { display: none; }
   }
 }
 

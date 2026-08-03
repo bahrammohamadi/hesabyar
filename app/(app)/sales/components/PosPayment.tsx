@@ -85,6 +85,7 @@ export function PosInvoiceFields({
   discountType,
   onDiscountTypeChange,
   discountRial,
+  variant = "sale",
 }: {
   priceListId: string;
   onPriceListChange: (v: string) => void;
@@ -99,23 +100,32 @@ export function PosInvoiceFields({
   discountType: "fixed" | "percent";
   onDiscountTypeChange: (v: "fixed" | "percent") => void;
   discountRial: number;
+  /**
+   * حالت خرید: «لیست قیمت» حذف می‌شود (لیست قیمت مفهومی فروش است و
+   * روی قیمت خریدِ تأمین‌کننده اثری ندارد) و برچسب حساب از «دریافت»
+   * به «پرداخت» تغییر می‌کند.
+   */
+  variant?: "sale" | "purchase";
 }) {
+  const isPurchase = variant === "purchase";
   return (
     <Card className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 sm:p-4">
-      <Field label="لیست قیمت">
-        <Select value={priceListId} onChange={(e) => onPriceListChange(e.target.value)}>
-          <option value="">قیمت عادی کالا</option>
-          {priceLists?.map((list) => (
-            <option key={list.id} value={list.id}>
-              {list.name} {list.discount_percent ? `(${list.discount_percent}٪)` : ""}
-            </option>
-          ))}
-        </Select>
-      </Field>
+      {!isPurchase && (
+        <Field label="لیست قیمت">
+          <Select value={priceListId} onChange={(e) => onPriceListChange(e.target.value)}>
+            <option value="">قیمت عادی کالا</option>
+            {priceLists?.map((list) => (
+              <option key={list.id} value={list.id}>
+                {list.name} {list.discount_percent ? `(${list.discount_percent}٪)` : ""}
+              </option>
+            ))}
+          </Select>
+        </Field>
+      )}
 
-      <DatePicker label="تاریخ فاکتور" value={saleDate} onChange={onSaleDateChange} />
+      <DatePicker label={isPurchase ? "تاریخ خرید" : "تاریخ فاکتور"} value={saleDate} onChange={onSaleDateChange} />
 
-      <Field label="حساب دریافت وجه">
+      <Field label={isPurchase ? "حساب پرداخت وجه" : "حساب دریافت وجه"}>
         <Select value={accountId} onChange={(e) => onAccountChange(e.target.value)}>
           <option value="">انتخاب...</option>
           {accounts?.map((a) => (

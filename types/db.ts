@@ -172,8 +172,18 @@ export interface CartItem {
   product_name: string;
   variant_label: string;
   qty: number;
-  unit_price: number; // ریال
+  /**
+   * ریال. در فاکتور فروش قیمت فروش است و در فاکتور خرید قیمت خرید —
+   * یعنی همیشه «مبلغی که این سند رویش بسته می‌شود».
+   */
+  unit_price: number;
   discount: number; // ریال
   cost_price: number; // ریال
   stock_qty: number;
+  /**
+   * ریال. فقط در فاکتور خرید استفاده می‌شود: قیمت فروشی که کاربر همان
+   * لحظه برای کالا تعیین می‌کند و پس از ثبت سند روی خود کالا می‌نشیند.
+   * در فاکتور فروش تعریف‌نشده می‌ماند.
+   */
+  sale_price?: number;
 }

@@ -160,6 +160,7 @@ export default function DashboardPage() {
       <DashboardQuickActions
         onOpenQuickSale={openNewSale}
         onCreateProduct={() => openEntity("product", undefined, { mode: "create", context: "dashboard", title: "کالای جدید" })}
+        onOpenQuickPurchase={() => openDocument("purchase", undefined, { mode: "create", context: "dashboard" })}
         onCreateContact={() => openEntity("contact", undefined, { mode: "create", context: "dashboard", title: "مشتری جدید" })}
       />
 
