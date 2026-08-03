@@ -2,6 +2,7 @@
 
 import { useState, type MouseEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { DateRangeFilter, EMPTY_RANGE, type DateRange } from "@/src/shared/ui";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
@@ -26,16 +27,31 @@ export default function SalesPage() {
     openDocument("sale", undefined, { mode: "create", context: "workspace" });
   }
 
+  const [range, setRange] = useState<DateRange>(EMPTY_RANGE);
+
   const { data: sales, isLoading } = useQuery({
-    queryKey: ["sales-list", orgId],
+    /*
+      بازه در کلید کش است تا با تغییرش داده دوباره از سرور بیاید.
+      فیلتر سمت سرور انجام می‌شود نه روی آرایه، چون کوئری limit 50
+      دارد: فیلتر محلی فقط همان ۵۰ ردیف آخر را می‌دید و فاکتورهای
+      قدیمی‌ترِ داخل بازه را از قلم می‌انداخت.
+    */
+    queryKey: ["sales-list", orgId, range.from, range.to],
     enabled: !!orgId,
     queryFn: async () => {
       const supabase = createClient();
-      const { data, error } = await supabase
+      let query = supabase
         .from("sales")
         .select("id, invoice_no, date, total, paid_credit, status, customer_id, customer:contacts(name)")
         .order("date", { ascending: false })
-        .limit(50);
+        .limit(range.from || range.to ? 500 : 50);
+
+      if (range.from) query = query.gte("date", range.from);
+      // lte روی ستون تاریخ کافی است؛ اگر روزی timestamp شد باید
+      // به «کمتر از روز بعد» تغییر کند.
+      if (range.to) query = query.lte("date", range.to);
+
+      const { data, error } = await query;
       if (error) throw error;
       return data as unknown as {
         id: string;
@@ -84,6 +100,10 @@ export default function SalesPage() {
           </button>
         }
       />
+
+      <div className="mb-4 rounded-2xl border border-border bg-card p-3.5 sm:p-4">
+        <DateRangeFilter value={range} onChange={setRange} />
+      </div>
 
       {isLoading ? (
         <Spinner />

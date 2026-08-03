@@ -125,6 +125,12 @@ export async function updateSession(request: NextRequest) {
     isPublicSite ||
     path.startsWith("/_next") ||
     path.startsWith("/api/public") ||
+    /*
+      نسخه‌ی بیلد اطلاعات حساسی نیست و باید پیش از ورود هم قابل
+      خواندن باشد، وگرنه بررسی به‌روزرسانی در صفحه‌ی ورود کار
+      نمی‌کند و ۴۰۱ می‌گیرد.
+    */
+    path === "/api/version" ||
     path === "/manifest.webmanifest" ||
     path === "/robots.txt" ||
     path === "/sitemap.xml" ||

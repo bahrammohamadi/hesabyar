@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
+import { DateRangeFilter, EMPTY_RANGE, type DateRange } from "@/src/shared/ui";
 import { DataTable, type Column } from "@/src/shared/ui";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
@@ -32,16 +33,28 @@ export default function PurchasesPage() {
   const { openDocument } = usePanelManager();
   const [open, setOpen] = useState(false);
 
+  const [range, setRange] = useState<DateRange>(EMPTY_RANGE);
+
   const { data: purchases, isLoading } = useQuery({
-    queryKey: ["purchases-list", orgId],
+    // بازه در کلید کش تا تغییرش داده را دوباره از سرور بیاورد.
+    queryKey: ["purchases-list", orgId, range.from, range.to],
     enabled: !!orgId,
     queryFn: async () => {
       const supabase = createClient();
-      const { data, error } = await supabase
+      /*
+        فیلتر سمت سرور، نه روی آرایه: کوئری limit دارد و فیلتر محلی
+        فقط همان ردیف‌های آخر را می‌دید.
+      */
+      let query = supabase
         .from("purchases")
         .select("id, invoice_no, date, total, paid, supplier_id, supplier:contacts(name)")
         .order("date", { ascending: false })
-        .limit(50);
+        .limit(range.from || range.to ? 500 : 50);
+
+      if (range.from) query = query.gte("date", range.from);
+      if (range.to) query = query.lte("date", range.to);
+
+      const { data, error } = await query;
       if (error) throw error;
       return data as unknown as {
         id: string;
@@ -82,12 +95,17 @@ export default function PurchasesPage() {
         title="خرید"
         subtitle="ثبت فاکتور خرید از تامین‌کننده‌ها"
         action={
-          <button onClick={() => setOpen(true)} className="btn-primary">
+          // برچسب زیر sm پنهان می‌شود، پس نام دسترس‌پذیر صریح لازم است.
+          <button onClick={() => setOpen(true)} aria-label="خرید جدید" className="btn-primary">
             <Plus size={18} />
             <span className="hidden sm:inline">خرید جدید</span>
           </button>
         }
       />
+
+      <div className="mb-4 rounded-2xl border border-border bg-card p-3.5 sm:p-4">
+        <DateRangeFilter value={range} onChange={setRange} />
+      </div>
 
       {isLoading ? (
         <Spinner />

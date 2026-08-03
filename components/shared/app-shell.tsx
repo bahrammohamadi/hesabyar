@@ -10,6 +10,7 @@ import { DemoBanner } from "./demo-banner";
 import { TrialCountdown } from "./trial-countdown";
 import { AnnouncementBanner } from "./announcement-banner";
 import { ImpersonationBanner } from "./impersonation-banner";
+import { UpdatePrompt } from "./update-prompt";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -55,6 +56,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <BottomNav onMoreClick={() => setIsSidebarOpen(true)} />
+      <UpdatePrompt />
     </div>
   );
 }

@@ -24,8 +24,15 @@ export const BRAND_DESCRIPTION =
 /** عنوان کامل مرورگر. */
 export const BRAND_TITLE = `${BRAND_NAME} | ${BRAND_TAGLINE}`;
 
-/** نسخه‌ی نمایشی در پاورقی نوار کناری. */
-export const BRAND_VERSION = "۱.۰";
+/**
+ * نسخه‌ی نرم‌افزار.
+ *
+ * ⚠️ دستی تغییرش ندهید. مقدار در زمان بیلد از تعداد کامیت گیت ساخته
+ * می‌شود (next.config.mjs) و با هر تغییر خودکار بالا می‌رود.
+ * پیش از این روی «۱.۰» ثابت مانده بود و بعد از ده‌ها تغییر هنوز
+ * همان را نشان می‌داد.
+ */
+export { APP_VERSION as BRAND_VERSION, APP_SHA as BRAND_BUILD_SHA, APP_BUILT_AT as BRAND_BUILT_AT } from "./version.generated";
 
 /** ایمیل تماس عمومی روی صفحه‌ی معرفی. */
 export const BRAND_CONTACT_EMAIL = "info@tarazoo.ir";

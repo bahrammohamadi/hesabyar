@@ -4,9 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
+import { toFaDigits } from "@/lib/utils/format";
 import { usePermission } from "@/lib/hooks/usePermission";
 import { usePlatformAdmin } from "@/lib/hooks/usePlatformAdmin";
-import { BRAND_NAME, BRAND_VERSION } from "@/lib/brand";
+import { BRAND_NAME, BRAND_VERSION, BRAND_BUILD_SHA } from "@/lib/brand";
 import {
   PanelRightClose, PanelRightOpen,
   LayoutDashboard, Package, Warehouse, ShoppingCart, Receipt, Users,
@@ -489,7 +490,16 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         {/* Footer */}
         <div className="border-t border-border p-3">
           <div className={cn("text-center text-xs text-muted-foreground", rail && "lg:hidden")}>
-            {BRAND_NAME} — نسخه {BRAND_VERSION}
+            {BRAND_NAME} — نسخه {toFaDigits(BRAND_VERSION)}
+            {/* هش بیلد برای پشتیبانی؛ با انتخاب متن قابل کپی است. */}
+            {/*
+              ⚠️ opacity استفاده نمی‌شود: توکن متن از قبل دقیقاً روی
+              آستانه‌ی WCAG کالیبره شده و شفافیت آن را زیر ۴.۵
+              می‌آورد (همان اشتباهی که در شمارنده‌ی تست هم رخ داد).
+            */}
+            <span className="mt-0.5 block select-all text-2xs text-muted-foreground" dir="ltr">
+              {BRAND_BUILD_SHA}
+            </span>
           </div>
         </div>
       </aside>
