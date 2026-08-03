@@ -24,8 +24,30 @@ function sh(cmd, fallback = "") {
 }
 
 const sha = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || sh("git rev-parse --short HEAD", "dev");
-const count = sh("git rev-list --count HEAD", "");
-const version = count ? `1.${count}` : sha !== "dev" ? `1.0-${sha}` : "1.0";
+
+/*
+  🔴 چرا تعداد کامیت به‌تنهایی کافی نیست؟
+
+  Vercel کلون کم‌عمق (shallow) انجام می‌دهد و git rev-list --count
+  فقط همان چند کامیتِ دریافت‌شده را می‌شمارد.
+  (بازتولیدشده: محلی 1.223 ولی روی سایت زنده 1.10 — یعنی Vercel
+  فقط ۱۰ کامیت دیده بود.)
+
+  راه‌حل: عمق کامل را می‌خواهیم؛ اگر نشد، از تاریخ بیلد استفاده
+  می‌کنیم که همیشه یکنواخت افزایشی است و مقایسه‌پذیر می‌ماند.
+*/
+let count = sh("git rev-list --count HEAD", "");
+if (process.env.VERCEL) {
+  const deep = sh("git rev-list --count HEAD", "");
+  const unshallowed = sh("git fetch --unshallow --quiet 2>/dev/null && git rev-list --count HEAD", "");
+  count = unshallowed || deep;
+}
+
+// yy.mmdd — یکنواخت افزایشی و خوانا حتی وقتی گیت کم‌عمق است.
+const d = new Date();
+const stamp = `${String(d.getFullYear()).slice(2)}.${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+
+const version = count && Number(count) > 50 ? `1.${count}` : stamp;
 
 const out = `// این فایل خودکار ساخته می‌شود — دستی ویرایشش نکنید.
 // منبع: scripts/gen-version.mjs (پیش از هر بیلد اجرا می‌شود)
