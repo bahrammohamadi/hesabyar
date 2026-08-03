@@ -99,10 +99,16 @@ describe("یکپارچگی فیلتر با صفحه‌ها", () => {
       /*
         کوئری limit دارد؛ فیلتر محلی فقط همان ردیف‌های آخر را می‌دید و
         رکوردهای قدیمی‌ترِ داخل بازه را از قلم می‌انداخت.
+
+        ⚠️ نسخه‌ی اول این تست خودِ باگ را قفل کرده بود:
+        روی `lte("date", range.to)` اصرار داشت، در حالی که ستون
+        `date` در دیتابیس timestamptz است و lte رکوردهای روز پایانی
+        را حذف می‌کرد. حالا کران بالا از applyRange می‌آید که
+        `lt(روز بعد)` می‌زند.
       */
       const src = read(file);
-      expect(src).toContain('query.gte("date", range.from)');
-      expect(src).toContain('query.lte("date", range.to)');
+      expect(src).toContain('applyRange(base, "date", range)');
+      expect(src).not.toContain('.lte("date"');
       // بازه باید در کلید کش باشد وگرنه داده دوباره نمی‌آید
       expect(src).toContain("range.from, range.to]");
       expect(src).toContain("<DateRangeFilter");

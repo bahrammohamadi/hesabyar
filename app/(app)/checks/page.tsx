@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { formatToman, toJalali } from "@/lib/utils/format";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
 import { DatePicker } from "@/components/shared/date-picker";
+import { DateRangeFilter, EMPTY_RANGE, hasRange, withinRange, type DateRange } from "@/src/shared/ui";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { Plus, Trash2, CreditCard, CheckCircle, XCircle, Clock } from "lucide-react";
@@ -41,6 +42,14 @@ export default function ChecksPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+  /*
+    بازه روی «سررسید» فیلتر می‌کند نه تاریخ ثبت — چون سؤال واقعی
+    صاحب فروشگاه این است: «این ماه چه چک‌هایی سررسید می‌شود؟»
+
+    اینجا برخلاف فروش/انبار، فیلتر سمت کلاینت است و این امن است:
+    کوئری checks اصلاً limit ندارد و همه‌ی رکوردها در حافظه‌اند.
+  */
+  const [range, setRange] = useState<DateRange>(EMPTY_RANGE);
   const [showForm, setShowForm] = useState(false);
   const [contacts, setContacts] = useState<any[]>([]);
   const [formData, setFormData] = useState({ type: "received", check_no: "", bank_name: "", account_no: "", amount: "", issue_date: new Date().toISOString().split("T")[0], due_date: "", contact_id: "", note: "" });
@@ -130,7 +139,7 @@ export default function ChecksPage() {
   useEffect(() => { fetchChecks(); }, [fetchChecks]);
   useEffect(() => { if (showForm) fetchContacts(); }, [showForm]);
 
-  const filteredChecks = checks.filter(c => !search || c.check_no?.includes(search) || c.contact?.name?.includes(search));
+  const filteredChecks = checks.filter(c => (!search || c.check_no?.includes(search) || c.contact?.name?.includes(search)) && withinRange(c.due_date, range));
   const receivedChecks = filteredChecks.filter(c => c.type === "received");
   const issuedChecks = filteredChecks.filter(c => c.type === "issued");
 
@@ -144,6 +153,12 @@ export default function ChecksPage() {
         subtitle="پیگیری چک‌های دریافتی و صادره"
         action={<button onClick={() => setShowForm(true)} className="btn-primary"><Plus size={16} /> ثبت چک جدید</button>}
       />
+
+      <div className="rounded-2xl border border-border bg-card p-3.5 sm:p-4">
+        {/* برچسب صریح، وگرنه معلوم نیست بازه روی سررسید است یا تاریخ ثبت. */}
+        <div className="mb-2 text-2xs font-bold text-muted-foreground">بازه بر اساس تاریخ سررسید</div>
+        <DateRangeFilter value={range} onChange={setRange} />
+      </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
         <input className="input flex-1" placeholder="جستجو شماره چک یا طرف حساب..." value={search} onChange={e => setSearch(e.target.value)} />
@@ -175,7 +190,7 @@ export default function ChecksPage() {
 
       {loading ? <Spinner label="در حال بارگذاری..." /> :
        filteredChecks.length === 0 ? (
-        <EmptyState icon={CreditCard} title="چکی یافت نشد" description="هیچ چکی ثبت نشده" />
+        <EmptyState icon={CreditCard} title="چکی یافت نشد" description={hasRange(range) ? "در این بازه‌ی سررسید چکی وجود ندارد" : "هیچ چکی ثبت نشده"} />
       ) : (
         <div className="space-y-3">
           {filteredChecks.map(check => {

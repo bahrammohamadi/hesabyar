@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Activity, Filter, History } from "lucide-react";
 import { PageHeader, Spinner, EmptyState } from "@/components/shared/ui";
-import { Card, Select } from "@/src/shared/ui";
+import { Card, Select, DateRangeFilter, EMPTY_RANGE, hasRange, type DateRange } from "@/src/shared/ui";
 import {
   ActionBadge,
   ActivityFeedCard,
@@ -72,13 +72,19 @@ function describe(log: ActivityLog) {
 export default function ActivityPage() {
   const [entityType, setEntityType] = useState("");
   const [action, setAction] = useState("");
+  // بازه سمت سرور اعمال می‌شود؛ این فهرست limit 100 دارد و فیلتر
+  // محلی فقط ۱۰۰ رکورد آخر را می‌دید.
+  const [range, setRange] = useState<DateRange>(EMPTY_RANGE);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["activity-logs", entityType, action],
+    queryKey: ["activity-logs", entityType, action, range.from, range.to],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (entityType) params.set("entity_type", entityType);
       if (action) params.set("action", action);
+      if (range.from) params.set("from", range.from);
+      if (range.to) params.set("to", range.to);
+      if (hasRange(range)) params.set("limit", "200");
       const res = await fetch(`/api/activity?${params.toString()}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "خطا در دریافت گزارش فعالیت");
@@ -126,6 +132,10 @@ export default function ActivityPage() {
             <option value="stock_out">خروج موجودی</option>
           </Select>
         </div>
+
+        <div className="mt-3 border-t border-border pt-3">
+          <DateRangeFilter value={range} onChange={setRange} />
+        </div>
       </Card>
 
       {isLoading ? (
@@ -133,7 +143,7 @@ export default function ActivityPage() {
       ) : error ? (
         <div className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive">{(error as Error).message}</div>
       ) : !data?.length ? (
-        <EmptyState icon={Activity} title="فعالیتی ثبت نشده" />
+        <EmptyState icon={Activity} title={hasRange(range) ? "در این بازه فعالیتی ثبت نشده" : "فعالیتی ثبت نشده"} />
       ) : (
         <ActivityFeedCard title="آخرین فعالیت‌های سیستم" icon={History}>
           <ul className="relative">

@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
-import { DateRangeFilter, EMPTY_RANGE, type DateRange } from "@/src/shared/ui";
+import { DateRangeFilter, EMPTY_RANGE, applyRange, hasRange, type DateRange } from "@/src/shared/ui";
 import { DataTable, type Column } from "@/src/shared/ui";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
@@ -45,16 +45,14 @@ export default function PurchasesPage() {
         فیلتر سمت سرور، نه روی آرایه: کوئری limit دارد و فیلتر محلی
         فقط همان ردیف‌های آخر را می‌دید.
       */
-      let query = supabase
+      const base = supabase
         .from("purchases")
         .select("id, invoice_no, date, total, paid, supplier_id, supplier:contacts(name)")
         .order("date", { ascending: false })
-        .limit(range.from || range.to ? 500 : 50);
+        .limit(hasRange(range) ? 500 : 50);
 
-      if (range.from) query = query.gte("date", range.from);
-      if (range.to) query = query.lte("date", range.to);
-
-      const { data, error } = await query;
+      // همان اصلاحِ /sales: ستون timestamptz است، پس lt(روز بعد).
+      const { data, error } = await applyRange(base, "date", range);
       if (error) throw error;
       return data as unknown as {
         id: string;

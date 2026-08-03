@@ -45,6 +45,19 @@ export async function GET(request: Request) {
     const rawAction = url.searchParams.get("action");
     const entityType = rawEntity && ALLOWED_ENTITIES.has(rawEntity) ? rawEntity : null;
     const action = rawAction && ALLOWED_ACTIONS.has(rawAction) ? rawAction : null;
+
+    /*
+      بازه‌ی تاریخ.
+
+      اعتبارسنجی سخت‌گیرانه با regex انجام می‌شود و نه Date.parse:
+      این مقدار مستقیم وارد فیلتر PostgREST می‌شود، پس فقط شکل دقیق
+      `YYYY-MM-DD` پذیرفته است. هر چیز دیگری بی‌صدا نادیده گرفته
+      می‌شود (همان رفتار فهرست سفید بالا).
+    */
+    const isoDay = (raw: string | null) =>
+      raw && /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : null;
+    const from = isoDay(url.searchParams.get("from"));
+    const to = isoDay(url.searchParams.get("to"));
     // Number(null) قبلاً می‌توانست NaN بدهد؛ حالا کران‌دار است.
     const limit = boundedInt(url.searchParams.get("limit"), 1, 200, 100);
     const svc = serviceClient();
@@ -57,6 +70,17 @@ export async function GET(request: Request) {
       .limit(limit);
     if (entityType) q = q.eq("entity_type", entityType);
     if (action) q = q.eq("action", action);
+    if (from) q = q.gte("created_at", from);
+    /*
+      created_at از نوع timestamptz است. `lte(to)` یعنی «تا ساعت ۰۰:۰۰
+      آن روز» و همه‌ی فعالیت‌های همان روز را حذف می‌کرد. کران بالا
+      «کوچک‌تر از روز بعد» گرفته می‌شود.
+    */
+    if (to) {
+      const [y, m, d] = to.split("-").map(Number);
+      const next = new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10);
+      q = q.lt("created_at", next);
+    }
 
     const { data: logs, error: logsError } = await q;
     if (logsError) throw logsError;

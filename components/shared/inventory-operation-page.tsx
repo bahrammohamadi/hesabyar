@@ -6,6 +6,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, Spinner, EmptyState } from "@/components/shared/ui";
+import { DateRangeFilter, EMPTY_RANGE, applyRange, hasRange, type DateRange } from "@/src/shared/ui";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { EntityLink } from "@/components/shared/entity-link";
@@ -34,6 +35,14 @@ export function InventoryOperationPage({ mode }: { mode: InventoryMode }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /*
+    فیلتر بازه‌ی تاریخ روی گردش انبار.
+
+    چرا لازم بود: این فهرست `limit(100)` دارد و سازمان کاربر ۷۳۰
+    رکورد گردش انبار دارد — یعنی بدون فیلتر، ۸۶٪ داده اصلاً دیده
+    نمی‌شود و پرسش «مردادماه چه چیزی وارد انبار شد؟» بی‌پاسخ می‌ماند.
+  */
+  const [range, setRange] = useState<DateRange>(EMPTY_RANGE);
 
   useEffect(() => {
     if (mode !== "movements" && !selected && !searchParams.get("product")) setPickerOpen(true);
@@ -76,7 +85,8 @@ export function InventoryOperationPage({ mode }: { mode: InventoryMode }) {
   }, [mode, searchParams]);
 
   const { data: movements, isLoading } = useQuery({
-    queryKey: ["inventory-operation-movements", orgId, mode],
+    // بازه بخشی از کلید کش است، وگرنه تغییر فیلتر داده‌ی قبلی را نشان می‌دهد.
+    queryKey: ["inventory-operation-movements", orgId, mode, range.from, range.to],
     enabled: !!orgId,
     queryFn: async () => {
       const supabase = createClient();
@@ -84,12 +94,15 @@ export function InventoryOperationPage({ mode }: { mode: InventoryMode }) {
         .from("stock_movements")
         .select("id, variant_id, type, reason, qty, note, created_at, variant:product_variants(color, size, product:products(id, name))")
         .order("created_at", { ascending: false })
-        .limit(100);
+        // با فیلتر فعال سقف بالاتر می‌رود؛ بدون آن، فیلترِ سمت سرور روی
+        // ۱۰۰ ردیف آخر اعمال می‌شد و بازه‌های قدیمی خالی درمی‌آمدند.
+        .limit(hasRange(range) ? 500 : 100);
       if (mode === "in") q = q.eq("type", "in");
       if (mode === "out") q = q.eq("type", "out");
       if (mode === "waste") q = q.eq("type", "out").ilike("note", "%ضایعات%");
       if (mode === "adjust") q = q.eq("reason", "count");
-      const { data, error } = await q;
+      // created_at از نوع timestamptz است → lt(روز بعد) نه lte.
+      const { data, error } = await applyRange(q, "created_at", range);
       if (error) throw error;
       return data ?? [];
     },
@@ -156,9 +169,17 @@ export function InventoryOperationPage({ mode }: { mode: InventoryMode }) {
         </div>
       )}
 
+      <div className="rounded-2xl border border-border bg-card p-3.5 sm:p-4">
+        <DateRangeFilter value={range} onChange={setRange} />
+      </div>
+
       <div className="overflow-hidden rounded-[1.75rem] border border-border bg-card shadow-sm">
-        <div className="border-b border-border bg-muted/50 p-4 text-sm font-extrabold text-foreground">آخرین گردش‌ها</div>
-        {isLoading ? <Spinner /> : !movements?.length ? <EmptyState title="گردشی ثبت نشده" /> : (
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/50 p-4 text-sm font-extrabold text-foreground">
+          <span>{hasRange(range) ? "گردش‌های بازه‌ی انتخابی" : "آخرین گردش‌ها"}</span>
+          {/* شمارش نتیجه: بدون آن، کاربر نمی‌داند فیلتر اثر کرده یا داده‌ای نیست. */}
+          {!isLoading && <span className="text-xs font-bold text-muted-foreground">{toFaDigits(movements?.length ?? 0)} مورد</span>}
+        </div>
+        {isLoading ? <Spinner /> : !movements?.length ? <EmptyState title={hasRange(range) ? "در این بازه گردشی ثبت نشده" : "گردشی ثبت نشده"} /> : (
           <div className="divide-y divide-border">
             {movements.map((m: any) => (
               <div key={m.id} className="flex items-center justify-between gap-3 p-4 transition hover:bg-primary/[0.03]">

@@ -22,7 +22,7 @@ dayjs.extend(jalaliday);
  */
 
 export type { DateRange } from "./date-range-utils";
-export { EMPTY_RANGE, withinRange } from "./date-range-utils";
+export { EMPTY_RANGE, withinRange, hasRange, nextDay, rangeBounds, applyRange } from "./date-range-utils";
 import { EMPTY_RANGE, type DateRange } from "./date-range-utils";
 
 /** ماه جاری شمسی به بازه‌ی میلادی. */

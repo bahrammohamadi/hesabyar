@@ -5,9 +5,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, Spinner, EmptyState } from "@/components/shared/ui";
+import { DateRangeFilter, EMPTY_RANGE, applyRange, hasRange, type DateRange } from "@/src/shared/ui";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { EntityLink } from "@/components/shared/entity-link";
-import { formatToman, toEnDigits, toJalali, tomanToRial } from "@/lib/utils/format";
+import { formatToman, toEnDigits, toFaDigits, toJalali, tomanToRial } from "@/lib/utils/format";
 import { Loader2, Plus } from "lucide-react";
 import type { TxType } from "@/types/db";
 import { logActivity } from "@/lib/utils/activity-log";
@@ -43,6 +44,8 @@ export function FinanceOperationPage({ mode }: { mode: FinanceMode }) {
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // فیلتر بازه روی فهرست تراکنش‌ها — «هزینه‌های مرداد چقدر شد؟»
+  const [range, setRange] = useState<DateRange>(EMPTY_RANGE);
 
   const { data: accounts } = useQuery({
     queryKey: ["finance-page-accounts", orgId],
@@ -78,7 +81,7 @@ export function FinanceOperationPage({ mode }: { mode: FinanceMode }) {
   });
 
   const { data: transactions, isLoading } = useQuery({
-    queryKey: ["finance-operation-transactions", orgId, mode],
+    queryKey: ["finance-operation-transactions", orgId, mode, range.from, range.to],
     enabled: !!orgId,
     queryFn: async () => {
       const supabase = createClient();
@@ -86,13 +89,21 @@ export function FinanceOperationPage({ mode }: { mode: FinanceMode }) {
         .from("transactions")
         .select("id,type,amount,date,method,note,contact_id,contact:contacts(name),account:accounts!transactions_account_id_fkey(name),to_account:accounts!transactions_to_account_id_fkey(name)")
         .order("date", { ascending: false })
-        .limit(100);
+        .limit(hasRange(range) ? 500 : 100);
       if (mode !== "all") q = q.eq("type", mode);
-      const { data, error } = await q;
+      // transactions.date هم timestamptz است.
+      const { data, error } = await applyRange(q, "date", range);
       if (error) throw error;
       return data ?? [];
     },
   });
+
+  /*
+    جمع بازه — چرا اینجا و نه فقط فهرست؟
+    کاربری که «ماه گذشته» را فیلتر می‌کند، تقریباً همیشه دنبال جمع
+    مبلغ است نه شمردن ردیف‌ها. بدون این، باید خودش ۴۰ عدد را جمع بزند.
+  */
+  const rangeTotal = (transactions ?? []).reduce((sum: number, t: any) => sum + (Number(t.amount) || 0), 0);
 
   async function save() {
     setError(null);
@@ -147,9 +158,20 @@ export function FinanceOperationPage({ mode }: { mode: FinanceMode }) {
         </div>
       )}
 
+      <div className="rounded-2xl border border-border bg-card p-3.5 sm:p-4">
+        <DateRangeFilter value={range} onChange={setRange} />
+      </div>
+
       <div className="overflow-hidden rounded-[24px] border border-white/80 bg-white/90 shadow-sm shadow-slate-900/[0.04] backdrop-blur">
-        <div className="border-b border-border bg-muted/60 p-4 font-extrabold text-foreground">آخرین موارد</div>
-        {isLoading ? <Spinner /> : !transactions?.length ? <EmptyState title="موردی ثبت نشده" /> : (
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/60 p-4 font-extrabold text-foreground">
+          <span>{hasRange(range) ? "موارد بازه‌ی انتخابی" : "آخرین موارد"}</span>
+          {!isLoading && (transactions?.length ?? 0) > 0 && (
+            <span className="text-xs font-bold text-muted-foreground">
+              {toFaDigits(transactions?.length ?? 0)} مورد • جمع {formatToman(rangeTotal, false)}
+            </span>
+          )}
+        </div>
+        {isLoading ? <Spinner /> : !transactions?.length ? <EmptyState title={hasRange(range) ? "در این بازه موردی ثبت نشده" : "موردی ثبت نشده"} /> : (
           <div className="divide-y divide-border">
             {transactions.map((t: any) => (
               <div key={t.id} className="flex items-center justify-between gap-3 p-4 transition hover:bg-primary/[0.03]">

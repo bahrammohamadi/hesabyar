@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatToman, toJalali, toFaDigits } from "@/lib/utils/format";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
-import { Badge } from "@/src/shared/ui";
+import { Badge, DateRangeFilter, EMPTY_RANGE, hasRange, withinRange, type DateRange } from "@/src/shared/ui";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { Plus, Trash2, RotateCcw, Search } from "lucide-react";
@@ -20,6 +20,8 @@ export default function SalesReturnsPage() {
   const [returns, setReturns] = useState<Return[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  // کوئری sales_returns بدون limit است، پس فیلتر محلی کل داده را می‌بیند.
+  const [range, setRange] = useState<DateRange>(EMPTY_RANGE);
   const [showForm, setShowForm] = useState(false);
   const [sales, setSales] = useState<Sale[]>([]);
   const [selectedSale, setSelectedSale] = useState("");
@@ -123,7 +125,7 @@ export default function SalesReturnsPage() {
   useEffect(() => { if (showForm) fetchSales(); }, [showForm]);
   useEffect(() => { if (selectedSale) fetchSaleItems(selectedSale); }, [selectedSale]);
 
-  const filteredReturns = returns.filter(r => !search || r.return_no?.includes(search) || r.customer?.name?.includes(search));
+  const filteredReturns = returns.filter(r => (!search || r.return_no?.includes(search) || r.customer?.name?.includes(search)) && withinRange(r.date ?? r.created_at, range));
   const sale = sales.find(s => s.id === selectedSale);
 
   return (
@@ -133,6 +135,10 @@ export default function SalesReturnsPage() {
         subtitle="ثبت برگشت کالا از مشتریان"
         action={<button onClick={() => { resetForm(); setShowForm(true); }} className="btn-primary"><Plus size={16} /> مرجوعی جدید</button>}
       />
+
+      <div className="rounded-2xl border border-border bg-card p-3.5 sm:p-4">
+        <DateRangeFilter value={range} onChange={setRange} />
+      </div>
 
       <div className="relative">
         <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />

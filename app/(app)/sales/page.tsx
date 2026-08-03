@@ -2,7 +2,7 @@
 
 import { useState, type MouseEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { DateRangeFilter, EMPTY_RANGE, type DateRange } from "@/src/shared/ui";
+import { DateRangeFilter, EMPTY_RANGE, applyRange, hasRange, type DateRange } from "@/src/shared/ui";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
@@ -40,18 +40,21 @@ export default function SalesPage() {
     enabled: !!orgId,
     queryFn: async () => {
       const supabase = createClient();
-      let query = supabase
+      const base = supabase
         .from("sales")
         .select("id, invoice_no, date, total, paid_credit, status, customer_id, customer:contacts(name)")
         .order("date", { ascending: false })
-        .limit(range.from || range.to ? 500 : 50);
+        .limit(hasRange(range) ? 500 : 50);
 
-      if (range.from) query = query.gte("date", range.from);
-      // lte روی ستون تاریخ کافی است؛ اگر روزی timestamp شد باید
-      // به «کمتر از روز بعد» تغییر کند.
-      if (range.to) query = query.lte("date", range.to);
-
-      const { data, error } = await query;
+      /*
+        🔴 اینجا قبلاً `lte("date", range.to)` بود و اشتباه محض:
+        ستون `sales.date` در دیتابیس `timestamptz` است نه `date`.
+        اندازه‌گیری روی داده‌ی واقعی: هر ۲۰ فاکتور ساعت ۰۸:۳۰ ثبت
+        شده‌اند، پس «۲۸ تیر تا ۲۸ تیر» صفر ردیف برمی‌گرداند در حالی
+        که یک فاکتور همان روز وجود دارد.
+        applyRange به‌جای lte از `lt(روز بعد)` استفاده می‌کند.
+      */
+      const { data, error } = await applyRange(base, "date", range);
       if (error) throw error;
       return data as unknown as {
         id: string;

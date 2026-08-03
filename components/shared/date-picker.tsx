@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import dayjs from "dayjs";
 import jalaliday from "jalaliday";
 import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
@@ -49,6 +49,7 @@ function daysInJalaliMonth(year: number, month: number) {
 }
 
 export function DatePicker({ value, onChange, label, placeholder = "انتخاب تاریخ" }: DatePickerProps) {
+  const rootRef = useRef<HTMLDivElement>(null);
   const initial = gregorianToJalali(value) ?? (() => {
     // @ts-ignore
     const today = (dayjs() as any).calendar("jalali");
@@ -68,6 +69,94 @@ export function DatePicker({ value, onChange, label, placeholder = "انتخاب
   useEffect(() => {
     if (open) setDraft(display);
   }, [open, display]);
+
+  /*
+    🔴 باگی که کاربر گزارش کرد:
+      «روی از تاریخ کلیک می‌کنم، بعد جای خالی صفحه را می‌زنم و
+       پنجره‌ی تقویم بسته نمی‌شود؛ یا باید تاریخ انتخاب کنم یا دوباره
+       روی همان باکس کلیک کنم.»
+
+    ریشه: این کامپوننت هیچ شنونده‌ای برای کلیکِ بیرون نداشت. تنها سه
+    راه بسته‌شدن وجود داشت: انتخاب روز، دکمه‌ی «بستن»، یا toggle شدن
+    خود دکمه. این خلاف انتظار استاندارد از هر popover است — به‌ویژه
+    در فیلتر بازه که دو تقویم کنار هم‌اند و کاربر مدام بین‌شان
+    جابه‌جا می‌شود.
+
+    چرا pointerdown و نه click؟
+      اگر روی یک دکمه‌ی دیگر (مثلاً میان‌بر «این ماه») کلیک شود،
+      click بعد از mouseup می‌آید؛ pointerdown زودتر تقویم را می‌بندد
+      و جابه‌جایی چیدمان، هدفِ کلیک را از زیر انگشت کاربر در نمی‌برد.
+
+    چرا فاز capture؟
+      این تقویم داخل پنل کشویی و مودال هم رندر می‌شود؛ آن لایه‌ها
+      رویدادها را در فاز حباب متوقف می‌کنند و شنونده‌ی معمولی روی
+      document هرگز اجرا نمی‌شد.
+  */
+  useEffect(() => {
+    if (!open) return;
+
+    function onPointerDown(event: PointerEvent) {
+      const target = event.target as Node | null;
+      if (!target) return;
+      // کلیک داخل خود تقویم (یا دکمه‌ی بازکننده) نباید ببندد.
+      if (rootRef.current?.contains(target)) return;
+
+      setOpen(false);
+
+      /*
+        آیا همان کلیک باید به عنصر زیرش هم برسد؟
+
+        🔴 در تست واقعی با Playwright این اتفاق افتاد: تقویمِ «از تاریخ»
+        در صفحه‌ی /sales باز بود؛ کلیک روی ناحیه‌ی خالی، روی یک ردیف
+        جدول افتاد و پنل فاکتور فروش باز شد. کاربری که فقط می‌خواست
+        تقویم را ببندد، ناگهان یک پنجره‌ی ناخواسته می‌گیرد و باید
+        ببنددش.
+
+        پس کلیکِ بعدی بلعیده می‌شود — همان قراردادی که PortalMenu
+        در همین پروژه دارد (پرده‌ی نامرئی که کلیک اول را می‌خورد).
+
+        ⚠️ اما یک استثنا لازم است: اگر کاربر مستقیم روی دکمه‌ی یک
+        تقویم دیگر بزند (مثل جابه‌جایی «از تاریخ» → «تا تاریخ» که در
+        فیلتر بازه مدام تکرار می‌شود)، بلعیدن کلیک یعنی باید دوبار
+        کلیک کند — دقیقاً همان اصطکاکی که کاربر از آن شکایت داشت.
+        این حالت با data-attribute تشخیص داده و مستثنا می‌شود.
+      */
+      const el = target instanceof Element ? target : (target as any).parentElement;
+      if (el?.closest?.("[data-datepicker-trigger]")) return;
+
+      function swallow(clickEvent: MouseEvent) {
+        clickEvent.stopPropagation();
+        clickEvent.preventDefault();
+      }
+      document.addEventListener("click", swallow, true);
+      /*
+        شنونده باید حتماً برداشته شود، حتی اگر هیچ click‌ای نیاید
+        (مثلاً کاربر انگشتش را بکشد و pointercancel شود). وگرنه
+        کلیکِ بعدیِ کاملاً بی‌ربط کاربر هم بلعیده می‌شود.
+      */
+      setTimeout(() => document.removeEventListener("click", swallow, true), 0);
+    }
+
+    /*
+      Escape هم باید ببندد، ولی فقط همین لایه.
+      stopPropagation لازم است چون PanelHost و Modal هم روی Escape
+      گوش می‌دهند؛ بدون آن یک Escape هم تقویم و هم پنل زیرین را
+      می‌بست و کاربر کل فرم نیمه‌کاره را از دست می‌داد.
+      (همان الگوی به‌کاررفته در Modal و PortalMenu)
+    */
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      event.stopPropagation();
+      setOpen(false);
+    }
+
+    document.addEventListener("pointerdown", onPointerDown, true);
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true);
+      document.removeEventListener("keydown", onKeyDown, true);
+    };
+  }, [open]);
 
   function applyTypedDate(text: string) {
     const parsed = parseJalaliText(text);
@@ -96,16 +185,33 @@ export function DatePicker({ value, onChange, label, placeholder = "انتخاب
   }
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full" ref={rootRef}>
       {label && <label className="label">{label}</label>}
-      <button type="button" className="input flex items-center justify-between text-right" onClick={() => setOpen((state) => !state)}>
+      <button
+        type="button"
+        /*
+          data-datepicker-trigger: به تقویمِ *دیگری* که همین حالا باز
+          است می‌گوید «کلیک را نبلع» تا جابه‌جایی بین «از تاریخ» و
+          «تا تاریخ» با یک کلیک انجام شود، نه دو کلیک.
+        */
+        data-datepicker-trigger
+        aria-expanded={open}
+        className="input flex items-center justify-between text-right"
+        onClick={() => setOpen((state) => !state)}
+      >
         <span className={display ? "font-medium text-foreground" : "text-muted-foreground"}>{display || placeholder}</span>
         <CalendarDays size={18} className="text-muted-foreground" />
       </button>
       {open && (
-        <div className="absolute z-[1500] mt-2 w-full min-w-[280px] rounded-2xl border border-border bg-card p-3 shadow-2xl" dir="rtl">
+        <div
+          role="dialog"
+          aria-label="انتخاب تاریخ"
+          className="absolute z-[1500] mt-2 w-full min-w-[280px] rounded-2xl border border-border bg-card p-3 shadow-2xl"
+          dir="rtl"
+        >
           <div className="mb-3">
             <input
+              aria-label="تاریخ را تایپ کنید"
               className="input h-10 min-h-10 text-center text-sm"
               dir="ltr"
               placeholder="۱۴۰۲/۰۱/۰۱"
@@ -118,7 +224,7 @@ export function DatePicker({ value, onChange, label, placeholder = "انتخاب
             <div className="mt-1 text-2xs text-muted-foreground">تاریخ را می‌توانید تایپ کنید یا از تقویم انتخاب کنید.</div>
           </div>
           <div className="mb-3 flex items-center justify-between gap-2">
-            <button type="button" onClick={() => shiftMonth(-1)} className="rounded-xl p-2 text-muted-foreground hover:bg-muted"><ChevronRight size={18} /></button>
+            <button type="button" aria-label="ماه قبل" onClick={() => shiftMonth(-1)} className="rounded-xl p-2 text-muted-foreground hover:bg-muted"><ChevronRight size={18} aria-hidden /></button>
             <div className="flex flex-1 gap-2">
               <select aria-label="ماه" className="input h-10 min-h-10 py-1 text-sm" value={viewMonth} onChange={(event) => setViewMonth(Number(event.target.value))}>
                 {JALALI_MONTHS.map((month, index) => <option key={month} value={index}>{month}</option>)}
@@ -127,7 +233,7 @@ export function DatePicker({ value, onChange, label, placeholder = "انتخاب
                 {years.map((year) => <option key={year} value={year}>{toFaDigits(year)}</option>)}
               </select>
             </div>
-            <button type="button" onClick={() => shiftMonth(1)} className="rounded-xl p-2 text-muted-foreground hover:bg-muted"><ChevronLeft size={18} /></button>
+            <button type="button" aria-label="ماه بعد" onClick={() => shiftMonth(1)} className="rounded-xl p-2 text-muted-foreground hover:bg-muted"><ChevronLeft size={18} aria-hidden /></button>
           </div>
           <div className="mb-1 grid grid-cols-7 gap-1 text-center text-2xs font-bold text-muted-foreground">
             {WEEKDAYS.map((day) => <div key={day}>{day}</div>)}

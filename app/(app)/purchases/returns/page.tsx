@@ -6,6 +6,7 @@ import { ArrowLeftRight, Loader2, Plus, Search, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { EmptyState, Modal, PageHeader, Spinner } from "@/components/shared/ui";
+import { DateRangeFilter, EMPTY_RANGE, hasRange, withinRange, type DateRange } from "@/src/shared/ui";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { EntityLink } from "@/components/shared/entity-link";
 import { formatToman, toEnDigits, toFaDigits, toJalali } from "@/lib/utils/format";
@@ -16,6 +17,8 @@ export default function PurchaseReturnsPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
+  // purchase_returns هم بدون limit خوانده می‌شود → فیلتر محلی کافی است.
+  const [range, setRange] = useState<DateRange>(EMPTY_RANGE);
 
   const { data: returns, isLoading } = useQuery({
     queryKey: ["purchase-returns", orgId],
@@ -34,9 +37,12 @@ export default function PurchaseReturnsPage() {
 
   const filtered = useMemo(() => {
     const t = search.trim().toLowerCase();
-    if (!t) return returns ?? [];
-    return (returns ?? []).filter((r: any) => `${r.return_no ?? ""} ${r.supplier?.name ?? ""} ${r.reason ?? ""}`.toLowerCase().includes(t));
-  }, [returns, search]);
+    return (returns ?? []).filter((r: any) => {
+      if (!withinRange(r.date, range)) return false;
+      if (!t) return true;
+      return `${r.return_no ?? ""} ${r.supplier?.name ?? ""} ${r.reason ?? ""}`.toLowerCase().includes(t);
+    });
+  }, [returns, search, range]);
 
   async function deleteReturn(id: string) {
     if (!confirm("مرجوعی خرید حذف شود؟ موجودی برگشت داده‌شده اصلاح نمی‌شود؛ فقط رکورد مرجوعی حذف می‌شود.")) return;
@@ -48,11 +54,15 @@ export default function PurchaseReturnsPage() {
   return (
     <div>
       <PageHeader title="مرجوعی خرید" subtitle="ثبت برگشت کالا به تأمین‌کننده و خروج موجودی" action={<button onClick={() => setOpen(true)} className="btn-primary"><Plus size={16} /> مرجوعی جدید</button>} />
+      <div className="mb-4 rounded-2xl border border-border bg-card p-3.5 sm:p-4">
+        <DateRangeFilter value={range} onChange={setRange} />
+      </div>
+
       <div className="relative mb-4">
         <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={17} />
         <input className="input pr-10" placeholder="جستجو شماره مرجوعی یا تأمین‌کننده..." value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
-      {isLoading ? <Spinner /> : !filtered.length ? <EmptyState icon={ArrowLeftRight} title="مرجوعی خرید ثبت نشده" /> : (
+      {isLoading ? <Spinner /> : !filtered.length ? <EmptyState icon={ArrowLeftRight} title={hasRange(range) ? "در این بازه مرجوعی ثبت نشده" : "مرجوعی خرید ثبت نشده"} /> : (
         <div className="space-y-2">
           {filtered.map((ret: any) => (
             <div key={ret.id} className="card p-4 flex items-center justify-between gap-3">
