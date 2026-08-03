@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2 } from "lucide-react";
 import { BRAND_NAME } from "@/lib/brand";
+import { emailError } from "@/lib/email-guard";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -15,10 +16,24 @@ export default function RegisterPage() {
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // فقط وقتی کاربر چیزی نوشته باشد؛ فیلد خالی خطا نمی‌گیرد.
+  const liveEmailError = email.trim() ? emailError(email) : null;
+
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setInfo(null);
+
+    /*
+      بررسی ایمیل پیش از رفت‌وبرگشت شبکه.
+      محافظ واقعی تریگر دیتابیس است (0029)؛ این فقط پیام سریع‌تر و
+      واضح‌تری به کاربر می‌دهد.
+    */
+    const emailProblem = emailError(email);
+    if (emailProblem) {
+      setError(emailProblem);
+      return;
+    }
 
     if (password.length < 6) {
       setError("رمز عبور باید حداقل ۶ کاراکتر باشد.");
@@ -34,7 +49,16 @@ export default function RegisterPage() {
     });
 
     if (signUpError) {
-      setError("خطا در ثبت‌نام: " + signUpError.message);
+      /*
+        پیام تریگر دیتابیس از قبل فارسی و قابل نمایش است؛ بقیه‌ی
+        خطاها پیام عمومی می‌گیرند تا جزئیات داخلی لو نرود.
+      */
+      const raw = signUpError.message ?? "";
+      setError(
+        raw.includes("ایمیل موقت")
+          ? "ثبت‌نام با ایمیل موقت امکان‌پذیر نیست. لطفاً از ایمیل اصلی خود استفاده کنید."
+          : "خطا در ثبت‌نام: " + raw
+      );
       setLoading(false);
       return;
     }
@@ -79,7 +103,14 @@ export default function RegisterPage() {
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              aria-invalid={Boolean(liveEmailError)}
+              aria-describedby={liveEmailError ? "reg-email-err" : undefined}
             />
+            {liveEmailError && (
+              <p id="reg-email-err" role="alert" className="mt-1.5 text-xs font-bold text-destructive-text">
+                {liveEmailError}
+              </p>
+            )}
           </div>
 
           <div>
