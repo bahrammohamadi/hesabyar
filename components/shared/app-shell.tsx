@@ -8,6 +8,8 @@ import { Header } from "./header";
 import { BottomNav } from "./bottom-nav";
 import { DemoBanner } from "./demo-banner";
 import { TrialCountdown } from "./trial-countdown";
+import { AnnouncementBanner } from "./announcement-banner";
+import { ImpersonationBanner } from "./impersonation-banner";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -38,6 +40,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <div className="flex min-h-screen min-w-0 flex-1 flex-col lg:h-screen lg:overflow-y-auto">
+        {/*
+          ترتیب عمدی: نوار جعل هویت اول است چون بحرانی‌ترین وضعیت را
+          نشان می‌دهد و نباید زیر اعلان‌ها گم شود.
+        */}
+        <ImpersonationBanner />
+        <AnnouncementBanner />
         <DemoBanner />
         <TrialCountdown />
         <Header onMenuClick={() => setIsSidebarOpen(true)} />

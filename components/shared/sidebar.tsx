@@ -129,7 +129,11 @@ export const NAV = [
  *   ادمین ناخواسته در نوار پایین موبایل ظاهر نشود.
  */
 const ADMIN_NAV = [
+  { href: "/admin", label: "داشبورد پلتفرم", icon: LayoutDashboard },
   { href: "/admin/organizations", label: "مدیریت کسب‌وکارها", icon: Building },
+  { href: "/admin/users", label: "کاربران پلتفرم", icon: Users },
+  { href: "/admin/announcements", label: "اعلان‌ها", icon: Bell },
+  { href: "/admin/audit", label: "گزارش فعالیت", icon: Activity },
 ];
 
 /** کلید ذخیره‌ی حالت جمع‌شده در مرورگر کاربر. */
@@ -449,7 +453,15 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
               {ADMIN_NAV.map((item) => {
                 const Icon = item.icon;
-                const active = isActive(item.href);
+                /*
+                  «/admin» پیشوند همه‌ی مسیرهای ادمین است، پس isActive
+                  عمومی آن را در همه‌ی صفحه‌ها فعال نشان می‌داد.
+                  برای داشبورد تطبیق دقیق لازم است.
+                */
+                const active =
+                  item.href === "/admin"
+                    ? pathname === "/admin"
+                    : isActive(item.href);
                 return (
                   <Link
                     key={item.href}
