@@ -11,7 +11,7 @@ import { BRAND_NAME, BRAND_VERSION, BRAND_BUILD_SHA } from "@/lib/brand";
 import {
   PanelRightClose, PanelRightOpen,
   LayoutDashboard, Package, Warehouse, ShoppingCart, Receipt, Users,
-  Wallet, Settings, BarChart3, X, ChevronDown, ShieldCheck,
+  Wallet, Settings, BarChart3, X, ChevronDown, ShieldCheck, Shield,
   PackageSearch, Plus as PlusIcon, Layers, ArrowDownToLine,
   ArrowUpFromLine, ArrowLeftRight, ClipboardList, UserPlus, Truck,
   ArrowDownCircle, ArrowUpCircle, Scale, Landmark, ReceiptText,
@@ -137,6 +137,9 @@ const ADMIN_NAV = [
   { href: "/admin/organizations", label: "مدیریت کسب‌وکارها", icon: Building },
   { href: "/admin/users", label: "کاربران پلتفرم", icon: Users },
   { href: "/admin/announcements", label: "اعلان‌ها", icon: Bell },
+  // مدیریت ادمین‌ها فقط برای کسی که مجوز admins.manage دارد معنا دارد،
+  // ولی خود روت هم بررسی می‌کند — پنهان‌کردن لینک کنترل امنیتی نیست.
+  { href: "/admin/roles", label: "ادمین‌ها و دسترسی‌ها", icon: Shield },
   { href: "/admin/audit", label: "گزارش فعالیت", icon: Activity },
 ];
 
