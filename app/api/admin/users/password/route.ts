@@ -123,6 +123,17 @@ export async function POST(request: Request) {
     });
     if (updateError) throw updateError;
 
+    /*
+      شمارنده‌ی تلاش‌های ناموفق پاک می‌شود.
+
+      سناریوی واقعی: کاربر رمزش را فراموش کرده، چند بار غلط زده و حالا
+      در حال کندسازی است، بعد با پشتیبانی تماس گرفته. اگر شمارنده پاک
+      نشود، با رمز جدیدِ درست هم نمی‌تواند فوراً وارد شود.
+    */
+    if (targetUser.user.email) {
+      await svc.rpc("clear_login_failures", { p_login_id: targetUser.user.email });
+    }
+
     return NextResponse.json({ ok: true, email: targetUser.user.email });
   } catch (error) {
     return safeError("admin/users/password", error);

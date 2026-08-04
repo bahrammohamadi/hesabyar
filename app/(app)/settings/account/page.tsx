@@ -1,11 +1,12 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { KeyRound, UserCircle } from "lucide-react";
+import { KeyRound, MonitorSmartphone, UserCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/ui";
 import { Card } from "@/src/shared/ui";
 import { ChangePasswordForm } from "@/components/shared/change-password-form";
+import { ActiveSessions } from "@/components/shared/active-sessions";
 import { displayUsername, toJalali } from "@/lib/utils/format";
 
 /**
@@ -80,6 +81,18 @@ export default function AccountSettingsPage() {
           به‌طور موقت به دستگاه شما دسترسی پیدا کرده است.
         </p>
         <ChangePasswordForm />
+      </Card>
+
+      <Card className="p-4 sm:p-5">
+        <div className="mb-1 flex items-center gap-2">
+          <MonitorSmartphone size={18} className="text-primary" aria-hidden />
+          <h2 className="text-sm font-extrabold text-foreground">دستگاه‌های واردشده</h2>
+        </div>
+        <p className="mb-4 text-2xs leading-relaxed text-muted-foreground">
+          فهرست دستگاه‌هایی که با حساب شما وارد شده‌اند. تغییر رمز عبور به‌تنهایی این دستگاه‌ها
+          را بیرون نمی‌اندازد؛ برای این کار باید نشستشان را ببندید.
+        </p>
+        <ActiveSessions />
       </Card>
     </div>
   );

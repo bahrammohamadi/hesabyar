@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Eye, EyeOff, LockKeyhole, Mail, ShieldCheck, Sparkles, Store } from "lucide-react";
 import { Button, Field, Input } from "@/src/shared/ui";
+import { toFaDigits } from "@/lib/utils/format";
 import { BRAND_NAME } from "@/lib/brand";
 
 export default function LoginPage() {
@@ -15,6 +16,13 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  /*
+    ثانیه‌های باقی‌مانده تا مجاز شدن تلاش بعدی.
+
+    بدون شمارش معکوس، کاربر پیام «۳۲ ثانیه صبر کنید» را می‌بیند و
+    نمی‌داند از کِی — پس مدام دکمه را می‌زند و شمارنده بالاتر می‌رود.
+  */
+  const [retryAfter, setRetryAfter] = useState(0);
 
   function normalizeLoginId(value: string) {
     const clean = value.trim().toLowerCase();
@@ -24,16 +32,59 @@ export default function LoginPage() {
     return clean ? `${clean}@hesabyar.app` : clean;
   }
 
+  /** «۳۲ ثانیه» یا «۲ دقیقه» — با رقم فارسی. */
+  function formatWait(seconds: number) {
+    if (seconds >= 60) {
+      const minutes = Math.ceil(seconds / 60);
+      return `${toFaDigits(minutes)} دقیقه`;
+    }
+    return `${toFaDigits(seconds)} ثانیه`;
+  }
+
+  useEffect(() => {
+    if (retryAfter <= 0) return;
+    const timer = setInterval(() => setRetryAfter((n) => Math.max(0, n - 1)), 1000);
+    return () => clearInterval(timer);
+  }, [retryAfter]);
+
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email: normalizeLoginId(loginId), password });
+    /*
+      🔴 ورود از روت سرور عبور می‌کند، نه مستقیم از مرورگر.
 
-    if (error) {
-      setError("ایمیل یا رمز عبور اشتباه است.");
+      قبلاً `signInWithPassword` مستقیم اینجا صدا زده می‌شد. یعنی هیچ
+      نقطه‌ای برای شمردن تلاش‌های ناموفق وجود نداشت و مهاجم می‌توانست
+      بی‌نهایت رمز امتحان کند. حالا سرور پس از ۵ تلاش، تأخیر نمایی
+      اعمال می‌کند (۲، ۴، ۸ … تا سقف ۱۵ دقیقه).
+    */
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ login_id: normalizeLoginId(loginId), password }),
+      });
+      const json = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        const wait = Number(json.retry_after ?? 0);
+        /*
+          پیام برای «رمز غلط» و «در حال کندسازی» یکسان است تا معلوم
+          نشود حساب وجود دارد یا نه؛ فقط زمان انتظار اضافه می‌شود.
+        */
+        setError(
+          wait > 0
+            ? `${json.error ?? "ورود ناموفق بود."} برای تلاش بعدی ${formatWait(wait)} صبر کنید.`
+            : (json.error ?? "ایمیل یا رمز عبور اشتباه است.")
+        );
+        setRetryAfter(wait);
+        setLoading(false);
+        return;
+      }
+    } catch {
+      setError("ارتباط با سرور برقرار نشد.");
       setLoading(false);
       return;
     }
@@ -157,8 +208,19 @@ export default function LoginPage() {
                 </div>
               )}
 
-              <Button type="submit" loading={loading} className="w-full">
-                ورود به داشبورد
+              {/*
+                در زمان انتظار دکمه غیرفعال است و شمارش معکوس نشان
+                می‌دهد. بدون این، کاربر مدام کلیک می‌کند و هر بار
+                شمارنده‌ی سرور بالاتر می‌رود — یعنی خودش را بیشتر
+                قفل می‌کند.
+              */}
+              <Button
+                type="submit"
+                loading={loading}
+                disabled={retryAfter > 0}
+                className="w-full"
+              >
+                {retryAfter > 0 ? `صبر کنید — ${formatWait(retryAfter)}` : "ورود به داشبورد"}
               </Button>
             </div>
 
