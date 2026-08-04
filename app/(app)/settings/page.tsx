@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { displayUsername } from "@/lib/utils/format";
 import { PageHeader, Modal, Spinner } from "@/components/shared/ui";
-import { Plus, Loader2, Tag, Landmark, FolderTree, Trash2, Pencil, Check, X, Users, Shield, Palette, Building2, SlidersHorizontal, Sparkles } from "lucide-react";
+import { Plus, Loader2, Tag, Landmark, FolderTree, Trash2, Pencil, Check, X, Users, Shield, Palette, Building2, SlidersHorizontal, Sparkles, KeyRound } from "lucide-react";
 import { applyTheme, DEFAULT_THEME, THEMES, THEME_STORAGE_KEY, THEME_CHANGE_EVENT, type ThemeId } from "@/lib/theme";
 import { PERMISSION_TREE, uniquePermissions, type PermissionTreeItem } from "@/lib/access/permission-tree";
 
@@ -16,6 +16,7 @@ export function SettingsContent({ section = "all" }: { section?: "all" | "catalo
 
   if (section === "all") {
     const cards = [
+      { title: "حساب کاربری", desc: "اطلاعات شخصی و تغییر رمز عبور", href: "/settings/account", icon: KeyRound, tone: "bg-info-soft text-info-onSoft" },
       { title: "عمومی", desc: "اطلاعات کسب‌وکار، ظاهر برنامه و تنظیمات عمومی فاکتور", href: "/settings/general", icon: Building2, tone: "bg-primary/10 text-primary" },
       { title: "کاربران و دسترسی‌ها", desc: "ساخت کاربر، نقش‌ها و سطح دسترسی", href: "/settings/users", icon: Shield, tone: "bg-primary/10 text-primary" },
       { title: "مالی", desc: "حساب‌ها، دسته‌بندی هزینه و روش‌های پرداخت", href: "/settings/accounts", icon: Landmark, tone: "bg-success-soft text-success-onSoft" },
@@ -25,7 +26,7 @@ export function SettingsContent({ section = "all" }: { section?: "all" | "catalo
     return (
       <div className="space-y-4">
         <PageHeader title="تنظیمات" subtitle="داشبورد تنظیمات سیستم؛ برای ویرایش جزئیات وارد هر بخش شوید" />
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {cards.map((card) => {
             const Icon = card.icon;
             return (

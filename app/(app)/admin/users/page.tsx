@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search, UserCog, ShieldAlert, Mail, Phone, Building2 } from "lucide-react";
+import { Search, UserCog, ShieldAlert, Mail, Phone, Building2, KeyRound, Loader2, X } from "lucide-react";
 import { PageHeader, Spinner, EmptyState } from "@/components/shared/ui";
 import { Badge, Button, Card, Select, useToast } from "@/src/shared/ui";
 import { businessTypeLabel } from "@/lib/business-types";
+import { firstPasswordError } from "@/lib/security/password";
 import { displayUsername, toFaDigits, toJalali } from "@/lib/utils/format";
 
 type AdminUser = {
@@ -38,6 +39,8 @@ export default function AdminUsersPage() {
   const { toast } = useToast();
   const [term, setTerm] = useState("");
   const [applied, setApplied] = useState("");
+  // کاربری که رمزش قرار است بازنشانی شود؛ null یعنی مودال بسته است.
+  const [pwTarget, setPwTarget] = useState<AdminUser | null>(null);
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -187,15 +190,30 @@ export default function AdminUsersPage() {
                       </Link>
                     )}
                     {!u.platform_role && (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        loading={busy === u.user_id}
-                        onClick={() => impersonate(u)}
-                        icon={<ShieldAlert size={13} />}
-                      >
-                        ورود به حساب
-                      </Button>
+                      <>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          loading={busy === u.user_id}
+                          onClick={() => impersonate(u)}
+                          icon={<ShieldAlert size={13} />}
+                        >
+                          ورود به حساب
+                        </Button>
+                        {/*
+                          بازنشانی رمز فقط برای کاربران عادی.
+                          سرور هم همین را جدا بررسی می‌کند — پنهان‌کردن
+                          دکمه به‌تنهایی کنترل امنیتی نیست.
+                        */}
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => setPwTarget(u)}
+                          icon={<KeyRound size={13} />}
+                        >
+                          بازنشانی رمز
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -204,6 +222,182 @@ export default function AdminUsersPage() {
           </ul>
         </Card>
       )}
+
+      {pwTarget && (
+        <ResetPasswordModal
+          user={pwTarget}
+          onClose={() => setPwTarget(null)}
+          onDone={(email) => {
+            setPwTarget(null);
+            toast({ title: `رمز ${email} بازنشانی شد`, tone: "success" });
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+
+/**
+ * بازنشانی رمز یک کاربر توسط سوپرادمین.
+ *
+ * دلیل اجباری است — همان قاعده‌ی جعل هویت. بدون آن، گزارش ممیزی
+ * می‌گوید «رمز عوض شد» ولی نمی‌گوید چرا، و در بازبینی امنیتی بی‌فایده
+ * است. سرور هم مستقل همین را الزام می‌کند.
+ */
+function ResetPasswordModal({
+  user,
+  onClose,
+  onDone,
+}: {
+  user: AdminUser;
+  onClose: () => void;
+  onDone: (email: string) => void;
+}) {
+  const [password, setPassword] = useState("");
+  const [reason, setReason] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const liveError = password ? firstPasswordError(password) : null;
+  const canSubmit = !!password && reason.trim().length >= 5 && !liveError && !saving;
+
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      event.stopPropagation();
+      onClose();
+    }
+    document.addEventListener("keydown", onKey, true);
+    return () => document.removeEventListener("keydown", onKey, true);
+  }, [onClose]);
+
+  /**
+   * تولید رمز تصادفی.
+   *
+   * از crypto.getRandomValues استفاده می‌شود نه Math.random — رمزی که
+   * قرار است دست کاربر واقعی بیفتد نباید از یک مولد قابل پیش‌بینی
+   * بیاید. مجموعه‌ی نویسه‌ها عمداً بدون کاراکترهای مبهم (O/0، l/1)
+   * است چون این رمز معمولاً تلفنی خوانده می‌شود.
+   */
+  function generate() {
+    const chars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789@#$%";
+    const bytes = new Uint32Array(14);
+    crypto.getRandomValues(bytes);
+    const generated = Array.from(bytes, (n) => chars[n % chars.length]).join("");
+    setPassword(generated);
+    setCopied(false);
+  }
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    setError(null);
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/users/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: user.user_id, new_password: password, reason: reason.trim() }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(json.error ?? "بازنشانی رمز ناموفق بود.");
+        return;
+      }
+      onDone(json.email ?? user.email);
+    } catch {
+      setError("ارتباط با سرور برقرار نشد.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 flex items-start justify-center overflow-y-auto p-3 sm:items-center" style={{ zIndex: "var(--z-modal)" }}>
+      <button className="fixed inset-0 bg-foreground/30 backdrop-blur-[2px]" onClick={onClose} aria-label="بستن" />
+      <form
+        onSubmit={submit}
+        role="dialog"
+        aria-modal="true"
+        aria-label="بازنشانی رمز عبور"
+        className="relative my-auto w-full max-w-md rounded-2xl border border-border bg-card p-4 shadow-2xl sm:p-5"
+        dir="rtl"
+      >
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-sm font-extrabold text-foreground">بازنشانی رمز عبور</h2>
+          <button type="button" onClick={onClose} aria-label="بستن" className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-destructive">
+            <X size={16} aria-hidden />
+          </button>
+        </div>
+
+        <div className="mb-4 rounded-xl bg-muted/50 p-3 text-2xs">
+          <div className="font-bold text-foreground">{user.owner_full_name || displayUsername(user.email)}</div>
+          <div className="mt-0.5 text-muted-foreground" dir="ltr">{user.email}</div>
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <label htmlFor="admin-new-password" className="label">رمز جدید</label>
+            <div className="flex gap-2">
+              <input
+                id="admin-new-password"
+                className="input text-left font-mono"
+                dir="ltr"
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setCopied(false); }}
+                autoComplete="off"
+                aria-invalid={!!liveError || undefined}
+              />
+              <button type="button" onClick={generate} className="btn-secondary shrink-0 whitespace-nowrap text-2xs">
+                تولید
+              </button>
+            </div>
+            {liveError && <p className="mt-1 text-2xs text-destructive-text">{liveError}</p>}
+            {password && !liveError && (
+              <button
+                type="button"
+                onClick={() => { navigator.clipboard?.writeText(password); setCopied(true); }}
+                className="mt-1 text-2xs font-bold text-primary hover:underline"
+              >
+                {copied ? "کپی شد ✓" : "کپی رمز"}
+              </button>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="admin-pw-reason" className="label">دلیل بازنشانی</label>
+            <input
+              id="admin-pw-reason"
+              className="input"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="مثلاً: درخواست تلفنی کاربر برای بازیابی حساب"
+            />
+            <p className="mt-1 text-2xs text-muted-foreground">
+              حداقل ۵ نویسه. این متن در گزارش ممیزی ثبت و ماندگار می‌شود.
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-warning-soft px-3 py-2 text-2xs leading-relaxed text-warning-onSoft">
+            پس از تغییر، رمز جدید را به کاربر اطلاع دهید و از او بخواهید بلافاصله آن را عوض کند.
+            این عملیات در گزارش ممیزی با نام شما ثبت می‌شود.
+          </div>
+
+          {error && (
+            <div role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-2xs text-destructive-text">{error}</div>
+          )}
+
+          <div className="flex gap-2 pt-1">
+            <button type="submit" disabled={!canSubmit} className="btn-primary flex-1 disabled:opacity-50">
+              {saving ? <Loader2 size={15} className="animate-spin" aria-hidden /> : <KeyRound size={15} aria-hidden />}
+              بازنشانی رمز
+            </button>
+            <button type="button" onClick={onClose} className="btn-secondary">انصراف</button>
+          </div>
+        </div>
+      </form>
     </div>
   );
 }

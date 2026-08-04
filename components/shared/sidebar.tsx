@@ -19,7 +19,7 @@ import {
   FileText, Percent, ShoppingBasket, Boxes, PercentCircle,
   Building, UserCheck, AlertCircle, PieChart, Activity,
   Briefcase, BookOpen, ShoppingBagIcon, Tags, Barcode,
-  ArrowRightLeft, History, PiggyBank, Banknote, Coins, Gift, MessageCircle, Calendar, Target, Bell,
+  ArrowRightLeft, History, PiggyBank, Banknote, Coins, Gift, MessageCircle, Calendar, Target, Bell, UserCircle,
 } from "lucide-react";
 
 export const NAV = [
@@ -109,6 +109,9 @@ export const NAV = [
     icon: Settings,
     children: [
       { href: "/settings", label: "داشبورد تنظیمات", icon: Settings },
+      // حساب کاربری بالا می‌آید چون همه‌ی کاربران به آن نیاز دارند،
+      // برخلاف بقیه‌ی تنظیمات که مخصوص مدیر است.
+      { href: "/settings/account", label: "حساب کاربری", icon: UserCircle },
       { href: "/settings/users", label: "کاربران و دسترسی‌ها", icon: UserCheck },
       { href: "/settings/accounts", label: "مالی و حساب‌ها", icon: Landmark },
       { href: "/settings/catalog", label: "کاتالوگ", icon: Layers },
