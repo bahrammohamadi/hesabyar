@@ -131,6 +131,14 @@ export async function updateSession(request: NextRequest) {
       نمی‌کند و ۴۰۱ می‌گیرد.
     */
     path === "/api/version" ||
+    /*
+      ⚠️ /api/market و /api/weather عمداً *عمومی نیستند*.
+
+      نوار قیمت فقط داخل AppShell رندر می‌شود، یعنی کاربر حتماً وارد
+      شده است. اگر عمومی می‌شدند، این سایت به یک پراکسی رایگان برای
+      tgju و open-meteo تبدیل می‌شد که هر کسی می‌توانست از آن استفاده
+      کند و سهمیه‌ی ما را بسوزاند.
+    */
     path === "/manifest.webmanifest" ||
     path === "/robots.txt" ||
     path === "/sitemap.xml" ||

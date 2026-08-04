@@ -12,6 +12,7 @@ import { TrialCountdown } from "./trial-countdown";
 import { AnnouncementBanner } from "./announcement-banner";
 import { ImpersonationBanner } from "./impersonation-banner";
 import { UpdatePrompt } from "./update-prompt";
+import { MarketTicker } from "./market-ticker";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -51,6 +52,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <DemoBanner />
         <TrialCountdown />
         <Header onMenuClick={() => setIsSidebarOpen(true)} />
+        {/*
+          نوار قیمت و آب‌وهوا — زیر هدر، بالای محتوا.
+
+          چرا اینجا و نه داخل خود Header؟ هدر ارتفاع ثابت h-16 دارد و
+          sticky است؛ افزودن یک ردیف داخلش یا ارتفاع را می‌شکند یا
+          نوار را وارد ناحیه‌ی جستجو می‌کند. به‌عنوان یک ردیف مستقل
+          بلافاصله بعد از هدر، در همه‌ی صفحات دیده می‌شود و چیدمان
+          موجود دست‌نخورده می‌ماند.
+        */}
+        <MarketTicker />
         <main className="mx-auto w-full max-w-7xl flex-1 shrink-0 px-3 py-4 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:px-5 sm:py-6 lg:px-6 lg:pb-6">
           {children}
         </main>

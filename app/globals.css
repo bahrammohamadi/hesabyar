@@ -436,6 +436,27 @@ body {
   }
 }
 
+
+/*
+  نوار قیمت‌ها: اسکرول افقی بدون نمایش نوار اسکرول.
+
+  چرا اسکرول و نه wrap؟ اگر کاشی‌ها به خط بعد بروند، ارتفاع هدر در
+  موبایل دو یا سه برابر می‌شود و فضای کار کاربر را می‌خورد. اسکرول
+  افقی ارتفاع را ثابت نگه می‌دارد.
+
+  overscroll-behavior-x: contain جلوی «کشیدن برای برگشت» مرورگر را
+  می‌گیرد وقتی کاربر به انتهای نوار می‌رسد.
+*/
+.ticker-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.ticker-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 /*
   جدول اقلام: نمایش جدولی فقط وقتی *ظرف* جا دارد، نه وقتی پنجره بزرگ است.
 
