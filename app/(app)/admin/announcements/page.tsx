@@ -92,7 +92,7 @@ export default function AdminAnnouncementsPage() {
     <div className="space-y-4">
       <PageHeader
         title="اعلان‌های پلتفرم"
-        subtitle="پیام‌هایی که در بالای پنل همه‌ی کاربران نمایش داده می‌شود"
+        subtitle="پیام‌هایی که در نوار بالای پنل و در زنگوله‌ی اعلان‌های همه‌ی کاربران نمایش داده می‌شود"
         action={
           <Button onClick={() => setOpen((v) => !v)} icon={<Plus size={15} />}>
             اعلان جدید

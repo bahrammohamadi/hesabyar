@@ -4,9 +4,10 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { fullJalali, displayUsername } from "@/lib/utils/format";
-import { LogOut, UserCircle, Bell } from "lucide-react";
+import { LogOut, UserCircle } from "lucide-react";
 import { GlobalSearchBar } from "@/src/shared/layout/GlobalSearchBar";
 import { BRAND_NAME } from "@/lib/brand";
+import { NotificationBell } from "./notification-bell";
 
 export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const router = useRouter();
@@ -45,9 +46,12 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
         <GlobalSearchBar />
 
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-          <button className="hidden h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground hover:text-primary sm:flex" aria-label="اعلان‌ها">
-            <Bell size={18} />
-          </button>
+          {/*
+            🔴 این دکمه قبلاً کاملاً تزئینی بود — بدون onClick. کاربر
+            می‌زد و هیچ اتفاقی نمی‌افتاد. حالا یادداشت‌های انتشار و
+            اعلان‌های سراسری را نشان می‌دهد.
+          */}
+          <NotificationBell />
           <div className="hidden min-w-0 items-center gap-2 rounded-2xl border border-border bg-muted/80 px-3 py-2 text-sm text-foreground sm:flex">
             <UserCircle size={18} className="shrink-0 text-primary" />
             <div className="min-w-0 leading-tight text-right">
