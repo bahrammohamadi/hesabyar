@@ -120,7 +120,18 @@ export function ProductSelector({
     enabled: !!orgId && open,
     queryFn: async () => {
       const supabase = createClient();
-      const { data } = await supabase.from("categories").select("id, name").eq("is_active", true).order("name");
+      /*
+        🔴 اینجا `.eq("is_active", true)` بود و کوئری همیشه HTTP 400
+        می‌داد: جدول categories اصلاً ستون is_active ندارد (برخلاف
+        brands و expense_categories که دارند).
+
+        نتیجه‌ی عملی: فیلتر دسته‌بندی در انتخابگر کالا همیشه خالی
+        می‌ماند و کاربر فکر می‌کرد هیچ دسته‌ای تعریف نشده. خطا فقط در
+        کنسول مرورگر دیده می‌شد، پس تا حالا کسی متوجه نشده بود.
+
+        (تأیید مستقیم: column categories.is_active does not exist)
+      */
+      const { data } = await supabase.from("categories").select("id, name").order("name");
       return data ?? [];
     },
   });

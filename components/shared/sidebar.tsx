@@ -139,6 +139,7 @@ const ADMIN_NAV = [
   { href: "/admin/announcements", label: "اعلان‌ها", icon: Bell },
   // مدیریت ادمین‌ها فقط برای کسی که مجوز admins.manage دارد معنا دارد،
   // ولی خود روت هم بررسی می‌کند — پنهان‌کردن لینک کنترل امنیتی نیست.
+  { href: "/admin/usage", label: "آمار مصرف", icon: BarChart3 },
   { href: "/admin/roles", label: "ادمین‌ها و دسترسی‌ها", icon: Shield },
   { href: "/admin/audit", label: "گزارش فعالیت", icon: Activity },
 ];
