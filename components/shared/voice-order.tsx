@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { isIOS, isInAppBrowser, permissionHelp } from "@/lib/utils/platform";
 import { Mic, MicOff, X, AlertTriangle, Check, Loader2 } from "lucide-react";
 import { Button } from "@/src/shared/ui/Button";
 import { parseUtterance, rankMatches, type Scored } from "@/lib/voice-order";
@@ -77,6 +78,21 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
   const [errorText, setErrorText] = useState("");
   const [added, setAdded] = useState<string[]>([]);
 
+  /*
+    🔴 این سه باید *پیش از* هر return زودهنگام باشند.
+
+    نسخه‌ی اول بعد از `if (!open || !mounted) return null` نوشته شده
+    بود. وقتی پنجره بسته است آن سه useMemo اجرا نمی‌شدند و به‌محض باز
+    شدن اجرا می‌شدند — یعنی تعداد هوک‌ها بین دو رندر فرق می‌کرد و
+    React با خطای #310 کل صفحه را می‌ترکاند.
+    (روی شبیه‌سازی آیفون بازتولید شد: صفحه‌ی «خطای برنامه».)
+
+    درس: قانون هوک‌ها استثنا ندارد؛ حتی برای مقداری که ثابت است.
+  */
+  const ios = useMemo(() => isIOS(), []);
+  const inAppBrowser = useMemo(() => isInAppBrowser(), []);
+  const help = useMemo(() => permissionHelp("microphone"), []);
+
   useEffect(() => setMounted(true), []);
 
   const handleTranscript = useCallback(
@@ -126,39 +142,6 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
       return;
     }
 
-    /*
-      🔴 مجوز میکروفون صریح گرفته می‌شود، پیش از استارت تشخیص.
-
-      چرا لازم شد: SpeechRecognition خودش پنجره‌ی مجوز را نشان
-      می‌دهد، ولی اگر کاربر یک‌بار «Block» زده باشد، دفعات بعد بی‌صدا
-      خطای not-allowed می‌دهد و هیچ راهی برای بازیابی نشان داده
-      نمی‌شود. کاربر فقط یک پیام مبهم می‌دید.
-
-      با getUserMedia:
-        • بار اول پنجره‌ی مجوز مرورگر واقعاً باز می‌شود
-        • در حالت مسدود، از permissions.query وضعیت را می‌فهمیم و
-          راهنمای دقیق نشان می‌دهیم
-      استریم بلافاصله بسته می‌شود؛ فقط برای گرفتن مجوز است.
-    */
-    if (navigator.mediaDevices?.getUserMedia) {
-      try {
-        const s = await navigator.mediaDevices.getUserMedia({ audio: true });
-        s.getTracks().forEach((t) => t.stop());
-      } catch (err) {
-        const name = (err as Error)?.name ?? "";
-        if (name === "NotAllowedError" || name === "SecurityError") {
-          setPhase("denied");
-          setErrorText("");
-          return;
-        }
-        if (name === "NotFoundError") {
-          setPhase("error");
-          setErrorText("میکروفونی روی این دستگاه پیدا نشد.");
-          return;
-        }
-      }
-    }
-
     stop();
 
     /*
@@ -175,6 +158,13 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
       پس از گرفتن مجوز، جریان را می‌بندیم چون خود SpeechRecognition
       میکروفون را جدا باز می‌کند؛ نگه‌داشتنش یعنی دو بار اشغال
       میکروفون و روشن ماندن نشانگر ضبط.
+
+      🔴 روی iOS این *تنها* فراخوانی است و باید در همان چرخه‌ی لمس
+      کاربر رخ دهد. نسخه‌ی قبلی دو بار getUserMedia می‌زد (یکی اینجا
+      و یکی چند خط بالاتر)؛ سافاری موبایل دومی را خارج از ژست کاربر
+      می‌دید و NotAllowedError می‌داد — بدون اینکه هرگز پنجره‌ای نشان
+      داده شود. کاربر «دسترسی مسدود است» می‌دید و هر کاری در تنظیمات
+      می‌کرد فرقی نمی‌کرد، چون مجوز اصلاً مسئله نبود.
     */
     if (navigator.mediaDevices?.getUserMedia) {
       setPhase("requesting");
@@ -185,9 +175,9 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
         const name = (err as Error)?.name ?? "";
         if (name === "NotAllowedError" || name === "SecurityError") {
           setPhase("denied");
-          setErrorText(
-            "اجازه‌ی دسترسی به میکروفون داده نشد. روی قفل کنار نشانی سایت بزنید، میکروفون را روی «اجازه» بگذارید و صفحه را تازه کنید."
-          );
+          // متن دقیق در UI بر اساس پلتفرم ساخته می‌شود؛ اینجا خالی
+          // می‌ماند تا دو پیام متناقض نشان داده نشود.
+          setErrorText("");
         } else if (name === "NotFoundError") {
           setPhase("error");
           setErrorText("میکروفونی روی این دستگاه پیدا نشد.");
@@ -296,6 +286,34 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
 
   useEffect(() => {
     if (!open) { stop(); setPhase("idle"); setAdded([]); return; }
+
+    /*
+      🔴 روی iOS خودکار شروع نمی‌کنیم.
+
+      سافاری موبایل مجوز میکروفون را فقط در پاسخ *مستقیم* به لمس
+      می‌دهد. جریان قبلی این بود:
+
+        لمس دکمه → setVoiceOpen(true) → رندر → useEffect
+                 → await permissions.query → getUserMedia
+
+      هر `await` میان راه، زنجیره‌ی «ژست کاربر» را می‌شکند و وقتی
+      نوبت به getUserMedia می‌رسد سافاری آن را خارج از ژست می‌بیند و
+      NotAllowedError می‌دهد — بدون اینکه هرگز پنجره‌ای به کاربر نشان
+      داده شود. کاربر فقط «دسترسی مسدود است» می‌دید و هر کاری در
+      تنظیمات می‌کرد فرقی نمی‌کرد، چون مجوز اصلاً مسئله نبود.
+
+      روی iOS پنجره با دکمه‌ی «شروع صحبت» باز می‌شود؛ آن کلیک، خودش
+      ژست معتبر است و getUserMedia بدون واسطه در همان چرخه صدا زده
+      می‌شود.
+
+      روی دسکتاپ و اندروید رفتار قبلی (شروع خودکار) حفظ می‌شود چون
+      آنجا محدودیتی نیست و یک لمس اضافه فقط مزاحمت است.
+    */
+    if (isIOS()) {
+      setPhase("idle");
+      return () => { stop(); };
+    }
+
     let cancelled = false;
     (async () => {
       try {
@@ -409,9 +427,35 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
               {listening && !interim && "بگویید… مثلاً «سه عدد شومیز شانتون»"}
               {listening && interim && <span className="text-muted-foreground">{interim}</span>}
               {!listening && finalText && `شنیدم: «${finalText}»`}
-              {!listening && !requesting && !finalText && phase === "idle" && "برای گفتن دوباره، میکروفون را بزنید"}
+              {!listening && !requesting && !finalText && phase === "idle" &&
+                (ios
+                  ? "برای شروع، دکمه‌ی میکروفون را لمس کنید"
+                  : "برای گفتن دوباره، میکروفون را بزنید")}
             </p>
           </div>
+
+          {/*
+            🔴 هشدار مرورگر درون‌برنامه‌ای — پیش از هر تلاش.
+
+            بیشتر کاربران ایرانی لینک را از اینستاگرام یا تلگرام باز
+            می‌کنند. در WKWebView روی iOS، `webkitSpeechRecognition`
+            وجود دارد (پس isVoiceSupported درست می‌گوید «پشتیبانی
+            می‌شود») ولی start() بی‌صدا شکست می‌خورد. بدترین حالت:
+            دکمه هست، کاربر می‌زند، هیچ اتفاقی نمی‌افتد.
+            بهتر است *قبل* از تلاش بگوییم چرا کار نمی‌کند.
+          */}
+          {inAppBrowser && phase === "idle" && (
+            <div className="mt-3 rounded-xl bg-warning-soft p-3.5 text-xs leading-6 text-foreground">
+              <p className="flex items-start gap-2 font-bold text-warning-onSoft">
+                <AlertTriangle size={15} className="mt-0.5 shrink-0" aria-hidden />
+                این صفحه داخل اپ دیگری باز شده
+              </p>
+              <p className="mt-1.5">
+                میکروفون در مرورگرِ داخل اینستاگرام و تلگرام کار نمی‌کند. از منوی «…» گزینه‌ی
+                «Open in Safari» یا «باز کردن در مرورگر» را بزنید.
+              </p>
+            </div>
+          )}
 
           {/*
             راهنمای بازیابی مجوز.
@@ -425,17 +469,34 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
             <div role="alert" className="mt-3 rounded-xl bg-destructive/10 p-3.5 text-xs leading-6 text-destructive-text">
               <p className="flex items-start gap-2 font-bold">
                 <AlertTriangle size={15} className="mt-0.5 shrink-0" aria-hidden />
-                دسترسی به میکروفون مسدود است
+                دسترسی به میکروفون داده نشد
               </p>
+
+              {/*
+                🔴 راهنما باید متناسب با همان دستگاه باشد.
+
+                پیام قبلی می‌گفت «روی آیکون قفل کنار نشانی سایت بزنید».
+                در سافاری آیفون **چنین آیکونی وجود ندارد** — کاربر
+                دنبال چیزی می‌گشت که نبود و هیچ کاری از دستش برنمی‌آمد.
+                مسیر واقعی آیفون از دکمه‌ی «aA» در نوار نشانی می‌گذرد.
+              */}
+              {/*
+                راهنما از یک منبع مشترک می‌آید (`permissionHelp`) تا
+                همان متن در بارکدخوان هم استفاده شود و دو جا از هم
+                جدا نیفتند.
+              */}
+              {help.note && help.variant === "in-app" && (
+                <p className="mt-2 text-foreground">{help.note}</p>
+              )}
               <ol className="mt-2 list-inside list-decimal space-y-1 pr-1 text-foreground">
-                <li>روی آیکون قفل 🔒 کنار نشانی سایت در نوار مرورگر بزنید</li>
-                <li>گزینه‌ی «میکروفون» (Microphone) را پیدا کنید</li>
-                <li>آن را روی «اجازه دادن» (Allow) بگذارید</li>
-                <li>صفحه را یک‌بار تازه‌سازی کنید</li>
+                {help.steps.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
               </ol>
-              <p className="mt-2 text-muted-foreground">
-                در سافاری: منوی Safari ← Settings for This Website ← Microphone ← Allow
-              </p>
+              {help.note && help.variant !== "in-app" && (
+                <p className="mt-2 text-muted-foreground">{help.note}</p>
+              )}
+
               <Button
                 variant="secondary"
                 className="mt-3 w-full"

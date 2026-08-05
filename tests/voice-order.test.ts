@@ -230,7 +230,13 @@ describe("یکپارچگی با فرم فاکتور", () => {
   });
 
   it("پیام خطا راهنمای عملی می‌دهد نه دستور مبهم", () => {
-    expect(voice).toContain("روی قفل کنار نشانی سایت بزنید");
+    /*
+      ⚠️ متن راهنما از `lib/utils/platform.ts` می‌آید، نه از این فایل.
+      دلیل: در سافاری آیفون «آیکون قفل» وجود ندارد و همان پیام کاربر
+      را دنبال چیزی می‌فرستاد که نبود. حالا متن به دستگاه بستگی دارد.
+    */
+    expect(voice).toContain("permissionHelp(");
+    expect(voice).toContain("help.steps.map");
   });
 
   it("کاتالوگ نیامده با «پیدا نشد» اشتباه گرفته نمی‌شود", () => {
@@ -252,7 +258,13 @@ describe("یکپارچگی با فرم فاکتور", () => {
     */
     expect(voice).toContain("navigator.mediaDevices.getUserMedia({ audio: true })");
     // استریم باید بلافاصله آزاد شود؛ فقط برای گرفتن مجوز است.
-    expect(voice).toContain("s.getTracks().forEach((t) => t.stop())");
+    expect(voice).toContain("probe.getTracks().forEach((t) => t.stop())");
+    /*
+      🔴 و فقط *یک بار*. نسخه‌ی قبلی دو فراخوانی داشت و سافاری موبایل
+      دومی را خارج از ژست کاربر می‌دید → NotAllowedError بدون نمایش
+      هیچ پنجره‌ای.
+    */
+    expect(voice.match(/getUserMedia\(\{\s*audio:\s*true\s*\}\)/g)).toHaveLength(1);
   });
 
   it("وضعیت مجوز پیش از تلاش بررسی می‌شود", () => {
@@ -261,9 +273,15 @@ describe("یکپارچگی با فرم فاکتور", () => {
   });
 
   it("راهنمای بازیابی مسیر دقیق مرورگر را می‌دهد", () => {
-    // «از تنظیمات مرورگر فعالش کنید» بی‌فایده بود — کاربر نمی‌داند کجا.
-    expect(voice).toContain("آیکون قفل");
-    expect(voice).toContain("Settings for This Website");
+    /*
+      «از تنظیمات مرورگر فعالش کنید» بی‌فایده بود — کاربر نمی‌داند کجا.
+      مسیرهای دقیق حالا در `permissionHelp` هستند و بر اساس دستگاه
+      انتخاب می‌شوند (تست کاملشان در tests/ios-media-permission).
+    */
+    const platform = read("lib/utils/platform.ts");
+    expect(platform).toContain("آیکون قفل");
+    expect(platform).toContain("Settings for This Website");
+    expect(platform).toContain("aA");
     expect(voice).toContain("تلاش دوباره");
   });
 

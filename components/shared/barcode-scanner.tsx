@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { isIOS, isInAppBrowser } from "@/lib/utils/platform";
 import { createPortal } from "react-dom";
 import { Camera, X, AlertTriangle, Keyboard, Check } from "lucide-react";
 import { Button } from "@/src/shared/ui/Button";
@@ -108,8 +109,22 @@ export function BarcodeScanner({ open, onClose, onDetected, continuous = true }:
         const name = (err as Error)?.name ?? "";
         if (name === "NotAllowedError" || name === "SecurityError") {
           setStatus("denied");
+          /*
+            🔴 راهنما باید متناسب با همان دستگاه باشد.
+
+            «روی قفل کنار نشانی سایت بزنید» در سافاری آیفون بی‌معناست:
+            آنجا آیکون قفلی وجود ندارد و مسیر واقعی از دکمه‌ی «aA»
+            می‌گذرد. کاربر دنبال چیزی می‌گشت که اصلاً نبود.
+
+            و اگر صفحه داخل مرورگر اینستاگرام/تلگرام باز شده باشد،
+            هیچ تنظیمی کمک نمی‌کند — باید در سافاری باز شود.
+          */
           setErrorText(
-            "اجازه‌ی دسترسی به دوربین داده نشد. روی قفل کنار نشانی سایت بزنید، دوربین را روی «اجازه» بگذارید و صفحه را تازه کنید — یا همین‌جا کد را دستی وارد کنید."
+            isInAppBrowser()
+              ? "این صفحه داخل مرورگر یک اپ دیگر باز شده و دوربین آنجا کار نمی‌کند. از منوی «…» گزینه‌ی «Open in Safari» را بزنید — یا همین‌جا کد را دستی وارد کنید."
+              : isIOS()
+                ? "اجازه‌ی دسترسی به دوربین داده نشد. روی دکمه‌ی «aA» در نوار نشانی بزنید ← Website Settings ← Camera ← Allow. اگر نبود: تنظیمات ← Safari ← Camera ← Allow — یا همین‌جا کد را دستی وارد کنید."
+                : "اجازه‌ی دسترسی به دوربین داده نشد. روی قفل کنار نشانی سایت بزنید، دوربین را روی «اجازه» بگذارید و صفحه را تازه کنید — یا همین‌جا کد را دستی وارد کنید."
           );
         } else if (name === "NotFoundError") {
           setStatus("error");
