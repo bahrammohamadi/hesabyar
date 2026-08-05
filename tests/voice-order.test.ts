@@ -217,6 +217,13 @@ describe("یکپارچگی با فرم فاکتور", () => {
 
       getUserMedia همان درخواستی است که پنجره را می‌آورد.
     */
+    /*
+      ⚠️ فقط برای غیر-iOS. در سافاری iOS این مرحله عمداً رد می‌شود:
+      getUserMedia و SpeechRecognition دو مسیر مجوز جداگانه دارند و
+      رد شدن اولی به معنای کار نکردن دومی نیست. (گزارش کاربر:
+      «دوربین کار می‌کند ولی میکروفون نه» — همین تفاوت ریشه را لو داد.)
+    */
+    expect(voice).toContain("if (!ios && navigator.mediaDevices?.getUserMedia)");
     expect(voice).toContain("navigator.mediaDevices.getUserMedia({ audio: true })");
     // جریان بلافاصله بسته می‌شود تا میکروفون دوبار اشغال نشود
     expect(voice).toContain("probe.getTracks().forEach((t) => t.stop())");
@@ -264,7 +271,10 @@ describe("یکپارچگی با فرم فاکتور", () => {
       دومی را خارج از ژست کاربر می‌دید → NotAllowedError بدون نمایش
       هیچ پنجره‌ای.
     */
-    expect(voice.match(/getUserMedia\(\{\s*audio:\s*true\s*\}\)/g)).toHaveLength(1);
+    // ⚠️ توضیحات حذف می‌شوند: نام تابع داخل کامنت فارسی هم شمرده
+    // می‌شد و تست غلط مثبت می‌داد.
+    const code = voice.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+    expect(code.match(/getUserMedia\(\{\s*audio:\s*true\s*\}\)/g)).toHaveLength(1);
   });
 
   it("وضعیت مجوز پیش از تلاش بررسی می‌شود", () => {

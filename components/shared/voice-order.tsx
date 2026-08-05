@@ -166,7 +166,26 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
       داده شود. کاربر «دسترسی مسدود است» می‌دید و هر کاری در تنظیمات
       می‌کرد فرقی نمی‌کرد، چون مجوز اصلاً مسئله نبود.
     */
-    if (navigator.mediaDevices?.getUserMedia) {
+    /*
+      🔴 روی iOS این مرحله *رد می‌شود*.
+
+      گزارش کاربر با اسکرین‌شات: «بارکدخوان و دوربین کار می‌کند ولی
+      میکروفون نه». همین تفاوت، ریشه را لو داد.
+
+      در سافاری iOS، `getUserMedia({audio:true})` و
+      `SpeechRecognition` دو مسیر مجوز **جداگانه** دارند:
+        • getUserMedia مجوز «ضبط صدا» می‌خواهد
+        • SpeechRecognition مجوز «تشخیص گفتار» می‌خواهد و پنجره‌ی
+          خودش را نشان می‌دهد
+      اولی می‌تواند رد شود در حالی که دومی کاملاً کار می‌کند. ما با
+      رد شدن getUserMedia زودتر تسلیم می‌شدیم و «دسترسی داده نشد»
+      می‌گفتیم — بدون اینکه اصلاً تشخیص گفتار را امتحان کرده باشیم.
+
+      روی کروم و اندروید برعکس است: آنجا SpeechRecognition خودش
+      پنجره باز نمی‌کند و بدون getUserMedia بی‌صدا شکست می‌خورد. پس
+      رفتار هر پلتفرم جدا می‌ماند.
+    */
+    if (!ios && navigator.mediaDevices?.getUserMedia) {
       setPhase("requesting");
       try {
         const probe = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -187,6 +206,9 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
         }
         return;
       }
+    } else if (ios) {
+      // پنجره‌ی مجوز را خودِ SpeechRecognition نشان می‌دهد.
+      setPhase("requesting");
     }
     setInterim("");
     setFinalText("");
@@ -242,7 +264,7 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
       setPhase("error");
       setErrorText("میکروفون در دسترس نیست.");
     }
-  }, [handleTranscript, stop]);
+  }, [handleTranscript, stop, ios]);
 
   const start = useCallback(async () => {
     /*
@@ -504,6 +526,25 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
               >
                 تلاش دوباره
               </Button>
+
+              {/*
+                🔴 راه خروج از بن‌بست.
+
+                گزارش کاربر: «هنوز تو آیفون نمی‌تونم کاری کنم». حتی با
+                بهترین راهنما، بعضی دستگاه‌ها به هر دلیلی (نسخه‌ی iOS،
+                محدودیت Screen Time، مرورگر واسط) میکروفون نمی‌دهند.
+
+                در آن حالت کاربر نباید در یک صفحه‌ی خطا حبس شود. این
+                دکمه او را به همان کاری می‌رساند که می‌خواست انجام
+                دهد — افزودن کالا — فقط از راه دیگر.
+              */}
+              <button
+                type="button"
+                onClick={onClose}
+                className="mt-2 w-full rounded-xl border border-border bg-card px-3 py-2.5 text-xs font-bold text-foreground transition hover:bg-muted"
+              >
+                بی‌خیال، کالا را دستی انتخاب می‌کنم
+              </button>
             </div>
           )}
 
