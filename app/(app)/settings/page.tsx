@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { displayUsername } from "@/lib/utils/format";
 import { PageHeader, Modal, Spinner } from "@/components/shared/ui";
-import { Plus, Loader2, Tag, Landmark, FolderTree, Trash2, Pencil, Check, X, Users, Shield, Palette, Building2, SlidersHorizontal, Sparkles, KeyRound } from "lucide-react";
+import { Plus, Loader2, Tag, Landmark, FolderTree, Trash2, Pencil, Check, X, Users, Shield, Palette, Building2, SlidersHorizontal, Sparkles, KeyRound, FileSpreadsheet } from "lucide-react";
 import { applyTheme, DEFAULT_THEME, THEMES, THEME_STORAGE_KEY, THEME_CHANGE_EVENT, type ThemeId } from "@/lib/theme";
 import { PERMISSION_TREE, uniquePermissions, type PermissionTreeItem } from "@/lib/access/permission-tree";
 
@@ -21,6 +21,7 @@ export function SettingsContent({ section = "all" }: { section?: "all" | "catalo
       { title: "کاربران و دسترسی‌ها", desc: "ساخت کاربر، نقش‌ها و سطح دسترسی", href: "/settings/users", icon: Shield, tone: "bg-primary/10 text-primary" },
       { title: "مالی", desc: "حساب‌ها، دسته‌بندی هزینه و روش‌های پرداخت", href: "/settings/accounts", icon: Landmark, tone: "bg-success-soft text-success-onSoft" },
       { title: "کاتالوگ", desc: "دسته‌بندی کالا، برندها و لیست قیمت‌ها", href: "/settings/catalog", icon: FolderTree, tone: "bg-warning-soft text-warning-onSoft" },
+      { title: "ورود اطلاعات از اکسل", desc: "کالاها یا مشتریان را دسته‌جمعی از فایل اکسل وارد کنید", href: "/settings/import", icon: FileSpreadsheet, tone: "bg-info-soft text-info-onSoft" },
       { title: "پیشرفته", desc: "گزارش فعالیت، تنظیمات باشگاه و امکانات مدیریتی", href: "/activity", icon: SlidersHorizontal, tone: "bg-muted text-foreground" },
     ];
     return (

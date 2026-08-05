@@ -20,7 +20,7 @@ import {
   Building, UserCheck, AlertCircle, PieChart, Activity,
   Briefcase, BookOpen, ShoppingBagIcon, Tags, Barcode,
   ArrowRightLeft, History, PiggyBank, Banknote, Coins, Gift, MessageCircle, Calendar, Target, Bell, UserCircle,
-  LifeBuoy, TicketCheck,
+  LifeBuoy, TicketCheck, FileSpreadsheet,
 } from "lucide-react";
 
 export const NAV = [
@@ -117,6 +117,7 @@ export const NAV = [
       { href: "/settings/accounts", label: "مالی و حساب‌ها", icon: Landmark },
       { href: "/settings/catalog", label: "کاتالوگ", icon: Layers },
       { href: "/settings/price-lists", label: "لیست قیمت‌ها", icon: Tags },
+      { href: "/settings/import", label: "ورود اطلاعات از اکسل", icon: FileSpreadsheet },
     ],
   },
   /*
@@ -147,6 +148,7 @@ const ADMIN_NAV = [
   { href: "/admin/users", label: "کاربران پلتفرم", icon: Users },
   { href: "/admin/announcements", label: "اعلان‌ها", icon: Bell },
   { href: "/admin/tickets", label: "تیکت‌های پشتیبانی", icon: TicketCheck },
+  { href: "/admin/import", label: "ورود داده", icon: FileSpreadsheet },
   // مدیریت ادمین‌ها فقط برای کسی که مجوز admins.manage دارد معنا دارد،
   // ولی خود روت هم بررسی می‌کند — پنهان‌کردن لینک کنترل امنیتی نیست.
   { href: "/admin/usage", label: "آمار مصرف", icon: BarChart3 },
