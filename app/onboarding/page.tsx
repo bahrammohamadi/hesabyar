@@ -131,15 +131,23 @@ export default function OnboardingPage() {
 
   if (checking) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="animate-spin text-primary" size={28} />
+      <main className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="animate-spin text-primary" size={28} aria-hidden />
         <span className="sr-only">در حال بارگذاری</span>
-      </div>
+      </main>
     );
   }
 
+  /*
+    🔴 <main> لازم است.
+    این صفحه بیرون از گروه (app) است و AppShell — که landmark اصلی را
+    می‌سازد — دور آن نیست. بدون آن axe دو ایراد می‌داد:
+      landmark-one-main  → صفحه هیچ ناحیه‌ی اصلی ندارد
+      region             → محتوا بیرون هر landmark، «بی‌صاحب»
+    کاربر صفحه‌خوان نمی‌توانست مستقیم به محتوا برود.
+  */
   return (
-    <div className="min-h-screen bg-background px-4 py-8 sm:py-12">
+    <main className="min-h-screen bg-background px-4 py-8 sm:py-12">
       <div className="mx-auto w-full max-w-2xl">
         <div className="mb-6 text-center sm:mb-8">
           <img
@@ -274,6 +282,6 @@ export default function OnboardingPage() {
           </button>
         </form>
       </div>
-    </div>
+    </main>
   );
 }

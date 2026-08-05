@@ -13,6 +13,7 @@ import { AnnouncementBanner } from "./announcement-banner";
 import { ImpersonationBanner } from "./impersonation-banner";
 import { UpdatePrompt } from "./update-prompt";
 import { MarketTicker } from "./market-ticker";
+import { EmailVerifyBanner } from "./email-verify-banner";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -48,6 +49,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           نشان می‌دهد و نباید زیر اعلان‌ها گم شود.
         */}
         <ImpersonationBanner />
+        {/*
+          پس از نوار جعل هویت و پیش از اعلان‌ها: تأیید ایمیل وضعیت
+          حساب خودِ کاربر است و از پیام‌های عمومی مهم‌تر.
+        */}
+        <EmailVerifyBanner />
         <AnnouncementBanner />
         <DemoBanner />
         <TrialCountdown />
