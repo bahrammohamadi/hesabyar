@@ -21,7 +21,7 @@ const MODE_LABEL: Record<InventoryMode, string> = {
   movements: "گردش انبار",
   in: "ورود کالا",
   out: "خروج کالا",
-  adjust: "تعدیل موجودی",
+  adjust: "انبارگردانی",
   waste: "ضایعات / خروج غیرعادی",
 };
 
@@ -141,7 +141,19 @@ export function InventoryOperationPage({ mode }: { mode: InventoryMode }) {
 
   return (
     <div className="space-y-5">
-      <PageHeader title={MODE_LABEL[mode]} subtitle={mode === "movements" ? "تاریخچه ورود، خروج و تعدیل کالاها" : "ثبت عملیات انبار در صفحه اختصاصی"} />
+      <PageHeader title={MODE_LABEL[mode]} subtitle={
+        mode === "movements"
+          ? "تاریخچه ورود، خروج و انبارگردانی کالاها"
+          : mode === "adjust"
+            /*
+              انبارگردانی یعنی شمارش فیزیکی و اصلاح اختلاف. زیرعنوان
+              صریح می‌گوید عددی که وارد می‌کنید «موجودی واقعی شمرده‌شده»
+              است، نه مقدار تغییر — یک سوءتفاهم رایج که به موجودی غلط
+              منجر می‌شود.
+            */
+            ? "ثبت موجودی واقعی پس از شمارش فیزیکی کالاها"
+            : "ثبت عملیات انبار در صفحه اختصاصی"
+      } />
 
       {mode !== "movements" && (
         <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm">

@@ -35,7 +35,7 @@ export const PERMISSION_TREE: PermissionTreeItem[] = [
     { key: "inventory.as-of", label: "موجودی به تاریخ", href: "/inventory/as-of", permissions: ["inventory.view"] },
     { key: "inventory.in", label: "ورود کالا", href: "/inventory/in", permissions: ["inventory.adjust"], warning: "ورود کالا موجودی را تغییر می‌دهد." },
     { key: "inventory.out", label: "خروج کالا", href: "/inventory/out", permissions: ["inventory.adjust"], warning: "خروج کالا موجودی را کاهش می‌دهد." },
-    { key: "inventory.adjust", label: "تعدیل موجودی", href: "/inventory/adjust", permissions: ["inventory.adjust"], warning: "تعدیل موجودی دسترسی حساس است." },
+    { key: "inventory.adjust", label: "انبارگردانی", href: "/inventory/adjust", permissions: ["inventory.adjust"], warning: "انبارگردانی دسترسی حساسی است؛ موجودی را مستقیم تغییر می‌دهد." },
     { key: "inventory.waste", label: "ضایعات", href: "/inventory/waste", permissions: ["inventory.adjust"], warning: "ثبت ضایعات موجودی را کاهش می‌دهد." },
     { key: "products.edit", label: "ثبت/ویرایش کالا", permissions: ["products.edit"] },
     { key: "products.price", label: "تغییر قیمت کالا", permissions: ["products.update_price"], warning: "تغییر قیمت روی فروش و سود اثر مستقیم دارد." },

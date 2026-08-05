@@ -155,8 +155,8 @@ export async function changePrice(input: ProductPriceChangeInput): Promise<void>
 
 
 export async function adjustStock(input: ProductStockAdjustInput): Promise<void> {
-  if (input.qty !== Math.trunc(input.qty)) throw new Error("مقدار تعدیل باید عدد صحیح باشد.");
-  if (input.qty === 0) throw new Error("مقدار تعدیل صفر است.");
+  if (input.qty !== Math.trunc(input.qty)) throw new Error("مقدار اصلاح باید عدد صحیح باشد.");
+  if (input.qty === 0) throw new Error("اختلافی برای ثبت وجود ندارد.");
   const supabase = createClient();
   const { error } = await supabase.rpc("fn_add_stock_movement", {
     p_product_id: input.product_id,
@@ -165,9 +165,9 @@ export async function adjustStock(input: ProductStockAdjustInput): Promise<void>
     p_qty: input.qty,
     p_ref_type: null,
     p_ref_id: null,
-    p_note: input.note?.trim() || "تعدیل موجودی از ProductPanel",
+    p_note: input.note?.trim() || "انبارگردانی از پنل کالا",
   });
-  if (error) throw new Error("خطا در تعدیل موجودی: " + error.message);
+  if (error) throw new Error("خطا در انبارگردانی: " + error.message);
 }
 
 export function useProductPriceHistory(id?: string | null) {
@@ -436,9 +436,9 @@ export function useAdjustProductStock() {
     mutationFn: adjustStock,
     onSuccess: (_, input) => {
       invalidateProductQueries(queryClient, input.product_id);
-      toast({ title: "موجودی تعدیل شد", description: input.note || "گردش انبار ثبت شد", tone: "success" });
+      toast({ title: "موجودی اصلاح شد", description: input.note || "گردش انبار ثبت شد", tone: "success" });
     },
-    onError: (error) => toast({ title: "خطا در تعدیل موجودی", description: (error as Error).message, tone: "error" }),
+    onError: (error) => toast({ title: "خطا در انبارگردانی", description: (error as Error).message, tone: "error" }),
   });
 }
 

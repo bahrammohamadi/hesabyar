@@ -96,7 +96,7 @@ export function DashboardQuickActions({
       <div className="grid grid-cols-3 gap-2.5 md:grid-cols-6">
         <QuickBtn label="فروش جدید"   icon={Receipt}        accent="primary" badge="F2" onClick={onOpenQuickSale} />
         <QuickBtn label="خرید جدید"   icon={ShoppingCart}   accent="emerald"            onClick={onOpenQuickPurchase} />
-        <QuickBtn label="تعدیل انبار" icon={ArrowDownToLine} accent="blue"              href="/inventory/adjust" />
+        <QuickBtn label="انبارگردانی"  icon={ArrowDownToLine} accent="blue"              href="/inventory/adjust" />
         <QuickBtn label="کالای جدید"  icon={Package2}        accent="slate"             onClick={onCreateProduct} />
         <QuickBtn label="مشتری جدید"  icon={UserPlus}        accent="cyan"              onClick={onCreateContact} />
         <QuickBtn label="گزارشات"     icon={BarChart3}       accent="violet"            href="/reports/sales" />

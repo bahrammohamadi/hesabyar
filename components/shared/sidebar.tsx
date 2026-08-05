@@ -66,7 +66,7 @@ export const NAV = [
       { href: "/inventory/as-of", label: "موجودی به تاریخ", icon: Calendar },
       { href: "/inventory/in", label: "ورود کالا", icon: ArrowDownToLine },
       { href: "/inventory/out", label: "خروج کالا", icon: ArrowUpFromLine },
-      { href: "/inventory/adjust", label: "تعدیل موجودی", icon: ArrowLeftRight },
+      { href: "/inventory/adjust", label: "انبارگردانی", icon: ArrowLeftRight },
       { href: "/inventory/waste", label: "ضایعات", icon: AlertCircle },
     ],
   },

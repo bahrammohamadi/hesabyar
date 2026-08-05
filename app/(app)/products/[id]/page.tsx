@@ -124,7 +124,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
             <Pencil size={16} /> ویرایش
           </button>
           <button onClick={() => openProductPanel("view", "variants")} className="btn-primary flex items-center gap-2 text-sm">
-            <ArrowDownCircle size={16} /> تعدیل موجودی
+            <ArrowDownCircle size={16} /> انبارگردانی
           </button>
         </div>
       </div>

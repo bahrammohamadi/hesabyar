@@ -15,6 +15,8 @@ export interface OrgContextData {
    * null یعنی سازمان قدیمی یا پولی — شمارنده نمایش داده نمی‌شود.
    */
   trialEndsAt: string | null;
+  /** نام کسب‌وکار — برای نمایش در هدر. */
+  orgName: string | null;
   loading: boolean;
 }
 
@@ -29,6 +31,7 @@ export function useOrg(): OrgContextData {
     role: null,
     isDemo: false,
     trialEndsAt: null,
+    orgName: null,
     loading: true,
   });
 
@@ -57,15 +60,19 @@ export function useOrg(): OrgContextData {
       */
       let isDemo = false;
       let trialEndsAt: string | null = null;
+      let orgName: string | null = null;
       if (m?.org_id) {
         const { data: org } = await supabase
           .from("organizations")
-          .select("is_demo, trial_ends_at")
+          // name به همین select موجود اضافه شد، نه کوئری دوم — هدر
+          // نباید یک رفت‌وبرگشت اضافه به سرور تحمیل کند.
+          .select("name, is_demo, trial_ends_at")
           .eq("id", m.org_id)
           .maybeSingle();
-        const row = org as { is_demo?: boolean; trial_ends_at?: string | null } | null;
+        const row = org as { name?: string | null; is_demo?: boolean; trial_ends_at?: string | null } | null;
         isDemo = Boolean(row?.is_demo);
         trialEndsAt = row?.trial_ends_at ?? null;
+        orgName = row?.name ?? null;
       }
 
       if (!active) return;
@@ -76,6 +83,7 @@ export function useOrg(): OrgContextData {
         role: m?.role ?? null,
         isDemo,
         trialEndsAt,
+        orgName,
         loading: false,
       });
     })();

@@ -46,7 +46,7 @@ export function getDefaultEntityActions({
 
   if (type === "product" && id) {
     actions.push({ id: "edit", label: "ویرایش کالا", href: `/products/${id}?action=edit`, requiredPermission: "products.edit" });
-    actions.push({ id: "adjust-stock", label: "تعدیل موجودی", href: `/inventory/adjust?product=${id}`, requiredPermission: "inventory.adjust" });
+    actions.push({ id: "adjust-stock", label: "انبارگردانی", href: `/inventory/adjust?product=${id}`, requiredPermission: "inventory.adjust" });
     actions.push({ id: "price-change", label: "تغییر قیمت", href: `/products/${id}?action=price`, requiredPermission: "products.update_price" });
     actions.push({ id: "stock-history", label: "گردش موجودی", href: `/products/${id}?tab=movements`, requiredPermission: "inventory.view" });
   }

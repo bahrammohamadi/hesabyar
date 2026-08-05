@@ -36,7 +36,7 @@ function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
 const TYPE_LABEL: Record<string, string> = {
   in: "ورود",
   out: "خروج",
-  adjust: "تعدیل",
+  adjust: "انبارگردانی",
   transfer_in: "انتقال ورودی",
   transfer_out: "انتقال خروجی",
 };
@@ -107,7 +107,7 @@ export default function StockCardPage() {
     <div>
       <PageHeader
         title="کاردکس کالا"
-        subtitle="تاریخچه کامل ورود، خروج، تعدیل و مانده تجمیعی هر کالا"
+        subtitle="تاریخچه کامل ورود، خروج، انبارگردانی و مانده تجمیعی هر کالا"
         action={selected && <button onClick={exportExcel} className="btn-secondary"><Download size={16} /> Excel</button>}
       />
 

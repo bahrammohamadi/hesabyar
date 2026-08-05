@@ -209,7 +209,7 @@ function ProductQuickView({ id, open }: { id?: string | null; open: boolean }) {
           <Edit size={16} /> ویرایش
         </QuickAction>
         <QuickAction href={`/inventory/adjust?product=${product.id}`} tone="primary">
-          <ArrowDownCircle size={16} /> تعدیل موجودی
+          <ArrowDownCircle size={16} /> انبارگردانی
         </QuickAction>
         <QuickAction href={`/products/${product.id}?tab=movements`}>
           <Boxes size={16} /> گردش کالا

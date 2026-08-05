@@ -34,7 +34,7 @@ const ACTION_LABEL: Record<string, string> = {
   cancel: "ابطال",
   payment: "پرداخت",
   price_change: "تغییر قیمت",
-  stock_adjust: "تعدیل موجودی",
+  stock_adjust: "انبارگردانی",
   stock_in: "ورود موجودی",
   stock_out: "خروج موجودی",
   stock_waste: "ضایعات",
@@ -127,7 +127,7 @@ export default function ActivityPage() {
             <option value="update">ویرایش</option>
             <option value="payment">پرداخت</option>
             <option value="price_change">تغییر قیمت</option>
-            <option value="stock_adjust">تعدیل موجودی</option>
+            <option value="stock_adjust">انبارگردانی</option>
             <option value="stock_in">ورود موجودی</option>
             <option value="stock_out">خروج موجودی</option>
           </Select>

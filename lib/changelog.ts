@@ -47,6 +47,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
  */
 export const RELEASES: ReleaseNote[] = [
   {
+    version: "26.0805",
+    date: "2026-08-05",
+    title: "انبارگردانی و نمایش نام در هدر",
+    changes: [
+      { kind: "improvement", text: "«تعدیل موجودی» به نام صحیح «انبارگردانی» تغییر کرد." },
+      { kind: "improvement", text: "در بالای صفحه، نام و نام خانوادگی شما و زیر آن نام کسب‌وکارتان نمایش داده می‌شود." },
+      { kind: "fix", text: "رفع اشکالی که در برخی حساب‌ها باعث می‌شد نام مالک کسب‌وکار دیگری در هدر نمایش داده شود." },
+    ],
+  },
+  {
     version: "26.0804c",
     date: "2026-08-04",
     title: "نقش سفارشی برای ادمین‌ها",

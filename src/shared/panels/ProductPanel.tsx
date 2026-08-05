@@ -421,7 +421,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
       product_id: productId,
       variant_id: stockAdjustForm.variantId,
       qty: diff,
-      note: stockAdjustForm.reason || "تعدیل موجودی از ProductPanel",
+      note: stockAdjustForm.reason || "انبارگردانی از پنل کالا",
     });
     setStockAdjustForm(emptyStockAdjustForm());
   }
@@ -556,7 +556,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
       },
     },
     { key: "sale", header: "فروش", align: "left", render: (row) => <Money value={row.sale_price ?? 0} /> },
-    { key: "action", header: "", render: (row) => <div className="flex gap-1"><Button size="sm" variant="ghost" onClick={() => setVariantEdit(formFromVariant(row))}>ویرایش</Button><Button size="sm" variant="secondary" onClick={() => openStockAdjust(row)}>تعدیل موجودی</Button></div> },
+    { key: "action", header: "", render: (row) => <div className="flex gap-1"><Button size="sm" variant="ghost" onClick={() => setVariantEdit(formFromVariant(row))}>ویرایش</Button><Button size="sm" variant="secondary" onClick={() => openStockAdjust(row)}>انبارگردانی</Button></div> },
   ];
 
   const priceHistoryColumns: Column<ProductPriceHistoryEntry>[] = [
@@ -729,9 +729,9 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
                 <div className="space-y-4">
                   <DataTable rows={product!.variants} columns={variantColumns} keyExtractor={(row) => row.id} empty={<EmptyState title="واریانتی برای این کالا ثبت نشده" />} />
                   {stockAdjustForm.variantId && (
-                    <Section title="تعدیل موجودی" description="بعد از شمارش فیزیکی انبار، اگر تعداد واقعی با سیستم فرق دارد، اینجا تصحیح کنید.">
+                    <Section title="انبارگردانی" description="بعد از شمارش فیزیکی انبار، اگر تعداد واقعی با سیستم فرق دارد، اینجا تصحیح کنید.">
                       <div className="grid gap-3 sm:grid-cols-2">
-                        <Field label="حالت تعدیل">
+                        <Field label="حالت انبارگردانی">
                           <Select value={stockAdjustForm.mode} onChange={(event) => setStockAdjustForm((prev) => ({ ...prev, mode: event.target.value as StockAdjustFormState["mode"] }))}>
                             <option value="new_stock">ثبت موجودی جدید</option>
                             <option value="delta">افزایش/کاهش نسبت به موجودی فعلی</option>
@@ -743,7 +743,7 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
                         <Field label="دلیل" className="sm:col-span-2"><Input value={stockAdjustForm.reason} onChange={(event) => setStockAdjustForm((prev) => ({ ...prev, reason: event.target.value }))} placeholder="مثلاً: انبارگردانی" /></Field>
                       </div>
                       {formError && <div className="mt-3 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{formError}</div>}
-                      <div className="mt-4 flex gap-2"><Button loading={adjustProductStock.isPending} onClick={handleAdjustStock}>ثبت تعدیل</Button><Button variant="secondary" onClick={() => setStockAdjustForm(emptyStockAdjustForm())}>انصراف</Button></div>
+                      <div className="mt-4 flex gap-2"><Button loading={adjustProductStock.isPending} onClick={handleAdjustStock}>ثبت انبارگردانی</Button><Button variant="secondary" onClick={() => setStockAdjustForm(emptyStockAdjustForm())}>انصراف</Button></div>
                     </Section>
                   )}
                   <Section title="افزودن واریانت جدید" description="موجودی اولیه از مسیر fn_add_stock_movement ثبت می‌شود.">

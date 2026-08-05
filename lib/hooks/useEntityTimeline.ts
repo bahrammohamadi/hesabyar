@@ -160,7 +160,7 @@ export function useEntityTimeline(type: EntityType, id?: string | null, options?
             return {
               id: `movement-${movement.id}`,
               kind,
-              title: movement.type === "adjust" ? "تعدیل موجودی" : isIn ? "ورود موجودی" : "خروج موجودی",
+              title: movement.type === "adjust" ? "انبارگردانی" : isIn ? "ورود موجودی" : "خروج موجودی",
               description: movement.note ?? movement.reason,
               qty: movement.qty,
               date: movement.created_at,
