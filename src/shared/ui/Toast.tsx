@@ -34,8 +34,30 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(() => ({ toast }), [toast]);
 
+  /*
+    🔴 سه ایراد دسترس‌پذیری که axe روی سایت زنده گرفت و هر سه سراسری
+    بودند (هر پیامی در هر صفحه‌ای):
+
+     ۱ `region` — محتوای پیام بیرون هر landmark بود. صفحه‌خوان آن را
+        «محتوای بی‌صاحب» گزارش می‌کرد.
+     ۲ اعلام‌نشدن — بدون role/aria-live، پیام «تیکت ثبت شد» فقط
+        *دیده* می‌شد. کاربر نابینا هیچ بازخوردی از موفقیت عملیات
+        نمی‌گرفت.
+     ۳ `color-contrast` روی توضیح (پایین‌تر).
+
+    aria-live روی خودِ ظرف است نه کارت‌ها: ناحیه باید *پیش از*
+    افزوده‌شدن محتوا در DOM باشد، وگرنه مرورگر تغییر را اعلام نمی‌کند.
+  */
   const toastLayer = (
-    <div className="fixed left-4 top-4 flex w-[min(420px,calc(100vw-2rem))] flex-col gap-2" style={{ zIndex: "var(--z-toast)" }} dir="rtl">
+    <div
+      className="fixed left-4 top-4 flex w-[min(420px,calc(100vw-2rem))] flex-col gap-2"
+      style={{ zIndex: "var(--z-toast)" }}
+      dir="rtl"
+      role="region"
+      aria-label="پیام‌های سیستم"
+      aria-live="polite"
+      aria-atomic="false"
+    >
       {items.map((item) => <ToastCard key={item.id} item={item} onClose={() => remove(item.id)} />)}
     </div>
   );
@@ -55,20 +77,44 @@ function ToastCard({ item, onClose }: { item: ToastItem; onClose: () => void }) 
     warning: <TriangleAlert size={18} />,
     info: <Info size={18} />,
   }[item.tone];
+  /*
+    🔴 توکن *متن روی پس‌زمینه‌ی ملایم* استفاده می‌شود، نه توکن پرکننده.
+
+    `text-success` رنگِ پُرکردن است (#10b77f) و روی `bg-success-soft`
+    (#edfdf5) نسبت کنتراست ۲٫۴۶:۱ می‌داد — کمتر از نصف آستانه‌ی ۴٫۵:۱.
+    `--success-on-soft` دقیقاً برای همین حالت تعریف شده بود ولی اینجا
+    استفاده نشده بود. همین اشتباه برای warning هم بود.
+    (اندازه‌گیری axe روی سایت زنده، پیش از اصلاح.)
+  */
   const toneClass = {
-    success: "border-success/20 bg-success-soft text-success",
+    success: "border-success/20 bg-success-soft text-success-onSoft",
     error: "border-destructive/20 bg-destructive/10 text-destructive-text",
-    warning: "border-warning/25 bg-warning-soft text-warning",
+    warning: "border-warning/25 bg-warning-soft text-warning-onSoft",
     info: "border-info/20 bg-info-soft text-info-text",
   }[item.tone];
   return (
-    <div className={cn("flex items-start gap-3 rounded-2xl border p-3 shadow-lg backdrop-blur", toneClass)}>
-      <div className="mt-0.5">{icon}</div>
+    <div
+      className={cn("flex items-start gap-3 rounded-2xl border p-3 shadow-lg backdrop-blur", toneClass)}
+      /*
+        خطا باید فوراً اعلام شود (assertive)؛ موفقیت می‌تواند صبر کند
+        تا کاربر جمله‌ی جاری را تمام کند.
+      */
+      role={item.tone === "error" ? "alert" : "status"}
+    >
+      <div className="mt-0.5" aria-hidden>{icon}</div>
       <div className="min-w-0 flex-1">
         <div className="text-sm font-extrabold">{item.title}</div>
-        {item.description && <div className="mt-0.5 text-xs leading-5 opacity-85">{item.description}</div>}
+        {/*
+          ⚠️ opacity استفاده نمی‌شود.
+          توکن‌های رنگ متن دقیقاً روی آستانه‌ی ۴.۵:۱ کالیبره شده‌اند؛
+          هر شفافیتی آن‌ها را زیر آستانه می‌برد.
+          (axe: color-contrast/serious روی همین `opacity-85`. همان
+          اشتباهی که قبلاً در شمارنده‌ی دوره‌ی تست و در زمان اعلان‌ها
+          هم تکرار شده بود.)
+        */}
+        {item.description && <div className="mt-0.5 text-xs leading-5">{item.description}</div>}
       </div>
-      <button onClick={onClose} className="rounded-lg p-1 opacity-70 hover:bg-white/40" aria-label="بستن پیام"><X size={15} /></button>
+      <button onClick={onClose} className="rounded-lg p-1 hover:bg-white/40" aria-label="بستن پیام"><X size={15} aria-hidden /></button>
     </div>
   );
 }

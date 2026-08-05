@@ -20,6 +20,7 @@ import {
   Building, UserCheck, AlertCircle, PieChart, Activity,
   Briefcase, BookOpen, ShoppingBagIcon, Tags, Barcode,
   ArrowRightLeft, History, PiggyBank, Banknote, Coins, Gift, MessageCircle, Calendar, Target, Bell, UserCircle,
+  LifeBuoy, TicketCheck,
 } from "lucide-react";
 
 export const NAV = [
@@ -118,6 +119,14 @@ export const NAV = [
       { href: "/settings/price-lists", label: "لیست قیمت‌ها", icon: Tags },
     ],
   },
+  /*
+    پشتیبانی گروه ندارد و آخرین آیتم است.
+
+    عمداً زیر «تنظیمات» نرفت: کاربری که مشکل دارد، «پشتیبانی» را در
+    فهرست اصلی می‌گردد نه داخل تنظیمات. مخفی‌کردن راه ارتباطی پشت یک
+    آکاردئون یعنی به‌جای تیکت، تماس تلفنی می‌گیرد.
+  */
+  { href: "/support", label: "پشتیبانی", icon: LifeBuoy },
 ];
 
 /**
@@ -137,6 +146,7 @@ const ADMIN_NAV = [
   { href: "/admin/organizations", label: "مدیریت کسب‌وکارها", icon: Building },
   { href: "/admin/users", label: "کاربران پلتفرم", icon: Users },
   { href: "/admin/announcements", label: "اعلان‌ها", icon: Bell },
+  { href: "/admin/tickets", label: "تیکت‌های پشتیبانی", icon: TicketCheck },
   // مدیریت ادمین‌ها فقط برای کسی که مجوز admins.manage دارد معنا دارد،
   // ولی خود روت هم بررسی می‌کند — پنهان‌کردن لینک کنترل امنیتی نیست.
   { href: "/admin/usage", label: "آمار مصرف", icon: BarChart3 },
@@ -147,7 +157,15 @@ const ADMIN_NAV = [
 /** کلید ذخیره‌ی حالت جمع‌شده در مرورگر کاربر. */
 const RAIL_STORAGE_KEY = "tarazoo-sidebar-rail";
 
-export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
+/**
+ * ⚠️ این کامپوننت *دو بار* در DOM رندر می‌شود: یک نسخه برای دسکتاپ و
+ * یکی برای موبایل (app-shell.tsx). بدون نام متمایز، هر دو یک landmark
+ * هم‌نام می‌سازند و axe خطای `landmark-unique` می‌دهد — یعنی کاربر
+ * صفحه‌خوان دو «ناوبری اصلی» می‌بیند و نمی‌داند کدام واقعی است.
+ * (این ایراد روی *همه‌ی* صفحه‌ها بود، نه فقط یکی.)
+ */
+export function Sidebar({ open, onClose, variant = "desktop" }: { open: boolean; onClose: () => void; variant?: "desktop" | "mobile" }) {
+  const navLabel = variant === "mobile" ? "ناوبری اصلی (موبایل)" : "ناوبری اصلی";
   const pathname = usePathname();
   const { can } = usePermission();
   const { isPlatformAdmin } = usePlatformAdmin();
@@ -226,6 +244,12 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
     if (href.startsWith("/reports") || href.startsWith("/activity")) return "reports.view";
     if (href.startsWith("/settings/price-lists")) return "products.edit";
     if (href.startsWith("/settings")) return "settings.manage";
+    /*
+      /support عمداً هیچ مجوزی نمی‌خواهد.
+      صندوق‌دار هم باید بتواند بگوید «صفحه‌ی فروش باز نمی‌شود» —
+      بستن راه پشتیبانی روی نقش‌های پایین یعنی مشکلشان هرگز به ما
+      نمی‌رسد.
+    */
     return null;
   }
 
@@ -250,7 +274,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
       )}
 
       <aside
-        aria-label="ناوبری اصلی"
+        aria-label={navLabel}
         data-rail={rail ? "true" : "false"}
         className={cn(
           "fixed lg:sticky top-0 right-0 h-screen bg-card border-l border-border flex flex-col",
@@ -306,7 +330,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
+        <nav aria-label={`فهرست بخش‌ها — ${navLabel}`} className="flex-1 overflow-y-auto p-3 space-y-0.5">
           {NAV.filter(itemAllowed).map((item, i) => {
             const Icon = item.icon;
             const active = isActive(item.href ?? "");

@@ -39,7 +39,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <div className="lg:hidden">
-        <Sidebar open={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+        <Sidebar open={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} variant="mobile" />
       </div>
 
       <div className="flex min-h-screen min-w-0 flex-1 flex-col lg:h-screen lg:overflow-y-auto">

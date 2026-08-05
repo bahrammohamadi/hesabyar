@@ -4,7 +4,41 @@ import { join } from "node:path";
 
 const root = join(__dirname, "..");
 const read = (p: string) => readFileSync(join(root, p), "utf8");
-const mig = read("supabase/migrations/0033_custom_admin_roles.sql");
+
+/**
+ * 🔴 چرا فایل ثابت خوانده نمی‌شود؟
+ *
+ * نسخه‌ی اول این تست مستقیماً `0033_custom_admin_roles.sql` را می‌خواند.
+ * مهاجرت ۰۰۳۶ همان تابع را دوباره بازنویسی کرد و تست همچنان سبز ماند،
+ * در حالی که ماتریسِ *واقعیِ* دیتابیس چیز دیگری بود.
+ *
+ * دقیقاً همین اتفاق باعث شد مجوز `tickets.reply` — که در ۰۰۲۸ تعریف
+ * شده بود — هنگام بازنویسی در ۰۰۳۱ و ۰۰۳۳ جا بیفتد و بی‌سروصدا به
+ * `else false` برسد. اندازه‌گیری روی دیتابیس زنده پیش از اصلاح:
+ *   platform_admin_can('tickets.reply', <super_admin>) → false
+ *
+ * حالا همیشه *آخرین* مهاجرتی خوانده می‌شود که تابع را بازنویسی می‌کند.
+ * هر بازنویسی تازه خودبه‌خود زیر همین آزمون‌ها می‌رود.
+ */
+function latestMatrixMigration(): string {
+  const dir = "supabase/migrations";
+  const files = readdirSync(join(root, dir))
+    .filter((f) => f.endsWith(".sql"))
+    .sort();
+  const owners = files.filter((f) =>
+    read(`${dir}/${f}`).includes("create or replace function public.platform_admin_can")
+  );
+  if (owners.length === 0) throw new Error("هیچ مهاجرتی ماتریس مجوز را تعریف نمی‌کند");
+  return read(`${dir}/${owners[owners.length - 1]}`);
+}
+
+const mig = latestMatrixMigration();
+
+/** کاتالوگ مجوزها ممکن است در چند مهاجرت insert شود. */
+const allMigrations = readdirSync(join(root, "supabase/migrations"))
+  .filter((f) => f.endsWith(".sql"))
+  .map((f) => read(`supabase/migrations/${f}`))
+  .join("\n");
 
 /** همه‌ی فایل‌های route زیر یک مسیر. */
 function routeFiles(dir: string): string[] {
@@ -51,7 +85,9 @@ describe("🔴 همگامی کاتالوگ مجوز با روت‌ها", () => {
 
   it.each([...wanted])("مجوز «%s» در کاتالوگ ثبت شده", (perm) => {
     // بدون این، UI نمی‌تواند آن را به‌عنوان گزینه نشان دهد.
-    expect(mig).toContain(`('${perm}',`);
+    // در همه‌ی مهاجرت‌ها می‌گردیم: کاتالوگ در ۰۰۳۳ ساخته شد ولی
+    // ۰۰۳۶ ردیف تازه اضافه کرد.
+    expect(allMigrations).toContain(`('${perm}',`);
   });
 });
 
@@ -89,16 +125,19 @@ describe("منطق نقش سفارشی", () => {
   });
 
   it("قید نقش drop و دوباره ساخته می‌شود", () => {
-    // دو قید هم‌زمان یعنی هیچ نقشی هر دو را راضی نمی‌کند.
-    const dropIdx = mig.indexOf("drop constraint if exists platform_admins_role_check");
-    const addIdx = mig.indexOf("add constraint platform_admins_role_check");
+    // این ساختار مخصوص ۰۰۳۳ است، نه هر مهاجرتی که ماتریس را بازنویسی کند.
+    const mig33 = read("supabase/migrations/0033_custom_admin_roles.sql");
+    const dropIdx = mig33.indexOf("drop constraint if exists platform_admins_role_check");
+    const addIdx = mig33.indexOf("add constraint platform_admins_role_check");
     expect(dropIdx).toBeGreaterThan(-1);
     expect(dropIdx).toBeLessThan(addIdx);
-    expect(mig).toContain("'custom'");
+    expect(mig33).toContain("'custom'");
   });
 });
 
 describe("اعتبارسنجی در دیتابیس", () => {
+  const mig = read("supabase/migrations/0033_custom_admin_roles.sql");
+
   it("تریگر مجوز ناشناخته را رد می‌کند", () => {
     /*
       🔴 بدون این، یک غلط املایی («users.veiw») بی‌صدا ذخیره می‌شد و

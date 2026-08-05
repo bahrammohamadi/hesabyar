@@ -93,7 +93,7 @@ export default function AdminDashboardPage() {
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <Stat icon={Activity} label="کاربر فعال ۷ روز" value={s.active_7d} />
             <Stat icon={TicketCheck} label="تیکت باز" value={s.tickets_open}
-                  tone={s.tickets_open > 0 ? "warning" : "neutral"} />
+                  tone={s.tickets_open > 0 ? "warning" : "neutral"} href="/admin/tickets" />
             <Stat icon={Building2} label="کل فاکتورها" value={s.sales_total} />
             <Stat icon={ShieldCheck} label="عملیات ادمین ۷ روز" value={s.admin_actions_7d} href="/admin/audit" />
           </div>

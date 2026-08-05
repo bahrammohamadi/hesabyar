@@ -36,7 +36,7 @@ export function BottomNav({ onMoreClick }: { onMoreClick: () => void }) {
   const visibleItems = [...primaryItems.slice(0, 4), { href: "#more", label: "بیشتر", icon: MoreHorizontal, permission: null, more: true }];
 
   return (
-    <nav className="fixed inset-x-3 bottom-3 z-30 rounded-[24px] border border-white/70 bg-white/90 shadow-2xl shadow-slate-900/10 backdrop-blur-xl pb-[env(safe-area-inset-bottom)] lg:hidden">
+    <nav aria-label="ناوبری سریع پایین صفحه" className="fixed inset-x-3 bottom-3 z-30 rounded-[24px] border border-white/70 bg-white/90 shadow-2xl shadow-slate-900/10 backdrop-blur-xl pb-[env(safe-area-inset-bottom)] lg:hidden">
       <div className="grid h-[68px] grid-cols-5 items-center">
         {visibleItems.map((item: any) => {
           const active = !item.more && (pathname === item.href || pathname.startsWith(item.href + "/"));
