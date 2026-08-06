@@ -51,8 +51,26 @@ function getRecognitionCtor(): (new () => SpeechRecognitionLike) | null {
     | null;
 }
 
-/** آیا مرورگر جاری از تشخیص گفتار پشتیبانی می‌کند؟ */
-export const isVoiceSupported = (): boolean => getRecognitionCtor() !== null;
+/**
+ * آیا ورود صوتی روی این دستگاه در دسترس است؟
+ *
+ * 🔴 دو مسیر دارد، نه یکی:
+ *
+ *   ۱ تشخیص گفتار مرورگر (`SpeechRecognition`) — کروم و اندروید
+ *   ۲ دیکته‌ی کیبورد سیستم — هر دستگاه لمسی، بدون هیچ API
+ *
+ * نسخه‌ی قبلی فقط مسیر اول را می‌سنجید و در نبودش **دکمه را کاملاً
+ * پنهان می‌کرد**. روی آیفونی که کلید آزمایشی سافاری
+ * (Settings ← Safari ← Advanced ← Experimental Features ←
+ * Speech Recognition API) خاموش دارد — که پیش‌فرض است —
+ * `webkitSpeechRecognition` تعریف‌نشده است، پس کاربر حتی دکمه‌ی
+ * «افزودن با صدا» را هم نمی‌دید و راه دیکته هم برایش بسته می‌ماند.
+ * (با شبیه‌سازی همان حالت بازتولید شد: دکمه در DOM نبود.)
+ *
+ * حالا روی iOS همیشه true است، چون دیکته‌ی کیبورد همیشه کار می‌کند.
+ */
+export const isVoiceSupported = (): boolean =>
+  getRecognitionCtor() !== null || isIOS();
 
 type Props = {
   open: boolean;
@@ -77,6 +95,26 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
   const [matches, setMatches] = useState<Scored<SelectableVariant>[]>([]);
   const [errorText, setErrorText] = useState("");
   const [added, setAdded] = useState<string[]>([]);
+  /*
+    🔴 حالت دیکته‌ی کیبورد — راه‌حل قطعی برای آیفون.
+
+    پس از دو دور اصلاح، کاربر همچنان گزارش داد میکروفون کار نمی‌کند.
+    علت ریشه‌ای که بعداً پیدا شد: سافاری iOS یک کلید آزمایشی دارد
+    (Settings ← Safari ← Advanced ← Experimental Features ←
+    Speech Recognition API) که اگر خاموش باشد، `webkitSpeechRecognition`
+    وجود دارد ولی هرگز کار نمی‌کند. هیچ کدی نمی‌تواند آن را روشن کند و
+    هیچ API‌ای هم وضعیتش را گزارش نمی‌دهد.
+
+    ولی **دیکته‌ی کیبورد آیفون** (دکمه‌ی میکروفون کنار Space) در هر
+    فیلد متنی کار می‌کند، هیچ مجوز وبی نمی‌خواهد و از همان موتور
+    تشخیص گفتار اپل استفاده می‌کند. کاربر روی فیلد می‌زند، میکروفون
+    کیبورد را لمس می‌کند و حرف می‌زند — متن در فیلد می‌نشیند و ما
+    همان `parseUtterance` را رویش اجرا می‌کنیم.
+
+    نتیجه یکی است: «سه عدد شومیز آبی» به سبد اضافه می‌شود.
+  */
+  const [dictationMode, setDictationMode] = useState(false);
+  const [typed, setTyped] = useState("");
 
   /*
     🔴 این سه باید *پیش از* هر return زودهنگام باشند.
@@ -137,6 +175,15 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
   const runStart = useCallback(async () => {
     const Ctor = getRecognitionCtor();
     if (!Ctor) {
+      /*
+        روی iOS این حالت رایج است (کلید آزمایشی سافاری خاموش).
+        به‌جای پیام بن‌بست، به حالت دیکته می‌رویم که همیشه کار می‌کند.
+      */
+      if (ios) {
+        setDictationMode(true);
+        setPhase("idle");
+        return;
+      }
       setPhase("error");
       setErrorText("مرورگر شما تشخیص گفتار ندارد. کروم یا سافاری را امتحان کنید.");
       return;
@@ -307,7 +354,7 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
   useEffect(() => { startRef.current = start; }, [start]);
 
   useEffect(() => {
-    if (!open) { stop(); setPhase("idle"); setAdded([]); return; }
+    if (!open) { stop(); setPhase("idle"); setAdded([]); setTyped(""); setDictationMode(false); return; }
 
     /*
       🔴 روی iOS خودکار شروع نمی‌کنیم.
@@ -333,6 +380,14 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
     */
     if (isIOS()) {
       setPhase("idle");
+      /*
+        روی iOS از همان ابتدا حالت دیکته پیشنهاد می‌شود.
+        تشخیص گفتار وب آنجا به یک کلید آزمایشیِ خاموش وابسته است و
+        نمی‌شود فهمید روشن است یا نه — تنها راه، تلاش و شکست است.
+        به‌جای آن، مسیری که *همیشه* کار می‌کند پیش‌فرض می‌شود و
+        تلاش برای میکروفون به‌عنوان گزینه‌ی دوم می‌ماند.
+      */
+      setDictationMode(true);
       return () => { stop(); };
     }
 
@@ -413,6 +468,69 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-4">
+          {/*
+            🔴 حالت دیکته — مسیری که روی آیفون همیشه کار می‌کند.
+
+            به‌جای تشخیص گفتار وب (که در سافاری پشت یک کلید آزمایشیِ
+            پیش‌فرض‌خاموش است)، از دیکته‌ی خودِ کیبورد استفاده می‌شود:
+            کاربر روی کادر می‌زند، میکروفون کیبورد را لمس می‌کند و
+            حرف می‌زند. هیچ مجوز وبی در کار نیست.
+          */}
+          {dictationMode ? (
+            <div className="space-y-3">
+              <div className="rounded-xl bg-info-soft/50 p-3 text-xs leading-6 text-foreground">
+                <p className="font-extrabold text-info-onSoft">با میکروفون کیبورد بگویید</p>
+                <ol className="mt-1.5 list-inside list-decimal space-y-0.5 text-muted-foreground">
+                  <li>روی کادر پایین بزنید تا کیبورد باز شود</li>
+                  <li>دکمه‌ی میکروفون 🎙️ کنار دکمه‌ی فاصله را لمس کنید</li>
+                  <li>بگویید: «سه عدد شومیز آبی»</li>
+                </ol>
+              </div>
+
+              <div>
+                <label htmlFor="voice-dictation" className="mb-1.5 block text-sm font-bold text-foreground">
+                  متن سفارش
+                </label>
+                <textarea
+                  id="voice-dictation"
+                  value={typed}
+                  onChange={(e) => setTyped(e.target.value)}
+                  rows={2}
+                  autoComplete="off"
+                  placeholder="مثلاً: سه عدد شومیز آبی"
+                  className="w-full rounded-xl border border-border bg-card p-3 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                />
+                <p className="mt-1 text-2xs text-muted-foreground">
+                  می‌توانید تایپ هم بکنید — فرقی نمی‌کند.
+                </p>
+              </div>
+
+              <Button
+                className="w-full"
+                disabled={typed.trim().length < 2}
+                onClick={() => {
+                  handleTranscript(typed);
+                  setTyped("");
+                }}
+              >
+                جستجوی کالا
+              </Button>
+
+              {/*
+                تلاش برای میکروفون به‌عنوان گزینه‌ی دوم می‌ماند: اگر
+                کاربر کلید آزمایشی سافاری را روشن کرده باشد، کار
+                می‌کند و تجربه‌ی روان‌تری دارد.
+              */}
+              <button
+                type="button"
+                onClick={() => { setDictationMode(false); void start(); }}
+                className="w-full rounded-xl border border-border bg-card px-3 py-2.5 text-xs font-bold text-muted-foreground transition hover:bg-muted"
+              >
+                یا میکروفون مرورگر را امتحان کنید
+              </button>
+            </div>
+          ) : (
+          <>
           {/* نشانگر میکروفون */}
           <div className="flex flex-col items-center gap-3 py-2">
             <button
@@ -538,6 +656,21 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
                 دکمه او را به همان کاری می‌رساند که می‌خواست انجام
                 دهد — افزودن کالا — فقط از راه دیگر.
               */}
+              {/*
+                🔴 مسیر نجات: دیکته‌ی کیبورد.
+
+                وقتی میکروفون مرورگر رد می‌شود، این همان کار را از راه
+                دیگری انجام می‌دهد و هیچ مجوز وبی نمی‌خواهد. برای
+                کاربر آیفون که در سه دور اصلاح همچنان گیر کرده بود،
+                این تنها مسیری است که قطعاً کار می‌کند.
+              */}
+              <Button
+                className="mt-2 w-full"
+                onClick={() => { setPhase("idle"); setErrorText(""); setDictationMode(true); }}
+              >
+                به‌جایش با میکروفون کیبورد بگویم
+              </Button>
+
               <button
                 type="button"
                 onClick={onClose}
@@ -554,7 +687,13 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
               <span>{errorText}</span>
             </div>
           )}
+          </>
+          )}
 
+          {/*
+            نتایج بیرون از شرط حالت‌اند: چه با میکروفون و چه با دیکته،
+            کالای پیداشده باید یکجا نمایش داده شود.
+          */}
           {phase === "nomatch" && (
             <div role="status" className="mt-2 rounded-xl bg-warning-soft p-3 text-xs leading-6 text-warning-onSoft">
               {finalText

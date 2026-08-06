@@ -276,3 +276,96 @@ describe("🔴 iOS: مسیر مجوز جدا از getUserMedia", () => {
     expect(voice).toContain("کالا را دستی انتخاب می‌کنم");
   });
 });
+
+describe("🔴 حالت دیکته‌ی کیبورد — راه‌حل قطعی iOS", () => {
+  const voice = readCode("components/shared/voice-order.tsx");
+
+  /*
+    پس از سه دور اصلاح، کاربر همچنان گزارش داد میکروفون آیفون کار
+    نمی‌کند. علت ریشه‌ای: سافاری یک کلید آزمایشیِ پیش‌فرض‌خاموش دارد
+    (Settings ← Safari ← Advanced ← Experimental Features ←
+    Speech Recognition API). وقتی خاموش است `webkitSpeechRecognition`
+    وجود دارد ولی هرگز کار نمی‌کند، و هیچ API‌ای وضعیتش را گزارش
+    نمی‌دهد — یعنی از داخل کد اصلاً قابل تشخیص نیست.
+
+    دیکته‌ی کیبورد آیفون هیچ مجوز وبی نمی‌خواهد و همیشه کار می‌کند.
+  */
+  it("در iOS حالت دیکته پیش‌فرض است", () => {
+    /*
+      دو نقطه‌ی فعال‌سازی داریم و هر دو لازم‌اند:
+        ۱ داخل گارد `if (isIOS())` هنگام باز شدن پنجره
+        ۲ وقتی سازنده‌ی تشخیص گفتار اصلاً وجود ندارد (کلید آزمایشی
+          سافاری خاموش) — آنجا به‌جای پیام بن‌بست به دیکته می‌رویم
+      پس ترتیب مطلق بی‌معناست؛ وجود هر دو بررسی می‌شود.
+    */
+    expect(voice).toContain("if (isIOS()) {");
+    const occurrences = voice.match(/setDictationMode\(true\)/g) ?? [];
+    expect(occurrences.length).toBeGreaterThanOrEqual(2);
+    // فعال‌سازی داخل گارد iOS
+    const iosBlock = voice.slice(voice.indexOf("if (isIOS()) {"), voice.indexOf("if (isIOS()) {") + 400);
+    expect(iosBlock).toContain("setDictationMode(true)");
+  });
+
+  it("🔴 نبودِ API تشخیص گفتار دکمه را پنهان نمی‌کند", () => {
+    /*
+      نسخه‌ی قبلی `isVoiceSupported` فقط سازنده را می‌سنجید. روی
+      آیفونی که کلید آزمایشی سافاری خاموش دارد (پیش‌فرض)، آن سازنده
+      تعریف‌نشده است و دکمه‌ی «افزودن با صدا» **اصلاً رندر نمی‌شد** —
+      پس راه دیکته هم بسته می‌ماند. با شبیه‌سازی بازتولید شد: دکمه در
+      DOM نبود و تست با timeout شکست.
+    */
+    expect(voice).toContain("getRecognitionCtor() !== null || isIOS()");
+  });
+
+  it("متن دیکته‌شده از همان parseUtterance می‌گذرد", () => {
+    // نتیجه باید یکی باشد: «سه عدد شومیز آبی» → سبد.
+    expect(voice).toContain("handleTranscript(typed)");
+  });
+
+  it("کادر ورودی برچسب دارد", () => {
+    expect(voice).toContain('htmlFor="voice-dictation"');
+    expect(voice).toContain('id="voice-dictation"');
+  });
+
+  it("راهنمای «میکروفون کنار دکمه‌ی فاصله» داده شده", () => {
+    // کاربر باید بداند کدام دکمه را بزند.
+    expect(voice).toContain("دکمه‌ی فاصله");
+  });
+
+  it("پس از رد شدن میکروفون هم دیکته پیشنهاد می‌شود", () => {
+    expect(voice).toContain("به‌جایش با میکروفون کیبورد بگویم");
+  });
+
+  it("امکان برگشت به میکروفون مرورگر هست", () => {
+    // اگر کاربر کلید آزمایشی را روشن کرده باشد، تجربه روان‌تر است.
+    expect(voice).toContain("یا میکروفون مرورگر را امتحان کنید");
+  });
+
+  it("حالت با بستن پنجره پاک می‌شود", () => {
+    expect(voice).toContain('setTyped(""); setDictationMode(false);');
+  });
+});
+
+describe("صفحه‌ی تشخیص", () => {
+  const diag = read("app/(app)/settings/diagnostics/page.tsx");
+
+  it("آزمون واقعی میکروفون انجام می‌دهد", () => {
+    // بقیه‌ی نشانه‌ها فقط حدس‌اند؛ این تنها سنجه‌ی قابل اتکاست.
+    expect(diag).toContain("آزمون واقعی میکروفون");
+    expect(diag).toContain("getUserMedia({ audio: true })");
+  });
+
+  it("کلید مخفی سافاری را به کاربر آیفون می‌گوید", () => {
+    expect(diag).toContain("Experimental Features");
+    expect(diag).toContain("Speech Recognition API");
+  });
+
+  it("نتیجه قابل کپی است", () => {
+    // تا کاربر بتواند در تیکت بفرستد و لازم نباشد حدس بزنیم.
+    expect(diag).toContain("clipboard.writeText");
+  });
+
+  it("در سایدبار هست", () => {
+    expect(readCode("components/shared/sidebar.tsx")).toContain('"/settings/diagnostics"');
+  });
+});
