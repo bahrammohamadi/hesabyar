@@ -11,6 +11,7 @@ import { Button, Card, Select } from "@/src/shared/ui";
 import { ProductKpiCard, StockStatusBadge, stockQtyClass, stockStateOf } from "./components/ProductsPieces";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { formatToman, toFaDigits } from "@/lib/utils/format";
+import { listDisplayPrice } from "@/lib/pricing";
 import { Plus, Search, Package, Pencil } from "lucide-react";
 import { Pagination, usePagination } from "@/src/shared/ui";
 
@@ -206,7 +207,16 @@ export default function ProductsPage() {
                   {paged.map((p) => {
                     const totalStock = p.product_variants.reduce((s, v) => s + v.stock_qty, 0);
                     const state = stockStateOf(totalStock, p.low_stock_threshold);
-                    const displaySalePrice = p.base_sale_price || p.product_variants.find((variant) => variant.sale_price)?.sale_price || 0;
+                    /*
+                      🔴 قیمت از منبع واحد می‌آید.
+                      نسخه‌ی قبلی `base_sale_price` را اول می‌گذاشت،
+                      ولی انتخابگر کالا برعکس عمل می‌کرد. نتیجه: فهرست
+                      یک عدد نشان می‌داد و فاکتور عدد دیگری.
+                      (گزارش کاربر: «شومیز کتیبه» — ۱٬۵۹۰٬۰۰۰ در فهرست،
+                      ۹۷٬۰۰۰ در فاکتور.)
+                    */
+                    const { price: displaySalePrice, mixed: priceMixed } =
+                      listDisplayPrice(p, p.product_variants);
                     return (
                       <tr
                         key={p.id}
@@ -258,6 +268,15 @@ export default function ProductsPage() {
                         <td className="px-4 py-3">
                           {displaySalePrice ? (
                             <div className="leading-tight">
+                              {/*
+                                «از …» وقتی واریانت‌ها قیمت‌های متفاوت
+                                دارند. بدون این، کاربر یک عدد می‌بیند و
+                                در فاکتور عدد دیگری — همان شکایتی که
+                                گزارش شد.
+                              */}
+                              {priceMixed && (
+                                <span className="ml-1 text-2xs text-muted-foreground">از</span>
+                              )}
                               <span className="font-bold tabular-nums text-foreground">
                                 {formatToman(displaySalePrice, false)}
                               </span>
@@ -294,7 +313,8 @@ export default function ProductsPage() {
               {paged.map((p) => {
                 const totalStock = p.product_variants.reduce((s, v) => s + v.stock_qty, 0);
                 const state = stockStateOf(totalStock, p.low_stock_threshold);
-                const displaySalePrice = p.base_sale_price || p.product_variants.find((variant) => variant.sale_price)?.sale_price || 0;
+                const { price: displaySalePrice, mixed: priceMixed } =
+                  listDisplayPrice(p, p.product_variants);
                 return (
                   <li
                     key={p.id}
@@ -332,6 +352,9 @@ export default function ProductsPage() {
                       <div className="flex shrink-0 flex-col items-end gap-1.5">
                         {displaySalePrice > 0 && (
                           <span className="text-sm font-extrabold tabular-nums text-foreground">
+                            {priceMixed && (
+                              <span className="ml-1 text-2xs font-normal text-muted-foreground">از</span>
+                            )}
                             {formatToman(displaySalePrice, false)}
                           </span>
                         )}

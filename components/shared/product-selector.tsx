@@ -8,6 +8,7 @@ import { useOrg } from "@/lib/hooks/useOrg";
 import { Modal } from "@/components/shared/ui";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { formatToman, normalizeSearchText, toFaDigits } from "@/lib/utils/format";
+import { effectiveSalePrice, effectivePurchasePrice } from "@/lib/pricing";
 import { Search, Package, Barcode, X, Filter, PackagePlus } from "lucide-react";
 
 export interface SelectableVariant {
@@ -106,8 +107,13 @@ export function ProductSelector({
         size: v.size,
         sku: v.sku,
         barcode: v.barcode,
-        sale_price: v.sale_price ?? v.product?.base_sale_price ?? 0,
-        purchase_price: v.purchase_price ?? v.product?.base_purchase_price ?? 0,
+        /*
+          از منبع واحد `lib/pricing` — همان تابعی که فهرست کالاها هم
+          استفاده می‌کند. پیش از این هر کدام منطق خودش را داشت و
+          ترتیب اولویت برعکس بود، پس دو صفحه دو قیمت نشان می‌دادند.
+        */
+        sale_price: effectiveSalePrice(v, v.product),
+        purchase_price: effectivePurchasePrice(v, v.product),
         stock_qty: v.stock_qty,
         category_id: v.product?.category_id ?? null,
         brand_id: v.product?.brand_id ?? null,
