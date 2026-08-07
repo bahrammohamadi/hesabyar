@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search, UserCog, ShieldAlert, Mail, Phone, Building2, KeyRound, Loader2, X } from "lucide-react";
+import { Search, UserCog, ShieldAlert, Mail, Phone, Building2, KeyRound, Loader2, X, UserPen } from "lucide-react";
 import { PageHeader, Spinner, EmptyState } from "@/components/shared/ui";
-import { Badge, Button, Card, Select, useToast } from "@/src/shared/ui";
+import { Badge, Button, Card, Field, Modal, Select, useToast } from "@/src/shared/ui";
 import { businessTypeLabel } from "@/lib/business-types";
 import { firstPasswordError } from "@/lib/security/password";
 import { displayUsername, toFaDigits, toJalali } from "@/lib/utils/format";
@@ -41,6 +41,7 @@ export default function AdminUsersPage() {
   const [applied, setApplied] = useState("");
   // کاربری که رمزش قرار است بازنشانی شود؛ null یعنی مودال بسته است.
   const [pwTarget, setPwTarget] = useState<AdminUser | null>(null);
+  const [nameTarget, setNameTarget] = useState<AdminUser | null>(null);
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -213,6 +214,19 @@ export default function AdminUsersPage() {
                         >
                           بازنشانی رمز
                         </Button>
+                        {/*
+                          ویرایش نام — درخواست مکرر پشتیبانی
+                          («اسمم اشتباه ثبت شده»). تا امروز تنها راه
+                          دست‌کاری دستی دیتابیس بود.
+                        */}
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => setNameTarget(u)}
+                          icon={<UserPen size={13} />}
+                        >
+                          ویرایش نام
+                        </Button>
                       </>
                     )}
                   </div>
@@ -221,6 +235,14 @@ export default function AdminUsersPage() {
             ))}
           </ul>
         </Card>
+      )}
+
+      {nameTarget && (
+        <EditNameModal
+          user={nameTarget}
+          onClose={() => setNameTarget(null)}
+          onDone={() => { setNameTarget(null); qc.invalidateQueries({ queryKey: ["admin-users"] }); }}
+        />
       )}
 
       {pwTarget && (
@@ -399,5 +421,110 @@ function ResetPasswordModal({
         </div>
       </form>
     </div>
+  );
+}
+
+
+/**
+ * ویرایش نام و شماره‌ی یک کاربر توسط ادمین.
+ *
+ * دلیل اجباری است — همان قاعده‌ی بازنشانی رمز. تغییر داده‌ی حساب
+ * مشتری بدون توضیح، در گزارش ممیزی غیرقابل‌دفاع می‌شود.
+ */
+function EditNameModal({
+  user, onClose, onDone,
+}: {
+  user: AdminUser;
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const [fullName, setFullName] = useState(user.owner_full_name ?? "");
+  const [phone, setPhone] = useState(user.owner_phone ?? "");
+  const [reason, setReason] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setErr(null);
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/users/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: user.user_id,
+          full_name: fullName,
+          phone,
+          reason,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "ذخیره نشد");
+      onDone();
+    } catch (e2) {
+      setErr((e2 as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal open onClose={onClose} title="ویرایش نام کاربر" size="md">
+      <form onSubmit={submit} className="space-y-4">
+        <p className="rounded-xl bg-muted p-3 text-xs text-muted-foreground" dir="ltr">
+          {user.email}
+        </p>
+
+        <Field label="نام و نام خانوادگی" required>
+          <input
+            className="input"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            maxLength={100}
+            required
+          />
+        </Field>
+
+        <Field label="موبایل" hint="اختیاری — خالی بگذارید تا تغییر نکند">
+          <input
+            className="input text-left"
+            dir="ltr"
+            inputMode="numeric"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="09121234567"
+          />
+        </Field>
+
+        <Field label="دلیل تغییر" required hint="در گزارش ممیزی ثبت می‌شود">
+          <input
+            className="input"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="مثلاً: درخواست تیکت ۱۲ — غلط املایی نام"
+            maxLength={500}
+            required
+          />
+        </Field>
+
+        {err && (
+          <p role="alert" className="rounded-xl bg-destructive/10 p-3 text-xs text-destructive-text">
+            {err}
+          </p>
+        )}
+
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button type="button" variant="secondary" onClick={onClose}>انصراف</Button>
+          <Button
+            type="submit"
+            loading={saving}
+            disabled={fullName.trim().length < 2 || reason.trim().length < 5}
+          >
+            ذخیره
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 }

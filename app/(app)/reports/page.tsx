@@ -18,7 +18,7 @@ import {
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { formatToman, formatNumber, toFaDigits } from "@/lib/utils/format";
-import { toJalali } from "@/lib/utils/format";
+import { toJalali, todayJalali, rialToToman } from "@/lib/utils/format";
 import {
   BarChart,
   Bar,
@@ -591,7 +591,24 @@ export function ReportsPageContent({ forcedTab }: { forcedTab?: TabId }) {
         .select("invoice_no,date,total,discount,tax,status,customer:contacts(name,phone)")
         .order("date", { ascending: false });
       if (error) { alert(error.message); return; }
-      rows = (data ?? []).map((s: any) => ({ invoice_no: s.invoice_no, date: s.date, customer: s.customer?.name ?? "مشتری نقدی", phone: s.customer?.phone ?? "", total: s.total, discount: s.discount, tax: s.tax, status: s.status }));
+      /*
+        🔴 تاریخ شمسی و مبلغ تومان در خروجی.
+
+        پیش از این `date` خام میلادی («2026-08-05T…») و مبالغ به ریال
+        صادر می‌شدند، در حالی که کل برنامه تاریخ شمسی و مبلغ تومان
+        نشان می‌دهد. کاربری که خروجی را در اکسل باز می‌کرد، اعدادی
+        ده‌برابر و تاریخ‌هایی ناآشنا می‌دید و باید دستی تبدیل می‌کرد.
+      */
+      rows = (data ?? []).map((s: any) => ({
+        "شماره فاکتور": s.invoice_no,
+        "تاریخ": toJalali(s.date),
+        "مشتری": s.customer?.name ?? "مشتری نقدی",
+        "موبایل": s.customer?.phone ?? "",
+        "مبلغ کل (تومان)": rialToToman(s.total ?? 0),
+        "تخفیف (تومان)": rialToToman(s.discount ?? 0),
+        "مالیات (تومان)": rialToToman(s.tax ?? 0),
+        "وضعیت": s.status,
+      }));
     } else if (activeTab === "products") {
       const { data, error } = await supabase
         .from("product_variants")
@@ -599,11 +616,29 @@ export function ReportsPageContent({ forcedTab }: { forcedTab?: TabId }) {
         .eq("is_active", true)
         .order("stock_qty");
       if (error) { alert(error.message); return; }
-      rows = (data ?? []).map((v: any) => ({ product: v.product?.name, code: v.product?.code, sku: v.sku, barcode: v.barcode, color: v.color, size: v.size, stock_qty: v.stock_qty, purchase_price: v.purchase_price, sale_price: v.sale_price }));
+      rows = (data ?? []).map((v: any) => ({
+        "کالا": v.product?.name,
+        "کد": v.product?.code,
+        "SKU": v.sku,
+        "بارکد": v.barcode,
+        "رنگ": v.color,
+        "سایز": v.size,
+        "موجودی": v.stock_qty,
+        "قیمت خرید (تومان)": rialToToman(v.purchase_price ?? 0),
+        "قیمت فروش (تومان)": rialToToman(v.sale_price ?? 0),
+      }));
     } else if (activeTab === "financial") {
       const { data, error } = await supabase.from("transactions").select("type,amount,date,method,note,contact:contacts(name),account:accounts!transactions_account_id_fkey(name)").order("date", { ascending: false });
       if (error) { alert(error.message); return; }
-      rows = (data ?? []).map((t: any) => ({ type: t.type, amount: t.amount, date: t.date, method: t.method, contact: t.contact?.name ?? "", account: t.account?.name ?? "", note: t.note ?? "" }));
+      rows = (data ?? []).map((t: any) => ({
+        "نوع": t.type,
+        "مبلغ (تومان)": rialToToman(t.amount ?? 0),
+        "تاریخ": toJalali(t.date),
+        "روش": t.method,
+        "طرف حساب": t.contact?.name ?? "",
+        "حساب": t.account?.name ?? "",
+        "توضیح": t.note ?? "",
+      }));
     } else if (activeTab === "contacts") {
       const { data, error } = await supabase.from("contact_balances").select("contact_id,name,type,balance").eq("org_id", orgId);
       if (error) { alert(error.message); return; }
@@ -613,7 +648,8 @@ export function ReportsPageContent({ forcedTab }: { forcedTab?: TabId }) {
       if (error) { alert(error.message); return; }
       rows = data ?? [];
     }
-    downloadCsv(`tarazoo-${activeTab}-${new Date().toISOString().slice(0,10)}.csv`, rows);
+    // نام فایل با تاریخ شمسی، هم‌راستا با بقیه‌ی برنامه.
+    downloadCsv(`tarazoo-${activeTab}-${todayJalali().replace(/\//g, "-")}.csv`, rows);
   }
 
   // URL params support

@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/shared/ui";
 import { Card } from "@/src/shared/ui";
 import { ChangePasswordForm } from "@/components/shared/change-password-form";
 import { ActiveSessions } from "@/components/shared/active-sessions";
+import { ProfileForm } from "@/components/shared/profile-form";
 import { displayUsername, toJalali } from "@/lib/utils/format";
 
 /**
@@ -43,14 +44,18 @@ export default function AccountSettingsPage() {
           <UserCircle size={18} className="text-primary" aria-hidden />
           <h2 className="text-sm font-extrabold text-foreground">اطلاعات حساب</h2>
         </div>
+        {/*
+          🔴 نام و شماره حالا قابل ویرایش‌اند.
+          پیش از این فقط نمایش داده می‌شدند و کاربری که نامش را اشتباه
+          وارد کرده بود باید به پشتیبانی زنگ می‌زد.
+        */}
+        <ProfileForm />
+
+        <div className="mt-4 border-t border-border pt-4">
         {isLoading ? (
           <div className="h-16 animate-pulse rounded-xl bg-muted" />
         ) : (
           <dl className="grid gap-3 text-sm sm:grid-cols-2">
-            <div>
-              <dt className="text-2xs text-muted-foreground">نام</dt>
-              <dd className="mt-0.5 font-bold text-foreground">{user?.name ?? "—"}</dd>
-            </div>
             <div>
               <dt className="text-2xs text-muted-foreground">نام کاربری</dt>
               <dd className="mt-0.5 font-bold text-foreground" dir="ltr">
@@ -69,6 +74,7 @@ export default function AccountSettingsPage() {
             </div>
           </dl>
         )}
+        </div>
       </Card>
 
       <Card className="p-4 sm:p-5">
