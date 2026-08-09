@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import {
   Building2, Users, Clock, AlertTriangle, TicketCheck,
-  Activity, TrendingUp, ShieldCheck,
+  Activity, TrendingUp, ShieldCheck, Receipt, Server,
 } from "lucide-react";
 import { PageHeader, Spinner } from "@/components/shared/ui";
 import { Card } from "@/src/shared/ui";
@@ -60,6 +60,29 @@ export default function AdminDashboardPage() {
     },
   });
 
+  /*
+    نوار سلامت سرویس.
+
+    چرا روی داشبورد و نه فقط در /admin/system؟ خطای سرور چیزی نیست
+    که کسی *برود دنبالش*. اگر در صفحه‌ی اولی که ادمین باز می‌کند دیده
+    نشود، تا وقتی مشتری شکایت نکند کسی خبردار نمی‌شود.
+
+    این کوئری عمداً شکست را بی‌صدا می‌بلعد: نقشی که مجوز system.health
+    ندارد ۴۰۳ می‌گیرد و نباید کل داشبورد را بترکاند.
+  */
+  const { data: health } = useQuery({
+    queryKey: ["admin-health-strip"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/system");
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json as { health: { errors: { last_24h: number } } };
+    },
+    retry: false,
+    refetchInterval: 120_000,
+  });
+
+  const errors24h = health?.health?.errors?.last_24h ?? 0;
   const s = data ?? {};
 
   return (
@@ -68,6 +91,23 @@ export default function AdminDashboardPage() {
         title="داشبورد مدیریت پلتفرم"
         subtitle="نمای کلی کسب‌وکارها، کاربران و فعالیت ادمین‌ها"
       />
+
+      {/*
+        هشدار خطا فقط وقتی دیده می‌شود که واقعاً خطایی هست.
+        نوار همیشه‌حاضرِ «همه‌چیز خوب است» بعد از چند روز نامرئی
+        می‌شود و آن‌وقت روز خرابی هم نامرئی می‌ماند.
+      */}
+      {errors24h > 0 && (
+        <Link
+          href="/admin/system"
+          className="flex items-center gap-2.5 rounded-xl bg-destructive/10 px-4 py-3 text-sm font-bold text-destructive-text transition hover:bg-destructive/15"
+        >
+          <Server size={16} aria-hidden />
+          <span>
+            {toFaDigits(errors24h)} خطای سرور در ۲۴ ساعت گذشته ثبت شده — بررسی کنید
+          </span>
+        </Link>
+      )}
 
       {isLoading ? (
         <Spinner label="در حال بارگذاری آمار..." />
@@ -94,7 +134,7 @@ export default function AdminDashboardPage() {
             <Stat icon={Activity} label="کاربر فعال ۷ روز" value={s.active_7d} />
             <Stat icon={TicketCheck} label="تیکت باز" value={s.tickets_open}
                   tone={s.tickets_open > 0 ? "warning" : "neutral"} href="/admin/tickets" />
-            <Stat icon={Building2} label="کل فاکتورها" value={s.sales_total} />
+            <Stat icon={Receipt} label="کل فاکتورها" value={s.sales_total} href="/admin/invoices" />
             <Stat icon={ShieldCheck} label="عملیات ادمین ۷ روز" value={s.admin_actions_7d} href="/admin/audit" />
           </div>
         </>

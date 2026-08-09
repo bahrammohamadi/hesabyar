@@ -20,7 +20,7 @@ import {
   Building, UserCheck, AlertCircle, PieChart, Activity,
   Briefcase, BookOpen, ShoppingBagIcon, Tags, Barcode,
   ArrowRightLeft, History, PiggyBank, Banknote, Coins, Gift, MessageCircle, Calendar, Target, Bell, UserCircle,
-  LifeBuoy, TicketCheck, FileSpreadsheet, Stethoscope,
+  LifeBuoy, TicketCheck, FileSpreadsheet, Stethoscope, Server,
 } from "lucide-react";
 
 export const NAV = [
@@ -147,6 +147,7 @@ const ADMIN_NAV = [
   { href: "/admin", label: "داشبورد پلتفرم", icon: LayoutDashboard },
   { href: "/admin/organizations", label: "مدیریت کسب‌وکارها", icon: Building },
   { href: "/admin/users", label: "کاربران پلتفرم", icon: Users },
+  { href: "/admin/invoices", label: "فاکتورهای کسب‌وکارها", icon: ReceiptText },
   { href: "/admin/announcements", label: "اعلان‌ها", icon: Bell },
   { href: "/admin/tickets", label: "تیکت‌های پشتیبانی", icon: TicketCheck },
   { href: "/admin/import", label: "ورود داده", icon: FileSpreadsheet },
@@ -155,6 +156,7 @@ const ADMIN_NAV = [
   { href: "/admin/usage", label: "آمار مصرف", icon: BarChart3 },
   { href: "/admin/roles", label: "ادمین‌ها و دسترسی‌ها", icon: Shield },
   { href: "/admin/audit", label: "گزارش فعالیت", icon: Activity },
+  { href: "/admin/system", label: "وضعیت فنی سرویس", icon: Server },
 ];
 
 /** کلید ذخیره‌ی حالت جمع‌شده در مرورگر کاربر. */

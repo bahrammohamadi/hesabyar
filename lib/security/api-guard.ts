@@ -31,11 +31,61 @@ export function serviceClient() {
   });
 }
 
-/** پاسخ خطای امن: جزئیات فقط در لاگ سرور، پیام عمومی برای کلاینت. */
-export function safeError(context: string, error: unknown, status = 500) {
+/**
+ * پاسخ خطای امن: جزئیات فقط در لاگ سرور، پیام عمومی برای کلاینت.
+ *
+ * 🔴 چرا async شد (مهاجرت ۰۰۳۹)؟
+ *   پیش از این فقط console.error می‌زد. روی Vercel آن لاگ در پلن
+ *   فعلی چند ساعت بیشتر نمی‌ماند و از داخل خود محصول اصلاً دیده
+ *   نمی‌شد. یعنی وقتی کاربر می‌گفت «خطا داد و یک کد بهم داد»، آن کد
+ *   هیچ‌جا قابل جستجو نبود و عملاً بی‌فایده بود.
+ *
+ *   حالا همان `ref` در platform_error_logs ذخیره می‌شود و در
+ *   /admin/system جستجو می‌شود.
+ *
+ *   ⚠️ هیچ‌کدام از ۴۸ فراخوان تغییر نکرد: همه به شکل
+ *   `return safeError(...)` داخل یک تابع async هستند، و async
+ *   بودنِ تابع، Promise را خودش باز می‌کند.
+ *
+ * ⚠️ ثبت خطا هرگز نباید خودش خطا بدهد. اگر دیتابیس در دسترس نباشد
+ *    (که دقیقاً محتمل‌ترین دلیل خطاست) کاربر باید همچنان پاسخ ۵۰۰
+ *    تمیز بگیرد، نه یک استثنای درمان‌نشده.
+ */
+export async function safeError(
+  context: string,
+  error: unknown,
+  status = 500,
+  request?: Request
+) {
   const id = crypto.randomUUID().slice(0, 8);
   // لاگ سمت سرور برای پیگیری؛ هرگز به کلاینت نمی‌رود.
   console.error(`[${context}][${id}]`, error);
+
+  try {
+    const err = error as { message?: string; code?: string; details?: string; hint?: string };
+    const message = typeof err?.message === "string" ? err.message : String(error);
+
+    await serviceClient().rpc("log_platform_error", {
+      p_ref: id,
+      p_context: context,
+      p_message: message,
+      p_detail: {
+        // کد و جزئیات PostgREST بیشترین کمک را در عیب‌یابی می‌کنند.
+        code: err?.code ?? null,
+        details: err?.details ?? null,
+        hint: err?.hint ?? null,
+        stack: error instanceof Error ? (error.stack ?? "").slice(0, 2000) : null,
+      },
+      p_path: request ? new URL(request.url).pathname : null,
+      p_method: request?.method ?? null,
+      p_status: status,
+      p_ip: request ? requestIp(request) : null,
+    });
+  } catch (logError) {
+    // عمداً بلعیده می‌شود — پاسخ به کاربر مهم‌تر از ثبت خطاست.
+    console.error(`[safeError:persist-failed][${id}]`, logError);
+  }
+
   return NextResponse.json(
     { error: "خطای داخلی سرور. در صورت تکرار با پشتیبانی تماس بگیرید.", ref: id },
     { status, headers: { "Cache-Control": "no-store" } }
