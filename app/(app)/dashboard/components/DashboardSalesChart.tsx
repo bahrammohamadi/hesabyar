@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Area,
@@ -11,11 +12,28 @@ import {
   YAxis,
 } from "recharts";
 import { TrendingUp } from "lucide-react";
-import { Spinner } from "@/src/shared/ui";
-import { formatNumber } from "@/lib/utils/format";
+import {
+  ChartEmpty, ChartSkeleton, ChartTooltip, activeDot, axisProps,
+  chartCursor, chartGradients, compactAxisNumber, gradientId,
+  tickInterval, useChartAnimation,
+} from "@/src/shared/ui";
+import { formatToman, toFaDigits } from "@/lib/utils/format";
 
 export type SalesChartPoint = { day: string; total: number };
 
+/**
+ * نمودار روند فروش داشبورد.
+ *
+ * 🔴 پیش از این، این فایل هیچ‌کدام از قطعات مشترک ChartKit را
+ * استفاده نمی‌کرد و نسخه‌ی دست‌ساز خودش را داشت. نتیجه‌ی
+ * اندازه‌گیری‌شده روی داده‌ی واقعی:
+ *
+ *     تیک‌های محور Y →  0k · 850k · 1.7M · 2.55M · 3.4M
+ *
+ * ارقام لاتین با پسوند انگلیسی، در برنامه‌ای که همه‌جایش فارسی
+ * است. تابع `compactAxisNumber` که «۱٫۷ م» می‌سازد از قبل وجود
+ * داشت ولی فقط در یک صفحه استفاده می‌شد.
+ */
 export function DashboardSalesChart({
   isLoading,
   data,
@@ -23,13 +41,37 @@ export function DashboardSalesChart({
   isLoading: boolean;
   data: SalesChartPoint[] | undefined;
 }) {
+  const animate = useChartAnimation();
+
+  /*
+    روی موبایل تعداد تیک‌های محور X کمتر می‌شود تا برچسب‌ها روی هم
+    نیفتند. matchMedia در useEffect خوانده می‌شود نه هنگام رندر،
+    وگرنه سرور و کلاینت نتیجه‌ی متفاوت می‌دهند (hydration mismatch).
+  */
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    const apply = () => setIsMobile(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
+  const points = data ?? [];
+
+  /* خلاصه‌ی بالای نمودار — عدد درشت مهم‌تر از خودِ خط است. */
+  const total = points.reduce((sum, p) => sum + p.total, 0);
+  const peak = points.reduce<SalesChartPoint | null>(
+    (best, p) => (best === null || p.total > best.total ? p : best),
+    null
+  );
+
   return (
     <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-5">
-      {/* هدر */}
-      <div className="mb-5 flex items-center justify-between">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <TrendingUp size={17} strokeWidth={2.2} />
+            <TrendingUp size={17} strokeWidth={2.2} aria-hidden />
           </div>
           <div>
             <h2 className="text-sm font-extrabold text-foreground">روند فروش</h2>
@@ -44,64 +86,83 @@ export function DashboardSalesChart({
         </Link>
       </div>
 
-      {/* نمودار */}
+      {/*
+        خلاصه‌ی عددی پیش از نمودار.
+        کاربر معمولاً دنبال «چقدر فروختم» است، نه شکل منحنی؛ خواندن
+        عدد از روی نمودار کار اضافه است.
+      */}
+      {!isLoading && points.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-baseline gap-x-5 gap-y-1">
+          <div>
+            <span className="text-2xs text-muted-foreground">جمع دوره</span>
+            <div className="text-lg font-black tabular-nums text-foreground">
+              {formatToman(total)}
+            </div>
+          </div>
+          {peak && peak.total > 0 && (
+            <div>
+              <span className="text-2xs text-muted-foreground">بیشترین روز</span>
+              {/*
+                🔴 مبلغ و تاریخ باید صریح از هم جدا شوند.
+                نسخه‌ی اول فقط `mr-1.5` داشت و چون هر دو عدد فارسی‌اند،
+                در چیدمان راست‌به‌چپ به هم می‌چسبیدند و «۳۳۷,۵۰۰۰۵/۰۳»
+                خوانده می‌شد — یعنی مبلغ ۳۳۷٬۵۰۰ و تاریخ ۰۵/۰۳ یک عدد
+                به نظر می‌رسیدند. (در اسکرین‌شات واقعی دیده شد.)
+
+                حالا با flex و یک جداکنندهٔ «·» فاصله قطعی است.
+              */}
+              <div className="flex items-baseline gap-1.5 text-sm font-bold tabular-nums text-success-onSoft">
+                <span>{formatToman(peak.total, false)}</span>
+                <span aria-hidden className="text-muted-foreground">·</span>
+                <span className="text-2xs font-medium text-muted-foreground">
+                  {toFaDigits(peak.day)}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {isLoading ? (
-        <div className="flex h-56 items-center justify-center">
-          <Spinner />
-        </div>
-      ) : !data || data.length === 0 ? (
-        <div className="flex h-56 flex-col items-center justify-center gap-2">
-          <TrendingUp size={32} className="text-muted-foreground/30" />
-          <p className="text-sm text-muted-foreground">هنوز داده‌ای برای نمایش وجود ندارد</p>
-        </div>
+        <ChartSkeleton />
+      ) : points.length === 0 ? (
+        <ChartEmpty
+          title="هنوز فروشی ثبت نشده"
+          description="پس از ثبت اولین فاکتور، روند فروش اینجا نمایش داده می‌شود."
+          icon={<TrendingUp size={22} aria-hidden />}
+        />
       ) : (
         <div className="h-56 sm:h-64" dir="ltr">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%"   stopColor="hsl(var(--primary))" stopOpacity={0.25} />
-                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                </linearGradient>
-              </defs>
+            <AreaChart data={points} margin={{ top: 6, right: 6, left: 0, bottom: 0 }}>
+              {chartGradients(["primary"])}
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis
                 dataKey="day"
-                tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
-                axisLine={false}
-                tickLine={false}
+                {...axisProps}
+                interval={tickInterval(points.length, isMobile)}
               />
               <YAxis
-                tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(v: number) =>
-                  v >= 1_000_000 ? `${v / 1_000_000}M` : `${v / 1000}k`
-                }
-                width={38}
+                {...axisProps}
+                tickFormatter={compactAxisNumber}
+                width={isMobile ? 52 : 68}
               />
-              <Tooltip
-                formatter={(v: number) => [formatNumber(v) + " تومان", "فروش"]}
-                contentStyle={{
-                  fontFamily: "Vazirmatn, sans-serif",
-                  fontSize: 12,
-                  direction: "rtl",
-                  borderRadius: "14px",
-                  border: "1px solid hsl(var(--border))",
-                  boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
-                  background: "hsl(var(--popover))",
-                  color: "hsl(var(--popover-foreground))",
-                }}
-                cursor={{ stroke: "hsl(var(--primary))", strokeWidth: 1, strokeDasharray: "4 2" }}
-              />
+              {/*
+                Tooltip مشترک: ارقام فارسی و واحد تومان.
+                نسخه‌ی قبلی contentStyle دست‌ساز داشت که در حالت تیره
+                هم درست بود ولی با بقیه‌ی نمودارها فرق می‌کرد.
+              */}
+              <Tooltip content={<ChartTooltip unit="تومان" />} cursor={chartCursor} />
               <Area
                 type="monotone"
                 dataKey="total"
+                name="فروش"
                 stroke="hsl(var(--primary))"
                 strokeWidth={2.5}
-                fill="url(#chartGrad)"
+                fill={`url(#${gradientId("primary")})`}
                 dot={false}
-                activeDot={{ r: 5, strokeWidth: 0, fill: "hsl(var(--primary))" }}
+                activeDot={{ ...activeDot, fill: "hsl(var(--primary))" }}
+                isAnimationActive={animate}
               />
             </AreaChart>
           </ResponsiveContainer>

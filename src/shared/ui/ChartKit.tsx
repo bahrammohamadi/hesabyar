@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { toFaDigits, toJalali, toJalaliMonth } from "@/lib/utils/format";
 export { compactAxisNumber, tickInterval } from "./chart-utils";
 
 /**
@@ -87,6 +88,64 @@ export const activeDot = {
   strokeWidth: 2,
   stroke: "hsl(var(--card))",
 } as const;
+
+/* ── راهنمای شناور (Tooltip) ──────────────────────────────────── */
+
+/**
+ * محتوای Tooltip مشترک همه‌ی نمودارها.
+ *
+ * 🔴 چرا کامپوننت و نه `contentStyle`؟
+ *   با `contentStyle` فقط ظاهرِ جعبه قابل تنظیم است و **مقدارها با
+ *   ارقام لاتین** رندر می‌شوند. اندازه‌گیری روی داشبورد پیش از این
+ *   تغییر: تیک‌های محور `0k · 850k · 1.7M · 2.55M · 3.4M` بودند و
+ *   Tooltip هم عدد لاتین نشان می‌داد — در برنامه‌ای که همه‌جایش
+ *   فارسی است.
+ *
+ *   با کامپوننت سفارشی، هم رقم فارسی می‌شود و هم تاریخ شمسی.
+ *
+ * ⚠️ `dir="rtl"` روی خودِ جعبه لازم است چون ظرف نمودار `dir="ltr"`
+ * دارد (Recharts در RTL محور را برعکس می‌کشد).
+ */
+export function ChartTooltip({
+  active,
+  payload,
+  label,
+  labelKind = "text",
+  unit,
+}: {
+  active?: boolean;
+  payload?: { name?: string; value?: number | string; color?: string }[];
+  label?: string | number;
+  /** تاریخ خام از دیتابیس میلادی است؛ اینجا شمسی می‌شود. */
+  labelKind?: "day" | "month" | "text";
+  /** واحد کنار عدد، مثل «تومان» یا «عدد». */
+  unit?: string;
+}) {
+  if (!active || !payload?.length) return null;
+
+  const raw = label == null ? "" : String(label);
+  const heading =
+    labelKind === "day" ? toJalali(raw) : labelKind === "month" ? toJalaliMonth(raw) : raw;
+
+  return (
+    <div className="rounded-xl border border-border bg-popover p-3 text-xs shadow-lg" dir="rtl">
+      {heading && <div className="mb-1 font-bold text-popover-foreground">{toFaDigits(heading)}</div>}
+      {payload.map((item, index) => {
+        const value =
+          typeof item.value === "number"
+            ? toFaDigits(Math.round(item.value).toLocaleString("en-US"))
+            : toFaDigits(String(item.value ?? ""));
+        return (
+          <div key={`${item.name ?? index}`} className="text-muted-foreground">
+            {item.name ? `${item.name}: ` : ""}
+            <span className="font-bold tabular-nums text-popover-foreground">{value}</span>
+            {unit ? ` ${unit}` : ""}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 /* ── حالت‌های بارگذاری و خالی ─────────────────────────────────── */
 

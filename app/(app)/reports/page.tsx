@@ -7,17 +7,16 @@ import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, Spinner, EmptyState } from "@/components/shared/ui";
-import { Badge, Button, Card, DataTable } from "@/src/shared/ui";
+import { Badge, Button, Card, ChartTooltip, DataTable, axisProps, chartCursor, compactAxisNumber, useChartAnimation } from "@/src/shared/ui";
 import {
   CHART_SERIES,
   CHART_TOKENS,
-  CHART_TOOLTIP_STYLE,
   ChartCard,
   ReportKpiCard,
 } from "./components/ReportPieces";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
-import { formatToman, formatNumber, toFaDigits } from "@/lib/utils/format";
+import { formatToman, toFaDigits } from "@/lib/utils/format";
 import { toJalali, todayJalali, rialToToman } from "@/lib/utils/format";
 import {
   BarChart,
@@ -62,6 +61,8 @@ const COLORS = CHART_SERIES;
 
 // --- فروش ---
 function SalesReport({ orgId }: { orgId: string }) {
+  /* Recharts انیمیشن را در JS اجرا می‌کند؛ CSS سراسری خنثی‌اش نمی‌کند. */
+  const animate = useChartAnimation();
   const [period, setPeriod] = useState<"7d" | "30d" | "90d" | "1y">("30d");
 
   const { data: chartData, isLoading } = useQuery({
@@ -126,18 +127,17 @@ function SalesReport({ orgId }: { orgId: string }) {
           <div className="h-72" dir="ltr">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={CHART_TOKENS.grid} />
-                <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke={CHART_TOKENS.axis} />
-                <YAxis
-                  tick={{ fontSize: 12 }}
-                  stroke={CHART_TOKENS.axis}
-                  tickFormatter={(v) => (v >= 1000000 ? `${v / 1000000}M` : `${v / 1000}k`)}
-                />
-                <Tooltip
-                  formatter={(v: number) => [formatNumber(v * 10) + " تومان", "فروش"]}
-                  contentStyle={CHART_TOOLTIP_STYLE}
-                />
-                <Line type="monotone" dataKey="فروش" stroke={CHART_TOKENS.primary} strokeWidth={2} dot={{ r: 3 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_TOKENS.grid} vertical={false} />
+                <XAxis dataKey="date" {...axisProps} />
+                {/*
+                  🔴 محور با ارقام فارسی.
+                  پیش از این «0k · 850k · 1.7M» نشان می‌داد — رقم لاتین
+                  با پسوند انگلیسی، در برنامه‌ای که همه‌جایش فارسی است.
+                  (اندازه‌گیری‌شده روی داده‌ی واقعی پیش از اصلاح.)
+                */}
+                <YAxis {...axisProps} tickFormatter={compactAxisNumber} width={68} />
+                <Tooltip content={<ChartTooltip unit="تومان" />} cursor={chartCursor} />
+                <Line type="monotone" dataKey="فروش" stroke={CHART_TOKENS.primary} strokeWidth={2.5} dot={false} activeDot={{ r: 5, strokeWidth: 2, stroke: "hsl(var(--card))", fill: CHART_TOKENS.primary }} isAnimationActive={animate} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -149,6 +149,8 @@ function SalesReport({ orgId }: { orgId: string }) {
 
 // --- محصولات ---
 function ProductsReport({ orgId }: { orgId: string }) {
+  /* Recharts انیمیشن را در JS اجرا می‌کند؛ CSS سراسری خنثی‌اش نمی‌کند. */
+  const animate = useChartAnimation();
   const { data: topProducts, isLoading } = useQuery({
     queryKey: ["report-top-products", orgId],
     queryFn: async () => {
@@ -209,13 +211,10 @@ function ProductsReport({ orgId }: { orgId: string }) {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={topProducts} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke={CHART_TOKENS.grid} />
-                <XAxis type="number" tick={{ fontSize: 12 }} stroke={CHART_TOKENS.axis} tickFormatter={(v) => `${v / 1000000}M`} />
+                <XAxis type="number" {...axisProps} tickFormatter={compactAxisNumber} />
                 <YAxis dataKey="name" type="category" tick={{ fontSize: 12 }} stroke={CHART_TOKENS.axis} width={100} />
-                <Tooltip
-                  formatter={(v: number) => [formatNumber(v) + " تومان", "درآمد"]}
-                  contentStyle={CHART_TOOLTIP_STYLE}
-                />
-                <Bar dataKey="revenue" fill={CHART_TOKENS.primary} radius={[0, 4, 4, 0]} />
+                <Tooltip content={<ChartTooltip unit="تومان" />} cursor={{ fill: "hsl(var(--primary))", fillOpacity: 0.06 }} />
+                <Bar dataKey="revenue" name="درآمد" fill={CHART_TOKENS.primary} radius={[0, 6, 6, 0]} maxBarSize={28} isAnimationActive={animate} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -315,7 +314,7 @@ function FinancialReport({ orgId }: { orgId: string }) {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(v: number) => [formatNumber(v) + " تومان", "موجودی"]} />
+                <Tooltip content={<ChartTooltip unit="تومان" />} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -399,7 +398,7 @@ function ContactsReport({ orgId }: { orgId: string }) {
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip content={<ChartTooltip />} />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -457,6 +456,8 @@ function ContactsReport({ orgId }: { orgId: string }) {
 
 // --- سود و زیان ---
 function ProfitReport({ orgId }: { orgId: string }) {
+  /* Recharts انیمیشن را در JS اجرا می‌کند؛ CSS سراسری خنثی‌اش نمی‌کند. */
+  const animate = useChartAnimation();
   const { data: topProducts, isLoading } = useQuery({
     queryKey: ["report-top-selling", orgId],
     queryFn: async () => {
@@ -500,8 +501,8 @@ function ProfitReport({ orgId }: { orgId: string }) {
                 <CartesianGrid strokeDasharray="3 3" stroke={CHART_TOKENS.grid} />
                 <XAxis dataKey="color" tick={{ fontSize: 12 }} stroke={CHART_TOKENS.axis} />
                 <YAxis tick={{ fontSize: 12 }} stroke={CHART_TOKENS.axis} />
-                <Tooltip formatter={(v: number) => [toFaDigits(v) + " عدد", "تعداد فروش"]} contentStyle={CHART_TOOLTIP_STYLE} />
-                <Bar dataKey="total_sold_qty" fill={CHART_TOKENS.success} radius={[4, 4, 0, 0]} />
+                <Tooltip content={<ChartTooltip unit="عدد" />} cursor={{ fill: "hsl(var(--primary))", fillOpacity: 0.06 }} />
+                <Bar dataKey="total_sold_qty" name="تعداد فروش" fill={CHART_TOKENS.success} radius={[6, 6, 0, 0]} maxBarSize={48} isAnimationActive={animate} />
               </BarChart>
             </ResponsiveContainer>
           </div>
