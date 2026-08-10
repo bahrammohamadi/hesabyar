@@ -14,6 +14,8 @@ import { ImpersonationBanner } from "./impersonation-banner";
 import { UpdatePrompt } from "./update-prompt";
 import { MarketTicker } from "./market-ticker";
 import { EmailVerifyBanner } from "./email-verify-banner";
+import { InstallPrompt } from "./install-prompt";
+import { ServiceWorkerRegister } from "./sw-register";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -83,6 +85,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         جای قرارگیری: bottom-[96px] تا بالای BottomNav بنشیند (ارتفاع
         ۶۸px + فاصله‌ی ۱۲px) و رویش نیفتد.
       */}
+      {/*
+        ثبت سرویس‌ورکر و پیشنهاد نصب.
+        هر دو در AppShell‌اند نه در layout ریشه: کاربری که هنوز وارد
+        نشده دلیلی ندارد دعوت به نصب ببیند.
+      */}
+      <ServiceWorkerRegister />
+      <InstallPrompt />
       <MobileFab />
       <BottomNav onMoreClick={() => setIsSidebarOpen(true)} />
       <UpdatePrompt />

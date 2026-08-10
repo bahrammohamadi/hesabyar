@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>اتصال اینترنت قطع است | ترازو</title>
+    <!--
+      🔴 همه‌چیز درون‌خطی است.
+
+      این صفحه دقیقاً وقتی نشان داده می‌شود که شبکه در دسترس نیست،
+      پس هر ارجاع بیرونی (CSS، فونت، تصویر) شکست می‌خورد و کاربر
+      صفحه‌ی بی‌ریخت می‌بیند. فونت هم به فونت سیستم واگذار شده چون
+      Vazirmatn از شبکه می‌آید.
+    -->
+    <style>
+      :root { color-scheme: light dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        font-family: Vazirmatn, Tahoma, system-ui, -apple-system, sans-serif;
+        background: #f5f7fb;
+        color: #0f172a;
+      }
+      @media (prefers-color-scheme: dark) {
+        body { background: #0b1220; color: #e2e8f0; }
+        .card { background: #111a2e !important; border-color: #1e293b !important; }
+        .hint { color: #94a3b8 !important; }
+      }
+      .card {
+        width: 100%;
+        max-width: 420px;
+        text-align: center;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 32px 24px;
+      }
+      .logo {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 16px;
+        border-radius: 16px;
+        background: #136451;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      h1 { margin: 0 0 8px; font-size: 18px; font-weight: 800; }
+      .hint { margin: 0; font-size: 13px; line-height: 2; color: #64748b; }
+      button {
+        margin-top: 20px;
+        min-height: 44px;
+        padding: 0 24px;
+        font: inherit;
+        font-weight: 700;
+        font-size: 14px;
+        color: #ffffff;
+        background: #136451;
+        border: 0;
+        border-radius: 12px;
+        cursor: pointer;
+      }
+      button:hover { background: #0f5544; }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <div class="logo" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 22h16" /><path d="M6 2h12" />
+          <path d="M6 2v6a6 6 0 0 0 12 0V2" /><path d="M12 14v8" />
+        </svg>
+      </div>
+
+      <h1>اتصال اینترنت قطع است</h1>
+      <p class="hint">
+        ترازو برای نمایش اطلاعات به اینترنت نیاز دارد.
+        <br />
+        اتصال خود را بررسی کنید و دوباره تلاش کنید.
+      </p>
+
+      <!--
+        عمداً هیچ داده‌ای آفلاین نشان نمی‌دهیم.
+        در یک نرم‌افزار حسابداری، موجودی یا فاکتور کهنه از خطای
+        شبکه خطرناک‌تر است.
+      -->
+      <button type="button" onclick="location.reload()">تلاش دوباره</button>
+    </main>
+  </body>
+</html>
