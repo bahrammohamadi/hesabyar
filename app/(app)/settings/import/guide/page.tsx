@@ -43,9 +43,18 @@ export default function ImportGuidePage() {
             <p className="mt-1 text-xs leading-6 text-muted-foreground">
               ورود دسته‌جمعی صدها رکورد را یک‌باره اضافه می‌کند. اگرچه هر ورود قابل
               «برگرداندن» است، ولی پشتیبان‌گرفتن پیش از تغییرات بزرگ یک عادت درست است.
-              برای گرفتن پشتیبان، از هر صفحه‌ی فهرست (کالاها یا اشخاص) خروجی اکسل بگیرید،
-              یا اگر حجم داده زیاد است از پشتیبانی بخواهید یک نسخه‌ی کامل برایتان بفرستد.
             </p>
+            {/*
+              🔴 این متن قبلاً می‌گفت «از پشتیبانی بخواهید یک نسخه‌ی کامل
+              برایتان بفرستد» — چون دکمه‌ای وجود نداشت. حالا دارد.
+            */}
+            <Link
+              href="/settings/backup"
+              className="mt-2 inline-flex items-center gap-1.5 text-xs font-extrabold text-warning-onSoft hover:underline"
+            >
+              گرفتن پشتیبان کامل
+              <ArrowRight size={14} aria-hidden />
+            </Link>
           </div>
         </div>
       </Card>

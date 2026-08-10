@@ -42,6 +42,8 @@ import {
   Calendar,
   Download,
 } from "lucide-react";
+import { downloadCsv } from "@/lib/export/download";
+import { useToast } from "@/src/shared/ui";
 
 type TabId = "sales" | "products" | "financial" | "contacts" | "profit";
 
@@ -56,28 +58,7 @@ const TABS: { id: TabId; label: string; icon: typeof TrendingUp }[] = [
 // پالت نمودارها از توکن‌های معنایی پروژه می‌آید (نه hex خام مرجع).
 const COLORS = CHART_SERIES;
 
-function csvEscape(value: unknown) {
-  const text = value == null ? "" : String(value);
-  return `"${text.replace(/"/g, '""')}"`;
-}
 
-function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
-  if (!rows.length) {
-    alert("داده‌ای برای خروجی وجود ندارد.");
-    return;
-  }
-  const headers = Object.keys(rows[0]);
-  const csv = "﻿" + [headers.map(csvEscape).join(","), ...rows.map((row) => headers.map((h) => csvEscape(row[h])).join(","))].join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
 
 // --- فروش ---
 function SalesReport({ orgId }: { orgId: string }) {
@@ -579,6 +560,7 @@ function ProfitReport({ orgId }: { orgId: string }) {
 // --- صفحه اصلی ---
 export function ReportsPageContent({ forcedTab }: { forcedTab?: TabId }) {
   const { orgId, loading: orgLoading } = useOrg();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<TabId>(forcedTab ?? "sales");
 
   async function exportExcel() {
@@ -590,7 +572,7 @@ export function ReportsPageContent({ forcedTab }: { forcedTab?: TabId }) {
         .from("sales")
         .select("invoice_no,date,total,discount,tax,status,customer:contacts(name,phone)")
         .order("date", { ascending: false });
-      if (error) { alert(error.message); return; }
+      if (error) { toast({ title: error.message, tone: "error" }); return; }
       /*
         🔴 تاریخ شمسی و مبلغ تومان در خروجی.
 
@@ -615,7 +597,7 @@ export function ReportsPageContent({ forcedTab }: { forcedTab?: TabId }) {
         .select("sku,barcode,color,size,stock_qty,purchase_price,sale_price,product:products!inner(name,code)")
         .eq("is_active", true)
         .order("stock_qty");
-      if (error) { alert(error.message); return; }
+      if (error) { toast({ title: error.message, tone: "error" }); return; }
       rows = (data ?? []).map((v: any) => ({
         "کالا": v.product?.name,
         "کد": v.product?.code,
@@ -629,7 +611,7 @@ export function ReportsPageContent({ forcedTab }: { forcedTab?: TabId }) {
       }));
     } else if (activeTab === "financial") {
       const { data, error } = await supabase.from("transactions").select("type,amount,date,method,note,contact:contacts(name),account:accounts!transactions_account_id_fkey(name)").order("date", { ascending: false });
-      if (error) { alert(error.message); return; }
+      if (error) { toast({ title: error.message, tone: "error" }); return; }
       rows = (data ?? []).map((t: any) => ({
         "نوع": t.type,
         "مبلغ (تومان)": rialToToman(t.amount ?? 0),
@@ -641,15 +623,22 @@ export function ReportsPageContent({ forcedTab }: { forcedTab?: TabId }) {
       }));
     } else if (activeTab === "contacts") {
       const { data, error } = await supabase.from("contact_balances").select("contact_id,name,type,balance").eq("org_id", orgId);
-      if (error) { alert(error.message); return; }
+      if (error) { toast({ title: error.message, tone: "error" }); return; }
       rows = data ?? [];
     } else {
       const { data, error } = await supabase.from("top_selling_products").select("*").limit(200);
-      if (error) { alert(error.message); return; }
+      if (error) { toast({ title: error.message, tone: "error" }); return; }
       rows = data ?? [];
     }
-    // نام فایل با تاریخ شمسی، هم‌راستا با بقیه‌ی برنامه.
-    downloadCsv(`tarazoo-${activeTab}-${todayJalali().replace(/\//g, "-")}.csv`, rows);
+    /*
+      نام فایل با تاریخ شمسی، هم‌راستا با بقیه‌ی برنامه.
+
+      downloadCsv برای داده‌ی خالی false برمی‌گرداند (پیش از این
+      خودش alert می‌زد). پیام از اینجا می‌آید تا با بقیه‌ی برنامه
+      یکدست باشد.
+    */
+    const ok = downloadCsv(`tarazoo-${activeTab}-${todayJalali().replace(/\//g, "-")}.csv`, rows);
+    if (!ok) toast({ title: "داده‌ای برای خروجی وجود ندارد.", tone: "warning" });
   }
 
   // URL params support

@@ -15,6 +15,7 @@ import { ProductSelector, type SelectableVariant } from "@/components/shared/pro
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
 import { formatToman, rialToToman, toEnDigits, toFaDigits, toJalali, tomanToRial } from "@/lib/utils/format";
 import { BRAND_NAME } from "@/lib/brand";
+import { downloadCsv } from "@/lib/export/download";
 
 type InvoiceItemView = {
   id: string;
@@ -45,24 +46,7 @@ type EditInvoiceItem = {
   stock_qty: number;
 };
 
-function csvEscape(value: unknown) {
-  const text = value == null ? "" : String(value);
-  return `"${text.replace(/"/g, '""')}"`;
-}
 
-function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
-  const headers = Object.keys(rows[0] ?? { message: "empty" });
-  const csv = "\ufeff" + [headers.map(csvEscape).join(","), ...rows.map((row) => headers.map((header) => csvEscape(row[header])).join(","))].join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
 
 export default function SaleInvoicePage({ params }: { params: { id: string } }) {
   const { id } = params;

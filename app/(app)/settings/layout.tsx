@@ -23,6 +23,7 @@ const SETTINGS_NAV: SubNavItem[] = [
   { href: "/settings/accounts", label: "مالی و حساب‌ها" },
   { href: "/settings/price-lists", label: "لیست قیمت‌ها" },
   { href: "/settings/general", label: "کسب‌وکار و ظاهر" },
+  { href: "/settings/backup", label: "پشتیبان" },
 ];
 
 export default function SettingsLayout({ children }: { children: ReactNode }) {

@@ -11,26 +11,9 @@ import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { EntityLink } from "@/components/shared/entity-link";
 import { PhoneLink } from "@/components/shared/phone-link";
 import { formatToman, toFaDigits, toJalali } from "@/lib/utils/format";
+import { downloadCsv } from "@/lib/export/download";
 
-function csvEscape(value: unknown) {
-  const text = value == null ? "" : String(value);
-  return `"${text.replace(/"/g, '""')}"`;
-}
 
-function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
-  if (!rows.length) return alert("داده‌ای برای خروجی وجود ندارد.");
-  const headers = Object.keys(rows[0]);
-  const csv = "\ufeff" + [headers.map(csvEscape).join(","), ...rows.map((row) => headers.map((header) => csvEscape(row[header])).join(","))].join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
 
 function scoreDescending(value: number, values: number[]) {
   if (!values.length) return 1;

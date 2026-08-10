@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import {
-  Building2, FileSpreadsheet, FolderTree, KeyRound, Landmark,
-  Shield, SlidersHorizontal, Stethoscope, Tags,
+  Building2, DatabaseBackup, FileSpreadsheet, FolderTree, KeyRound,
+  Landmark, Shield, SlidersHorizontal, Stethoscope, Tags,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/ui";
 import { Card } from "@/src/shared/ui";
@@ -79,6 +79,14 @@ const CARDS: SettingsCard[] = [
     icon: Tags,
     tone: "bg-warning-soft text-warning-onSoft",
     group: "کالا",
+  },
+  {
+    title: "پشتیبان و خروجی",
+    desc: "یک نسخه از تمام اطلاعات کسب‌وکار بگیرید",
+    href: "/settings/backup",
+    icon: DatabaseBackup,
+    tone: "bg-success-soft text-success-onSoft",
+    group: "ابزارها",
   },
   {
     title: "ورود اطلاعات از اکسل",

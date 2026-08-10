@@ -21,29 +21,9 @@ import { Button, ChartEmpty, ChartSkeleton, chartGradients, DataTable, EmptyStat
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { Money, PersianDate, toPersianDigits } from "@/src/shared/format";
 import { toJalali, toJalaliMonth, toJalaliShort } from "@/lib/utils/format";
+import { downloadCsv } from "@/lib/export/download";
 
-function csvEscape(value: unknown) {
-  const text = value == null ? "" : String(value);
-  return `"${text.replace(/"/g, '""')}"`;
-}
 
-function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
-  if (!rows.length) {
-    alert("داده‌ای برای خروجی وجود ندارد.");
-    return;
-  }
-  const headers = Object.keys(rows[0]);
-  const csv = "\ufeff" + [headers.map(csvEscape).join(","), ...rows.map((row) => headers.map((h) => csvEscape(row[h])).join(","))].join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
 
 /**
  * تولتیپ نمودار.
