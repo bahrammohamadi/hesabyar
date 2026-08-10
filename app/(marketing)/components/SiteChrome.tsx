@@ -18,6 +18,7 @@ import { SiteNav, SiteMobileNav } from "./SiteNav";
 export const SITE_NAV = [
   { href: "/", label: "خانه" },
   { href: "/features", label: "امکانات" },
+  { href: "/industries", label: "صنف شما" },
   { href: "/pricing", label: "تعرفه‌ها" },
   { href: "/guide", label: "راهنما" },
   { href: "/faq", label: "سوالات متداول" },
@@ -98,6 +99,7 @@ export function SiteHeader({ isAuthenticated }: { isAuthenticated: boolean }) {
 
 const FOOTER_PRODUCT = [
   { href: "/features", label: "امکانات" },
+  { href: "/industries", label: "صنف شما" },
   { href: "/pricing", label: "تعرفه‌ها" },
   { href: "/guide", label: "راهنمای شروع" },
 ];

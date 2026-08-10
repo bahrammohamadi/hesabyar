@@ -105,6 +105,7 @@ export async function updateSession(request: NextRequest) {
   const PUBLIC_SITE_PATHS = new Set([
     "/",
     "/features",
+    "/industries",
     "/pricing",
     "/about",
     "/contact",
@@ -130,7 +131,14 @@ export async function updateSession(request: NextRequest) {
   */
   const isPublicStorefront = path === "/shop" || path.startsWith("/shop/");
 
-  const isPublicSite = PUBLIC_SITE_PATHS.has(path) || isPublicStorefront;
+  /*
+    صفحات صنفی هم slug متغیر دارند (/industries/apparel)، پس مثل
+    فروشگاه به startsWith نیاز دارند. همان درسی که در نوبت قبل با
+    ۴۰۴ نشدن /shop گرفتیم.
+  */
+  const isPublicIndustry = path === "/industries" || path.startsWith("/industries/");
+
+  const isPublicSite = PUBLIC_SITE_PATHS.has(path) || isPublicStorefront || isPublicIndustry;
 
   /*
     /onboarding و /setup نیاز به نشست دارند ولی هنوز سازمانی وجود
