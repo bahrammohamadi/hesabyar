@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { marginPercent, saleFromMargin } from "@/lib/cart-pricing";
 
 const root = join(__dirname, "..");
 const read = (p: string) => readFileSync(join(root, p), "utf8");
@@ -75,16 +76,29 @@ describe("PosCartList — یک کامپوننت برای دو سند", () => {
   it("در حالت خرید سه فیلد قیمت خرید/فروش/سود دارد", () => {
     expect(src).toContain("قیمت خرید ${c.product_name}");
     expect(src).toContain("قیمت فروش ${c.product_name}");
-    expect(src).toContain("درصد سود ${c.product_name}");
+    // برچسب درصد سود حالا داخل کامپوننت MarginInput است.
+    expect(src).toContain("درصد سود ${item.product_name}");
   });
 
+  /*
+    ⚠️ این دو ادعا قبلاً به *جزئیات پیاده‌سازی* داخل PosPieces چسبیده
+    بودند (`if (buy <= 0) return 0;` و فرمول درون onChange). هر دو
+    محاسبه به lib/cart-pricing منتقل شدند تا قابل تست واحد باشند و
+    بین فروش و خرید مشترک بمانند، پس تست‌ها هم به همان‌جا منتقل شدند.
+
+    خودِ رفتار تغییری نکرده و در tests/cart-pricing.test.ts با
+    ورودی/خروجی واقعی سنجیده می‌شود — نه با تطبیق رشته.
+  */
   it("درصد سود از قیمت خرید محاسبه می‌شود و تقسیم بر صفر ندارد", () => {
-    expect(src).toContain("if (buy <= 0) return 0;");
+    expect(marginPercent(100_000, 140_000)).toBe(40);
+    expect(marginPercent(0, 50_000)).toBe(0);
+    expect(src).toContain("marginPercent(item.unit_price");
   });
 
   it("تایپ درصد، قیمت فروش را می‌سازد", () => {
     // فروشنده می‌گوید «۴۰ درصد روش بکش»، نه اینکه عدد نهایی را بداند.
-    expect(src).toContain("c.unit_price * (1 + pct / 100)");
+    expect(saleFromMargin(100_000, 40)).toBe(140_000);
+    expect(src).toContain("saleFromMargin(c.unit_price, pct)");
   });
 
   it("هشدار موجودی در خرید نمایش داده نمی‌شود", () => {

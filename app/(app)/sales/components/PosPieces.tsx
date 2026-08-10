@@ -8,14 +8,19 @@
  * app/(app)/sales/page.tsx دست‌نخورده باقی مانده‌اند.
  */
 
+import * as React from "react";
 import type { ReactNode } from "react";
-import { Barcode, Mic, Package, ScanLine, Trash2, UserPlus, Users, X } from "lucide-react";
+import { Barcode, Mic, Package, Percent, ScanLine, Trash2, UserPlus, Users, X } from "lucide-react";
 import { Badge, Button, Card } from "@/src/shared/ui";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { PhoneLink } from "@/components/shared/phone-link";
 import { formatToman, rialToToman, toEnDigits, toFaDigits } from "@/lib/utils/format";
 import type { CartItem } from "@/types/db";
+import {
+  discountRialToPercent, lineDiscountRial, lineNetRial,
+  marginPercent, saleFromMargin, type LineDiscountMode,
+} from "@/lib/cart-pricing";
 
 /* ------------------------------------------------------------------ */
 /* نوار جستجو / ورود بارکد — مطابق مرجع step1                          */
@@ -189,6 +194,149 @@ export function PosCustomerCard({
   );
 }
 
+/**
+ * درصد سود با دکمه‌ی «اعمال».
+ *
+ * 🔴 چرا دکمه لازم بود (خواسته‌ی صریح کاربر):
+ *   نسخه‌ی قبلی با هر بار تایپ، قیمت فروش را بازمحاسبه می‌کرد. برای
+ *   رسیدن به «۳۰» کاربر اول «۳» را تایپ می‌کرد و قیمت فروش فوراً
+ *   روی ۳٪ سود می‌پرید؛ بعد «۰» و دوباره پرش. عدد وسط راه، قیمت را
+ *   خراب می‌کرد و کاربر نمی‌توانست عدد دورقمی وارد کند.
+ *
+ *   حالا عدد آزادانه تایپ می‌شود و فقط با زدن دکمه (یا Enter) روی
+ *   قیمت فروش می‌نشیند — دقیقاً همان رفتاری که کاربر از نرم‌افزار
+ *   قبلی‌اش توصیف کرد.
+ */
+function MarginInput({
+  item,
+  value,
+  onApply,
+}: {
+  item: CartItem;
+  value: number;
+  onApply: (percent: number) => void;
+}) {
+  const [draft, setDraft] = React.useState<string | null>(null);
+
+  /*
+    وقتی کاربر در حال تایپ نیست، مقدار محاسبه‌شده نشان داده می‌شود.
+    این یعنی تغییر قیمت خرید یا فروش از جای دیگر، درصد را خودکار
+    به‌روز می‌کند.
+  */
+  const shown = draft ?? String(value);
+
+  function commit() {
+    if (draft === null) return;
+    const pct = Number(toEnDigits(draft).replace(/[^\d-]/g, "")) || 0;
+    onApply(pct);
+    setDraft(null);
+  }
+
+  return (
+    <div className="flex items-center gap-1">
+      <input
+        className={`input h-10 min-h-10 flex-1 text-center text-sm font-bold ${
+          value >= 0 ? "text-success-onSoft" : "text-destructive-text"
+        }`}
+        inputMode="numeric"
+        aria-label={`درصد سود ${item.product_name}`}
+        value={shown}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            commit();
+          }
+        }}
+        // ترک فیلد هم اعمال می‌کند تا کاربر مجبور به زدن دکمه نباشد.
+        onBlur={commit}
+      />
+      <button
+        type="button"
+        onClick={commit}
+        disabled={draft === null}
+        aria-label={`اعمال درصد سود روی قیمت فروش ${item.product_name}`}
+        title="اعمال درصد روی قیمت فروش"
+        className="inline-flex h-10 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition hover:border-primary/40 hover:text-primary disabled:opacity-40"
+      >
+        <Percent size={14} aria-hidden />
+      </button>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* تخفیف یک قلم — مبلغ یا درصد                                         */
+/* ------------------------------------------------------------------ */
+
+/**
+ * ورودی تخفیف هر قلم با کلید تعویض «تومان ⇄ درصد».
+ *
+ * چرا دکمه‌ی تعویض و نه دو کادر جدا؟
+ *   کاربر توصیف کرد که در نرم‌افزار قبلی‌اش «عدد را می‌زد و یک دکمه
+ *   کنارش آن را به درصد تبدیل می‌کرد». دو کادر جدا هم فضا می‌گیرد و
+ *   هم این سؤال را می‌سازد که اگر هر دو پر شوند کدام برنده است.
+ *
+ * ⚠️ مقدار ذخیره‌شده در سبد **همیشه ریال** است. درصد فقط روش ورود
+ * است، نه واحد نگهداری. اگر درصد را ذخیره می‌کردیم، تغییر بعدیِ
+ * تعداد یا قیمت، تخفیف را بی‌صدا عوض می‌کرد.
+ */
+function LineDiscountInput({
+  item,
+  mode,
+  onModeChange,
+  onChange,
+}: {
+  item: CartItem;
+  mode: LineDiscountMode;
+  onModeChange: (mode: LineDiscountMode) => void;
+  onChange: (discountRial: number) => void;
+}) {
+  const isPercent = mode === "percent";
+
+  /*
+    مقدار نمایشی از روی تخفیف ریالیِ ذخیره‌شده ساخته می‌شود، نه از یک
+    state جدا. این یعنی هر جای دیگری هم تخفیف را عوض کند، کادر
+    خودبه‌خود هماهنگ می‌ماند.
+  */
+  const shown = isPercent
+    ? discountRialToPercent(item.unit_price, item.qty, item.discount)
+    : rialToToman(item.discount);
+
+  function apply(raw: string) {
+    const n = Number(toEnDigits(raw).replace(/[^\d]/g, "")) || 0;
+    // در حالت مبلغ، ورودی تومان است و باید به ریال تبدیل شود.
+    const value = isPercent ? n : n * 10;
+    onChange(lineDiscountRial(item.unit_price, item.qty, mode, value));
+  }
+
+  return (
+    <div className="flex items-center gap-1">
+      <input
+        className="input h-10 min-h-10 flex-1 text-left text-sm tabular-nums"
+        inputMode="numeric"
+        aria-label={`تخفیف ${item.product_name} به ${isPercent ? "درصد" : "تومان"}`}
+        value={String(shown === 0 ? "" : shown)}
+        placeholder="۰"
+        onChange={(e) => apply(e.target.value)}
+      />
+      <button
+        type="button"
+        onClick={() => onModeChange(isPercent ? "amount" : "percent")}
+        aria-label={`تغییر واحد تخفیف ${item.product_name} — اکنون ${isPercent ? "درصد" : "تومان"}`}
+        title={isPercent ? "درصد — برای تغییر به تومان کلیک کنید" : "تومان — برای تغییر به درصد کلیک کنید"}
+        className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-2xs font-extrabold transition ${
+          isPercent
+            ? "border-primary bg-primary/10 text-primary"
+            : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+        }`}
+      >
+        {isPercent ? <Percent size={15} aria-hidden /> : "تومان"}
+      </button>
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /* لیست اقلام فاکتور — جدول در دسکتاپ، کارت در موبایل                  */
 /* ------------------------------------------------------------------ */
@@ -214,6 +362,7 @@ export function PosCartList({
   onRemove,
   variant = "sale",
   onSalePriceChange,
+  onDiscountChange,
 }: {
   cart: CartItem[];
   onQtyChange: (variantId: string, qty: number) => void;
@@ -223,23 +372,40 @@ export function PosCartList({
   variant?: "sale" | "purchase";
   /** فقط در حالت خرید لازم است. */
   onSalePriceChange?: (variantId: string, tomanValue: string) => void;
+  /**
+   * تخفیف هر قلم (ریال). اگر داده نشود، ستون تخفیف رندر نمی‌شود —
+   * سندهایی مثل مرجوعی که تخفیف سطری ندارند دست‌نخورده می‌مانند.
+   */
+  onDiscountChange?: (variantId: string, discountRial: number) => void;
 }) {
   const isPurchase = variant === "purchase";
+  const showDiscount = Boolean(onDiscountChange);
+
+  /*
+    حالت ورود تخفیف، به تفکیک هر سطر.
+
+    چرا per-row و نه یک حالت سراسری؟ کاربر ممکن است روی یک کالا
+    «۵۰ هزار تومان» تخفیف بدهد و روی دیگری «۱۰ درصد». تحمیل یک حالت
+    به همه، او را مجبور می‌کرد خودش حساب کند.
+  */
+  const [discountModes, setDiscountModes] = React.useState<Record<string, LineDiscountMode>>({});
+  const modeOf = (id: string): LineDiscountMode => discountModes[id] ?? "amount";
   /*
     در حالت خرید دو ستون بیشتر داریم. عرض نام کالا کم شده تا در پنل
     ۵۶۰ پیکسلی هم چیزی از لبه بیرون نزند.
   */
+  /*
+    ستون تخفیف فقط وقتی اضافه می‌شود که واقعاً فعال باشد؛ وگرنه
+    چیدمان سندهای بدون تخفیف بی‌دلیل فشرده می‌شد.
+  */
   const gridCols = isPurchase
-    ? "grid-cols-[minmax(150px,1.6fr)_120px_120px_84px_130px_minmax(100px,1fr)_44px]"
-    : "grid-cols-[minmax(200px,2.2fr)_130px_140px_minmax(110px,1fr)_44px]";
+    ? "grid-cols-[minmax(140px,1.5fr)_110px_110px_78px_120px_minmax(96px,1fr)_44px]"
+    : showDiscount
+      ? "grid-cols-[minmax(170px,2fr)_120px_128px_150px_minmax(100px,1fr)_44px]"
+      : "grid-cols-[minmax(200px,2.2fr)_130px_140px_minmax(110px,1fr)_44px]";
 
-  /** درصد سود بر مبنای قیمت خرید. صفر بودن قیمت خرید تقسیم بر صفر می‌دهد. */
-  function marginPercent(item: CartItem) {
-    const buy = item.unit_price;
-    const sell = item.sale_price ?? 0;
-    if (buy <= 0) return 0;
-    return Math.round(((sell - buy) / buy) * 100);
-  }
+  /** درصد سود بر مبنای قیمت خرید — از منبع مشترک lib/cart-pricing. */
+  const marginOf = (item: CartItem) => marginPercent(item.unit_price, item.sale_price ?? 0);
 
   return (
     <Card className="overflow-hidden">
@@ -265,6 +431,7 @@ export function PosCartList({
             {isPurchase && <span className="text-center">سود٪</span>}
             <span className="text-center">تعداد</span>
             {!isPurchase && <span>قیمت واحد (تومان)</span>}
+            {!isPurchase && showDiscount && <span className="text-center">تخفیف</span>}
             <span className="text-left">مجموع (تومان)</span>
             <span />
           </div>
@@ -303,23 +470,15 @@ export function PosCartList({
                     />
                   )}
                   {isPurchase && (
-                    <input
-                      className={`input h-10 min-h-10 text-center text-xs font-bold ${
-                        marginPercent(c) >= 0 ? "text-success-onSoft" : "text-destructive-text"
-                      }`}
-                      inputMode="numeric"
-                      aria-label={`درصد سود ${c.product_name}`}
-                      value={String(marginPercent(c))}
-                      onChange={(e) => {
-                        /*
-                          تایپ درصد، قیمت فروش را می‌سازد — نه برعکس.
-                          فروشنده معمولاً می‌گوید «۴۰ درصد روش بکش»، نه
-                          اینکه عدد نهایی را از قبل بداند.
-                        */
-                        const pct = Number(toEnDigits(e.target.value)) || 0;
-                        const nextSell = Math.round(c.unit_price * (1 + pct / 100));
-                        onSalePriceChange?.(c.variant_id, String(rialToToman(nextSell)));
-                      }}
+                    <MarginInput
+                      item={c}
+                      value={marginOf(c)}
+                      onApply={(pct) =>
+                        onSalePriceChange?.(
+                          c.variant_id,
+                          String(rialToToman(saleFromMargin(c.unit_price, pct)))
+                        )
+                      }
                     />
                   )}
 
@@ -335,8 +494,19 @@ export function PosCartList({
                     />
                   )}
 
+                  {!isPurchase && showDiscount && (
+                    <LineDiscountInput
+                      item={c}
+                      mode={modeOf(c.variant_id)}
+                      onModeChange={(next) =>
+                        setDiscountModes((prev) => ({ ...prev, [c.variant_id]: next }))
+                      }
+                      onChange={(rial) => onDiscountChange?.(c.variant_id, rial)}
+                    />
+                  )}
+
                   <div className="text-left text-sm font-black tabular-nums text-foreground">
-                    {formatToman(c.unit_price * c.qty - c.discount, false)}
+                    {formatToman(lineNetRial(c.unit_price, c.qty, c.discount), false)}
                   </div>
 
                   <button
@@ -399,18 +569,15 @@ export function PosCartList({
                       </label>
                       <label className="block">
                         <span className="mb-1 block text-2xs text-muted-foreground">سود٪</span>
-                        <input
-                          className={`input h-10 min-h-10 text-center text-sm font-bold ${
-                            marginPercent(c) >= 0 ? "text-success-onSoft" : "text-destructive-text"
-                          }`}
-                          inputMode="numeric"
-                          aria-label={`درصد سود ${c.product_name}`}
-                          value={String(marginPercent(c))}
-                          onChange={(e) => {
-                            const pct = Number(toEnDigits(e.target.value)) || 0;
-                            const nextSell = Math.round(c.unit_price * (1 + pct / 100));
-                            onSalePriceChange?.(c.variant_id, String(rialToToman(nextSell)));
-                          }}
+                        <MarginInput
+                          item={c}
+                          value={marginOf(c)}
+                          onApply={(pct) =>
+                            onSalePriceChange?.(
+                              c.variant_id,
+                              String(rialToToman(saleFromMargin(c.unit_price, pct)))
+                            )
+                          }
                         />
                       </label>
                     </div>
@@ -418,9 +585,24 @@ export function PosCartList({
                   <div className="mt-2.5 flex items-center justify-between gap-2">
                     <QtyStepper qty={c.qty} onChange={(n) => onQtyChange(c.variant_id, n)} />
                     <strong className="text-sm font-black tabular-nums text-foreground">
-                      {formatToman(c.unit_price * c.qty - c.discount, false)}
+                      {formatToman(lineNetRial(c.unit_price, c.qty, c.discount), false)}
                     </strong>
                   </div>
+
+                  {/* تخفیف هر قلم — موبایل */}
+                  {!isPurchase && showDiscount && (
+                    <div className="mt-2.5">
+                      <span className="mb-1 block text-2xs text-muted-foreground">تخفیف این قلم</span>
+                      <LineDiscountInput
+                        item={c}
+                        mode={modeOf(c.variant_id)}
+                        onModeChange={(next) =>
+                          setDiscountModes((prev) => ({ ...prev, [c.variant_id]: next }))
+                        }
+                        onChange={(rial) => onDiscountChange?.(c.variant_id, rial)}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/*

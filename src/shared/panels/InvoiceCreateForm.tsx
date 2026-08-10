@@ -16,6 +16,7 @@ import { useBarcodeLookup } from "@/lib/hooks/useBarcodeLookup";
 import { VoiceOrder, isVoiceSupported } from "@/components/shared/voice-order";
 import { useAllVariants } from "@/lib/hooks/useAllVariants";
 import { formatToman, toEnDigits, rialToToman, tomanToRial } from "@/lib/utils/format";
+import { lineNetRial } from "@/lib/cart-pricing";
 import { logActivity } from "@/lib/utils/activity-log";
 import type { CartItem } from "@/types/db";
 
@@ -218,15 +219,41 @@ export function InvoiceCreateForm({
       setCart((p) => p.filter((c) => c.variant_id !== id));
       return;
     }
-    setCart((p) => p.map((c) => (c.variant_id === id ? { ...c, qty } : c)));
+    setCart((p) =>
+      p.map((c) => {
+        if (c.variant_id !== id) return c;
+        // همان قاعده‌ی بالا: کم‌کردن تعداد نباید تخفیف را از مبلغ سطر بزرگ‌تر کند.
+        const discount = Math.min(c.discount, Math.max(0, c.unit_price) * qty);
+        return { ...c, qty, discount };
+      })
+    );
   }
 
   function updatePrice(id: string, tomanValue: string) {
     const rial = tomanToRial(Number(toEnDigits(tomanValue)) || 0);
-    setCart((p) => p.map((c) => (c.variant_id === id ? { ...c, unit_price: rial } : c)));
+    setCart((p) =>
+      p.map((c) => {
+        if (c.variant_id !== id) return c;
+        /*
+          🔴 تخفیف پس از تغییر قیمت دوباره محدود می‌شود.
+          بدون این، اگر کاربر اول ۵۰٬۰۰۰ تومان تخفیف می‌داد و بعد
+          قیمت را به ۳۰٬۰۰۰ کم می‌کرد، مبلغ سطر منفی می‌شد.
+        */
+        const discount = Math.min(c.discount, Math.max(0, rial) * c.qty);
+        return { ...c, unit_price: rial, discount };
+      })
+    );
   }
 
-  const subtotal = useMemo(() => cart.reduce((s, c) => s + c.unit_price * c.qty - c.discount, 0), [cart]);
+  /** تخفیف یک قلم (ریال). محاسبه و محدودسازی در lib/cart-pricing انجام شده. */
+  function updateLineDiscount(id: string, discountRial: number) {
+    setCart((p) => p.map((c) => (c.variant_id === id ? { ...c, discount: discountRial } : c)));
+  }
+
+  const subtotal = useMemo(
+    () => cart.reduce((s, c) => s + lineNetRial(c.unit_price, c.qty, c.discount), 0),
+    [cart]
+  );
   const discountInput = Number(toEnDigits(discount)) || 0;
   const discountRial = discountType === "percent" ? Math.round((subtotal * discountInput) / 100) : tomanToRial(discountInput);
   const total = Math.max(0, subtotal - discountRial);
@@ -430,6 +457,7 @@ export function InvoiceCreateForm({
               cart={cart}
               onQtyChange={updateQty}
               onPriceChange={updatePrice}
+              onDiscountChange={updateLineDiscount}
               onRemove={(id) => updateQty(id, 0)}
             />
           </div>
