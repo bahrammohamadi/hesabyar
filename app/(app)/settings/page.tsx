@@ -3,7 +3,7 @@
 import Link from "next/link";
 import {
   Building2, DatabaseBackup, FileSpreadsheet, FolderTree, KeyRound,
-  Landmark, Shield, SlidersHorizontal, Stethoscope, Tags,
+  Landmark, Shield, SlidersHorizontal, Stethoscope, Store, Tags,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/ui";
 import { Card } from "@/src/shared/ui";
@@ -79,6 +79,14 @@ const CARDS: SettingsCard[] = [
     icon: Tags,
     tone: "bg-warning-soft text-warning-onSoft",
     group: "کالا",
+  },
+  {
+    title: "صفحه‌ی عمومی فروشگاه",
+    desc: "یک صفحه برای مشتریان؛ لینکش را در اینستاگرام بگذارید",
+    href: "/settings/storefront",
+    icon: Store,
+    tone: "bg-primary/10 text-primary",
+    group: "کسب‌وکار",
   },
   {
     title: "پشتیبان و خروجی",

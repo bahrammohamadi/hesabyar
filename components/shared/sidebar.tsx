@@ -20,7 +20,7 @@ import {
   Building, UserCheck, AlertCircle, PieChart, Activity,
   Briefcase, BookOpen, ShoppingBagIcon, Tags, Barcode,
   ArrowRightLeft, History, PiggyBank, Banknote, Coins, Gift, MessageCircle, Calendar, Target, Bell, UserCircle,
-  LifeBuoy, TicketCheck, FileSpreadsheet, Stethoscope, Server, DatabaseBackup,
+  LifeBuoy, TicketCheck, FileSpreadsheet, Stethoscope, Server, DatabaseBackup, Store,
 } from "lucide-react";
 
 export const NAV = [
@@ -117,6 +117,7 @@ export const NAV = [
       { href: "/settings/accounts", label: "مالی و حساب‌ها", icon: Landmark },
       { href: "/settings/catalog", label: "کاتالوگ", icon: Layers },
       { href: "/settings/price-lists", label: "لیست قیمت‌ها", icon: Tags },
+      { href: "/settings/storefront", label: "صفحه‌ی عمومی فروشگاه", icon: Store },
       { href: "/settings/backup", label: "پشتیبان و خروجی", icon: DatabaseBackup },
       { href: "/settings/import", label: "ورود اطلاعات از اکسل", icon: FileSpreadsheet },
       { href: "/settings/diagnostics", label: "بررسی میکروفون و دوربین", icon: Stethoscope },

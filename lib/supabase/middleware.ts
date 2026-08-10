@@ -113,7 +113,24 @@ export async function updateSession(request: NextRequest) {
     "/privacy",
     "/terms",
   ]);
-  const isPublicSite = PUBLIC_SITE_PATHS.has(path);
+  /*
+    🔴 صفحه‌ی عمومی فروشگاه — /shop/<slug>
+
+    اینجا استثنائاً startsWith لازم است چون slug متغیر است و در
+    فهرست ثابت نمی‌گنجد.
+
+    این باگ در تست واقعی گرفته شد: صفحه ساخته شده بود، تابع
+    دیتابیس درست کار می‌کرد و تست‌ها سبز بودند، ولی بازدیدکننده‌ی
+    ناشناس به /login منتقل می‌شد — یعنی صفحه‌ی «عمومی» عملاً
+    خصوصی بود. نه tsc و نه next build چنین چیزی را نمی‌گیرند.
+
+    خطر گسترده‌شدن ناخواسته ندارد: هرچه زیر /shop/ است عمداً عمومی
+    است، و خودِ صفحه فقط فروشگاه منتشرشده را نشان می‌دهد و برای
+    بقیه ۴۰۴ می‌دهد.
+  */
+  const isPublicStorefront = path === "/shop" || path.startsWith("/shop/");
+
+  const isPublicSite = PUBLIC_SITE_PATHS.has(path) || isPublicStorefront;
 
   /*
     /onboarding و /setup نیاز به نشست دارند ولی هنوز سازمانی وجود

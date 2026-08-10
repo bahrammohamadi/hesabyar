@@ -23,6 +23,7 @@ const SETTINGS_NAV: SubNavItem[] = [
   { href: "/settings/accounts", label: "مالی و حساب‌ها" },
   { href: "/settings/price-lists", label: "لیست قیمت‌ها" },
   { href: "/settings/general", label: "کسب‌وکار و ظاهر" },
+  { href: "/settings/storefront", label: "صفحه‌ی فروشگاه" },
   { href: "/settings/backup", label: "پشتیبان" },
 ];
 
