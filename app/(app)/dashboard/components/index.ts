@@ -1,3 +1,4 @@
+export { DashboardActionCenter } from "./DashboardActionCenter";
 export { DashboardQuickActions } from "./DashboardQuickActions";
 export { DashboardRecentInvoices } from "./DashboardRecentInvoices";
 export { DashboardSalesChart } from "./DashboardSalesChart";

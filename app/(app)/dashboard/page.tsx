@@ -21,8 +21,10 @@ import {
   DashboardStats,
   DashboardStockAlert,
   DashboardTopProducts,
+  DashboardActionCenter,
 } from "./components";
 import { useTopProducts } from "@/src/core/services/reports-service";
+import { EMPTY_ACTION_CENTER, normalizeActionCenter } from "@/lib/action-center";
 
 export default function DashboardPage() {
   const { orgId, loading: orgLoading } = useOrg();
@@ -48,6 +50,29 @@ export default function DashboardPage() {
       });
       if (error) throw error;
       return data as DashboardSummary;
+    },
+  });
+
+  /*
+    «کارهای امروز» — یک RPC که پنج گروه را با هم برمی‌گرداند.
+
+    چرا یک تابع و نه پنج کوئری؟ داشبورد هر پنج عدد را هم‌زمان لازم
+    دارد و پنج رفت‌وبرگشت شبکه برای یک ویجت، اسراف است. مخصوصاً روی
+    موبایل با اینترنت ضعیف.
+  */
+  const actionQuery = useQuery({
+    queryKey: ["action-center", orgId],
+    enabled: !!orgId,
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase.rpc("action_center", {
+        p_org: orgId,
+        p_days: 7,
+      });
+      if (error) throw error;
+      // ⚠️ کلاینت Supabase برای خطای دیتابیس استثنا پرتاب نمی‌کند و
+      // ممکن است null بدهد؛ normalize جلوی شکستن داشبورد را می‌گیرد.
+      return normalizeActionCenter(data);
     },
   });
 
@@ -181,6 +206,15 @@ export default function DashboardPage() {
         </div>
 
         <div className="space-y-4 lg:col-span-4 lg:space-y-6">
+          {/*
+            «کارهای امروز» بالاتر از هشدار موجودی است چون قابل‌اقدام‌تر
+            است: چک سررسیدگذشته عواقب قانونی دارد، موجودی کم فقط یک عدد
+            است.
+          */}
+          <DashboardActionCenter
+            isLoading={actionQuery.isLoading}
+            data={actionQuery.data ?? EMPTY_ACTION_CENTER}
+          />
           <DashboardStockAlert
             lowStockCount={s?.low_stock_count ?? 0}
             items={lowStockItems}
