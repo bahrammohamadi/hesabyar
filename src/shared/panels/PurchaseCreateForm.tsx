@@ -484,12 +484,26 @@ export function PurchaseCreateForm({
           </div>
         </div>
 
-        {/* نوار چسبان موبایل */}
-        <div
-          className={`sticky bottom-0 -mx-4 mt-3 border-t border-border bg-card px-4 py-3 lg:hidden ${
-            step === "payment" ? "hidden" : ""
-          }`}
-        >
+        {/*
+          نوار چسبان پایین — راه اصلی رفتن به مرحله‌ی پرداخت.
+
+          🔴 قبلاً `lg:hidden` بود و به عرض *پنجره* نگاه می‌کرد. روی
+          لپ‌تاپ، پنجره پهن است ولی این فرم داخل پنل ۵۶۰px می‌نشیند و
+          هرگز دوستونی نمی‌شود؛ پس هم این دکمه پنهان می‌شد و هم ستون
+          پرداخت نبود. کاربر عملاً در بن‌بست می‌ماند.
+
+          حالا `invoice-sticky-bar` است که با container query فقط
+          وقتی پنهان می‌شود که فرم واقعاً دوستونی شده باشد.
+
+          ⚠️ شرط مرحله با `&&` است نه کلاس `hidden`. اولین تلاشم
+          `hidden` بود و کار نکرد: `.invoice-sticky-bar{display:block}`
+          یک کلاس تکی است و بر `.hidden` تیلویند (که آن هم تکی است ولی
+          زودتر در فایل می‌آید) غالب می‌شود. نتیجه اینکه نوار در مرحله‌ی
+          پرداخت هم می‌ماند و روی دکمه‌ی ثبت می‌افتاد — در اسکرین‌شات
+          دیده شد.
+        */}
+        {step !== "payment" && (
+        <div className="invoice-sticky-bar sticky bottom-0 -mx-4 mt-3 border-t border-border bg-card px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <div className="text-2xs text-muted-foreground">جمع کل خرید</div>
@@ -502,6 +516,7 @@ export function PurchaseCreateForm({
             </Button>
           </div>
         </div>
+        )}
       </div>
 
       <VoiceOrder
