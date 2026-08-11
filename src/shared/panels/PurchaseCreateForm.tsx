@@ -16,6 +16,7 @@ import { useBarcodeLookup } from "@/lib/hooks/useBarcodeLookup";
 import { VoiceOrder, isVoiceSupported } from "@/components/shared/voice-order";
 import { useAllVariants } from "@/lib/hooks/useAllVariants";
 import { formatToman, toEnDigits, rialToToman, tomanToRial } from "@/lib/utils/format";
+import { lineNetRial } from "@/lib/cart-pricing";
 import { logActivity } from "@/lib/utils/activity-log";
 import type { CartItem } from "@/types/db";
 
@@ -123,6 +124,8 @@ export function PurchaseCreateForm({
           qty: 1,
           // در سند خرید، unit_price یعنی قیمت خرید.
           unit_price: v.purchase_price,
+          // مبنای حالت درصدیِ تغییر قیمت — قیمت خریدِ ثبت‌شده در کارت کالا.
+          base_price: v.purchase_price,
           discount: 0,
           cost_price: v.purchase_price,
           stock_qty: v.stock_qty,
@@ -153,12 +156,30 @@ export function PurchaseCreateForm({
       setCart((p) => p.filter((c) => c.variant_id !== id));
       return;
     }
-    setCart((p) => p.map((c) => (c.variant_id === id ? { ...c, qty } : c)));
+    setCart((p) =>
+      p.map((c) => {
+        if (c.variant_id !== id) return c;
+        // تخفیف نباید از مبلغ سطر بزرگ‌تر شود — همان قاعده‌ی فرم فروش.
+        const discount = Math.min(c.discount, Math.max(0, c.unit_price) * qty);
+        return { ...c, qty, discount };
+      })
+    );
   }
 
   function updatePrice(id: string, tomanValue: string) {
     const rial = tomanToRial(Number(toEnDigits(tomanValue)) || 0);
-    setCart((p) => p.map((c) => (c.variant_id === id ? { ...c, unit_price: rial } : c)));
+    setCart((p) =>
+      p.map((c) => {
+        if (c.variant_id !== id) return c;
+        const discount = Math.min(c.discount, Math.max(0, rial) * c.qty);
+        return { ...c, unit_price: rial, discount };
+      })
+    );
+  }
+
+  /** تخفیف یک قلم خرید (ریال). محاسبه در lib/cart-pricing انجام شده. */
+  function updateLineDiscount(id: string, discountRial: number) {
+    setCart((p) => p.map((c) => (c.variant_id === id ? { ...c, discount: discountRial } : c)));
   }
 
   function updateSalePrice(id: string, tomanValue: string) {
@@ -166,7 +187,15 @@ export function PurchaseCreateForm({
     setCart((p) => p.map((c) => (c.variant_id === id ? { ...c, sale_price: rial } : c)));
   }
 
-  const subtotal = useMemo(() => cart.reduce((s, c) => s + c.unit_price * c.qty, 0), [cart]);
+  /*
+    جمع اقلام **پس از** کسر تخفیف سطری — دقیقاً مثل فرم فروش و مثل
+    create_purchase در دیتابیس. اگر اینجا خام جمع می‌زدیم، مبلغی که
+    کاربر می‌بیند با مبلغی که ثبت می‌شود فرق می‌کرد.
+  */
+  const subtotal = useMemo(
+    () => cart.reduce((s, c) => s + lineNetRial(c.unit_price, c.qty, c.discount), 0),
+    [cart]
+  );
   const discountInput = Number(toEnDigits(discount)) || 0;
   const discountRial = discountType === "percent" ? Math.round((subtotal * discountInput) / 100) : tomanToRial(discountInput);
   const total = Math.max(0, subtotal - discountRial);
@@ -246,6 +275,7 @@ export function PurchaseCreateForm({
           variant_id: c.variant_id,
           qty: c.qty,
           unit_price: c.unit_price,
+          discount: c.discount,
           sale_price: c.sale_price ?? undefined,
         })),
         p_extra_total: 0,
@@ -365,6 +395,7 @@ export function PurchaseCreateForm({
               onQtyChange={updateQty}
               onPriceChange={updatePrice}
               onSalePriceChange={updateSalePrice}
+              onDiscountChange={updateLineDiscount}
               onRemove={(id) => updateQty(id, 0)}
             />
           </div>

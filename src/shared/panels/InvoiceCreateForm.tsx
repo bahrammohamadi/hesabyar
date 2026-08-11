@@ -180,6 +180,13 @@ export function InvoiceCreateForm({
           variant_label: [v.color, v.size].filter(Boolean).join(" / "),
           qty: 1,
           unit_price: priceForVariant(v),
+          /*
+            مبنای حالت درصدیِ تغییر قیمت.
+            عمداً priceForVariant است نه v.sale_price: اگر مشتری روی
+            «لیست قیمت عمده» باشد، «۱۰٪ بیشتر» باید نسبت به قیمت عمده
+            حساب شود نه قیمت خرده‌فروشی.
+          */
+          base_price: priceForVariant(v),
           discount: 0,
           cost_price: v.purchase_price,
           stock_qty: v.stock_qty,

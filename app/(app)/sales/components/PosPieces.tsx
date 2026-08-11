@@ -19,7 +19,8 @@ import { formatToman, rialToToman, toEnDigits, toFaDigits } from "@/lib/utils/fo
 import type { CartItem } from "@/types/db";
 import {
   discountRialToPercent, lineDiscountRial, lineNetRial,
-  marginPercent, saleFromMargin, type LineDiscountMode,
+  marginPercent, percentFromPrice, priceFromPercent, saleFromMargin,
+  type LineDiscountMode,
 } from "@/lib/cart-pricing";
 
 /* ------------------------------------------------------------------ */
@@ -266,6 +267,111 @@ function MarginInput({
 }
 
 /* ------------------------------------------------------------------ */
+/* قیمت یک قلم — تومان یا درصدِ تغییر نسبت به قیمت پایه                 */
+/* ------------------------------------------------------------------ */
+
+/**
+ * ورودی قیمت با کلید تعویض «تومان ⇄ درصد».
+ *
+ * خواسته‌ی کاربر: «قیمت رو هم بشه تغییر داد تو خرید و فروش مثل درصد
+ * تخفیف». یعنی همان الگوی آشنای کادر تخفیف، این‌بار روی خود قیمت.
+ *
+ * سه نکته‌ی طراحی که هرکدام از یک اشتباه واقعی آمده:
+ *
+ *   ۱. مبنای درصد، `base_price` است نه قیمت فعلی. اگر قیمت فعلی مبنا
+ *      بود، زدن «۱۰» دو بار می‌شد ۲۱٪ و بازگشت به قیمت اصلی غیرممکن.
+ *
+ *   ۲. در حالت درصد، مثل MarginInput از draft + دکمه‌ی اعمال استفاده
+ *      می‌شود. اعمالِ لحظه‌ای هنگام تایپ باعث می‌شد کاربر برای رسیدن
+ *      به «۳۰» اول روی «۳» بپرد و قیمت خراب شود. در حالت تومان
+ *      این مشکل وجود ندارد (عدد همان چیزی است که تایپ می‌شود)، پس
+ *      همان‌جا لحظه‌ای می‌ماند تا رفتار قبلی تغییر نکند.
+ *
+ *   ۳. عدد منفی در حالت درصد مجاز است: «۱۰-» یعنی ده درصد ارزان‌تر.
+ */
+function PriceInput({
+  item,
+  label,
+  mode,
+  onModeChange,
+  onChange,
+}: {
+  item: CartItem;
+  /** برای aria-label — «قیمت واحد» در فروش، «قیمت خرید» در خرید. */
+  label: string;
+  mode: LineDiscountMode;
+  onModeChange: (mode: LineDiscountMode) => void;
+  /** مقدار به **تومان** (رشته) داده می‌شود تا با onPriceChange موجود یکی باشد. */
+  onChange: (tomanValue: string) => void;
+}) {
+  const isPercent = mode === "percent";
+  const base = item.base_price ?? item.unit_price;
+  const [draft, setDraft] = React.useState<string | null>(null);
+
+  const computedPercent = percentFromPrice(base, item.unit_price);
+  const shown = isPercent
+    ? (draft ?? String(computedPercent))
+    : String(rialToToman(item.unit_price));
+
+  function commitPercent() {
+    if (draft === null) return;
+    // علامت منفی حفظ می‌شود؛ «۱۰-» یعنی تخفیف روی قیمت.
+    const pct = Number(toEnDigits(draft).replace(/[^\d-]/g, "")) || 0;
+    onChange(String(rialToToman(priceFromPercent(base, pct))));
+    setDraft(null);
+  }
+
+  return (
+    <div className="flex items-center gap-1">
+      <input
+        className="input h-10 min-h-10 flex-1 text-left text-sm tabular-nums"
+        inputMode="numeric"
+        aria-label={`${label} ${item.product_name}${isPercent ? " به درصد" : " به تومان"}`}
+        value={shown}
+        onChange={(e) => {
+          if (isPercent) setDraft(e.target.value);
+          else onChange(e.target.value);
+        }}
+        onKeyDown={(e) => {
+          if (isPercent && e.key === "Enter") {
+            e.preventDefault();
+            commitPercent();
+          }
+        }}
+        onBlur={() => {
+          if (isPercent) commitPercent();
+        }}
+      />
+      <button
+        type="button"
+        onClick={() => {
+          /*
+            پیش از تعویض، هر عدد نیمه‌تایپ‌شده اعمال می‌شود؛ وگرنه
+            کاربر عدد را می‌زند، دکمه را می‌زند و کارش بی‌صدا گم می‌شود.
+          */
+          if (isPercent) commitPercent();
+          setDraft(null);
+          onModeChange(isPercent ? "amount" : "percent");
+        }}
+        aria-label={`تغییر واحد ${label} ${item.product_name} — اکنون ${isPercent ? "درصد" : "تومان"}`}
+        title={
+          isPercent
+            ? "درصد نسبت به قیمت اصلی کالا — برای تغییر به تومان کلیک کنید"
+            : "تومان — برای تغییر به درصد کلیک کنید"
+        }
+        className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-2xs font-extrabold transition ${
+          isPercent
+            ? "border-primary bg-primary/10 text-primary"
+            : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+        }`}
+      >
+        {isPercent ? <Percent size={15} aria-hidden /> : "تومان"}
+      </button>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* تخفیف یک قلم — مبلغ یا درصد                                         */
 /* ------------------------------------------------------------------ */
 
@@ -390,25 +496,46 @@ export function PosCartList({
   */
   const [discountModes, setDiscountModes] = React.useState<Record<string, LineDiscountMode>>({});
   const modeOf = (id: string): LineDiscountMode => discountModes[id] ?? "amount";
+
+  /*
+    حالت ورود *قیمت* هم به تفکیک سطر نگه داشته می‌شود، جدا از حالت
+    تخفیف. یک کالا ممکن است قیمتش درصدی تنظیم شود و تخفیفش ریالی.
+  */
+  const [priceModes, setPriceModes] = React.useState<Record<string, LineDiscountMode>>({});
+  const priceModeOf = (id: string): LineDiscountMode => priceModes[id] ?? "amount";
+
   /*
     در حالت خرید دو ستون بیشتر داریم. عرض نام کالا کم شده تا در پنل
     ۵۶۰ پیکسلی هم چیزی از لبه بیرون نزند.
-  */
-  /*
+
     ستون تخفیف فقط وقتی اضافه می‌شود که واقعاً فعال باشد؛ وگرنه
     چیدمان سندهای بدون تخفیف بی‌دلیل فشرده می‌شد.
+
+    عرض ستون قیمت‌ها ۱۰px زیاد شد چون حالا هرکدام یک دکمه‌ی ۴۰px
+    تعویض واحد کنارشان دارند.
   */
   const gridCols = isPurchase
-    ? "grid-cols-[minmax(140px,1.5fr)_110px_110px_78px_120px_minmax(96px,1fr)_44px]"
+    ? showDiscount
+      ? "grid-cols-[minmax(120px,1.2fr)_150px_110px_78px_100px_140px_minmax(96px,1fr)_44px]"
+      : "grid-cols-[minmax(140px,1.5fr)_150px_110px_78px_110px_minmax(96px,1fr)_44px]"
     : showDiscount
-      ? "grid-cols-[minmax(170px,2fr)_120px_128px_150px_minmax(100px,1fr)_44px]"
-      : "grid-cols-[minmax(200px,2.2fr)_130px_140px_minmax(110px,1fr)_44px]";
+      ? "grid-cols-[minmax(140px,2fr)_110px_170px_150px_minmax(100px,1fr)_44px]"
+      : "grid-cols-[minmax(190px,2.2fr)_120px_170px_minmax(110px,1fr)_44px]";
 
   /** درصد سود بر مبنای قیمت خرید — از منبع مشترک lib/cart-pricing. */
   const marginOf = (item: CartItem) => marginPercent(item.unit_price, item.sale_price ?? 0);
 
   return (
-    <Card className="overflow-hidden">
+    /*
+      🔴 `pos-list-scope` یک container query مستقل روی خودِ فهرست است.
+
+      قبلاً تصمیم «جدول یا کارت» به عرض *کل فرم* بسته بود؛ ولی فرم از
+      ۸۶۰px به بعد دوستونی می‌شود و ۳۴۰px را به ستون کناری می‌دهد —
+      یعنی همان لحظه که فرم پهن‌تر می‌شد، فهرست باریک‌تر می‌شد و جدول
+      از لبه بیرون می‌زد (اندازه‌گیری: سرریز ۲۴۲px در فروش، ۳۲۲px در
+      خرید). حالا مبنا عرض واقعی خودِ این عنصر است.
+    */
+    <Card className="pos-list-scope overflow-hidden">
       <div className="flex items-center justify-between gap-3 p-3 sm:p-4">
         <h2 className="text-sm font-extrabold text-foreground">{isPurchase ? "لیست اقلام خرید" : "لیست اقلام فاکتور"}</h2>
         <Badge tone={cart.length > 0 ? "primary" : "neutral"}>
@@ -430,8 +557,8 @@ export function PosCartList({
             {isPurchase && <span>قیمت فروش</span>}
             {isPurchase && <span className="text-center">سود٪</span>}
             <span className="text-center">تعداد</span>
-            {!isPurchase && <span>قیمت واحد (تومان)</span>}
-            {!isPurchase && showDiscount && <span className="text-center">تخفیف</span>}
+            {!isPurchase && <span>قیمت واحد</span>}
+            {showDiscount && <span className="text-center">تخفیف</span>}
             <span className="text-left">مجموع (تومان)</span>
             <span />
           </div>
@@ -452,12 +579,14 @@ export function PosCartList({
                   </div>
 
                   {isPurchase && (
-                    <input
-                      className="input h-10 min-h-10 text-left text-sm tabular-nums"
-                      inputMode="numeric"
-                      aria-label={`قیمت خرید ${c.product_name}`}
-                      value={String(rialToToman(c.unit_price))}
-                      onChange={(e) => onPriceChange(c.variant_id, e.target.value)}
+                    <PriceInput
+                      item={c}
+                      label="قیمت خرید"
+                      mode={priceModeOf(c.variant_id)}
+                      onModeChange={(next) =>
+                        setPriceModes((prev) => ({ ...prev, [c.variant_id]: next }))
+                      }
+                      onChange={(toman) => onPriceChange(c.variant_id, toman)}
                     />
                   )}
                   {isPurchase && (
@@ -485,16 +614,24 @@ export function PosCartList({
                   <QtyStepper qty={c.qty} onChange={(n) => onQtyChange(c.variant_id, n)} />
 
                   {!isPurchase && (
-                    <input
-                      className="input h-10 min-h-10 text-left text-sm tabular-nums"
-                      inputMode="numeric"
-                      aria-label={`قیمت واحد ${c.product_name}`}
-                      value={String(rialToToman(c.unit_price))}
-                      onChange={(e) => onPriceChange(c.variant_id, e.target.value)}
+                    <PriceInput
+                      item={c}
+                      label="قیمت واحد"
+                      mode={priceModeOf(c.variant_id)}
+                      onModeChange={(next) =>
+                        setPriceModes((prev) => ({ ...prev, [c.variant_id]: next }))
+                      }
+                      onChange={(toman) => onPriceChange(c.variant_id, toman)}
                     />
                   )}
 
-                  {!isPurchase && showDiscount && (
+                  {/*
+                    تخفیف سطری حالا در خرید هم هست (ستون قبل از مجموع).
+                    پیش‌تر فقط فروش داشت و کاربر مجبور بود تخفیف
+                    تأمین‌کننده را دستی از قیمت خرید کم کند — یعنی
+                    قیمت واقعی توافق‌شده در سند گم می‌شد.
+                  */}
+                  {showDiscount && (
                     <LineDiscountInput
                       item={c}
                       mode={modeOf(c.variant_id)}
@@ -527,9 +664,24 @@ export function PosCartList({
                         {c.product_name}
                       </EntityLink>
                       <div className="mt-0.5 text-xs text-muted-foreground">{c.variant_label || "ساده"}</div>
-                      <div className="mt-1 text-xs font-bold tabular-nums text-primary">
-                        {formatToman(c.unit_price, false)} تومان
-                      </div>
+                      {/*
+                        🔴 در خرید، قیمت پایین‌تر در کادر ویرایش می‌شود؛
+                        نمایش دوباره‌اش اینجا فقط تکرار است. در فروش اما
+                        این تنها جای دیدن قیمت بود — و فقط *دیدن*، نه
+                        ویرایش. کاربر گزارش داد در موبایل نمی‌تواند قیمت
+                        را عوض کند. حالا کادر واقعی زیرش آمده و این خط
+                        فقط قیمت اصلی کالا را برای مقایسه نشان می‌دهد.
+                      */}
+                      {!isPurchase && (c.base_price ?? c.unit_price) !== c.unit_price && (
+                        <div className="mt-1 text-2xs text-muted-foreground line-through tabular-nums">
+                          {formatToman(c.base_price ?? c.unit_price, false)} تومان
+                        </div>
+                      )}
+                      {isPurchase && (
+                        <div className="mt-1 text-xs font-bold tabular-nums text-primary">
+                          {formatToman(c.unit_price, false)} تومان
+                        </div>
+                      )}
                     </div>
                     <button
                       type="button"
@@ -545,20 +697,49 @@ export function PosCartList({
                     نسخه‌ی قبلی خرید اینها را در گرید دوستونی می‌چید و
                     فیلدها در ۳۹۰px به‌هم می‌ریختند.
                   */}
+                  {/*
+                    قیمت واحد در فروشِ موبایل.
+                    🔴 این کادر اصلاً وجود نداشت: در نسخه‌ی موبایل فقط
+                    یک متن ثابت قیمت نشان داده می‌شد و کاربر هیچ راهی
+                    برای تغییر قیمت نداشت — همان چیزی که گزارش کرد.
+                  */}
+                  {!isPurchase && (
+                    <div className="mt-2.5">
+                      <span className="mb-1 block text-2xs text-muted-foreground">قیمت واحد</span>
+                      <PriceInput
+                        item={c}
+                        label="قیمت واحد"
+                        mode={priceModeOf(c.variant_id)}
+                        onModeChange={(next) =>
+                          setPriceModes((prev) => ({ ...prev, [c.variant_id]: next }))
+                        }
+                        onChange={(toman) => onPriceChange(c.variant_id, toman)}
+                      />
+                    </div>
+                  )}
                   {isPurchase && (
-                    <div className="mt-2.5 grid grid-cols-3 gap-2">
+                    <div className="mt-2.5 space-y-2">
+                      {/*
+                        🔴 چیدمان از سه‌ستونه به «یک ردیف کامل + دو ستون»
+                        تغییر کرد. کادر قیمت خرید حالا یک دکمه‌ی ۴۰px
+                        تعویض واحد هم دارد؛ در یک‌سوم عرض ۳۹۰px برای خودِ
+                        عدد کمتر از ۵۰px می‌ماند و رقم‌ها بریده می‌شدند.
+                      */}
                       <label className="block">
-                        <span className="mb-1 block text-2xs text-muted-foreground">خرید</span>
-                        <input
-                          className="input h-10 min-h-10 text-left text-sm tabular-nums"
-                          inputMode="numeric"
-                          aria-label={`قیمت خرید ${c.product_name}`}
-                          value={String(rialToToman(c.unit_price))}
-                          onChange={(e) => onPriceChange(c.variant_id, e.target.value)}
+                        <span className="mb-1 block text-2xs text-muted-foreground">قیمت خرید</span>
+                        <PriceInput
+                          item={c}
+                          label="قیمت خرید"
+                          mode={priceModeOf(c.variant_id)}
+                          onModeChange={(next) =>
+                            setPriceModes((prev) => ({ ...prev, [c.variant_id]: next }))
+                          }
+                          onChange={(toman) => onPriceChange(c.variant_id, toman)}
                         />
                       </label>
+                      <div className="grid grid-cols-2 gap-2">
                       <label className="block">
-                        <span className="mb-1 block text-2xs text-muted-foreground">فروش</span>
+                        <span className="mb-1 block text-2xs text-muted-foreground">قیمت فروش</span>
                         <input
                           className="input h-10 min-h-10 text-left text-sm tabular-nums"
                           inputMode="numeric"
@@ -580,6 +761,7 @@ export function PosCartList({
                           }
                         />
                       </label>
+                      </div>
                     </div>
                   )}
                   <div className="mt-2.5 flex items-center justify-between gap-2">
@@ -589,8 +771,8 @@ export function PosCartList({
                     </strong>
                   </div>
 
-                  {/* تخفیف هر قلم — موبایل */}
-                  {!isPurchase && showDiscount && (
+                  {/* تخفیف هر قلم — موبایل (هم فروش، هم خرید) */}
+                  {showDiscount && (
                     <div className="mt-2.5">
                       <span className="mb-1 block text-2xs text-muted-foreground">تخفیف این قلم</span>
                       <LineDiscountInput

@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   lineDiscountRial, lineNetRial, discountRialToPercent,
-  marginPercent, saleFromMargin,
+  marginPercent, saleFromMargin, priceFromPercent, percentFromPrice,
 } from "@/lib/cart-pricing";
 
 const root = join(__dirname, "..");
@@ -191,5 +191,154 @@ describe("قیمت — منبع واحد", () => {
   it("انتخابگر و فهرست هر دو effectiveSalePrice/listDisplayPrice دارند", () => {
     expect(readCode("components/shared/product-selector.tsx")).toContain("effectiveSalePrice");
     expect(readCode("app/(app)/products/page.tsx")).toContain("listDisplayPrice");
+  });
+});
+
+/* ================================================================== */
+/* تغییر قیمت به درصد — «قیمت رو هم بشه تغییر داد مثل درصد تخفیف»      */
+/* ================================================================== */
+
+describe("تغییر قیمت با درصد", () => {
+  it("درصد مثبت قیمت را بالا می‌برد", () => {
+    expect(priceFromPercent(100_000, 10)).toBe(110_000);
+    expect(priceFromPercent(1_590_000, 30)).toBe(2_067_000);
+  });
+
+  it("درصد منفی یعنی ارزان‌تر", () => {
+    expect(priceFromPercent(100_000, -10)).toBe(90_000);
+  });
+
+  it("صفر یعنی برگشت به قیمت اصلی", () => {
+    expect(priceFromPercent(970_000, 0)).toBe(970_000);
+  });
+
+  it("🔴 دو بار زدن یک درصد، نتیجه را دو برابر نمی‌کند", () => {
+    /*
+      اگر مبنا قیمت *فعلی* بود، «۱۰» دو بار می‌شد ۲۱٪ و کاربر که فقط
+      عدد را اصلاح می‌کرد، با هر تصحیح یک پله دورتر می‌شد. مبنا
+      base_price ثابت است، پس نتیجه idempotent می‌ماند.
+    */
+    const base = 200_000;
+    const once = priceFromPercent(base, 10);
+    const twice = priceFromPercent(base, 10);
+    expect(once).toBe(twice);
+    expect(once).toBe(220_000);
+  });
+
+  it("🔴 قیمت هرگز منفی نمی‌شود", () => {
+    // «۲۰۰-٪» عملاً بی‌معناست ولی نباید مبلغ منفی بسازد.
+    expect(priceFromPercent(100_000, -200)).toBe(0);
+    expect(priceFromPercent(-5_000, 10)).toBe(0);
+  });
+
+  it("ورودی نامعتبر مثل صفر رفتار می‌کند نه NaN", () => {
+    expect(priceFromPercent(100_000, NaN)).toBe(100_000);
+    expect(priceFromPercent(100_000, Infinity)).toBe(100_000);
+  });
+
+  it("درصد فعلی از روی قیمت محاسبه می‌شود — رفت‌وبرگشت سازگار است", () => {
+    expect(percentFromPrice(100_000, 110_000)).toBe(10);
+    expect(percentFromPrice(100_000, 90_000)).toBe(-10);
+    expect(percentFromPrice(100_000, 100_000)).toBe(0);
+    const base = 970_000;
+    expect(percentFromPrice(base, priceFromPercent(base, 25))).toBe(25);
+  });
+
+  it("🔴 قیمت پایه‌ی صفر تقسیم بر صفر نمی‌دهد", () => {
+    // کالای هدیه یا نمونه، قیمت پایه‌ی صفر دارد.
+    expect(percentFromPrice(0, 50_000)).toBe(0);
+    expect(Number.isFinite(percentFromPrice(0, 50_000))).toBe(true);
+  });
+});
+
+describe("قیمت در رابط کاربری", () => {
+  const pos = readCode("app/(app)/sales/components/PosPieces.tsx");
+
+  it("🔴 در موبایلِ فروش، قیمت قابل ویرایش است نه فقط خواندنی", () => {
+    /*
+      باگ گزارش‌شده: در نسخه‌ی موبایل پنجره‌ی فروش فقط یک متن ثابت
+      قیمت بود و هیچ کادری برای تغییرش وجود نداشت.
+
+      شمارش: PriceInput باید سه بار رندر شود —
+        دسکتاپ فروش، دسکتاپ خرید، موبایل فروش، موبایل خرید = ۴
+    */
+    const uses = pos.match(/<PriceInput/g) ?? [];
+    expect(uses.length).toBe(4);
+  });
+
+  it("مبنای درصد، base_price است نه قیمت فعلی", () => {
+    expect(pos).toContain("item.base_price ?? item.unit_price");
+  });
+
+  it("در حالت درصد با دکمه اعمال می‌شود نه با هر ضربه‌ی کیبورد", () => {
+    /*
+      اعمال لحظه‌ای باعث می‌شد برای رسیدن به «۳۰» اول روی «۳» بپرد.
+      همان درسی که در MarginInput گرفتیم.
+    */
+    expect(pos).toContain("commitPercent");
+    expect(pos).toContain('e.key === "Enter"');
+  });
+
+  it("هر دو فرم قیمت پایه را هنگام افزودن کالا ثبت می‌کنند", () => {
+    expect(readCode("src/shared/panels/InvoiceCreateForm.tsx")).toContain("base_price:");
+    expect(readCode("src/shared/panels/PurchaseCreateForm.tsx")).toContain("base_price:");
+  });
+});
+
+/* ================================================================== */
+/* تخفیف سطری در خرید                                                  */
+/* ================================================================== */
+
+describe("🔴 تخفیف هر قلم در فاکتور خرید", () => {
+  const purchaseForm = readCode("src/shared/panels/PurchaseCreateForm.tsx");
+  const pos = readCode("app/(app)/sales/components/PosPieces.tsx");
+  const migration = readCode("supabase/migrations/0042_purchase_line_discount.sql");
+
+  it("فرم خرید تخفیف سطری را به PosCartList وصل می‌کند", () => {
+    expect(purchaseForm).toContain("onDiscountChange={updateLineDiscount}");
+  });
+
+  it("ستون تخفیف دیگر مخصوص فروش نیست", () => {
+    /*
+      شرط قبلی `!isPurchase && showDiscount` بود؛ یعنی حتی اگر
+      فرم خرید callback می‌داد، ستون رندر نمی‌شد.
+    */
+    expect(pos).not.toContain("!isPurchase && showDiscount");
+  });
+
+  it("جمع فرم خرید تخفیف سطری را کم می‌کند", () => {
+    /*
+      اگر جمع خام می‌ماند، عددی که کاربر می‌بیند با عددی که در
+      دیتابیس ثبت می‌شود فرق می‌کرد.
+    */
+    expect(purchaseForm).toContain("lineNetRial(c.unit_price, c.qty, c.discount)");
+  });
+
+  it("تخفیف در payload به RPC می‌رود", () => {
+    expect(purchaseForm).toContain("discount: c.discount");
+  });
+
+  it("مهاجرت ستون را با پیش‌فرض صفر اضافه می‌کند تا ردیف قدیمی نشکند", () => {
+    expect(migration).toContain("add column if not exists discount bigint not null default 0");
+  });
+
+  it("🔴 دیتابیس به ورودی کلاینت اعتماد نمی‌کند و تخفیف را سقف می‌زند", () => {
+    /*
+      تخفیف بزرگ‌تر از مبلغ سطر، جمع فاکتور را منفی می‌کرد. سمت
+      کلاینت محدود می‌شود ولی درخواست مستقیم به RPC هم ممکن است.
+    */
+    const guards = migration.match(/least\(greatest\(coalesce\(\(it->>'discount'\)::bigint, 0\), 0\), v_line\)/g) ?? [];
+    // در چهار حلقه: create (جمع + درج) و update (جمع + درج)
+    expect(guards.length).toBe(4);
+  });
+
+  it("🔴 امضای تابع عوض نشده تا overload/PGRST203 نسازد", () => {
+    /*
+      درس مهاجرت ۰۰۳۰: create or replace روی امضای متفاوت، تابع دوم
+      می‌سازد و PostgREST نمی‌تواند انتخاب کند. تخفیف عمداً داخل
+      همان p_items jsonb می‌آید نه به‌عنوان پارامتر جدید.
+    */
+    expect(migration).not.toContain("p_line_discount");
+    expect(migration).not.toContain("drop function if exists public.create_purchase");
   });
 });

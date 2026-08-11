@@ -74,7 +74,15 @@ describe("PosCartList — یک کامپوننت برای دو سند", () => {
   });
 
   it("در حالت خرید سه فیلد قیمت خرید/فروش/سود دارد", () => {
-    expect(src).toContain("قیمت خرید ${c.product_name}");
+    /*
+      ⚠️ این ادعا یک بار شکست و بررسی نشان داد *تست* عقب مانده نه کد:
+      کادر قیمت خرید به کامپوننت مشترک PriceInput منتقل شد (تا دکمه‌ی
+      تومان⇄درصد بگیرد)، پس رشته‌ی aria-label دیگر عیناً در این فایل
+      نیست و از prop ساخته می‌شود.
+
+      حالا خودِ برچسب‌ها را می‌سنجیم، نه شکل نگارششان.
+    */
+    expect(src).toContain('label="قیمت خرید"');
     expect(src).toContain("قیمت فروش ${c.product_name}");
     // برچسب درصد سود حالا داخل کامپوننت MarginInput است.
     expect(src).toContain("درصد سود ${item.product_name}");
@@ -109,6 +117,7 @@ describe("PosCartList — یک کامپوننت برای دو سند", () => {
 
 describe("چیدمان — واکنش به عرض ظرف نه پنجره", () => {
   const css = read("app/globals.css");
+  const tsxList = () => read("app/(app)/sales/components/PosPieces.tsx");
 
   it("گرید تک‌ستونی minmax(0,1fr) دارد", () => {
     /*
@@ -130,9 +139,37 @@ describe("چیدمان — واکنش به عرض ظرف نه پنجره", () =>
     expect(tsx).toContain("pos-row-desktop");
     expect(tsx).toContain("pos-row-mobile");
     expect(tsx).not.toContain("lg:grid`");
-    expect(css).toContain("@container invoiceform (min-width: 680px)");
-    // خرید دو ستون بیشتر دارد پس آستانه‌ی بالاتری می‌خواهد
-    expect(css).toContain("@container invoiceform (min-width: 820px)");
+  });
+
+  it("🔴 مبنا عرض خودِ فهرست است نه کل فرم", () => {
+    /*
+      این ادعا جای دو ادعای قبلی نشست که به عددهای ثابت ۶۸۰/۸۲۰
+      چسبیده بودند. با اندازه‌گیری Playwright معلوم شد خودِ آن
+      عددها باگ‌اند، نه صرفاً عقب‌افتاده:
+
+      فرم از ۸۶۰px به بعد دوستونی می‌شود و ۳۴۰px را به ستون کناری
+      می‌دهد. یعنی وقتی عرض فرم از ۸۰۰ به ۸۶۲ می‌رفت، عرض فهرست از
+      ۸۰۲ به ۴۷۲ *کاهش* پیدا می‌کرد و جدول ۷۱۴px سرریز می‌کرد
+      (اندازه‌گیری: ۲۴۲px در فروش، ۳۲۲px در خرید).
+
+      حالا container دوم روی خودِ فهرست است، پس هر عددی هم انتخاب
+      شود منطق درست می‌ماند. تست عمداً عدد را نمی‌سنجد — فقط اینکه
+      مبنا `poslist` باشد نه `invoiceform`.
+    */
+    expect(css).toContain(".pos-list-scope");
+    expect(css).toMatch(/container-name:\s*poslist/);
+    expect(tsxList()).toContain("pos-list-scope");
+
+    const posRules = css.match(/@container\s+(\w+)\s*\([^)]*\)\s*\{[^}]*pos-row-/g) ?? [];
+    expect(posRules.length).toBeGreaterThanOrEqual(2);
+    for (const rule of posRules) expect(rule).toContain("@container poslist");
+
+    // خرید دو ستون بیشتر دارد پس باید آستانه‌ی بالاتری داشته باشد.
+    const nums = [...css.matchAll(/@container poslist \(min-width: (\d+)px\)/g)].map((m) =>
+      Number(m[1])
+    );
+    expect(nums.length).toBe(2);
+    expect(nums[1]).toBeGreaterThan(nums[0]);
   });
 
   it("fallback برای مرورگر بدون container query هست", () => {

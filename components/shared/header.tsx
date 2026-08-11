@@ -9,6 +9,7 @@ import { GlobalSearchBar } from "@/src/shared/layout/GlobalSearchBar";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { BRAND_NAME } from "@/lib/brand";
 import { NotificationBell } from "./notification-bell";
+import { InstallButton } from "./install-button";
 
 export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const router = useRouter();
@@ -95,6 +96,12 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
             می‌زد و هیچ اتفاقی نمی‌افتاد. حالا یادداشت‌های انتشار و
             اعلان‌های سراسری را نشان می‌دهد.
           */}
+          {/*
+            دکمه‌ی نصب کنار زنگوله — خواسته‌ی صریح کاربر.
+            اگر نصب ممکن نباشد (اپ نصب‌شده، مرورگر ناسازگار) خودش
+            رندر نمی‌شود، پس جای خالی یا دکمه‌ی مرده نمی‌ماند.
+          */}
+          <InstallButton />
           <NotificationBell />
           {/*
             بالا نام شخص، پایین نام کسب‌وکار.

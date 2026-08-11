@@ -86,3 +86,41 @@ export function saleFromMargin(purchaseRial: number, percent: number): number {
   const pct = Number.isFinite(percent) ? percent : 0;
   return Math.max(0, Math.round(purchaseRial * (1 + pct / 100)));
 }
+
+/* ------------------------------------------------------------------ */
+/* تغییر قیمت به‌صورت درصدی — خواسته‌ی «قیمت هم مثل تخفیف درصد داشته باشد» */
+/* ------------------------------------------------------------------ */
+
+/**
+ * قیمت جدید از روی درصد تغییر نسبت به **قیمت پایه‌ی کالا**.
+ *
+ * قیمت پایه یعنی همان قیمتی که کالا با آن وارد سبد شد (قیمت فروش
+ * ثبت‌شده در کارت کالا، یا قیمت خرید در سند خرید) — نه قیمت فعلیِ
+ * ویرایش‌شده.
+ *
+ * 🔴 چرا پایه و نه قیمت فعلی؟
+ *   اگر مبنا قیمت فعلی بود، زدن «۱۰» دو بار پشت‌سرهم قیمت را ۲۱٪
+ *   بالا می‌برد نه ۱۰٪ — و کاربر که فقط می‌خواست عدد را اصلاح کند،
+ *   با هر تصحیح یک پله دورتر می‌شد. با مبنای ثابت، ورود «۱۰» همیشه
+ *   همان یک نتیجه را می‌دهد و قابل بازگشت است (صفر = قیمت اصلی).
+ *
+ * درصد منفی مجاز است: «۱۰-» یعنی ده درصد ارزان‌تر. سقف پایین صفر
+ * است تا قیمت منفی ساخته نشود.
+ */
+export function priceFromPercent(basePriceRial: number, percent: number): number {
+  const base = Math.max(0, basePriceRial);
+  const pct = Number.isFinite(percent) ? percent : 0;
+  return Math.max(0, Math.round(base * (1 + pct / 100)));
+}
+
+/**
+ * درصد تغییر قیمت فعلی نسبت به قیمت پایه — برای نمایش هنگام تعویض حالت.
+ *
+ * پایه‌ی صفر (کالای هدیه) تقسیم بر صفر می‌شود؛ در آن حالت صفر
+ * برمی‌گردانیم نه Infinity.
+ */
+export function percentFromPrice(basePriceRial: number, priceRial: number): number {
+  const base = Math.max(0, basePriceRial);
+  if (base <= 0) return 0;
+  return Math.round(((Math.max(0, priceRial) - base) / base) * 100);
+}

@@ -29,7 +29,7 @@ export default function PurchaseDetailPage({ params }: { params: { id: string } 
         .from("purchases")
         .select(
           `*, supplier:contacts(id, name, phone, code),
-           purchase_items(id, qty, unit_price, line_total,
+           purchase_items(id, qty, unit_price, discount, line_total,
              variant:product_variants(id, color, size, sku, barcode, product:products(id, name, code)))`
         )
         .eq("id", id)
@@ -145,6 +145,16 @@ export default function PurchaseDetailPage({ params }: { params: { id: string } 
                 </div>
                 <div className="text-left shrink-0">
                   <div className="text-sm font-medium text-foreground">{toFaDigits(item.qty)} × {formatToman(item.unit_price, false)}</div>
+                  {/*
+                    تخفیف سطری فقط وقتی نشان داده می‌شود که وجود داشته
+                    باشد. نمایش «تخفیف: ۰» روی همه‌ی فاکتورهای قدیمی
+                    فقط شلوغی است.
+                  */}
+                  {Number(item.discount ?? 0) > 0 && (
+                    <div className="text-2xs text-warning">
+                      تخفیف {formatToman(item.discount, false)}
+                    </div>
+                  )}
                   <div className="text-sm font-bold text-success-onSoft">{formatToman(item.line_total, false)}</div>
                 </div>
               </div>
@@ -232,6 +242,8 @@ type EditPurchaseItem = {
   qty: number;
   unit_price: number;
   sale_price: number;
+  /** تخفیف این قلم به ریال (ستون جدید مهاجرت ۰۰۴۲). */
+  discount: number;
 };
 
 function EditPurchaseModal({ purchase, supplier, items, onClose }: { purchase: any; supplier: any | null; items: any[]; onClose: () => void }) {
@@ -245,6 +257,8 @@ function EditPurchaseModal({ purchase, supplier, items, onClose }: { purchase: a
     qty: item.qty,
     unit_price: item.unit_price,
     sale_price: item.variant?.sale_price ?? item.unit_price,
+    // فاکتورهای پیش از مهاجرت ۰۰۴۲ ستون discount ندارند → صفر.
+    discount: item.discount ?? 0,
   })));
   const [discountType, setDiscountType] = useState<"fixed" | "percent">((purchase.discount_type === "percent" ? "percent" : "fixed") as any);
   const [discountValue, setDiscountValue] = useState(String(purchase.discount_type === "percent" ? (purchase.discount_value ?? 0) : rialToToman(purchase.discount ?? 0)));
@@ -256,7 +270,11 @@ function EditPurchaseModal({ purchase, supplier, items, onClose }: { purchase: a
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const subtotal = cart.reduce((sum, item) => sum + item.unit_price * item.qty, 0);
+  // جمع پس از کسر تخفیف سطری — هم‌راستا با update_purchase_invoice.
+  const subtotal = cart.reduce(
+    (sum, item) => sum + Math.max(0, item.unit_price * item.qty - Math.max(0, item.discount)),
+    0
+  );
   const discountInput = Number(toEnDigits(discountValue)) || 0;
   const discountRial = discountType === "percent" ? Math.round((subtotal * discountInput) / 100) : tomanToRial(discountInput);
   const taxRial = tomanToRial(Number(toEnDigits(tax)) || 0);
@@ -267,7 +285,7 @@ function EditPurchaseModal({ purchase, supplier, items, onClose }: { purchase: a
     setCart((prev) => {
       const existing = prev.find((item) => item.variant_id === v.variant_id);
       if (existing) return prev.map((item) => item.variant_id === v.variant_id ? { ...item, qty: item.qty + 1 } : item);
-      return [...prev, { variant_id: v.variant_id, product_id: v.product_id, product_name: v.product_name, variant_label: [v.color, v.size].filter(Boolean).join(" / "), qty: 1, unit_price: v.purchase_price, sale_price: v.sale_price }];
+      return [...prev, { variant_id: v.variant_id, product_id: v.product_id, product_name: v.product_name, variant_label: [v.color, v.size].filter(Boolean).join(" / "), qty: 1, unit_price: v.purchase_price, sale_price: v.sale_price, discount: 0 }];
     });
   }
 
@@ -281,7 +299,7 @@ function EditPurchaseModal({ purchase, supplier, items, onClose }: { purchase: a
         p_purchase: purchase.id,
         p_supplier: selectedSupplier?.id ?? null,
         p_date: date ? new Date(`${date}T12:00:00`).toISOString() : purchase.date,
-        p_items: cart.map((item) => ({ variant_id: item.variant_id, qty: item.qty, unit_price: item.unit_price, sale_price: item.sale_price })),
+        p_items: cart.map((item) => ({ variant_id: item.variant_id, qty: item.qty, unit_price: item.unit_price, discount: item.discount, sale_price: item.sale_price })),
         p_discount_type: discountType,
         p_discount_value: discountType === "percent" ? discountInput : discountRial,
         p_discount: discountRial,
@@ -307,10 +325,17 @@ function EditPurchaseModal({ purchase, supplier, items, onClose }: { purchase: a
             {cart.map((item) => (
               <div key={item.variant_id} className="rounded-xl border border-border p-3">
                 <div className="flex items-center justify-between gap-2"><div><div className="font-medium text-sm">{item.product_name}</div><div className="text-xs text-muted-foreground">{item.variant_label || "ساده"}</div></div><button onClick={() => setCart((prev) => prev.filter((x) => x.variant_id !== item.variant_id))} className="text-destructive"><Trash2 size={16}/></button></div>
-                <div className="grid grid-cols-3 gap-2 mt-2">
+                <div className="grid grid-cols-2 gap-2 mt-2 sm:grid-cols-4">
                   <div><label className="text-xs text-muted-foreground">تعداد</label><input className="input" inputMode="numeric" value={String(item.qty)} onChange={(e) => setCart((prev) => prev.map((x) => x.variant_id === item.variant_id ? { ...x, qty: Number(toEnDigits(e.target.value)) || 1 } : x))} /></div>
                   <div><label className="text-xs text-muted-foreground">قیمت خرید</label><input className="input" inputMode="numeric" value={String(rialToToman(item.unit_price))} onChange={(e) => setCart((prev) => prev.map((x) => x.variant_id === item.variant_id ? { ...x, unit_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x))} /></div>
                   <div><label className="text-xs text-muted-foreground">قیمت فروش</label><input className="input" inputMode="numeric" value={String(rialToToman(item.sale_price))} onChange={(e) => setCart((prev) => prev.map((x) => x.variant_id === item.variant_id ? { ...x, sale_price: tomanToRial(Number(toEnDigits(e.target.value)) || 0) } : x))} /></div>
+                  {/*
+                    تخفیف این قلم. سقفش مبلغ همان سطر است — بدون این
+                    محدودیت، جمع فاکتور منفی می‌شد. دیتابیس هم همین
+                    قاعده را دارد ولی اینجا کاربر بلافاصله بازخورد
+                    می‌گیرد به‌جای اینکه هنگام ذخیره غافلگیر شود.
+                  */}
+                  <div><label className="text-xs text-muted-foreground">تخفیف قلم</label><input aria-label={`تخفیف ${item.product_name}`} className="input" inputMode="numeric" value={String(rialToToman(item.discount))} onChange={(e) => setCart((prev) => prev.map((x) => x.variant_id === item.variant_id ? { ...x, discount: Math.min(tomanToRial(Number(toEnDigits(e.target.value)) || 0), x.unit_price * x.qty) } : x))} /></div>
                 </div>
               </div>
             ))}

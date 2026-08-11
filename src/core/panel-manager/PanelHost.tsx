@@ -10,6 +10,29 @@ import { ContactPanel } from "@/src/shared/panels/ContactPanel";
 import { InvoicePanel } from "@/src/shared/panels/InvoicePanel";
 import { ProductPanel } from "@/src/shared/panels/ProductPanel";
 
+/**
+ * نام قابل‌خواندن پنل برای صفحه‌خوان.
+ *
+ * 🔴 ایراد axe-core (`aria-dialog-name`, شدت serious): هر عنصر با
+ * `role="dialog"` باید نام داشته باشد. این پنل هیچ‌کدام از
+ * `aria-label`/`aria-labelledby` را نداشت، پس کاربر صفحه‌خوان فقط
+ * می‌شنید «dialog» و نمی‌دانست چه چیزی باز شده — روی هر شش ترکیب
+ * موبایل/تبلت/دسکتاپ × فروش/خرید دیده شد.
+ *
+ * `panel.title` وقتی هست که فراخوان تعیینش کرده باشد؛ وگرنه از نوع
+ * پنل یک نام معنادار می‌سازیم به‌جای رشته‌ی خالی.
+ */
+const PANEL_TYPE_LABEL: Record<string, string> = {
+  contact: "پنل شخص",
+  product: "پنل کالا",
+  invoice: "پنل سند",
+  payment: "پنل پرداخت",
+};
+
+function panelLabel(panel: PanelInstance): string {
+  return panel.title?.trim() || PANEL_TYPE_LABEL[panel.type] || "پنل کناری";
+}
+
 function RenderPanel({ panel }: { panel: PanelInstance }) {
   if (panel.type === "contact") return <ContactPanel panel={panel} />;
   if (panel.type === "product") return <ProductPanel panel={panel} />;
@@ -139,6 +162,7 @@ export function PanelHost() {
             role="dialog"
             aria-modal={isTop}
             aria-hidden={!isTop}
+            aria-label={panelLabel(panel)}
             onWheel={(event) => event.stopPropagation()}
             onTouchMove={(event) => event.stopPropagation()}
             className={cn(

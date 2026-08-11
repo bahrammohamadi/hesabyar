@@ -3,7 +3,9 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import {
   resolveInstallMode, isDismissActive, iosInstallSteps,
-  INSTALL_DISMISS_KEY, DISMISS_DAYS,
+  shouldAutoPrompt, canOfferInstall,
+  INSTALL_DISMISS_KEY, INSTALL_SESSION_KEY, INSTALL_PROMPT_PATH,
+  MOBILE_MAX_WIDTH, DISMISS_DAYS,
 } from "@/lib/pwa";
 
 const root = join(__dirname, "..");
@@ -198,8 +200,14 @@ describe("🔴 تشخیص حالت نصب", () => {
   });
 
   it("فقط دو حالت واقعاً پیشنهاد نشان می‌دهند", () => {
-    const page = readCode("components/shared/install-prompt.tsx");
-    expect(page).toContain('next === "prompt" || next === "ios-manual"');
+    /*
+      این شرط از install-prompt.tsx به توابع خالص lib/pwa منتقل شد تا
+      هر دو مصرف‌کننده (بنر و دکمه‌ی هدر) یک قاعده داشته باشند.
+    */
+    expect(canOfferInstall("prompt")).toBe(true);
+    expect(canOfferInstall("ios-manual")).toBe(true);
+    expect(canOfferInstall("in-app-browser")).toBe(false);
+    expect(canOfferInstall("unavailable")).toBe(false);
   });
 });
 
@@ -262,9 +270,11 @@ describe("راهنمای iOS", () => {
 
 describe("رابط کاربری پیشنهاد نصب", () => {
   const page = readCode("components/shared/install-prompt.tsx");
+  const store = readCode("components/shared/install-store.ts");
 
   it("پس از نصب موفق دیگر نمی‌پرسد", () => {
-    expect(page).toContain('window.addEventListener("appinstalled"');
+    // شنونده به فروشگاه مشترک منتقل شد تا هر دو مصرف‌کننده خبردار شوند.
+    expect(store).toContain('window.addEventListener("appinstalled"');
   });
 
   it("با تأخیر نشان داده می‌شود نه در ثانیه‌ی اول", () => {
@@ -273,8 +283,9 @@ describe("رابط کاربری پیشنهاد نصب", () => {
   });
 
   it("listenerها پاک‌سازی می‌شوند", () => {
-    expect(page).toContain("removeEventListener");
     expect(page).toContain("clearTimeout");
+    // فروشگاه مشترک، مشترکینش را هنگام unmount حذف می‌کند.
+    expect(store).toContain("listeners.delete");
   });
 
   it("دکمه‌ی بستن برچسب دارد", () => {

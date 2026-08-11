@@ -9,8 +9,33 @@
 /** کلید یادآوریِ «بعداً» در مرورگر کاربر. */
 export const INSTALL_DISMISS_KEY = "tarazoo-install-dismissed";
 
+/**
+ * کلید «در همین نشست یک‌بار نشان داده شد».
+ *
+ * 🔴 چرا `sessionStorage` و نه `localStorage`؟
+ *   کاربر گزارش داد پیشنهاد نصب با **هر بار رفرش صفحه** برمی‌گشت.
+ *   علت این بود که تنها ترمزِ موجود، کلیک روی «بعداً» بود؛ کسی که
+ *   بنر را نادیده می‌گرفت و صفحه را رفرش می‌کرد، دوباره همان بنر را
+ *   می‌دید. sessionStorage تا بسته‌شدن تب باقی می‌ماند، پس رفرش و
+ *   جابه‌جایی بین صفحه‌ها دیگر بنر را برنمی‌گرداند، ولی فردا که
+ *   دوباره برنامه را باز کند یک‌بار (و فقط یک‌بار) پیشنهاد می‌بیند.
+ */
+export const INSTALL_SESSION_KEY = "tarazoo-install-shown-session";
+
 /** پس از رد کردن، چند روز دوباره نپرسیم. */
 export const DISMISS_DAYS = 30;
+
+/**
+ * تنها مسیری که پیشنهاد نصب خودکار در آن ظاهر می‌شود.
+ *
+ * خواسته‌ی صریح کاربر: «بهتره فقط تو صفحه داشبورد اونم نسخه موبایل
+ * پیغام نصب برنامه بیاد». منطقی هم هست — کسی که وسط ثبت فاکتور است
+ * نباید بنری روی نوار پایین ببیند.
+ */
+export const INSTALL_PROMPT_PATH = "/dashboard";
+
+/** عرض حداکثری که «موبایل» حساب می‌شود (هم‌تراز با بریک‌پوینت lg تیلویند). */
+export const MOBILE_MAX_WIDTH = 1023;
 
 export type InstallMode =
   /** کروم/اج اندروید و دسکتاپ — رویداد نصب واقعی داریم. */
@@ -77,6 +102,48 @@ export function isDismissActive(raw: string | null, now: number = Date.now()): b
   const elapsed = now - at;
   if (elapsed < 0) return true;
   return elapsed < DISMISS_DAYS * 24 * 60 * 60 * 1000;
+}
+
+/**
+ * آیا *بنر خودکار* باید نشان داده شود؟
+ *
+ * این تابع عمداً از `resolveInstallMode` جداست: آن یکی می‌گوید «نصب
+ * از نظر فنی چطور ممکن است»، این یکی می‌گوید «آیا الان جای مزاحمت
+ * کردن هست». دکمه‌ی دستی کنار زنگوله فقط به اولی نیاز دارد و همیشه
+ * در دسترس است.
+ *
+ * چهار شرط، هرکدام از یک شکایت واقعی آمده:
+ *   ۱. فقط داشبورد — نه وسط ثبت فاکتور
+ *   ۲. فقط موبایل — روی دسکتاپ اپ نصب‌شده ارزش کمی دارد
+ *   ۳. یک‌بار در هر نشست — پاسخ به «هربار که رفرش میشه نیازه پیغام بیاد؟»
+ *   ۴. اگر «بعداً» زده، تا ۳۰ روز نه
+ */
+export function shouldAutoPrompt(input: {
+  mode: InstallMode;
+  pathname: string;
+  viewportWidth: number;
+  shownThisSession: boolean;
+  dismissedRaw: string | null;
+  now?: number;
+}): boolean {
+  if (input.mode !== "prompt" && input.mode !== "ios-manual") return false;
+  if (input.pathname !== INSTALL_PROMPT_PATH) return false;
+  if (input.viewportWidth > MOBILE_MAX_WIDTH) return false;
+  if (input.shownThisSession) return false;
+  if (isDismissActive(input.dismissedRaw, input.now ?? Date.now())) return false;
+  return true;
+}
+
+/**
+ * آیا دکمه‌ی دستی «نصب برنامه» (کنار زنگوله) معنا دارد؟
+ *
+ * برخلاف بنر، اینجا «بعداً» و نشست را نادیده می‌گیریم — کاربری که
+ * خودش دنبال دکمه می‌گردد نباید به‌خاطر ردکردنِ سه هفته پیش محروم
+ * شود. فقط وقتی پنهان می‌شود که نصب واقعاً ممکن نباشد (اپ از قبل
+ * نصب است یا مرورگر درون‌برنامه‌ای).
+ */
+export function canOfferInstall(mode: InstallMode): boolean {
+  return mode === "prompt" || mode === "ios-manual";
 }
 
 /** راهنمای نصب دستی روی iOS. */
