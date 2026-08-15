@@ -121,3 +121,69 @@ self.addEventListener("fetch", (event) => {
 self.addEventListener("message", (event) => {
   if (event.data === "SKIP_WAITING") self.skipWaiting();
 });
+
+/* ================================================================== */
+/* پوش دستگاه                                                          */
+/* ================================================================== */
+
+/*
+  دریافت پوش و نمایش اعلان سیستمی.
+
+  ⚠️ `event.waitUntil` اجباری است. بدون آن مرورگر ممکن است
+  سرویس‌ورکر را پیش از نمایش اعلان بخواباند و پیام گم شود — یا بدتر،
+  کروم اعلان پیش‌فرض «This site has been updated in the background»
+  را نشان می‌دهد که کاملاً بی‌ربط است.
+*/
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    // payload خراب نباید کل اعلان را از بین ببرد.
+    data = { title: "ترازو", body: event.data ? event.data.text() : "" };
+  }
+
+  const title = data.title || "ترازو";
+  const options = {
+    body: data.body || "",
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-192.png",
+    dir: "rtl",
+    lang: "fa",
+    // مسیر مقصد را همراه اعلان نگه می‌داریم تا کلیک بداند کجا برود.
+    data: { url: data.url || "/dashboard" },
+    /*
+      tag یعنی اعلان جدید جای قبلی را می‌گیرد به‌جای انباشتن.
+      برای یادآوری روزانه‌ی چک، ده اعلان یکسان در مرکز اعلان گوشی
+      همان کاری را می‌کند که با زنگوله کردیم: کاربر نادیده می‌گیرد.
+    */
+    tag: data.tag || "tarazoo-notification",
+    renotify: Boolean(data.tag),
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+/*
+  کلیک روی اعلان.
+
+  اگر پنجره‌ای از برنامه باز است، همان را جلو می‌آوریم و مسیر را عوض
+  می‌کنیم؛ باز کردن تب دوم برای کاربری که برنامه را باز دارد آزاردهنده
+  است.
+*/
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || "/dashboard";
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const client of list) {
+        if ("focus" in client) {
+          client.navigate(target);
+          return client.focus();
+        }
+      }
+      return self.clients.openWindow(target);
+    })
+  );
+});

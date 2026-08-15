@@ -12,6 +12,7 @@ import {
 } from "@/lib/theme";
 import { cn } from "@/lib/utils/cn";
 import { BrandIdentityForm } from "@/components/shared/brand-identity-form";
+import { PushToggle } from "@/components/shared/push-toggle";
 
 /**
  * تنظیمات عمومی — نام کسب‌وکار و ظاهر برنامه.
@@ -178,6 +179,12 @@ export default function GeneralSettingsPage() {
         سند مشتری چاپ می‌شود از ترجیح رنگی شخصی مهم‌تر است.
       */}
       <BrandIdentityForm />
+
+      {/*
+        اعلان دستگاه بعد از هویت برند و پیش از تم: تنظیمی عملیاتی
+        است، نه ترجیح ظاهری.
+      */}
+      <PushToggle />
 
       <ThemePicker />
     </div>

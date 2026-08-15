@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import {
   AlertOctagon,
@@ -16,6 +17,12 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils/cn";
 import { toFaDigits, toJalali } from "@/lib/utils/format";
+import { useOrg } from "@/lib/hooks/useOrg";
+import {
+  normalizeNotifications,
+  NOTIFICATION_LABEL,
+  type BusinessNotification,
+} from "@/lib/notifications";
 import {
   RELEASES,
   CHANGE_KIND_LABEL,
@@ -38,6 +45,9 @@ import {
  * نمایشی است و ذخیره‌اش در سرور یعنی یک درخواست اضافه در هر بارگذاری
  * برای چیزی که فقط روی همین مرورگر معنا دارد.
  */
+
+/** فقط نسخه‌های علامت‌خورده به‌عنوان مهم در زنگوله می‌آیند. */
+const IMPORTANT_RELEASES = RELEASES.filter((r) => r.important === true);
 
 const SEEN_VERSION_KEY = "tarazoo.seen-release.v1";
 const SEEN_ANN_KEY = "tarazoo.seen-announcements.v1";
@@ -85,6 +95,8 @@ export function NotificationBell() {
   const panelRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
+  const { orgId } = useOrg();
+
   useEffect(() => {
     setSeenVersion(readJson<string | null>(SEEN_VERSION_KEY, null));
     setSeenAnnouncements(readJson<string[]>(SEEN_ANN_KEY, []));
@@ -106,6 +118,34 @@ export function NotificationBell() {
     },
   });
 
+  /*
+    اعلان‌های کسب‌وکار — سررسید چک، بدهی، پیگیری CRM.
+
+    🔴 اینها از یادداشت انتشار مهم‌ترند: کاربر می‌تواند خبر «نمودار
+    بهتر شد» را از دست بدهد، ولی «چک فردا سررسید می‌شود» را نه. برای
+    همین بالای فهرست می‌آیند و شمارنده‌شان جدا حساب می‌شود.
+  */
+  const { data: bizNotifs, refetch: refetchBiz } = useQuery({
+    queryKey: ["bell-business-notifications", orgId],
+    enabled: !!orgId,
+    staleTime: 60_000,
+    queryFn: async (): Promise<BusinessNotification[]> => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("id, kind, title, body, link, priority, read_at, created_at")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (error) return [];
+      return normalizeNotifications(data);
+    },
+  });
+
+  const unreadBiz = useMemo(
+    () => (bizNotifs ?? []).filter((n) => !n.read_at),
+    [bizNotifs]
+  );
+
   const unseenNotes = useMemo(
     () => (seenVersion === undefined ? [] : unseenReleases(seenVersion)),
     [seenVersion]
@@ -114,7 +154,7 @@ export function NotificationBell() {
     () => (announcements ?? []).filter((a) => !seenAnnouncements.includes(a.id)),
     [announcements, seenAnnouncements]
   );
-  const unreadCount = unseenNotes.length + unseenAnn.length;
+  const unreadCount = unseenNotes.length + unseenAnn.length + unreadBiz.length;
 
   /** با باز شدن پنل، همه‌چیز خوانده‌شده علامت می‌خورد. */
   const markAllSeen = useCallback(() => {
@@ -129,7 +169,19 @@ export function NotificationBell() {
     } catch {
       /* حالت ناشناس یا سهمیه‌ی پر — ترجیح نمایشی حیاتی نیست */
     }
-  }, [announcements]);
+
+    /*
+      اعلان‌های کسب‌وکار در دیتابیس علامت می‌خورند نه localStorage:
+      کاربر ممکن است از گوشی و لپ‌تاپ هر دو وارد شود و «خوانده‌شده»
+      باید بین دستگاه‌ها مشترک باشد.
+    */
+    if (orgId && unreadBiz.length > 0) {
+      const supabase = createClient();
+      void supabase
+        .rpc("mark_notifications_read", { p_org: orgId, p_ids: null })
+        .then(() => refetchBiz());
+    }
+  }, [announcements, orgId, unreadBiz.length, refetchBiz]);
 
   function toggle() {
     const next = !open;
@@ -239,10 +291,86 @@ export function NotificationBell() {
             برسد (serious / scrollable-region-focusable).
           */}
           <div className="max-h-[70vh] overflow-y-auto overscroll-contain" tabIndex={0} role="region" aria-label="فهرست اعلان‌ها">
-            {(announcements ?? []).length === 0 && RELEASES.length === 0 ? (
+            {(announcements ?? []).length === 0 &&
+            (bizNotifs ?? []).length === 0 &&
+            IMPORTANT_RELEASES.length === 0 ? (
               <p className="px-3 py-8 text-center text-2xs text-muted-foreground">اعلانی وجود ندارد.</p>
             ) : (
               <>
+                {/*
+                  🔴 اعلان‌های کسب‌وکار اول از همه.
+
+                  کاربر می‌تواند خبر «نمودار بهتر شد» را از دست بدهد،
+                  ولی «چک فردا سررسید می‌شود» را نه.
+                */}
+                {(bizNotifs ?? []).map((n) => {
+                  const Row = (
+                    <div className="flex items-start gap-2">
+                      <span
+                        aria-hidden
+                        className={`mt-1 h-1.5 w-1.5 shrink-0 rounded-full ${
+                          n.priority === "high" ? "bg-destructive" : "bg-primary"
+                        } ${n.read_at ? "opacity-30" : ""}`}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <h3 className="truncate text-2xs font-extrabold text-foreground">{n.title}</h3>
+                          {/*
+                            🔴 axe کنتراست ناکافی گرفت: text-[10px] با
+                            رنگ muted روی پس‌زمینه‌ی muted نسبت لازم را
+                            نداشت. متن کوچک‌تر از ۱۴px آستانه‌ی
+                            سخت‌گیرانه‌تری دارد.
+                          */}
+                          <span className="shrink-0 rounded bg-muted px-1 text-[10px] font-bold text-foreground/70">
+                            {NOTIFICATION_LABEL[n.kind] ?? n.kind}
+                          </span>
+                        </div>
+                        {n.body && (
+                          <p className="mt-1 text-2xs leading-5 text-foreground/75">{n.body}</p>
+                        )}
+                        {/*
+                          ⚠️ /80 و نه /70: axe در ۱۰px کنتراست ۴.۲۸
+                          گرفت و حداقل لازم ۴.۵ است. متن ریز آستانه‌ی
+                          سخت‌گیرانه‌تری دارد و تفاوت یک پله‌ی شفافیت
+                          اینجا تعیین‌کننده است.
+                        */}
+                        <time className="mt-1 block text-[10px] text-foreground/80">
+                          {toJalali(n.created_at)}
+                        </time>
+                      </div>
+                    </div>
+                  );
+                  return (
+                    <article
+                      key={n.id}
+                      /*
+                        🔴 `opacity-60` روی کل ردیف حذف شد.
+
+                        axe کنتراست ۲.۴۶ گرفت (حداقل لازم ۴.۵). شفافیت
+                        روی ظرف، رنگ متن را هم کم‌رنگ می‌کند و متن ۱۲px
+                        آستانه‌ی سخت‌گیرانه‌ای دارد.
+
+                        تمایز «خوانده‌شده» حالا فقط با نقطه‌ی رنگی سمت
+                        راست است — همان اطلاعات، بدون قربانی‌کردن خوانایی.
+                      */
+                      className="border-b border-border last:border-0"
+                    >
+                      {/* هشداری که نشود رویش کاری کرد، فقط اضطراب می‌سازد. */}
+                      {n.link ? (
+                        <Link
+                          href={n.link}
+                          onClick={() => setOpen(false)}
+                          className="block px-3 py-2.5 transition hover:bg-muted"
+                        >
+                          {Row}
+                        </Link>
+                      ) : (
+                        <div className="px-3 py-2.5">{Row}</div>
+                      )}
+                    </article>
+                  );
+                })}
+
                 {/* اعلان‌های سراسری اول می‌آیند: معمولاً فوری‌ترند */}
                 {(announcements ?? []).map((a) => {
                   const Icon = TONE_ICON[a.tone] ?? Info;
@@ -267,7 +395,17 @@ export function NotificationBell() {
                   );
                 })}
 
-                {RELEASES.map((release) => (
+                {/*
+                  🔴 فقط نسخه‌های مهم.
+
+                  پیش از این `RELEASES.map` بود و هر ۲۷ نسخه با ۱۰۹
+                  تغییر را نشان می‌داد — کاربر برای دیدن یک خبر مهم
+                  باید از ده تا «رفع چسبیدن تاریخ» رد می‌شد و عملاً
+                  زنگوله را باز نمی‌کرد.
+
+                  بقیه در /settings/about قابل دیدن‌اند و گم نمی‌شوند.
+                */}
+                {IMPORTANT_RELEASES.map((release) => (
                   <ReleaseItem key={release.version} release={release} />
                 ))}
               </>

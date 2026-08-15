@@ -29,6 +29,18 @@ export interface ReleaseNote {
   /** عنوان کوتاه برای نمایش در فهرست. */
   title: string;
   changes: ChangeEntry[];
+  /**
+   * آیا در زنگوله‌ی اعلان‌ها نشان داده شود؟
+   *
+   * 🔴 خواسته‌ی کاربر: «نیازی نیست همه آپدیت‌ها بیاد تو نوتیفیکیشن
+   * بار». شمارش واقعی نشان داد ۲۷ نسخه با ۱۰۹ تغییر انباشته شده که
+   * ۳۴ تایش رفع اشکال جزئی است؛ خبر مهم زیر آن‌ها گم می‌شد.
+   *
+   * پیش‌فرض `false` عمدی است: هر نسخه‌ی جدید باید *صریحاً* مهم
+   * علامت بخورد، وگرنه دوباره به همان انباشت برمی‌گردیم.
+   * نسخه‌های غیرمهم در صفحه‌ی «تاریخچه» می‌مانند و گم نمی‌شوند.
+   */
+  important?: boolean;
 }
 
 export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
@@ -47,7 +59,20 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
  */
 export const RELEASES: ReleaseNote[] = [
   {
+    version: "26.0815",
+    date: "2026-08-15",
+    title: "اعلان‌های واقعی روی گوشی",
+    important: true,
+    changes: [
+      { kind: "improvement", text: "🔴 زنگوله‌ی اعلان دیگر پر از یادداشت انتشار نیست. فقط نسخه‌های مهم آنجا می‌آیند؛ بقیه در تاریخچه می‌مانند." },
+      { kind: "feature", text: "اعلان از داده‌ی خودتان: چک سررسیدگذشته، چک نزدیک سررسید، پیگیری مشتری در CRM و بدهی معوق بیش از ۳۰ روز. هر اعلان با یک کلیک به همان صفحه می‌برد." },
+      { kind: "feature", text: "اعلان روی گوشی: در تنظیمات › کسب‌وکار می‌توانید اعلان دستگاه را فعال کنید تا حتی وقتی برنامه بسته است خبردار شوید." },
+      { kind: "fix", text: "مبالغ در متن اعلان‌ها ارقام لاتین نشان می‌داد." },
+    ],
+  },
+  {
     version: "26.0813",
+    important: true,
     date: "2026-08-13",
     title: "برند شما روی فاکتور",
     changes: [
@@ -69,6 +94,7 @@ export const RELEASES: ReleaseNote[] = [
   },
   {
     version: "26.0812",
+    important: true,
     date: "2026-08-12",
     title: "کارهای امروز",
     changes: [
@@ -88,6 +114,7 @@ export const RELEASES: ReleaseNote[] = [
   },
   {
     version: "26.0811",
+    important: true,
     date: "2026-08-11",
     title: "قیمت درصدی، تخفیف در خرید و پیشنهاد نصب کم‌مزاحمت",
     changes: [
@@ -113,6 +140,7 @@ export const RELEASES: ReleaseNote[] = [
   },
   {
     version: "26.0810f",
+    important: true,
     date: "2026-08-10",
     title: "نصب ترازو روی گوشی",
     changes: [
@@ -355,6 +383,16 @@ export function latestRelease(): ReleaseNote | null {
  * در آرایه کار می‌کنیم که همیشه درست است.
  */
 export function unseenReleases(lastSeen: string | null): ReleaseNote[] {
+  return unseenAll(lastSeen).filter((r) => r.important === true);
+}
+
+/**
+ * همه‌ی نسخه‌های دیده‌نشده — بدون فیلتر اهمیت.
+ *
+ * صفحه‌ی تاریخچه از این استفاده می‌کند تا هیچ تغییری گم نشود؛
+ * زنگوله از `unseenReleases` که فقط مهم‌ها را می‌دهد.
+ */
+export function unseenAll(lastSeen: string | null): ReleaseNote[] {
   if (!lastSeen) {
     /*
       کاربر تازه — فقط جدیدترین نشان داده می‌شود، نه کل تاریخچه.
