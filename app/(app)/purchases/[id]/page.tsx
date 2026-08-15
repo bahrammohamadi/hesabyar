@@ -29,7 +29,7 @@ export default function PurchaseDetailPage({ params }: { params: { id: string } 
         .from("purchases")
         .select(
           `*, supplier:contacts(id, name, phone, code),
-           purchase_items(id, qty, unit_price, discount, line_total,
+           purchase_items(id, qty, unit_price, discount, line_total, landed_cost,
              variant:product_variants(id, color, size, sku, barcode, product:products(id, name, code)))`
         )
         .eq("id", id)
@@ -155,6 +155,17 @@ export default function PurchaseDetailPage({ params }: { params: { id: string } 
                       تخفیف {formatToman(item.discount, false)}
                     </div>
                   )}
+                  {/*
+                    قیمت تمام‌شده فقط وقتی نشان داده می‌شود که با قیمت
+                    خرید فرق داشته باشد — یعنی هزینه‌ی جانبی سرشکن شده.
+                    نمایشش وقتی برابر است، فقط شلوغی می‌سازد.
+                  */}
+                  {Number(item.landed_cost ?? 0) > 0 &&
+                    Number(item.landed_cost) !== Number(item.unit_price) && (
+                      <div className="text-2xs text-info-onSoft">
+                        تمام‌شده {formatToman(item.landed_cost, false)}
+                      </div>
+                    )}
                   <div className="text-sm font-bold text-success-onSoft">{formatToman(item.line_total, false)}</div>
                 </div>
               </div>
@@ -341,7 +352,7 @@ function EditPurchaseModal({ purchase, supplier, items, onClose }: { purchase: a
             ))}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 border-t border-border pt-4">
-            <div><label className="label">هزینه اضافه</label><input aria-label="هزینه اضافه" className="input" inputMode="numeric" value={extraTotal} onChange={(e) => setExtraTotal(e.target.value)} /></div>
+            <div><label className="label">هزینه‌های جانبی</label><input aria-label="هزینه‌های جانبی" className="input" inputMode="numeric" value={extraTotal} onChange={(e) => setExtraTotal(e.target.value)} /><p className="mt-1 text-2xs text-muted-foreground">روی قیمت تمام‌شده سرشکن می‌شود</p></div>
             <div><label className="label">تخفیف</label><div className="flex gap-2"><input className="input" inputMode="numeric" value={discountValue} onChange={(e) => setDiscountValue(e.target.value)} /><select aria-label="واحد تخفیف" className="input w-24" value={discountType} onChange={(e) => setDiscountType(e.target.value as any)}><option value="fixed">تومان</option><option value="percent">٪</option></select></div></div>
             <div><label className="label">مالیات</label><input aria-label="مالیات" className="input" inputMode="numeric" value={tax} onChange={(e) => setTax(e.target.value)} /></div>
             <div><label className="label">جمع نهایی</label><div className="rounded-xl bg-muted px-3.5 py-2.5 font-bold text-foreground">{formatToman(total)}</div></div>

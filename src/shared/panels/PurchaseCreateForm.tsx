@@ -68,6 +68,16 @@ export function PurchaseCreateForm({
   const [supplier, setSupplier] = useState<SelectableContact | null>(null);
   const [discount, setDiscount] = useState("0");
   const [discountType, setDiscountType] = useState<"fixed" | "percent">("fixed");
+  /*
+    هزینه‌های جانبی: کرایه‌ی حمل، بسته‌بندی، باربری.
+
+    🔴 پیش از این `p_extra_total: 0` ثابت بود — یعنی اصلاً نمی‌شد
+    واردش کرد. و بدتر: حتی در فرم ویرایش که واردش می‌شد، فقط به جمع
+    فاکتور اضافه می‌شد و روی قیمت تمام‌شده‌ی کالا نمی‌نشست، پس گزارش
+    سود خوش‌بینانه‌تر از واقعیت بود.
+  */
+  const [extraCost, setExtraCost] = useState("");
+  const [allocMode, setAllocMode] = useState<"by_value" | "by_qty">("by_value");
   const [paidCash, setPaidCash] = useState("");
   const [paidCard, setPaidCard] = useState("");
   const [isCreditPurchase, setIsCreditPurchase] = useState(false);
@@ -198,7 +208,9 @@ export function PurchaseCreateForm({
   );
   const discountInput = Number(toEnDigits(discount)) || 0;
   const discountRial = discountType === "percent" ? Math.round((subtotal * discountInput) / 100) : tomanToRial(discountInput);
-  const total = Math.max(0, subtotal - discountRial);
+  const extraRial = tomanToRial(Number(toEnDigits(extraCost)) || 0);
+  // هزینه‌ی جانبی به جمع اضافه می‌شود، تخفیف کم — همان ترتیب create_purchase.
+  const total = Math.max(0, subtotal + extraRial - discountRial);
   const paidCashRial = tomanToRial(Number(toEnDigits(paidCash)) || 0);
   const paidCardRial = tomanToRial(Number(toEnDigits(paidCard)) || 0);
   const credit = Math.max(0, total - paidCashRial - paidCardRial);
@@ -238,6 +250,8 @@ export function PurchaseCreateForm({
     setSupplier(null);
     setDiscount("0");
     setDiscountType("fixed");
+    setExtraCost("");
+    setAllocMode("by_value");
     setPaidCash("");
     setPaidCard("");
     setIsCreditPurchase(false);
@@ -277,8 +291,10 @@ export function PurchaseCreateForm({
           unit_price: c.unit_price,
           discount: c.discount,
           sale_price: c.sale_price ?? undefined,
+          // روش سرشکن روی هر قلم می‌رود تا تابع بتواند سهمش را حساب کند.
+          alloc: allocMode,
         })),
-        p_extra_total: 0,
+        p_extra_total: extraRial,
         p_discount: discountType === "percent" ? 0 : discountRial,
         p_tax: 0,
         // p_paid برای سازگاری پر می‌شود؛ تفکیک واقعی با دو پارامتر زیر است.
@@ -427,6 +443,57 @@ export function PurchaseCreateForm({
               onDiscountTypeChange={setDiscountType}
               discountRial={discountRial}
             />
+
+            {/*
+              هزینه‌های جانبی و روش سرشکن.
+
+              چرا دو گزینه؟ هر دو در بازار رایج‌اند و انتخاب اشتباه،
+              قیمت تمام‌شده را غلط می‌کند:
+                • ارزش  → بیمه و کارمزد بانکی
+                • تعداد → کرایه‌ی حمل (کامیون به تعداد کارتن کار دارد
+                          نه به قیمتشان)
+            */}
+            <Card className="space-y-3 p-3 sm:p-4">
+              <Field
+                label="هزینه‌های جانبی (تومان)"
+                hint="کرایه حمل، باربری، بسته‌بندی. روی قیمت تمام‌شده‌ی کالاها سرشکن می‌شود."
+              >
+                <input
+                  aria-label="هزینه‌های جانبی به تومان"
+                  className="input tabular-nums"
+                  inputMode="numeric"
+                  value={extraCost}
+                  onChange={(e) => setExtraCost(e.target.value)}
+                  placeholder="۰"
+                />
+              </Field>
+
+              {extraRial > 0 && (
+                <div>
+                  <span className="mb-1.5 block text-2xs text-muted-foreground">روش سرشکن</span>
+                  <div className="flex gap-2">
+                    {([
+                      { id: "by_value", label: "به نسبت ارزش" },
+                      { id: "by_qty", label: "به نسبت تعداد" },
+                    ] as const).map((m) => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => setAllocMode(m.id)}
+                        aria-pressed={allocMode === m.id}
+                        className={`min-h-11 flex-1 rounded-xl border px-3 text-2xs font-bold transition ${
+                          allocMode === m.id
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border bg-card text-muted-foreground hover:border-primary/40"
+                        }`}
+                      >
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </Card>
 
             <Card className="space-y-3 p-3 sm:p-4">
               <Field label="پرداخت نقدی (تومان)">

@@ -124,3 +124,76 @@ export function percentFromPrice(basePriceRial: number, priceRial: number): numb
   if (base <= 0) return 0;
   return Math.round(((Math.max(0, priceRial) - base) / base) * 100);
 }
+
+/* ------------------------------------------------------------------ */
+/* سرشکن هزینه‌های جانبی روی قیمت تمام‌شده                              */
+/* ------------------------------------------------------------------ */
+
+/** روش پخش هزینه‌های جانبی بین اقلام فاکتور خرید. */
+export type AllocationMode = "by_value" | "by_qty";
+
+/**
+ * سهم یک قلم از هزینه‌های جانبی (کرایه حمل، باربری، بسته‌بندی).
+ *
+ * 🔴 چرا لازم شد: `p_extra_total` فقط به جمع فاکتور اضافه می‌شد و
+ * روی `purchase_price` کالا نمی‌نشست. چون `sale_items.cost_price` از
+ * همان می‌آید، سود هر فروش به‌اندازه‌ی سهم آن کالا از هزینه‌ی حمل
+ * **بیشتر** گزارش می‌شد.
+ *
+ * ⚠️ باید دقیقاً با `allocate_extra_cost` در مهاجرت ۰۰۴۶ یکی بماند.
+ * اگر از هم جدا بیفتند، عددی که کاربر پیش از ثبت می‌بیند با آنچه
+ * ذخیره می‌شود فرق می‌کند.
+ *
+ * دو روش، هر دو رایج:
+ *   by_value → بیمه و کارمزد بانکی (به نسبت ارزش)
+ *   by_qty   → کرایه‌ی حمل (کامیون به تعداد کارتن کار دارد)
+ */
+export function allocateExtraCost(input: {
+  extraRial: number;
+  lineNetRial: number;
+  lineQty: number;
+  totalNetRial: number;
+  totalQty: number;
+  mode?: AllocationMode;
+}): number {
+  const extra = Math.max(0, input.extraRial || 0);
+  if (extra <= 0) return 0;
+
+  const mode = input.mode ?? "by_value";
+
+  /*
+    🔴 همه‌ی ورودی‌ها به صفر کف می‌خورند.
+
+    تست سختگیرانه‌تر یک باگ واقعی پیدا کرد: با `lineNetRial` منفی
+    (ورودی خراب از کلاینت) سهم منفی برمی‌گشت، یعنی قیمت تمام‌شده
+    **کمتر** از قیمت خرید می‌شد و سود دوباره غلط گزارش می‌شد.
+
+    نسخه‌ی اول فقط `extraRial` را کف می‌زد.
+  */
+  const lineNet = Math.max(0, input.lineNetRial || 0);
+  const lineQty = Math.max(0, input.lineQty || 0);
+  const totalNet = Math.max(0, input.totalNetRial || 0);
+  const totalQty = Math.max(0, input.totalQty || 0);
+
+  /*
+    اگر ارزش کل صفر باشد (همه‌ی اقلام رایگان، مثل نمونه یا هدیه)
+    تقسیم بر صفر می‌شد. در آن حالت به by_qty برمی‌گردیم که همیشه
+    مخرج مثبت دارد.
+  */
+  if (mode === "by_qty" || totalNet <= 0) {
+    if (totalQty <= 0) return 0;
+    return Math.round((extra * lineQty) / totalQty);
+  }
+  return Math.round((extra * lineNet) / totalNet);
+}
+
+/**
+ * قیمت تمام‌شده‌ی هر **واحد**.
+ *
+ * ⚠️ واحدی است نه کل سطر. `cost_price` در `sale_items` هم واحدی است
+ * و اگر کل سطر را بگذاریم، سود کالاهای چندتایی چند برابر غلط می‌شود.
+ */
+export function landedUnitCost(lineNetRial: number, shareRial: number, qty: number): number {
+  if (qty <= 0) return 0;
+  return Math.round((Math.max(0, lineNetRial) + Math.max(0, shareRial)) / qty);
+}
