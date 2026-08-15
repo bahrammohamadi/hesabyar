@@ -14,8 +14,10 @@ import { PhoneLink } from "@/components/shared/phone-link";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { ContactSelector, type SelectableContact } from "@/components/shared/contact-selector";
 import { formatToman, rialToToman, toEnDigits, toFaDigits, toJalali, tomanToRial } from "@/lib/utils/format";
-import { BRAND_NAME } from "@/lib/brand";
 import { downloadCsv } from "@/lib/export/download";
+import { normalizeBrand, instagramUrl, EMPTY_BRAND } from "@/lib/brand-identity";
+import { InvoiceShare } from "@/components/shared/invoice-share";
+import { useOrg } from "@/lib/hooks/useOrg";
 
 type InvoiceItemView = {
   id: string;
@@ -51,6 +53,26 @@ type EditInvoiceItem = {
 export default function SaleInvoicePage({ params }: { params: { id: string } }) {
   const { id } = params;
   const qc = useQueryClient();
+  const { orgId } = useOrg();
+
+  /*
+    هویت برند برای سربرگ فاکتور.
+
+    کوئری جدا از خود فاکتور است چون کشِ متفاوتی دارد: برند به‌ندرت
+    عوض می‌شود ولی فاکتور ممکن است هر لحظه ویرایش شود.
+  */
+  const brandQuery = useQuery({
+    queryKey: ["brand-identity", orgId],
+    enabled: !!orgId,
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase.rpc("get_brand_identity", { p_org: orgId });
+      if (error) throw error;
+      return normalizeBrand(data);
+    },
+  });
+  const brand = brandQuery.data ?? EMPTY_BRAND;
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
@@ -163,6 +185,9 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
   if (!data) return <EmptyState title="فاکتور یافت نشد" />;
 
   const { sale, customer, items, payments, paidTotal, balance } = data;
+
+  /* هرگز خالی نمی‌ماند: display_name → نام سازمان → متن پیش‌فرض. */
+  const brandName = brand.display_name ?? "فاکتور فروش";
   const hasReturns = (data.returns ?? []).length > 0;
 
   function handleExcel() {
@@ -210,6 +235,22 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
           </div>
         </div>
 
+        {/*
+          ارسال فاکتور به مشتری — تصویر، دانلود، واتساپ و لینک.
+          در ردیف جدا چون چهار دکمه کنار پنج دکمه‌ی عملیات، در موبایل
+          به‌هم می‌ریخت.
+        */}
+        <div className="no-print mb-4 flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3">
+          <span className="ml-1 text-2xs font-bold text-muted-foreground">ارسال برای مشتری:</span>
+          <InvoiceShare
+            targetId="invoice-print"
+            invoiceNo={sale.invoice_no}
+            customerPhone={customer?.phone}
+            brandName={brandName}
+            totalLabel={formatToman(sale.total)}
+          />
+        </div>
+
         {hasReturns && (
           <div className="no-print mb-4 rounded-2xl border border-warning/20 bg-warning/10 p-4 text-sm text-warning">
             برای این فاکتور مرجوعی ثبت شده است؛ برای جلوگیری از خطای موجودی، ویرایش یا ابطال مستقیم فاکتور غیرفعال است.
@@ -217,11 +258,27 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
         )}
 
         <div id="invoice-print" className="card bg-white p-5 sm:p-8">
+          {/*
+            🔴 سربرگ قبلاً لوگو و نام **خودِ ترازو** را چاپ می‌کرد.
+            مشتریِ «مزون پوشاک» فاکتوری می‌گرفت که بالایش نوشته بود
+            «ترازو» — برای سندی که دست مشتری می‌رود، فاجعه.
+
+            حالا از get_brand_identity می‌آید و اگر کاربر چیزی وارد
+            نکرده باشد، نام سازمان جایگزین می‌شود (هرگز خالی نمی‌ماند).
+          */}
           <div className="flex items-start justify-between gap-4 border-b-2 border-primary pb-4 mb-5">
             <div className="flex items-center gap-3">
-              <img src="/logo.png" alt={BRAND_NAME} className="w-14 h-14 object-contain rounded-xl" />
-              <div>
-                <h1 className="text-xl font-bold text-primary">{BRAND_NAME}</h1>
+              {brand.logo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={brand.logo_url} alt={brandName} className="w-14 h-14 object-contain rounded-xl" />
+              ) : (
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-lg font-black text-primary">
+                  {brandName.slice(0, 2)}
+                </span>
+              )}
+              <div className="min-w-0">
+                <h1 className="text-xl font-bold text-primary">{brandName}</h1>
+                {brand.slogan && <p className="text-xs text-muted-foreground">{brand.slogan}</p>}
                 <p className="text-xs text-muted-foreground mt-1">فاکتور فروش</p>
               </div>
             </div>
@@ -301,7 +358,19 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
                 {payments.map((payment: any) => (
                   <div key={payment.id} className="flex justify-between text-xs text-muted-foreground">
                     <span>{payment.note ?? payment.method ?? "پرداخت"}</span>
-                    <span>{formatToman(payment.amount, false)} • {toJalali(payment.date)}</span>
+                    {/*
+                      🔴 دو عدد با «•» در یک رشته، در متن راست‌به‌چپ
+                      بازچینش می‌شود و «۱۴۰۵/۰۵/۲۲ ۰ ۸۷۸,۰۰۰» دیده
+                      می‌شد — مبلغ و تاریخ به هم چسبیده. سومین بار است
+                      این خانواده باگ را می‌گیریم (خلاصه‌ی نمودار،
+                      کارهای امروز، و حالا اینجا). هر تکه ظرف مستقل
+                      خودش را می‌خواهد.
+                    */}
+                    <span className="flex items-center gap-1.5">
+                      <span className="tabular-nums">{formatToman(payment.amount, false)}</span>
+                      <span aria-hidden className="opacity-50">•</span>
+                      <span className="whitespace-nowrap">{toJalali(payment.date)}</span>
+                    </span>
                   </div>
                 ))}
               </div>
@@ -309,7 +378,47 @@ export default function SaleInvoicePage({ params }: { params: { id: string } }) 
           )}
 
           {sale.note && <div className="mt-5 text-xs text-muted-foreground">توضیح: {sale.note}</div>}
-          <div className="mt-8 border-t border-border pt-4 text-center text-xs text-muted-foreground">از خرید شما سپاسگزاریم 🌸</div>
+
+          {/*
+            یادداشت پای فاکتور — شرایط مرجوعی، ضمانت و مانند آن.
+            از تنظیمات برند می‌آید و فقط اگر پر شده باشد چاپ می‌شود.
+          */}
+          {brand.invoice_note && (
+            <div className="mt-4 rounded-xl border border-border p-3 text-xs leading-6 text-muted-foreground whitespace-pre-line">
+              {brand.invoice_note}
+            </div>
+          )}
+
+          {/*
+            اطلاعات تماس فروشنده در پای فاکتور.
+
+            چرا پایین و نه بالا؟ سربرگ باید نام و لوگو را برجسته کند؛
+            جزئیات تماس وقتی لازم می‌شود که مشتری بعداً بخواهد پیگیری
+            کند، و آنجا پایین صفحه را نگاه می‌کند.
+
+            هر قلم فقط در صورت وجود چاپ می‌شود — ردیف خالی «تلفن: —»
+            سند را شلخته می‌کند.
+          */}
+          <div className="mt-8 border-t border-border pt-4">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-2xs text-muted-foreground">
+              {brand.phone && <span>تلفن: {toFaDigits(brand.phone)}</span>}
+              {brand.mobile && <span>همراه: {toFaDigits(brand.mobile)}</span>}
+              {brand.email && <span dir="ltr">{brand.email}</span>}
+              {brand.website && <span dir="ltr">{brand.website}</span>}
+              {brand.instagram && <span dir="ltr">{instagramUrl(brand.instagram)?.replace(/^https?:\/\//, "")}</span>}
+            </div>
+            {brand.address && (
+              <div className="mt-1 text-center text-2xs text-muted-foreground">{brand.address}</div>
+            )}
+            {(brand.national_id || brand.economic_code || brand.postal_code) && (
+              <div className="mt-1 flex flex-wrap items-center justify-center gap-x-4 text-2xs text-muted-foreground">
+                {brand.national_id && <span>شناسه ملی: {toFaDigits(brand.national_id)}</span>}
+                {brand.economic_code && <span>کد اقتصادی: {toFaDigits(brand.economic_code)}</span>}
+                {brand.postal_code && <span>کد پستی: {toFaDigits(brand.postal_code)}</span>}
+              </div>
+            )}
+            <div className="mt-3 text-center text-xs text-muted-foreground">از خرید شما سپاسگزاریم 🌸</div>
+          </div>
         </div>
       </div>
 

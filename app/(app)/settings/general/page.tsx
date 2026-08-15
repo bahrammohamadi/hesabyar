@@ -11,6 +11,7 @@ import {
   applyTheme, DEFAULT_THEME, THEMES, THEME_STORAGE_KEY, THEME_CHANGE_EVENT, type ThemeId,
 } from "@/lib/theme";
 import { cn } from "@/lib/utils/cn";
+import { BrandIdentityForm } from "@/components/shared/brand-identity-form";
 
 /**
  * تنظیمات عمومی — نام کسب‌وکار و ظاهر برنامه.
@@ -141,7 +142,7 @@ export default function GeneralSettingsPage() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title="کسب‌وکار و ظاهر" subtitle="نام فروشگاه و تم رنگی برنامه" />
+      <PageHeader title="کسب‌وکار و ظاهر" subtitle="نام، لوگو، اطلاعات تماس روی فاکتور و تم رنگی" />
 
       {orgQuery.isLoading ? (
         <Spinner />
@@ -171,6 +172,12 @@ export default function GeneralSettingsPage() {
           </div>
         </Card>
       )}
+
+      {/*
+        هویت برند زیر نام کسب‌وکار و بالای انتخاب تم: اطلاعاتی که روی
+        سند مشتری چاپ می‌شود از ترجیح رنگی شخصی مهم‌تر است.
+      */}
+      <BrandIdentityForm />
 
       <ThemePicker />
     </div>
