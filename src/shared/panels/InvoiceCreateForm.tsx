@@ -155,6 +155,39 @@ export function InvoiceCreateForm({
     return Math.max(0, Math.round((v.sale_price * (100 - percent)) / 100));
   }
 
+  /*
+    🔴 سطح قیمت پیش‌فرض مشتری.
+
+    پیش از این کاربر باید **هر بار** لیست قیمت را دستی انتخاب می‌کرد.
+    برای فروشنده‌ای که نیمی از مشتریانش عمده‌فروش‌اند، این یعنی خطای
+    انسانی روزانه: یک بار یادش می‌رود و کالا را به قیمت خرده‌فروشی
+    به عمده‌فروش می‌فروشد.
+
+    ⚠️ فقط وقتی اعمال می‌شود که کاربر خودش لیستی انتخاب نکرده باشد.
+    اگر دستی چیزی گذاشته، انتخاب او برنده است — وگرنه سیستم روی دست
+    کاربر می‌زند و آن بدترین نوع «هوشمندی» است.
+  */
+  const { data: customerPriceList } = useQuery({
+    queryKey: ["customer-default-price-list", customer?.id],
+    enabled: !!customer?.id,
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("contacts")
+        .select("meta")
+        .eq("id", customer!.id)
+        .maybeSingle();
+      const id = (data?.meta as { price_list_id?: string } | null)?.price_list_id;
+      return typeof id === "string" && id.length > 0 ? id : null;
+    },
+  });
+
+  useEffect(() => {
+    if (!customerPriceList) return;
+    // سبد از قبل پر است؟ قیمت‌های واردشده را دست نمی‌زنیم.
+    setPriceListId((current) => (current === "" ? customerPriceList : current));
+  }, [customerPriceList]);
+
   const { data: walletCredit } = useQuery({
     queryKey: ["customer-wallet", customer?.id],
     enabled: !!customer?.id,

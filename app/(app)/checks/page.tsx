@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { formatToman, toJalali } from "@/lib/utils/format";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
 import { DatePicker } from "@/components/shared/date-picker";
-import { DateRangeFilter, EMPTY_RANGE, hasRange, withinRange, type DateRange } from "@/src/shared/ui";
+import { DateRangeFilter, EMPTY_RANGE, hasRange, useToast, withinRange, type DateRange } from "@/src/shared/ui";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { Plus, Trash2, CreditCard, CheckCircle, XCircle, Clock } from "lucide-react";
@@ -38,6 +38,8 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
 };
 
 export default function ChecksPage() {
+  /* همان دلیل صفحه‌های سفارش و مرجوعی: alert بومی با برنامه جور نیست. */
+  const { toast } = useToast();
   const [checks, setChecks] = useState<Check[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -80,7 +82,7 @@ export default function ChecksPage() {
   };
 
   const createCheck = async () => {
-    if (!formData.check_no || !formData.amount || !formData.due_date) { alert("شماره چک، مبلغ و تاریخ سررسید الزامی است"); return; }
+    if (!formData.check_no || !formData.amount || !formData.due_date) { toast({ title: "شماره چک، مبلغ و تاریخ سررسید الزامی است", tone: "error" }); return; }
     setSaving(true);
     const { data: user } = await sb.auth.getUser();
     if (!user.user) { setSaving(false); return; }
@@ -101,7 +103,7 @@ export default function ChecksPage() {
       setShowForm(false);
       setFormData({ type: "received", check_no: "", bank_name: "", account_no: "", amount: "", issue_date: new Date().toISOString().split("T")[0], due_date: "", contact_id: "", note: "" });
       fetchChecks();
-    } catch (err) { alert("خطا: " + (err as Error).message); }
+    } catch (err) { toast({ title: "خطا در ثبت چک", description: (err as Error).message, tone: "error" }); }
     finally { setSaving(false); }
   };
 

@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { formatToman, toFaDigits, toJalali } from "@/lib/utils/format";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
-import { Badge, type BadgeTone } from "@/src/shared/ui";
+import { Badge, useToast, type BadgeTone } from "@/src/shared/ui";
 import { DatePicker } from "@/components/shared/date-picker";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
@@ -38,6 +38,14 @@ const STATUS_LABELS: Record<string, { label: string; tone: BadgeTone }> = {
 };
 
 export default function SalesOrdersPage() {
+  /*
+    🔴 `alert()` جایگزین شد.
+
+    پنجره‌ی بومی مرورگر با بقیه‌ی برنامه هیچ شباهتی ندارد: راست‌به‌چپ
+    نیست، فونت وزیرمتن ندارد، و روی موبایل کل صفحه را قفل می‌کند.
+    این آخرین جاهایی بود که مانده بود.
+  */
+  const { toast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -96,7 +104,7 @@ export default function SalesOrdersPage() {
 
   const createOrder = async () => {
     const orderItems = items.filter(i => i.qty > 0);
-    if (orderItems.length === 0) { alert("حداقل یک آیتم اضافه کنید"); return; }
+    if (orderItems.length === 0) { toast({ title: "حداقل یک آیتم اضافه کنید", tone: "error" }); return; }
 
     setSaving(true);
     const { data: user } = await sb.auth.getUser();
@@ -156,7 +164,7 @@ export default function SalesOrdersPage() {
       resetForm();
       fetchOrders();
     } catch (err) {
-      alert("خطا: " + (err as Error).message);
+      toast({ title: "خطا در ثبت سفارش", description: (err as Error).message, tone: "error" });
     } finally {
       setSaving(false);
     }

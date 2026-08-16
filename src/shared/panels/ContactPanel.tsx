@@ -51,13 +51,15 @@ type ContactFormState = {
   birthDate: string;
   nationalCode: string;
   jobTitle: string;
+  /** لیست قیمت پیش‌فرض این مشتری (اختیاری). */
+  priceListId: string;
   gender: string;
   address: string;
   description: string;
 };
 
 function emptyForm(): ContactFormState {
-  return { firstName: "", lastName: "", name: "", phone: "", type: "customer", email: "", birthDate: "", nationalCode: "", jobTitle: "", gender: "", address: "", description: "" };
+  return { firstName: "", lastName: "", name: "", phone: "", type: "customer", email: "", birthDate: "", nationalCode: "", jobTitle: "", priceListId: "", gender: "", address: "", description: "" };
 }
 
 type InteractionFormState = {
@@ -125,6 +127,21 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
 
   const data = contactQuery.data;
   const contact = data?.contact;
+  /* لیست‌های قیمت برای انتخابگر سطح قیمت پیش‌فرض. */
+  const { data: priceLists } = useQuery({
+    queryKey: ["contact-price-lists"],
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("price_lists")
+        .select("id, name")
+        .eq("is_active", true)
+        .order("name");
+      return data ?? [];
+    },
+  });
+
   const accountsQuery = useQuery({
     queryKey: ["contact-panel-accounts", orgId],
     enabled: !!orgId && !!contactId,
@@ -159,6 +176,7 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
         birthDate: typeof contact.meta.birth_date === "string" ? contact.meta.birth_date : "",
         nationalCode: typeof contact.meta.national_code === "string" ? contact.meta.national_code : "",
         jobTitle: typeof contact.meta.job_title === "string" ? contact.meta.job_title : "",
+        priceListId: typeof contact.meta.price_list_id === "string" ? contact.meta.price_list_id : "",
         gender: typeof contact.meta.gender === "string" ? contact.meta.gender : "",
         address: contact.address ?? "",
         description: contact.description ?? "",
@@ -192,6 +210,8 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
           birth_date: form.birthDate,
           national_code: form.nationalCode,
           job_title: form.jobTitle,
+          // رشته‌ی خالی ذخیره نمی‌شود تا کلید بی‌مصرف در meta نماند.
+          price_list_id: form.priceListId || undefined,
           gender: form.gender,
         });
         if (typeof panel.props?.resultRequestId === "string") {
@@ -214,6 +234,7 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
             birth_date: form.birthDate,
             national_code: form.nationalCode,
             job_title: form.jobTitle,
+            price_list_id: form.priceListId || undefined,
             gender: form.gender,
           },
         });
@@ -374,6 +395,29 @@ export function ContactPanel({ panel }: { panel: PanelInstance }) {
           <Field label="شغل / عنوان" hint={contactHelp.jobTitle}>
             <Input value={form.jobTitle} onChange={(event) => setForm((prev) => ({ ...prev, jobTitle: event.target.value }))} />
           </Field>
+          {/*
+            🔴 سطح قیمت پیش‌فرض.
+
+            پیش از این کاربر باید در **هر فاکتور** لیست قیمت را دستی
+            انتخاب می‌کرد. برای فروشنده‌ای که نیمی از مشتریانش
+            عمده‌فروش‌اند، یک بار فراموشی یعنی فروش به قیمت اشتباه.
+          */}
+          <Field
+            label="سطح قیمت پیش‌فرض"
+            hint="هنگام ثبت فاکتور برای این مشتری خودکار انتخاب می‌شود."
+          >
+            <select
+              className="input"
+              value={form.priceListId}
+              onChange={(e) => setForm({ ...form, priceListId: e.target.value })}
+            >
+              <option value="">قیمت عادی (پیش‌فرض فروشگاه)</option>
+              {(priceLists ?? []).map((pl: { id: string; name: string }) => (
+                <option key={pl.id} value={pl.id}>{pl.name}</option>
+              ))}
+            </select>
+          </Field>
+
           <Field label="جنسیت">
             <Select value={form.gender} onChange={(event) => setForm((prev) => ({ ...prev, gender: event.target.value }))}>
               <option value="">—</option>

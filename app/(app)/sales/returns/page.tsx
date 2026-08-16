@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatToman, toJalali, toFaDigits } from "@/lib/utils/format";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
-import { Badge, DateRangeFilter, EMPTY_RANGE, hasRange, withinRange, type DateRange } from "@/src/shared/ui";
+import { Badge, DateRangeFilter, EMPTY_RANGE, hasRange, withinRange, type DateRange, useToast } from "@/src/shared/ui";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { Plus, Trash2, RotateCcw, Search } from "lucide-react";
@@ -17,6 +17,8 @@ type Return = any;
 type Sale = any;
 
 export default function SalesReturnsPage() {
+  /* همان دلیل صفحه‌ی سفارش: alert بومی با بقیه‌ی برنامه جور نیست. */
+  const { toast } = useToast();
   const [returns, setReturns] = useState<Return[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -59,8 +61,8 @@ export default function SalesReturnsPage() {
   };
 
   const createReturn = async () => {
-    if (!selectedSale) { alert("فاکتور انتخاب نشده"); return; }
-    if (returnItems.filter(i => i.return_qty > 0).length === 0) { alert("حداقل یک آیتم انتخاب کنید"); return; }
+    if (!selectedSale) { toast({ title: "فاکتور انتخاب نشده", tone: "error" }); return; }
+    if (returnItems.filter(i => i.return_qty > 0).length === 0) { toast({ title: "حداقل یک آیتم انتخاب کنید", tone: "error" }); return; }
 
     setSaving(true);
     const { data: user } = await sb.auth.getUser();
@@ -103,7 +105,7 @@ export default function SalesReturnsPage() {
       resetForm();
       fetchReturns();
     } catch (err) {
-      alert("خطا: " + (err as Error).message);
+      toast({ title: "خطا در ثبت مرجوعی", description: (err as Error).message, tone: "error" });
     } finally {
       setSaving(false);
     }

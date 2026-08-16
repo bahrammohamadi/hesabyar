@@ -69,6 +69,8 @@ export interface ContactMutationInput {
   birth_date?: string | null;
   national_code?: string | null;
   job_title?: string | null;
+  /** لیست قیمت پیش‌فرض مشتری — در meta ذخیره می‌شود. */
+  price_list_id?: string | null;
   gender?: string | null;
 }
 
@@ -85,6 +87,8 @@ export interface ContactUpdatePatch {
   birth_date?: string | null;
   national_code?: string | null;
   job_title?: string | null;
+  /** لیست قیمت پیش‌فرض مشتری — در meta ذخیره می‌شود. */
+  price_list_id?: string | null;
   gender?: string | null;
   is_active?: boolean;
 }
@@ -387,6 +391,7 @@ function toContactPayload(input: ContactMutationInput): ContactWritePayload {
   setMeta("birth_date", input.birth_date);
   setMeta("national_code", input.national_code);
   setMeta("job_title", input.job_title);
+  setMeta("price_list_id", input.price_list_id);
   setMeta("gender", input.gender);
   return {
     name,
@@ -413,7 +418,7 @@ export async function createContact(input: ContactMutationInput & { org_id: stri
 export async function updateContact(id: string, patch: ContactUpdatePatch): Promise<ContactEntity> {
   const supabase = createClient();
   const payload: Partial<ContactWritePayload> & { is_active?: boolean } = {};
-  if (patch.name !== undefined || patch.phone !== undefined || patch.type !== undefined || patch.address !== undefined || patch.description !== undefined || patch.meta !== undefined || patch.first_name !== undefined || patch.last_name !== undefined || patch.email !== undefined || patch.birth_date !== undefined || patch.national_code !== undefined || patch.job_title !== undefined || patch.gender !== undefined) {
+  if (patch.name !== undefined || patch.phone !== undefined || patch.type !== undefined || patch.address !== undefined || patch.description !== undefined || patch.meta !== undefined || patch.first_name !== undefined || patch.last_name !== undefined || patch.email !== undefined || patch.birth_date !== undefined || patch.national_code !== undefined || patch.job_title !== undefined || patch.price_list_id !== undefined || patch.gender !== undefined) {
     const next = toContactPayload({
       name: patch.name ?? "_",
       type: patch.type ?? "customer",
