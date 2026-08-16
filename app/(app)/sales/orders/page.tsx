@@ -5,7 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { formatToman, toFaDigits, toJalali } from "@/lib/utils/format";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
-import { Badge, useToast, type BadgeTone } from "@/src/shared/ui";
+import { Badge, useToast, useConfirm, type BadgeTone } from "@/src/shared/ui";
+import { canConvertOrder, isOrderExpired } from "@/lib/wholesale";
 import { DatePicker } from "@/components/shared/date-picker";
 import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
@@ -25,6 +26,7 @@ type Order = {
   discount: number;
   note: string;
   customer_id: string;
+  converted_to_id?: string | null;
   customer?: { name: string };
 };
 
@@ -46,6 +48,8 @@ export default function SalesOrdersPage() {
     این آخرین جاهایی بود که مانده بود.
   */
   const { toast } = useToast();
+  const confirm = useConfirm();
+  const [converting, setConverting] = useState<string | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -178,8 +182,79 @@ export default function SalesOrdersPage() {
     fetchOrders();
   };
 
+  /**
+   * تبدیل پیش‌فاکتور به فاکتور فروش قطعی.
+   *
+   * 🔴 چرا یک RPC و نه دو فراخوانی جدا (ساخت فاکتور + تغییر وضعیت)؟
+   *   بین آن دو، اگر مرورگر بسته شود یا شبکه قطع شود، فاکتور ثبت
+   *   شده ولی سفارش هنوز `pending` است. کاربر دوباره «تبدیل» را
+   *   می‌زند و **فاکتور دوم** ثبت می‌شود — موجودی دو بار کم می‌شود.
+   *   `convert_order_to_sale` هر دو را در یک تراکنش با قفل ردیف
+   *   انجام می‌دهد.
+   *
+   * ⚠️ فاکتور به‌صورت **کاملاً نسیه** ثبت می‌شود. مبلغ دریافتی صفر
+   * است چون در لحظه‌ی تبدیل هنوز پولی رد و بدل نشده؛ دریافت بعداً
+   * از صفحه‌ی خود فاکتور ثبت می‌شود. اگر پیش‌فرض را «نقدی» می‌گذاشتیم،
+   * صندوق پولی را نشان می‌داد که وجود ندارد.
+   */
+  const convertOrder = async (order: Order) => {
+    const guard = canConvertOrder(order);
+    if (!guard.ok) {
+      toast({ title: guard.reason ?? "قابل تبدیل نیست", tone: "error" });
+      return;
+    }
+
+    const ok = await confirm({
+      title: "تبدیل به فاکتور فروش",
+      description:
+        "این پیش‌فاکتور به فاکتور فروش قطعی تبدیل می‌شود و موجودی کالاها کم می‌شود. فاکتور نسیه ثبت می‌شود و دریافت را بعداً می‌توانید ثبت کنید.",
+      confirmLabel: "تبدیل کن",
+    });
+    if (!ok) return;
+
+    setConverting(order.id);
+    try {
+      const { data, error } = await sb.rpc("convert_order_to_sale", { p_order: order.id });
+      // ⚠️ کلاینت Supabase برای خطای دیتابیس استثنا پرتاب نمی‌کند.
+      if (error) throw error;
+
+      const { data: user } = await sb.auth.getUser();
+      const { data: mems } = user.user
+        ? await sb.from("memberships").select("org_id").eq("user_id", user.user.id).eq("is_active", true).limit(1)
+        : ({ data: null } as any);
+      await logActivity({
+        orgId: mems?.[0]?.org_id ?? null,
+        action: "create",
+        entityType: "sale",
+        entityId: data as string,
+        newData: { from_order: order.order_no, total: order.total },
+      });
+
+      toast({ title: "فاکتور فروش ثبت شد", description: `از پیش‌فاکتور ${order.order_no ?? ""}`, tone: "success" });
+      fetchOrders();
+    } catch (err) {
+      toast({ title: "تبدیل انجام نشد", description: (err as Error).message, tone: "error" });
+    } finally {
+      setConverting(null);
+    }
+  };
+
   const deleteOrder = async (orderId: string) => {
-    if (!confirm("آیا از حذف این سفارش مطمئن هستید؟")) return;
+    /*
+      🔴 اینجا `confirm()` بومی مرورگر بود.
+
+      دو مشکل: راست‌به‌چپ نیست و فونت وزیرمتن ندارد، و مهم‌تر اینکه
+      وقتی hook با همین نام import شد، TypeScript گرفتش — یعنی تا آن
+      لحظه این خط بی‌سروصدا پنجره‌ی بومی باز می‌کرد در حالی که بقیه‌ی
+      برنامه مدت‌ها بود ConfirmDialog داشت.
+    */
+    const ok = await confirm({
+      title: "حذف پیش‌فاکتور",
+      description: "این پیش‌فاکتور و همه‌ی اقلامش حذف می‌شوند. این کار برگشت‌پذیر نیست.",
+      confirmLabel: "حذف کن",
+      tone: "danger",
+    });
+    if (!ok) return;
     const order = orders.find((o) => o.id === orderId);
     const { data: user } = await sb.auth.getUser();
     const { data: mems } = user.user ? await sb.from("memberships").select("org_id").eq("user_id", user.user.id).eq("is_active", true).limit(1) : { data: null } as any;
@@ -265,7 +340,12 @@ export default function SalesOrdersPage() {
                     </div>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <span>{toJalali(order.date)}</span>
-                      {order.expiry_date && <span>انقضا: {toJalali(order.expiry_date)}</span>}
+                      {order.expiry_date && (
+                        <span className={isOrderExpired(order.expiry_date) ? "text-destructive-text" : ""}>
+                          {isOrderExpired(order.expiry_date) ? "منقضی شده: " : "انقضا: "}
+                          {toJalali(order.expiry_date)}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="text-left">
@@ -273,14 +353,32 @@ export default function SalesOrdersPage() {
                     <div className="text-xs text-muted-foreground">تومان</div>
                   </div>
                 </div>
-                <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-border">
+                <div className="flex flex-wrap items-center justify-end gap-2 mt-3 pt-3 border-t border-border">
                   {order.status === "pending" && (
                     <button onClick={() => updateOrderStatus(order.id, "confirmed")} className="btn-secondary text-sm">تأیید</button>
                   )}
-                  {order.status !== "converted" && order.status !== "cancelled" && (
-                    <button onClick={() => openEdit(order)} className="btn-secondary text-sm"><Edit size={14} /></button>
+                  {/*
+                    تبدیل یک‌کلیکی. پیش از این پیش‌فاکتور یک بن‌بست بود:
+                    ثبتش می‌کردی و بعد باید همه‌ی اقلام را دستی دوباره
+                    در فاکتور فروش وارد می‌کردی.
+                  */}
+                  {canConvertOrder(order).ok && (
+                    <button
+                      onClick={() => convertOrder(order)}
+                      disabled={converting === order.id}
+                      className="btn-primary text-sm"
+                    >
+                      <FileText size={14} />
+                      {converting === order.id ? "در حال تبدیل..." : "تبدیل به فاکتور"}
+                    </button>
                   )}
-                  <button onClick={() => deleteOrder(order.id)} className="btn-danger text-sm"><Trash2 size={14} /></button>
+                  {order.converted_to_id && (
+                    <EntityLink type="sale" id={order.converted_to_id}>مشاهده فاکتور</EntityLink>
+                  )}
+                  {order.status !== "converted" && order.status !== "cancelled" && (
+                    <button onClick={() => openEdit(order)} aria-label="ویرایش سفارش" className="btn-secondary text-sm"><Edit size={14} /></button>
+                  )}
+                  <button onClick={() => deleteOrder(order.id)} aria-label="حذف سفارش" className="btn-danger text-sm"><Trash2 size={14} /></button>
                 </div>
               </div>
             );

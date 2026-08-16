@@ -6,16 +6,37 @@ import { Plus, Tags, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { PageHeader, Spinner, EmptyState } from "@/components/shared/ui";
+import { useConfirm } from "@/src/shared/ui";
 import { ProductSelector, type SelectableVariant } from "@/components/shared/product-selector";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { EntityLink } from "@/components/shared/entity-link";
+import { PriceTiersEditor } from "@/components/shared/price-tiers-editor";
 import { formatToman, rialToToman, toEnDigits, toFaDigits, toJalali, tomanToRial } from "@/lib/utils/format";
 
 type PriceList = { id: string; name: string; type: string; discount_percent: number; created_at: string };
 
+/*
+  برچسب فارسی نوع لیست. مقادیر خام دیتابیس («wholesale»، «customer_level»)
+  مستقیم به کاربر نشان داده می‌شد.
+
+  ⚠️ فرم ساخت لیست فقط sale/purchase/vip می‌سازد، ولی مهاجرت ۰۰۰۵ چهار
+  مقدار دیگر هم مجاز کرده و لیست‌های قدیمی ممکن است آن‌ها را داشته باشند.
+  همه پوشش داده شده‌اند و مقدار ناشناخته به خودش برمی‌گردد نه به خطا.
+*/
+const LIST_TYPE_LABELS: Record<string, string> = {
+  sale: "فروش",
+  purchase: "خرید",
+  vip: "ویژه (VIP)",
+  wholesale: "عمده‌فروشی",
+  customer_level: "سطح مشتری",
+  special: "اختصاصی",
+  seasonal: "فصلی",
+};
+
 export default function PriceListsPage() {
   const { orgId } = useOrg();
   const qc = useQueryClient();
+  const confirm = useConfirm();
   const [name, setName] = useState("");
   const [type, setType] = useState("sale");
   const [discount, setDiscount] = useState("0");
@@ -73,7 +94,15 @@ export default function PriceListsPage() {
   }
 
   async function removeList(id: string) {
-    if (!confirm("لیست قیمت غیرفعال شود؟")) return;
+    // 🔴 `confirm()` بومی بود: راست‌به‌چپ نیست، فونت وزیرمتن ندارد و
+    // روی موبایل کل صفحه را قفل می‌کند.
+    const ok = await confirm({
+      title: "غیرفعال کردن لیست قیمت",
+      description: "این لیست دیگر در فاکتورها نمایش داده نمی‌شود. پله‌ها و قیمت‌های اختصاصی آن حذف نمی‌شوند.",
+      confirmLabel: "غیرفعال کن",
+      tone: "danger",
+    });
+    if (!ok) return;
     const supabase = createClient();
     await supabase.from("price_lists").update({ is_active: false }).eq("id", id);
     if (selectedListId === id) setSelectedListId("");
@@ -131,7 +160,22 @@ export default function PriceListsPage() {
                 <div className="flex items-center justify-between gap-2">
                   <div>
                     <div className="font-bold text-foreground">{list.name}</div>
-                    <div className="text-xs text-muted-foreground mt-1">نوع: {list.type} • تخفیف عمومی: {toFaDigits(list.discount_percent ?? 0)}٪ • ایجاد: {toJalali(list.created_at)}</div>
+                    {/*
+                      🔴 اینجا `نوع: {list.type}` بود و مقدار خام دیتابیس
+                      («wholesale», «customer_level») را وسط متن فارسی
+                      چاپ می‌کرد. کاربر فارسی‌زبان چیزی از آن نمی‌فهمید.
+
+                      همچنین سه توکن با «•» در یک رشته بودند؛ در متن
+                      راست‌به‌چپ بازچینش می‌شوند و اعداد به هم می‌چسبند.
+                      حالا span جدا در flex با جداکننده‌ی aria-hidden.
+                    */}
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                      <span>{LIST_TYPE_LABELS[list.type] ?? list.type}</span>
+                      <span aria-hidden="true">•</span>
+                      <span className="tabular-nums">تخفیف عمومی {toFaDigits(list.discount_percent ?? 0)}٪</span>
+                      <span aria-hidden="true">•</span>
+                      <span className="tabular-nums">{toJalali(list.created_at)}</span>
+                    </div>
                   </div>
                   <span onClick={(e) => { e.stopPropagation(); removeList(list.id); }} className="text-muted-foreground hover:text-destructive"><Trash2 size={17}/></span>
                 </div>
@@ -158,6 +202,20 @@ export default function PriceListsPage() {
                   </div>
                 )}
 
+                {/*
+                  پلکان قیمت عمده. عمداً بالای فهرست کالاها نشسته چون
+                  در فروش عمده مهم‌تر است: قیمت اختصاصی هر کالا استثناست،
+                  پله قاعده است.
+                */}
+                <div className="mb-5 border-b border-border pb-5">
+                  <PriceTiersEditor
+                    priceListId={selectedList.id}
+                    orgId={orgId}
+                    listDiscountPercent={selectedList.discount_percent ?? 0}
+                  />
+                </div>
+
+                <div className="mb-2 text-sm font-bold text-foreground">قیمت اختصاصی کالاها</div>
                 {itemsLoading ? <Spinner /> : !items?.length ? <EmptyState title="کالایی در این لیست نیست" /> : (
                   <div className="space-y-2">
                     {items.map((item: any) => {

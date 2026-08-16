@@ -15,8 +15,9 @@ import { BarcodeScanner } from "@/components/shared/barcode-scanner";
 import { useBarcodeLookup } from "@/lib/hooks/useBarcodeLookup";
 import { VoiceOrder, isVoiceSupported } from "@/components/shared/voice-order";
 import { useAllVariants } from "@/lib/hooks/useAllVariants";
-import { formatToman, toEnDigits, rialToToman, tomanToRial } from "@/lib/utils/format";
+import { formatToman, toEnDigits, toFaDigits, rialToToman, tomanToRial } from "@/lib/utils/format";
 import { lineNetRial } from "@/lib/cart-pricing";
+import { tierPriceRial, nextTierHint, creditStatus, type PriceTier } from "@/lib/wholesale";
 import { logActivity } from "@/lib/utils/activity-log";
 import type { CartItem } from "@/types/db";
 
@@ -148,11 +149,43 @@ export function InvoiceCreateForm({
     },
   });
 
-  function priceForVariant(v: SelectableVariant) {
+  /*
+    پلکان قیمت عمده — «هرچه بیشتر بخری، ارزان‌تر».
+
+    این چیزی است که همه‌ی نرم‌افزارهای پخش ایرانی دارند و ما نداشتیم.
+    `price_lists` بر اساس **مشتری** است؛ پله بر اساس **تعداد**. یک
+    عمده‌فروش هر دو را همزمان لازم دارد.
+  */
+  const { data: priceTiers } = useQuery({
+    queryKey: ["sale-price-tiers", priceListId],
+    enabled: !!priceListId,
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("price_tiers")
+        .select("id,variant_id,min_qty,unit_price,discount_percent,is_active")
+        .eq("price_list_id", priceListId)
+        .eq("is_active", true);
+      return (data ?? []) as PriceTier[];
+    },
+  });
+
+  /**
+   * قیمت یک واحد با توجه به تعداد.
+   *
+   * ⚠️ باید با `tier_price_for` در مهاجرت ۰۰۴۷ یکی بماند. منطق در
+   * `lib/wholesale.ts` است تا هر دو یک منبع داشته باشند و تست‌پذیر باشد.
+   */
+  function priceForVariant(v: SelectableVariant, qty = 1) {
     const explicit = priceListItems?.find((item: { variant_id: string }) => item.variant_id === v.variant_id)?.price;
-    if (typeof explicit === "number") return explicit;
-    const percent = Number((selectedPriceList as { discount_percent?: number } | null)?.discount_percent ?? 0);
-    return Math.max(0, Math.round((v.sale_price * (100 - percent)) / 100));
+    return tierPriceRial({
+      basePriceRial: v.sale_price,
+      qty,
+      tiers: priceTiers ?? [],
+      variantId: v.variant_id,
+      explicitPriceRial: typeof explicit === "number" ? explicit : null,
+      listDiscountPercent: Number((selectedPriceList as { discount_percent?: number } | null)?.discount_percent ?? 0),
+    });
   }
 
   /*
@@ -198,11 +231,38 @@ export function InvoiceCreateForm({
     },
   });
 
+  /*
+    سقف اعتبار مشتری.
+
+    🔴 ستون `contacts.credit_limit` از مهاجرت ۰۰۰۱ وجود دارد و **هرگز
+    در هیچ کجای برنامه خوانده نشده بود**. در فروش عمده این مهم‌ترین
+    گارد است: نباید به مشتری‌ای که از سقفش رد شده باز هم نسیه داد.
+
+    ⚠️ فقط هشدار می‌دهد، جلوی ثبت را نمی‌گیرد. شاید کاربر عمداً
+    می‌خواهد سقف را رد کند و برنامه نباید جای او تصمیم بگیرد.
+  */
+  const { data: creditInfo } = useQuery({
+    queryKey: ["customer-credit", customer?.id],
+    enabled: !!customer?.id,
+    queryFn: async () => {
+      const supabase = createClient();
+      const [{ data: contact }, { data: bal }] = await Promise.all([
+        supabase.from("contacts").select("credit_limit").eq("id", customer!.id).maybeSingle(),
+        supabase.from("v_contact_balance").select("balance").eq("contact_id", customer!.id).maybeSingle(),
+      ]);
+      return {
+        creditLimitRial: Number(contact?.credit_limit ?? 0) || 0,
+        balanceRial: Number(bal?.balance ?? 0) || 0,
+      };
+    },
+  });
+
   function addToCart(v: SelectableVariant) {
     setCart((prev) => {
       const existing = prev.find((c) => c.variant_id === v.variant_id);
       if (existing) {
-        return prev.map((c) => (c.variant_id === v.variant_id ? { ...c, qty: c.qty + 1 } : c));
+        // تعداد که بالا رفت، ممکن است به پله‌ی ارزان‌تری برسیم.
+        return prev.map((c) => (c.variant_id === v.variant_id ? repriceLine(c, c.qty + 1) : c));
       }
       return [
         ...prev,
@@ -220,6 +280,8 @@ export function InvoiceCreateForm({
             حساب شود نه قیمت خرده‌فروشی.
           */
           base_price: priceForVariant(v),
+          list_base_price: v.sale_price,
+          price_edited: false,
           discount: 0,
           cost_price: v.purchase_price,
           stock_qty: v.stock_qty,
@@ -254,19 +316,38 @@ export function InvoiceCreateForm({
     addToCart(found);
   }
 
+  /**
+   * تعداد سطر را عوض می‌کند و قیمت را با پله‌ی جدید هماهنگ می‌کند.
+   *
+   * 🔴 اگر کاربر قیمت را دستی زده باشد (`price_edited`) قیمت **دست
+   * نمی‌خورد**. تصمیم صریح کاربر بر محاسبه‌ی خودکار مقدم است — وگرنه
+   * او قیمت توافقی را می‌گذارد، تعداد را زیاد می‌کند، و سیستم بی‌صدا
+   * قیمتش را پاک می‌کند.
+   */
+  function repriceLine(c: CartItem, qty: number): CartItem {
+    const nextQty = Math.max(1, qty);
+    const unit = c.price_edited
+      ? c.unit_price
+      : tierPriceRial({
+          basePriceRial: c.list_base_price ?? c.unit_price,
+          qty: nextQty,
+          tiers: priceTiers ?? [],
+          variantId: c.variant_id,
+          explicitPriceRial:
+            priceListItems?.find((item: { variant_id: string }) => item.variant_id === c.variant_id)?.price ?? null,
+          listDiscountPercent: Number((selectedPriceList as { discount_percent?: number } | null)?.discount_percent ?? 0),
+        });
+    // تخفیف نباید از مبلغ سطر بزرگ‌تر شود، وگرنه جمع فاکتور منفی می‌شود.
+    const discount = Math.min(c.discount, Math.max(0, unit) * nextQty);
+    return { ...c, qty: nextQty, unit_price: unit, base_price: c.price_edited ? c.base_price : unit, discount };
+  }
+
   function updateQty(id: string, qty: number) {
     if (qty < 1) {
       setCart((p) => p.filter((c) => c.variant_id !== id));
       return;
     }
-    setCart((p) =>
-      p.map((c) => {
-        if (c.variant_id !== id) return c;
-        // همان قاعده‌ی بالا: کم‌کردن تعداد نباید تخفیف را از مبلغ سطر بزرگ‌تر کند.
-        const discount = Math.min(c.discount, Math.max(0, c.unit_price) * qty);
-        return { ...c, qty, discount };
-      })
-    );
+    setCart((p) => p.map((c) => (c.variant_id === id ? repriceLine(c, qty) : c)));
   }
 
   function updatePrice(id: string, tomanValue: string) {
@@ -280,7 +361,8 @@ export function InvoiceCreateForm({
           قیمت را به ۳۰٬۰۰۰ کم می‌کرد، مبلغ سطر منفی می‌شد.
         */
         const discount = Math.min(c.discount, Math.max(0, rial) * c.qty);
-        return { ...c, unit_price: rial, discount };
+        // از این به بعد پله به این سطر دست نمی‌زند.
+        return { ...c, unit_price: rial, discount, price_edited: true };
       })
     );
   }
@@ -302,6 +384,46 @@ export function InvoiceCreateForm({
   const requestedWalletRial = tomanToRial(Number(toEnDigits(paidWallet)) || 0);
   const paidWalletRial = Math.min(requestedWalletRial, walletCredit ?? 0, Math.max(0, total - paidCashRial - paidCardRial));
   const credit = Math.max(0, total - paidCashRial - paidCardRial - paidWalletRial);
+
+  /** وضعیت اعتبار با احتساب نسیه‌ی همین فاکتور. */
+  const creditState = useMemo(
+    () =>
+      creditInfo
+        ? creditStatus({
+            creditLimitRial: creditInfo.creditLimitRial,
+            balanceRial: creditInfo.balanceRial,
+            pendingCreditRial: credit,
+          })
+        : null,
+    [creditInfo, credit]
+  );
+
+  /*
+    پیشنهاد پله‌ی بعدی — «۳ عدد دیگر بگیر، واحدی ۱۰٪ ارزان‌تر می‌شود».
+
+    این همان کاری است که فروشنده‌ی حرفه‌ای شفاهی انجام می‌دهد و
+    بزرگ‌ترین اهرم بزرگ‌کردن سبد در فروش عمده است. هیچ‌کدام از
+    رقبا (سپیدار، هلو، محک) آن را به ویزیتور **نشان نمی‌دهند** —
+    فقط قیمت را بی‌صدا اعمال می‌کنند.
+  */
+  const tierHints = useMemo(() => {
+    if (!priceTiers?.length) return [];
+    return cart
+      .filter((c) => !c.price_edited)
+      .map((c) => {
+        const hint = nextTierHint({
+          basePriceRial: c.list_base_price ?? c.unit_price,
+          qty: c.qty,
+          tiers: priceTiers,
+          variantId: c.variant_id,
+          explicitPriceRial:
+            priceListItems?.find((item: { variant_id: string }) => item.variant_id === c.variant_id)?.price ?? null,
+          listDiscountPercent: Number((selectedPriceList as { discount_percent?: number } | null)?.discount_percent ?? 0),
+        });
+        return hint ? { ...hint, name: c.product_name, variantId: c.variant_id } : null;
+      })
+      .filter((h): h is NonNullable<typeof h> => h !== null);
+  }, [cart, priceTiers, priceListItems, selectedPriceList]);
 
   useEffect(() => {
     if (!isCreditSale) {
@@ -500,6 +622,37 @@ export function InvoiceCreateForm({
               onDiscountChange={updateLineDiscount}
               onRemove={(id) => updateQty(id, 0)}
             />
+
+            {tierHints.length > 0 && (
+              <Card className="space-y-2 p-3">
+                <div className="text-xs font-bold text-foreground">پیشنهاد خرید عمده</div>
+                {tierHints.map((hint) => (
+                  <button
+                    key={hint.variantId}
+                    type="button"
+                    onClick={() => updateQty(hint.variantId, hint.atQty)}
+                    className="flex w-full items-center justify-between gap-2 rounded-xl bg-success/[0.08] p-2 text-right text-xs transition hover:bg-success/[0.14]"
+                  >
+                    {/*
+                      🔴 دو span جدا در flex، نه یک رشته با «·».
+                      رشته‌ی `${توکن۱} · ${توکن۲}` در متن راست‌به‌چپ
+                      بازچینش می‌شود و اعداد به هم می‌چسبند. در DOM
+                      متن درست است و فقط رندر خراب می‌شود، پس تست
+                      رشته‌ای نمی‌گیردش — سه بار این باگ تکرار شد.
+                    */}
+                    <span className="min-w-0 flex-1 truncate text-foreground">{hint.name}</span>
+                    <span aria-hidden="true" className="text-muted-foreground">·</span>
+                    <span className="shrink-0 tabular-nums text-success-onSoft">
+                      {toFaDigits(hint.addQty)} عدد دیگر
+                    </span>
+                    <span aria-hidden="true" className="text-muted-foreground">·</span>
+                    <span className="shrink-0 tabular-nums text-success-onSoft">
+                      واحدی {formatToman(hint.savingPerUnitRial)} کمتر
+                    </span>
+                  </button>
+                ))}
+              </Card>
+            )}
           </div>
 
           {/* ستون کناری: مشتری، روش پرداخت، فیلدها و جمع مبالغ */}
@@ -510,6 +663,30 @@ export function InvoiceCreateForm({
               onPick={() => setCustomerPickerOpen(true)}
               onClear={() => setCustomer(null)}
             />
+
+            {/*
+              هشدار سقف اعتبار. عمداً فقط هشدار است و دکمه‌ی ثبت را
+              غیرفعال نمی‌کند: شاید کاربر آگاهانه می‌خواهد سقف را رد
+              کند و برنامه نباید جای او تصمیم بگیرد.
+            */}
+            {creditState && creditState.remainingRial !== null && (creditState.overLimit || creditState.wouldExceed) && (
+              <Card className="space-y-1 border-warning/40 bg-warning/[0.08] p-3">
+                <div className="text-xs font-bold text-warning-onSoft">
+                  {creditState.overLimit ? "این مشتری از سقف اعتبارش رد شده" : "این فاکتور از سقف اعتبار مشتری رد می‌شود"}
+                </div>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                  <span className="tabular-nums">سقف: {formatToman(creditState.creditLimitRial)}</span>
+                  <span aria-hidden="true">·</span>
+                  <span className="tabular-nums">بدهی فعلی: {formatToman(creditState.balanceRial)}</span>
+                  {credit > 0 && (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <span className="tabular-nums">نسیه این فاکتور: {formatToman(credit)}</span>
+                    </>
+                  )}
+                </div>
+              </Card>
+            )}
 
             <PosPaymentMethods active={payMethod} onSelect={selectPayMethod} />
 
