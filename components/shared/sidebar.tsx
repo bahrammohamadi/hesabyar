@@ -53,7 +53,8 @@ export const NAV = [
       { href: "/contacts", label: "همه اشخاص", icon: Scale },
       { href: "/contacts/customers", label: "مشتریان", icon: ShoppingBag },
       { href: "/contacts/suppliers", label: "تأمین‌کنندگان", icon: Truck },
-      { href: "/contacts/debtors", label: "بدهکاران / بستانکاران", icon: ArrowDownCircle },
+      { href: "/contacts/debtors", label: "بدهکاران", icon: ArrowDownCircle },
+      { href: "/contacts/creditors", label: "بستانکاران", icon: ArrowUpCircle },
     ],
   },
   {
@@ -85,13 +86,23 @@ export const NAV = [
     ],
   },
   {
-    label: "باشگاه مشتریان",
+    /*
+      🔴 صفحات CRM ساخته شده بودند و کار می‌کردند، ولی **هیچ لینکی**
+      در منو نداشتند — کاربر فقط با تایپ دستی نشانی پیدایشان می‌کرد.
+
+      حسابرسی ۲۰ صفحه‌ی یتیم پیدا کرد. اینها پنج‌تایشان‌اند.
+    */
+    label: "مشتریان و باشگاه",
     icon: Gift,
     children: [
-      { href: "/loyalty", label: "نمای کلی", icon: Gift },
+      { href: "/crm", label: "نمای کلی CRM", icon: Users },
+      { href: "/crm/interactions", label: "پیگیری و تماس‌ها", icon: MessageCircle },
+      { href: "/crm/rfm", label: "تحلیل RFM", icon: Target },
       { href: "/crm/segments", label: "سگمنت‌ها", icon: Tags },
+      { href: "/crm/automation", label: "خودکارسازی", icon: Activity },
+      { href: "/loyalty", label: "باشگاه و امتیاز", icon: Gift },
       { href: "/loyalty/points", label: "امتیاز و کیف‌پول", icon: Percent },
-      { href: "/loyalty/campaigns", label: "کمپین‌ها", icon: MessageCircle },
+      { href: "/loyalty/campaigns", label: "کمپین‌ها", icon: Bell },
     ],
   },
   {
@@ -112,12 +123,31 @@ export const NAV = [
       { href: "/settings", label: "داشبورد تنظیمات", icon: Settings },
       // حساب کاربری بالا می‌آید چون همه‌ی کاربران به آن نیاز دارند،
       // برخلاف بقیه‌ی تنظیمات که مخصوص مدیر است.
+      /*
+        🔴 این صفحه یتیم بود: فرم هویت برند و لوگو و اعلان دستگاه در
+        آن ساخته شد ولی هیچ راهی برای رسیدن به آن از منو نبود.
+      */
+      { href: "/settings/general", label: "کسب‌وکار، برند و ظاهر", icon: Building },
       { href: "/settings/account", label: "حساب کاربری", icon: UserCircle },
       { href: "/settings/users", label: "کاربران و دسترسی‌ها", icon: UserCheck },
       { href: "/settings/accounts", label: "مالی و حساب‌ها", icon: Landmark },
       { href: "/settings/catalog", label: "کاتالوگ", icon: Layers },
       { href: "/settings/price-lists", label: "لیست قیمت‌ها", icon: Tags },
       { href: "/settings/storefront", label: "صفحه‌ی عمومی فروشگاه", icon: Store },
+    ],
+  },
+  {
+    /*
+      داده و ابزار از تنظیمات جدا شد.
+
+      گروه تنظیمات به ۱۱ آیتم رسیده بود و تست سقف ده را گرفت. ولی
+      مرز واقعی معنایی است نه عددی: «پشتیبان» و «ورود اکسل» و
+      «بررسی میکروفون» عملیات‌اند نه تنظیم — کاربر برای عوض کردن
+      چیزی سراغشان نمی‌رود، برای انجام کاری می‌رود.
+    */
+    label: "داده و ابزار",
+    icon: DatabaseBackup,
+    children: [
       { href: "/settings/backup", label: "پشتیبان و خروجی", icon: DatabaseBackup },
       { href: "/settings/import", label: "ورود اطلاعات از اکسل", icon: FileSpreadsheet },
       { href: "/settings/diagnostics", label: "بررسی میکروفون و دوربین", icon: Stethoscope },

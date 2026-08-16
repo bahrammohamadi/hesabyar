@@ -127,6 +127,9 @@ describe("بخش مزیت‌ها — هر ادعا باید کدِ پشتیبا�
   */
   const CLAIMS: { keyword: string; proof: string }[] = [
     { keyword: "نصب روی گوشی", proof: "public/sw.js" },
+    { keyword: "اعلان روی گوشی", proof: "components/shared/push-toggle.tsx" },
+    { keyword: "ارسال فاکتور به مشتری", proof: "components/shared/invoice-share.tsx" },
+    { keyword: "قیمت تمام‌شده‌ی درست", proof: "supabase/migrations/0046_landed_cost.sql" },
     { keyword: "صدا", proof: "components/shared/voice-order.tsx" },
     { keyword: "دوربین", proof: "components/shared/barcode-scanner.tsx" },
     { keyword: "اکسل", proof: "app/(app)/settings/backup/page.tsx" },

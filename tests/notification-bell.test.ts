@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { RELEASES, unseenReleases, latestRelease, CHANGE_KIND_LABEL } from "../lib/changelog";
+import { RELEASES, unseenAll, unseenReleases, latestRelease, CHANGE_KIND_LABEL } from "../lib/changelog";
 import { APP_VERSION } from "../lib/version.generated";
 
 const root = join(__dirname, "..");
@@ -64,29 +64,42 @@ describe("یادداشت‌های انتشار", () => {
 });
 
 describe("تشخیص نسخه‌های دیده‌نشده", () => {
-  it("کاربر تازه فقط جدیدترین را می‌بیند", () => {
-    /*
-      نمایش کل تاریخچه به کسی که تازه ثبت‌نام کرده، بیشتر شبیه خرابی
-      است تا خوش‌آمدگویی.
-    */
-    expect(unseenReleases(null)).toHaveLength(1);
-    expect(unseenReleases(null)[0].version).toBe(RELEASES[0].version);
+  /*
+    ⚠️ این سه ادعا بازنویسی شدند.
+
+    نسخه‌ی قبلی فرض می‌کرد `unseenReleases` **همیشه** جدیدترین نسخه را
+    برمی‌گرداند. آن فرض با فیلتر «فقط مهم‌ها» از بین رفت: اگر آخرین
+    نسخه یک رفع اشکال جزئی باشد، عمداً در زنگوله نمی‌آید.
+
+    این دقیقاً همان چیزی است که کاربر خواست («نیازی نیست همه آپدیت‌ها
+    بیاد تو نوتیفیکیشن بار»)، پس **تست عقب مانده بود نه کد**.
+
+    ادعای درست: هرچه برمی‌گردد باید مهم باشد، و کاربری که همه را دیده
+    چیزی نبیند.
+  */
+  it("هرچه در زنگوله می‌آید مهم علامت خورده", () => {
+    for (const r of unseenReleases(null)) {
+      expect(r.important, r.version).toBe(true);
+    }
+  });
+
+  it("کاربر تازه بیش از یک مورد نمی‌بیند", () => {
+    // نمایش کل تاریخچه به تازه‌وارد، بیشتر شبیه خرابی است.
+    expect(unseenReleases(null).length).toBeLessThanOrEqual(1);
   });
 
   it("کاربری که همه را دیده، چیزی نمی‌بیند", () => {
     expect(unseenReleases(RELEASES[0].version)).toHaveLength(0);
   });
 
-  it("کاربری که یک نسخه عقب است، همان یکی را می‌بیند", () => {
-    if (RELEASES.length < 2) return;
-    const out = unseenReleases(RELEASES[1].version);
-    expect(out).toHaveLength(1);
-    expect(out[0].version).toBe(RELEASES[0].version);
+  it("نسخه‌ی ناشناخته بیش از یک مورد نمی‌دهد", () => {
+    // مثلاً پس از rollback، مقدار ذخیره‌شده دیگر در فهرست نیست.
+    expect(unseenReleases("99.9999").length).toBeLessThanOrEqual(1);
   });
 
-  it("نسخه‌ی ناشناخته فقط جدیدترین را می‌دهد", () => {
-    // مثلاً پس از rollback، مقدار ذخیره‌شده دیگر در فهرست نیست.
-    expect(unseenReleases("99.9999")).toHaveLength(1);
+  it("unseenAll همه را می‌دهد تا تاریخچه گم نشود", () => {
+    // تفکیک: زنگوله فیلتر می‌کند، تاریخچه نه.
+    expect(unseenAll(null).length).toBeGreaterThanOrEqual(unseenReleases(null).length);
   });
 });
 
