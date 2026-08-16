@@ -56,7 +56,7 @@ export function InventoryOperationPage({ mode }: { mode: InventoryMode }) {
     (async () => {
       const { data } = await supabase
         .from("product_variants")
-        .select("id,color,size,sku,barcode,purchase_price,sale_price,stock_qty,product:products!inner(id,name,code,category_id,brand_id,base_sale_price,base_purchase_price)")
+        .select("id,color,size,sku,barcode,purchase_price,sale_price,stock_qty,product:products!inner(id,name,code,category_id,brand_id,base_sale_price,base_purchase_price,unit,unit_label,pack_label,pack_size)")
         .eq("product_id", productId)
         .eq("is_active", true)
         .limit(1);
@@ -77,6 +77,10 @@ export function InventoryOperationPage({ mode }: { mode: InventoryMode }) {
         stock_qty: v.stock_qty ?? 0,
         category_id: v.product?.category_id ?? null,
         brand_id: v.product?.brand_id ?? null,
+        unit: v.product?.unit ?? "count",
+        unit_label: v.product?.unit_label ?? null,
+        pack_label: v.product?.pack_label ?? null,
+        pack_size: v.product?.pack_size ?? null,
       });
       setQty(String(v.stock_qty ?? 0));
       setPickerOpen(false);

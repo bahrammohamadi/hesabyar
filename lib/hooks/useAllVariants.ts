@@ -21,6 +21,10 @@ type RawVariant = {
     brand_id: string | null;
     base_sale_price: number | null;
     base_purchase_price: number | null;
+    unit: string | null;
+    unit_label: string | null;
+    pack_label: string | null;
+    pack_size: number | null;
   } | null;
 };
 
@@ -43,7 +47,8 @@ export function useAllVariants(orgId: string | null, enabled: boolean) {
         .from("product_variants")
         .select(
           `id, color, size, sku, barcode, sale_price, purchase_price, stock_qty,
-           product:products!inner(id, name, code, category_id, brand_id, base_sale_price, base_purchase_price)`
+           product:products!inner(id, name, code, category_id, brand_id, base_sale_price, base_purchase_price,
+             unit, unit_label, pack_label, pack_size)`
         )
         .eq("is_active", true)
         .limit(5000);
@@ -62,6 +67,10 @@ export function useAllVariants(orgId: string | null, enabled: boolean) {
         stock_qty: v.stock_qty,
         category_id: v.product?.category_id ?? null,
         brand_id: v.product?.brand_id ?? null,
+        unit: (v.product?.unit as SelectableVariant["unit"]) ?? "count",
+        unit_label: v.product?.unit_label ?? null,
+        pack_label: v.product?.pack_label ?? null,
+        pack_size: v.product?.pack_size ?? null,
       }));
     },
   });

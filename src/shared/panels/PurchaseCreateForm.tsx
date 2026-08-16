@@ -139,6 +139,9 @@ export function PurchaseCreateForm({
           discount: 0,
           cost_price: v.purchase_price,
           stock_qty: v.stock_qty,
+          // واحد از کالا می‌آید تا سبد بداند مقدار اعشاری مجاز است یا نه.
+          unit: v.unit,
+          unit_label: v.unit_label,
           // قیمت فروش فعلی کالا پیش‌فرض می‌شود تا کاربر فقط در صورت
           // نیاز تغییرش دهد؛ خالی گذاشتنش یعنی سود منفی ۱۰۰٪ نشان دادن.
           sale_price: v.sale_price,

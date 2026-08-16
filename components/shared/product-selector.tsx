@@ -9,6 +9,7 @@ import { Modal } from "@/components/shared/ui";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
 import { formatToman, normalizeSearchText, toFaDigits } from "@/lib/utils/format";
 import { effectiveSalePrice, effectivePurchasePrice } from "@/lib/pricing";
+import { formatQty, unitLabel, type UnitKind } from "@/lib/units";
 import { Search, Package, Barcode, X, Filter, PackagePlus } from "lucide-react";
 
 export interface SelectableVariant {
@@ -25,6 +26,11 @@ export interface SelectableVariant {
   stock_qty: number;
   category_id: string | null;
   brand_id: string | null;
+  /** واحد شمارش کالا — سبد باید بداند مقدار اعشاری مجاز است یا نه. */
+  unit: UnitKind;
+  unit_label: string | null;
+  pack_label: string | null;
+  pack_size: number | null;
 }
 
 interface RawVariant {
@@ -44,6 +50,10 @@ interface RawVariant {
     brand_id: string | null;
     base_sale_price: number;
     base_purchase_price: number;
+    unit: string | null;
+    unit_label: string | null;
+    pack_label: string | null;
+    pack_size: number | null;
   } | null;
 }
 
@@ -93,7 +103,8 @@ export function ProductSelector({
         .from("product_variants")
         .select(
           `id, color, size, sku, barcode, sale_price, purchase_price, stock_qty,
-           product:products!inner(id, name, code, category_id, brand_id, base_sale_price, base_purchase_price)`
+           product:products!inner(id, name, code, category_id, brand_id, base_sale_price, base_purchase_price,
+             unit, unit_label, pack_label, pack_size)`
         )
         .eq("is_active", true)
         .limit(5000);
@@ -115,6 +126,10 @@ export function ProductSelector({
         sale_price: effectiveSalePrice(v, v.product),
         purchase_price: effectivePurchasePrice(v, v.product),
         stock_qty: v.stock_qty,
+        unit: (v.product?.unit as UnitKind) ?? "count",
+        unit_label: v.product?.unit_label ?? null,
+        pack_label: v.product?.pack_label ?? null,
+        pack_size: v.product?.pack_size ?? null,
         category_id: v.product?.category_id ?? null,
         brand_id: v.product?.brand_id ?? null,
       }));
@@ -240,6 +255,15 @@ export function ProductSelector({
         stock_qty: firstVariant.stock_qty ?? 0,
         category_id: null,
         brand_id: null,
+        /*
+          کالای تازه‌ساخته‌شده از پنل سریع همیشه شمارشی است — فرم
+          سریع واحد نمی‌پرسد. کاربر می‌تواند بعداً از پرونده‌ی کالا
+          عوضش کند.
+        */
+        unit: "count",
+        unit_label: null,
+        pack_label: null,
+        pack_size: null,
       });
     }
   }

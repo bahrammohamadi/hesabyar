@@ -16,6 +16,7 @@ import { EntityLink } from "@/components/shared/entity-link";
 import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { PhoneLink } from "@/components/shared/phone-link";
 import { formatToman, rialToToman, toEnDigits, toFaDigits } from "@/lib/utils/format";
+import { allowsFraction, formatQty, normalizeQty, unitLabel, type UnitKind } from "@/lib/units";
 import type { CartItem } from "@/types/db";
 import {
   discountRialToPercent, lineDiscountRial, lineNetRial,
@@ -611,7 +612,7 @@ export function PosCartList({
                     />
                   )}
 
-                  <QtyStepper qty={c.qty} onChange={(n) => onQtyChange(c.variant_id, n)} />
+                  <QtyStepper qty={c.qty} onChange={(n) => onQtyChange(c.variant_id, n)} unit={c.unit ?? "count"} label={c.unit && c.unit !== "count" ? unitLabel(c.unit, c.unit_label) : undefined} />
 
                   {!isPurchase && (
                     <PriceInput
@@ -765,7 +766,7 @@ export function PosCartList({
                     </div>
                   )}
                   <div className="mt-2.5 flex items-center justify-between gap-2">
-                    <QtyStepper qty={c.qty} onChange={(n) => onQtyChange(c.variant_id, n)} />
+                    <QtyStepper qty={c.qty} onChange={(n) => onQtyChange(c.variant_id, n)} unit={c.unit ?? "count"} label={c.unit && c.unit !== "count" ? unitLabel(c.unit, c.unit_label) : undefined} />
                     <strong className="text-sm font-black tabular-nums text-foreground">
                       {formatToman(lineNetRial(c.unit_price, c.qty, c.discount), false)}
                     </strong>
@@ -806,26 +807,83 @@ export function PosCartList({
   );
 }
 
-function QtyStepper({ qty, onChange }: { qty: number; onChange: (n: number) => void }) {
+/**
+ * ورودی تعداد.
+ *
+ * 🔴 پیش از این فقط دو دکمه‌ی + و − بود و هیچ راهی برای **تایپ**
+ * مقدار وجود نداشت. یعنی:
+ *   • «۱٫۵ کیلو گوشت» اصلاً قابل ثبت نبود
+ *   • «۲۴ عدد» یعنی بیست‌وچهار بار کلیک
+ *
+ * حالا کادر قابل تایپ است و برای کالای وزنی گام اعشاری دارد.
+ */
+function QtyStepper({
+  qty,
+  onChange,
+  unit = "count",
+  label,
+}: {
+  qty: number;
+  onChange: (n: number) => void;
+  unit?: UnitKind;
+  /** برچسب واحد برای نمایش کنار کادر. */
+  label?: string;
+}) {
+  const fractional = allowsFraction(unit);
+  const step = fractional ? 0.25 : 1;
+
+  /*
+    متن در حالت ویرایش جدا از مقدار نگه داشته می‌شود.
+
+    🔴 اگر مستقیم روی مقدار می‌نوشتیم، کاربر که می‌خواهد «۱٫۵» بزند
+    به‌محض تایپ «۱٫» عددش به ۱ گرد می‌شد و ممیز پاک می‌شد — تایپ
+    عدد اعشاری عملاً ناممکن بود.
+  */
+  const [draft, setDraft] = React.useState<string | null>(null);
+
+  function commit(raw: string) {
+    const parsed = Number(toEnDigits(raw).replace(/[^\d.-]/g, ""));
+    setDraft(null);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      onChange(0);
+      return;
+    }
+    onChange(normalizeQty(parsed, unit));
+  }
+
   return (
-    <div className="mx-auto flex h-10 items-center overflow-hidden rounded-xl border border-input bg-background">
-      <button
-        type="button"
-        onClick={() => onChange(qty - 1)}
-        aria-label="کم کردن تعداد"
-        className="flex h-10 w-9 items-center justify-center text-muted-foreground transition hover:bg-muted"
-      >
-        −
-      </button>
-      <span className="min-w-9 text-center text-sm font-bold tabular-nums">{toFaDigits(qty)}</span>
-      <button
-        type="button"
-        onClick={() => onChange(qty + 1)}
-        aria-label="زیاد کردن تعداد"
-        className="flex h-10 w-9 items-center justify-center text-muted-foreground transition hover:bg-muted"
-      >
-        +
-      </button>
+    <div className="mx-auto flex items-center gap-1">
+      <div className="flex h-10 items-center overflow-hidden rounded-xl border border-input bg-background">
+        <button
+          type="button"
+          onClick={() => onChange(Math.max(0, normalizeQty(qty - step, unit)))}
+          aria-label="کم کردن تعداد"
+          className="flex h-10 w-9 shrink-0 items-center justify-center text-muted-foreground transition hover:bg-muted"
+        >
+          −
+        </button>
+        <input
+          type="text"
+          inputMode={fractional ? "decimal" : "numeric"}
+          aria-label="تعداد"
+          value={draft ?? toFaDigits(formatQty(qty, unit))}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={(e) => commit(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+          }}
+          className="h-10 w-14 border-0 bg-transparent text-center text-sm font-bold tabular-nums outline-none focus:ring-0"
+        />
+        <button
+          type="button"
+          onClick={() => onChange(normalizeQty(qty + step, unit))}
+          aria-label="زیاد کردن تعداد"
+          className="flex h-10 w-9 shrink-0 items-center justify-center text-muted-foreground transition hover:bg-muted"
+        >
+          +
+        </button>
+      </div>
+      {label && <span className="shrink-0 text-2xs text-muted-foreground">{label}</span>}
     </div>
   );
 }

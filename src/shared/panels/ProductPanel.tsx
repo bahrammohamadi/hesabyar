@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { UNIT_KINDS, UNIT_META, unitLabel as unitLabelOf, type UnitKind } from "@/lib/units";
 import { useEffect, useMemo, useState } from "react";
 import { Package, Plus, Trash2 } from "lucide-react";
 import type { PanelInstance, PanelMode } from "@/src/core/panel-manager/types";
@@ -49,6 +50,10 @@ type ProductFormState = {
   baseProfitPercent: number | null;
   lowStockThreshold: number | null;
   description: string;
+  unit: UnitKind;
+  unitLabel: string;
+  packLabel: string;
+  packSize: number | null;
 };
 
 type VariantFormState = {
@@ -99,7 +104,7 @@ function calcSaleFromProfit(purchaseToman: number | null, profitPercent: number 
 }
 
 function emptyProductForm(): ProductFormState {
-  return { name: "", code: "", season: "", material: "", imageUrl: "", categoryId: "", brandId: "", basePurchasePriceToman: null, baseSalePriceToman: null, baseProfitPercent: null, lowStockThreshold: 3, description: "" };
+  return { name: "", code: "", season: "", material: "", imageUrl: "", categoryId: "", brandId: "", basePurchasePriceToman: null, baseSalePriceToman: null, baseProfitPercent: null, lowStockThreshold: 3, description: "", unit: "count", unitLabel: "", packLabel: "", packSize: null };
 }
 
 function emptyVariantForm(): VariantFormState {
@@ -122,6 +127,10 @@ function formFromProduct(product: ProductEntity): ProductFormState {
     baseProfitPercent: calcProfitPercent(purchaseToman, saleToman),
     lowStockThreshold: product.low_stock_threshold,
     description: product.description ?? "",
+    unit: product.unit ?? "count",
+    unitLabel: product.unit_label ?? "",
+    packLabel: product.pack_label ?? "",
+    packSize: product.pack_size ?? null,
   };
 }
 
@@ -308,6 +317,10 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
           base_purchase_price_toman: productForm.basePurchasePriceToman,
           base_sale_price_toman: productForm.baseSalePriceToman,
           low_stock_threshold: productForm.lowStockThreshold ?? 3,
+          unit: productForm.unit,
+          unit_label: productForm.unitLabel,
+          pack_label: productForm.packLabel,
+          pack_size: productForm.packSize,
         });
         const savedVariants = await saveVariantRows(created.id, variantRows);
         if (savedVariants.length > 0 && meaningfulVariantRows.length > 0) {
@@ -333,6 +346,10 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
             base_purchase_price_toman: productForm.basePurchasePriceToman,
             base_sale_price_toman: productForm.baseSalePriceToman,
             low_stock_threshold: productForm.lowStockThreshold ?? 3,
+          unit: productForm.unit,
+          unit_label: productForm.unitLabel,
+          pack_label: productForm.packLabel,
+          pack_size: productForm.packSize,
           },
         });
         setMode("view");
@@ -507,6 +524,63 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
           />
         </Field>
         <Field label="حداقل موجودی" hint={productHelp.lowStockThreshold}><NumberInput value={productForm.lowStockThreshold} onValueChange={(value) => setProductForm((prev) => ({ ...prev, lowStockThreshold: value }))} /></Field>
+
+        {/*
+          واحد شمارش.
+
+          🔴 پیش از این همه‌ی کالاها شمارشی فرض می‌شدند و ستون qty از
+          نوع integer بود. سوپرمارکت نمی‌توانست «۱٫۵ کیلو» بفروشد و
+          نانوایی نمی‌توانست «۲۵۰ گرم آرد» مصرف کند.
+        */}
+        <Field label="واحد شمارش" hint="کالای شمارشی فقط عدد صحیح می‌پذیرد؛ وزنی و حجمی تا سه رقم اعشار.">
+          <Select
+            value={productForm.unit}
+            onChange={(event) => setProductForm((prev) => ({ ...prev, unit: event.target.value as UnitKind }))}
+          >
+            {UNIT_KINDS.map((kind) => (
+              <option key={kind} value={kind}>
+                {UNIT_META[kind].label} ({UNIT_META[kind].defaultUnit})
+              </option>
+            ))}
+          </Select>
+        </Field>
+
+        <Field
+          label="برچسب واحد"
+          hint={`خالی بگذارید تا «${UNIT_META[productForm.unit].defaultUnit}» استفاده شود.`}
+        >
+          <Input
+            value={productForm.unitLabel}
+            placeholder={UNIT_META[productForm.unit].defaultUnit}
+            onChange={(event) => setProductForm((prev) => ({ ...prev, unitLabel: event.target.value }))}
+          />
+        </Field>
+
+        {/*
+          واحد فرعی. تأمین‌کننده «کارتن ۱۲تایی» می‌فروشد ولی انبار
+          باید عددی بشمارد.
+        */}
+        <Field label="نام بسته (اختیاری)" hint="مثل کارتن، بسته، جعبه. برای خرید و فروش عمده.">
+          <Input
+            value={productForm.packLabel}
+            placeholder="کارتن"
+            onChange={(event) => setProductForm((prev) => ({ ...prev, packLabel: event.target.value }))}
+          />
+        </Field>
+
+        <Field
+          label="تعداد در هر بسته"
+          hint={
+            productForm.packSize && productForm.packSize > 0
+              ? `هر ${productForm.packLabel.trim() || "بسته"} برابر ${toPersianDigits(productForm.packSize)} ${unitLabelOf(productForm.unit, productForm.unitLabel)}`
+              : "خالی یعنی این کالا بسته‌بندی ندارد."
+          }
+        >
+          <NumberInput
+            value={productForm.packSize}
+            onValueChange={(value) => setProductForm((prev) => ({ ...prev, packSize: value }))}
+          />
+        </Field>
         <Field label="توضیحات" hint={productHelp.description} className="sm:col-span-2"><Input value={productForm.description} onChange={(event) => setProductForm((prev) => ({ ...prev, description: event.target.value }))} /></Field>
       </div>
       {isCreate && (

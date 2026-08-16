@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { toEnglishDigits } from "@/src/shared/format";
 import { tomanToRial } from "@/lib/utils/format";
+import { normalizeQty, validateQty, type UnitKind } from "@/lib/units";
 import { useToast } from "@/src/shared/ui";
 
 export interface ProductVariantEntity {
@@ -34,6 +35,14 @@ export interface ProductEntity {
   base_purchase_price: number;
   base_sale_price: number;
   low_stock_threshold: number;
+  /** واحد شمارش: count شمارشی، weight وزنی، volume حجمی، length طولی. */
+  unit: UnitKind;
+  /** برچسب دلخواه واحد مثل «کیلوگرم». خالی یعنی پیش‌فرض همان unit. */
+  unit_label: string | null;
+  /** برچسب واحد فرعی مثل «کارتن». */
+  pack_label: string | null;
+  /** چند واحد اصلی در هر بسته. */
+  pack_size: number | null;
   is_active: boolean;
   created_at: string;
   category: { name: string } | null;
@@ -95,7 +104,8 @@ export async function getProductById(id: string): Promise<ProductEntity | null> 
   const { data, error } = await supabase
     .from("products")
     .select(`id, org_id, branch_id, name, code, season, material, category_id, brand_id, description, image_url,
-      base_purchase_price, base_sale_price, low_stock_threshold, is_active, created_at,
+      base_purchase_price, base_sale_price, low_stock_threshold,
+      unit, unit_label, pack_label, pack_size, is_active, created_at,
       category:categories(name), brand:brands(name),
       product_variants(id, product_id, color, size, sku, barcode, purchase_price, sale_price, stock_qty, is_active)`)
     .eq("id", id)
@@ -211,6 +221,10 @@ export interface ProductMutationInput {
   low_stock_threshold?: number;
   base_purchase_price_toman?: number | null;
   base_sale_price_toman?: number | null;
+  unit?: UnitKind;
+  unit_label?: string | null;
+  pack_label?: string | null;
+  pack_size?: number | null;
 }
 
 export interface ProductUpdatePatch extends Partial<Omit<ProductMutationInput, "org_id" | "branch_id">> {
@@ -244,6 +258,10 @@ type ProductWritePayload = {
   low_stock_threshold: number;
   base_purchase_price?: number;
   base_sale_price?: number;
+  unit?: UnitKind;
+  unit_label?: string | null;
+  pack_label?: string | null;
+  pack_size?: number | null;
   is_active?: boolean;
 };
 
@@ -270,10 +288,22 @@ function toNumber(value?: number | null) {
   return value;
 }
 
-function normalizeStock(value?: number | null) {
+/**
+ * موجودی اولیه را با توجه به واحد کالا اعتبارسنجی می‌کند.
+ *
+ * 🔴 پیش از این **همیشه** عدد صحیح می‌خواست. یعنی سوپرمارکتی که
+ * «۱۲٫۵ کیلو برنج» موجودی اولیه دارد اصلاً نمی‌توانست ثبت کند و
+ * پیام خطا هم نمی‌گفت چرا — فقط «باید عدد صحیح باشد».
+ *
+ * حالا برای کالای شمارشی همان قاعده برقرار است و برای وزنی/حجمی/طولی
+ * تا سه رقم اعشار (سقف `numeric(14,3)` دیتابیس) پذیرفته می‌شود.
+ */
+function normalizeStock(value?: number | null, unit: UnitKind = "count") {
   const stock = toNumber(value) ?? 0;
-  if (stock !== Math.trunc(stock)) throw new Error("موجودی اولیه باید عدد صحیح باشد.");
-  return stock;
+  if (stock === 0) return 0;
+  const problem = validateQty(Math.abs(stock), unit);
+  if (problem) throw new Error(`موجودی اولیه: ${problem}`);
+  return normalizeQty(Math.abs(stock), unit) * Math.sign(stock);
 }
 
 function validateProductName(name: string) {
@@ -295,6 +325,15 @@ function toProductPayload(input: ProductMutationInput): ProductWritePayload {
     low_stock_threshold: input.low_stock_threshold ?? 3,
     base_purchase_price: input.base_purchase_price_toman ? tomanToRial(input.base_purchase_price_toman) : undefined,
     base_sale_price: input.base_sale_price_toman ? tomanToRial(input.base_sale_price_toman) : undefined,
+    unit: input.unit ?? "count",
+    unit_label: cleanText(input.unit_label),
+    pack_label: cleanText(input.pack_label),
+    /*
+      اندازه‌ی بسته‌ی صفر یا منفی بی‌معنی است و در دیتابیس هم چک
+      دارد. به null تبدیل می‌شود یعنی «بسته ندارد» — نه اینکه خطا
+      بدهیم و کاربر نفهمد چرا ذخیره نشد.
+    */
+    pack_size: input.pack_size && input.pack_size > 0 ? input.pack_size : null,
   };
 }
 
@@ -374,7 +413,16 @@ export async function createVariant(productId: string, input: VariantMutationInp
     .single();
   if (error) throw new Error("خطا در ساخت واریانت: " + error.message);
 
-  const initialStock = normalizeStock(input.initial_stock);
+  /*
+    واحد از خود کالا خوانده می‌شود نه از ورودی واریانت: واحد خاصیت
+    کالاست و اگر اینجا دوباره می‌پرسیدیم، ممکن بود با کالا نخواند.
+  */
+  const { data: parent } = await supabase
+    .from("products")
+    .select("unit")
+    .eq("id", productId)
+    .maybeSingle();
+  const initialStock = normalizeStock(input.initial_stock, (parent?.unit as UnitKind) ?? "count");
   if (initialStock !== 0) {
     const { error: stockError } = await supabase.rpc("fn_add_stock_movement", {
       p_product_id: productId,

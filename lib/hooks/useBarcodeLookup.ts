@@ -28,7 +28,7 @@ export function useBarcodeLookup(orgId: string | null) {
       const supabase = createClient();
       const select =
         "id, product_id, color, size, sku, barcode, sale_price, purchase_price, stock_qty, " +
-        "product:products(id, name, code, category_id, brand_id, base_sale_price)";
+        "product:products(id, name, code, category_id, brand_id, base_sale_price, unit, unit_label, pack_label, pack_size)";
 
       const shape = (row: Record<string, unknown>): SelectableVariant => {
         const product = (row.product ?? {}) as Record<string, unknown>;
@@ -43,6 +43,10 @@ export function useBarcodeLookup(orgId: string | null) {
           barcode: (row.barcode as string) ?? null,
           sale_price: Number(row.sale_price ?? product.base_sale_price ?? 0),
           purchase_price: Number(row.purchase_price ?? 0),
+          unit: ((product.unit as string) ?? "count") as SelectableVariant["unit"],
+          unit_label: (product.unit_label as string) ?? null,
+          pack_label: (product.pack_label as string) ?? null,
+          pack_size: product.pack_size === null || product.pack_size === undefined ? null : Number(product.pack_size),
           stock_qty: Number(row.stock_qty ?? 0),
           category_id: (product.category_id as string) ?? null,
           brand_id: (product.brand_id as string) ?? null,
