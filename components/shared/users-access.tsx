@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  ChevronDown, Loader2, Plus, Search, ShieldCheck, UserCog, Users,
+  ChevronDown, KeyRound, Loader2, Plus, Search, ShieldCheck, UserCog, Users,
 } from "lucide-react";
 import { Spinner } from "@/components/shared/ui";
 import {
@@ -34,6 +34,9 @@ export function UsersAccessManager() {
   const [modalOpen, setModalOpen] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [issuingId, setIssuingId] = useState<string | null>(null);
+  /* کد فقط یک بار و همین‌جا دیده می‌شود؛ در دیتابیس هش ذخیره شده است. */
+  const [issued, setIssued] = useState<{ name: string; code: string; minutes: number } | null>(null);
   const [search, setSearch] = useState("");
 
   const { data, isLoading, error } = useQuery({
@@ -96,6 +99,45 @@ export function UsersAccessManager() {
       if (!ok) return;
     }
     updateUser(user, { is_active: !user.is_active });
+  }
+
+  /**
+   * صدور کد بازیابی برای یک کاربر.
+   *
+   * ⚠️ کد فقط در همین پاسخ برمی‌گردد. در دیتابیس هش ذخیره می‌شود،
+   * پس اگر مدیر پنجره را ببندد، باید کد تازه بسازد.
+   */
+  async function issueResetCode(u: ManagedUser) {
+    const ok = await confirm({
+      title: "ساخت کد بازیابی رمز",
+      description:
+        "یک کد هشت‌رقمی ساخته می‌شود که ۳۰ دقیقه اعتبار دارد. کد را به خود کاربر بدهید تا رمز تازه‌اش را انتخاب کند. کدهای قبلی همین کاربر باطل می‌شوند.",
+      confirmLabel: "بساز",
+    });
+    if (!ok) return;
+
+    setIssuingId(u.user_id);
+    try {
+      const res = await fetch("/api/auth/reset-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: u.user_id }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast({ title: "کد ساخته نشد", description: json.error, tone: "error" });
+        return;
+      }
+      setIssued({
+        name: u.name || displayUsername(u.email),
+        code: json.code,
+        minutes: json.expires_in_minutes ?? 30,
+      });
+    } catch (e) {
+      toast({ title: "کد ساخته نشد", description: (e as Error).message, tone: "error" });
+    } finally {
+      setIssuingId(null);
+    }
   }
 
   return (
@@ -191,6 +233,25 @@ export function UsersAccessManager() {
                       </Button>
 
                       {/*
+                        کد بازیابی رمز.
+
+                        🔴 چرا کد و نه تعیین مستقیم رمز؟
+                        اگر مدیر خودش رمز را بگذارد، **رمز کاربر را
+                        می‌داند** و می‌تواند بعداً به‌جای او سند مالی
+                        ثبت کند. با کد یک‌بارمصرف، رمز نهایی را فقط
+                        خود کاربر می‌داند.
+                      */}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => issueResetCode(u)}
+                        disabled={savingId === u.id || issuingId === u.user_id}
+                        icon={<KeyRound size={15} />}
+                      >
+                        {issuingId === u.user_id ? "..." : "کد بازیابی"}
+                      </Button>
+
+                      {/*
                         درخت مجوز پیش‌فرض بسته است. مدیر کل همه‌ی
                         دسترسی‌ها را دارد و درختش قابل تغییر نیست، پس
                         اصلاً دکمه‌اش را نشان نمی‌دهیم.
@@ -235,6 +296,62 @@ export function UsersAccessManager() {
           </ul>
         )}
       </Card>
+
+      {/*
+        نمایش کد صادرشده.
+
+        🔴 کد فقط همین یک بار دیده می‌شود. در دیتابیس هش ذخیره شده
+        و بازیابی‌اش ممکن نیست — اگر مدیر پنجره را ببندد باید کد
+        تازه بسازد. این عمدی است: کدی که بشود بارها دیدش، عملاً
+        رمز دوم است.
+      */}
+      {issued && (
+        <Modal open onClose={() => setIssued(null)} title="کد بازیابی رمز" size="md">
+          <div className="space-y-4">
+            <p className="text-sm leading-7 text-muted-foreground">
+              این کد را به <span className="font-bold text-foreground">{issued.name}</span> بدهید.
+              او باید در صفحه‌ی «رمز عبور را فراموش کرده‌ام» آن را وارد کند و رمز تازه‌اش را
+              انتخاب کند.
+            </p>
+
+            <div
+              dir="ltr"
+              className="select-all rounded-2xl bg-primary/[0.08] py-5 text-center text-3xl font-black tracking-[0.3em] text-primary"
+            >
+              {issued.code}
+            </div>
+
+            {/*
+              توکن‌های عددی هرکدام span جدا با جداکننده‌ی aria-hidden.
+              رشته‌ی `${الف} · ${ب}` در متن راست‌به‌چپ بازچینش می‌شود و
+              اعداد به هم می‌چسبند — در DOM درست است و فقط رندر خراب
+              می‌شود، پس تست رشته‌ای نمی‌گیردش.
+            */}
+            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+              <span className="tabular-nums">اعتبار {toFaDigits(issued.minutes)} دقیقه</span>
+              <span aria-hidden="true">·</span>
+              <span>یک‌بار مصرف</span>
+              <span aria-hidden="true">·</span>
+              <span>دیگر نمایش داده نمی‌شود</span>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                className="flex-1"
+                onClick={() => {
+                  navigator.clipboard?.writeText(issued.code);
+                  toast({ title: "کد کپی شد", tone: "success" });
+                }}
+              >
+                کپی کد
+              </Button>
+              <Button variant="secondary" onClick={() => setIssued(null)}>
+                بستن
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {modalOpen && (
         <CreateUserModal

@@ -90,7 +90,25 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
+
+  /*
+    🔴 دو مفهوم که عمداً از هم جدا شده‌اند:
+
+      isAuthPage  → عمومی است **و** کاربر واردشده باید از آن به
+                    داشبورد پرت شود (ورود، ثبت‌نام).
+
+      isRecovery  → عمومی است ولی کاربر واردشده **نباید** پرت شود.
+
+    چرا جدا؟ کسی که از لینک ایمیل بازیابی می‌آید، Supabase برایش
+    نشست ساخته است. اگر /reset-password را جزو isAuthPage می‌گذاشتیم،
+    همان نشست باعث ریدایرکت به /dashboard می‌شد و کاربر **هرگز**
+    نمی‌توانست رمزش را عوض کند — با اینکه دقیقاً برای همین آمده.
+
+    این باگ در همین نوبت حین نوشتن گرفته شد، پیش از دیپلوی.
+  */
   const isAuthPage = path.startsWith("/login") || path.startsWith("/register");
+  const isRecovery =
+    path.startsWith("/forgot-password") || path.startsWith("/reset-password");
 
   /*
     صفحات وب‌سایت عمومی (معرفی محصول).
@@ -147,6 +165,7 @@ export async function updateSession(request: NextRequest) {
   */
   const isPublic =
     isAuthPage ||
+    isRecovery ||
     isPublicSite ||
     path.startsWith("/_next") ||
     path.startsWith("/api/public") ||
@@ -169,6 +188,20 @@ export async function updateSession(request: NextRequest) {
       کندسازی نمایی per-account.
     */
     path === "/api/auth/login" ||
+    /*
+      🔴 روت‌های بازیابی هم مثل روت ورود باید عمومی باشند: کاربری که
+      رمزش را گم کرده وارد نشده است و در غیر این صورت همیشه ۴۰۱
+      می‌گیرد.
+
+      ⚠️ فقط PUT روت reset-code عمومی است در عمل؛ POST آن (صدور کد
+      توسط مدیر) خودش داخل تابع دیتابیس نقش را می‌سنجد و با
+      auth.uid() تهی رد می‌شود. پس عمومی‌بودن مسیر خطری ندارد.
+
+      امنیتش از دست نمی‌رود: هر دو محدودیت نرخ per-IP دارند و
+      مصرف کد سقف پنج تلاش دارد.
+    */
+    path === "/api/auth/forgot-password" ||
+    path === "/api/auth/reset-code" ||
     /*
       ⚠️ /api/market و /api/weather عمداً *عمومی نیستند*.
 

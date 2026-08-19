@@ -52,10 +52,38 @@ export async function POST(request: Request) {
 
     const svc = serviceClient();
 
+    /*
+      سابقه‌ی ورود جدا از شمارنده‌ی کندسازی ثبت می‌شود.
+
+      🔴 چرا لازم است: `login_attempts` با ورود موفق **پاک می‌شود**،
+      پس هیچ ردی نمی‌ماند که چه کسی کِی از کجا وارد شده. بدون سابقه،
+      نفوذ هرگز کشف نمی‌شود — کاربر نمی‌تواند ببیند «دیروز ساعت ۳ شب
+      از یک IP ناشناس وارد شدند».
+
+      ⚠️ شکست ثبت سابقه نباید جلوی ورود را بگیرد. اگر این تماس خطا
+      بدهد، کاربر قانونی نباید بیرون بماند — پس خطا بلعیده می‌شود.
+    */
+    const ip = clientIp(request);
+    const userAgent = request.headers.get("user-agent");
+    const logEvent = async (event: string, userId?: string | null) => {
+      try {
+        await svc.rpc("record_login_event", {
+          p_login_id: loginId,
+          p_event: event,
+          p_user_id: userId ?? null,
+          p_ip: ip,
+          p_user_agent: userAgent,
+        });
+      } catch {
+        // عمداً ساکت — ثبت سابقه نباید مسیر ورود را بشکند.
+      }
+    };
+
     // لایه‌ی دوم: کندسازی per-account
     const { data: waitBefore } = await svc.rpc("login_wait_seconds", { p_login_id: loginId });
     const waiting = Number(waitBefore ?? 0);
     if (waiting > 0) {
+      await logEvent("throttled");
       return NextResponse.json(
         {
           error: "نام کاربری یا رمز عبور اشتباه است.",
@@ -79,6 +107,7 @@ export async function POST(request: Request) {
 
     if (error || !data.user) {
       const { data: waitAfter } = await svc.rpc("record_login_failure", { p_login_id: loginId });
+      await logEvent("failure");
       return NextResponse.json(
         {
           error: "نام کاربری یا رمز عبور اشتباه است.",
@@ -90,6 +119,7 @@ export async function POST(request: Request) {
 
     // ورود موفق → شمارنده صفر می‌شود.
     await svc.rpc("clear_login_failures", { p_login_id: loginId });
+    await logEvent("success", data.user.id);
 
     return NextResponse.json({ ok: true });
   } catch (error) {

@@ -222,6 +222,21 @@ export default function LoginPage() {
               >
                 {retryAfter > 0 ? `صبر کنید — ${formatWait(retryAfter)}` : "ورود به داشبورد"}
               </Button>
+
+              {/*
+                🔴 تا این نسخه هیچ راهی برای بازیابی رمز نبود.
+                FAQ می‌گفت «با پشتیبانی تماس بگیرید» — یعنی کاربری که
+                رمزش را گم می‌کرد از داده‌ی مالی خودش بیرون می‌ماند تا
+                وقتی کسی جواب تلفنش را بدهد.
+              */}
+              <div className="text-center">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm font-bold text-slate-500 transition hover:text-primary hover:underline"
+                >
+                  رمز عبور را فراموش کرده‌اید؟
+                </Link>
+              </div>
             </div>
 
             <div className="mt-6 rounded-2xl bg-slate-50 p-4 text-center text-sm text-slate-500">
