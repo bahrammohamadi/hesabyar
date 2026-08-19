@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Laptop, Loader2, LogOut, Monitor, Smartphone, Tablet } from "lucide-react";
 import { toJalali } from "@/lib/utils/format";
+import { maskIp } from "@/lib/security/login-history";
 import { useConfirm } from "@/src/shared/ui";
 
 /**
@@ -109,9 +110,30 @@ export function ActiveSessions() {
                     </span>
                   )}
                 </div>
-                <div className="mt-0.5 text-[10px] text-muted-foreground">
-                  آخرین فعالیت: {toJalali(s.lastSeen, true)}
-                  {s.ip && <span dir="ltr"> · {s.ip}</span>}
+                {/*
+                  🔴 دو باگ که با اسکرین‌شات پیدا شدند:
+
+                  ۱) نشانی اینترنتی **خام** نمایش داده می‌شد
+                     (31.171.101.138). در صفحه‌ای که ممکن است کسی از
+                     پشت سر ببیند، نشانی کامل اطلاعات اضافه می‌دهد
+                     بی‌آنکه به کاربر کمکی کند؛ برای تشخیص «این من
+                     بودم؟» سه بخش اول کافی است. کارت «سابقه‌ی ورود»
+                     از همان اول می‌پوشاند و این یکی جا مانده بود.
+
+                  ۲) الگوی ` · ${توکن}` داخل یک رشته — همان
+                     خانواده‌باگی که چند بار تکرار شده: در متن
+                     راست‌به‌چپ بازچینش می‌شود و اعداد به هم
+                     می‌چسبند. حالا span جدا در flex با جداکننده‌ی
+                     aria-hidden.
+                */}
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] text-muted-foreground">
+                  <span className="tabular-nums">آخرین فعالیت: {toJalali(s.lastSeen, true)}</span>
+                  {s.ip && (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <span className="tabular-nums" dir="ltr">{maskIp(s.ip)}</span>
+                    </>
+                  )}
                 </div>
               </div>
               {!s.isCurrent && (

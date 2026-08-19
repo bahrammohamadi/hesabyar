@@ -1,12 +1,13 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { KeyRound, MonitorSmartphone, UserCircle } from "lucide-react";
+import { History, KeyRound, MonitorSmartphone, UserCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/ui";
 import { Card } from "@/src/shared/ui";
 import { ChangePasswordForm } from "@/components/shared/change-password-form";
 import { ActiveSessions } from "@/components/shared/active-sessions";
+import { LoginHistory } from "@/components/shared/login-history";
 import { ProfileForm } from "@/components/shared/profile-form";
 import { displayUsername, toJalali } from "@/lib/utils/format";
 
@@ -99,6 +100,29 @@ export default function AccountSettingsPage() {
           را بیرون نمی‌اندازد؛ برای این کار باید نشستشان را ببندید.
         </p>
         <ActiveSessions />
+      </Card>
+
+      {/*
+        🔴 سابقه‌ی ورود.
+
+        رویدادها از نسخه‌ی قبل در `login_events` ثبت می‌شدند ولی هیچ
+        جایی برای دیدنشان نبود — داده بود، رابط نبود. بدون این کارت،
+        کاربر هرگز نمی‌فهمد کسی شب گذشته با رمزش تلاش کرده وارد شود.
+
+        عمداً *پس از* «دستگاه‌های واردشده» می‌آید: آن فهرست وضعیت
+        **الان** است و این تاریخچه‌ی **گذشته**. کاربری که نگران است
+        اول می‌خواهد بداند چه کسی همین حالا وارد است.
+      */}
+      <Card className="p-4 sm:p-5">
+        <div className="mb-1 flex items-center gap-2">
+          <History size={18} className="text-primary" aria-hidden />
+          <h2 className="text-sm font-extrabold text-foreground">سابقه‌ی ورود</h2>
+        </div>
+        <p className="mb-4 text-2xs leading-relaxed text-muted-foreground">
+          هر ورود موفق و ناموفق به حساب شما اینجا ثبت می‌شود. اگر رویدادی را نمی‌شناسید، رمز
+          عبورتان را عوض کنید و دستگاه‌های ناشناس را ببندید.
+        </p>
+        <LoginHistory />
       </Card>
     </div>
   );
