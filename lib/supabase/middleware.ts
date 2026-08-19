@@ -203,6 +203,12 @@ export async function updateSession(request: NextRequest) {
     path === "/api/auth/forgot-password" ||
     path === "/api/auth/reset-code" ||
     /*
+      ⚠️ این روت عمومی **نیست** — خودش نشست را چک می‌کند. ولی باید
+      از گارد aal2 مستثنا باشد، وگرنه کاربری که هنوز مرحله‌ی دوم را
+      رد نکرده نمی‌تواند شکست همان مرحله را ثبت کند و حمله نامرئی
+      می‌ماند.
+    */
+    /*
       ⚠️ /api/market و /api/weather عمداً *عمومی نیستند*.
 
       نوار قیمت فقط داخل AppShell رندر می‌شود، یعنی کاربر حتماً وارد
@@ -223,6 +229,46 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
+  }
+
+  /*
+    🔴 اجبار مرحله‌ی دوم — بدون این، ورود دومرحله‌ای فقط تزئین است.
+
+    اندازه‌گیری روی همین پروژه:
+      • ورود با رمز، وقتی TOTP فعال است، **موفق می‌شود** و نشست
+        aal1 می‌دهد (نه aal2).
+      • با همان توکن aal1، خواندن جدول products **مجاز است**.
+
+    یعنی Supabase به‌تنهایی جلوی چیزی را نمی‌گیرد؛ فقط سطح را
+    گزارش می‌کند. اگر اینجا گارد نگذاریم، کاربری که 2FA فعال کرده
+    دقیقاً به اندازه‌ی قبل محافظت دارد — یعنی هیچ.
+
+    ⚠️ چرا در middleware و نه در هر صفحه؟ تنها نقطه‌ای است که همه‌ی
+    مسیرها از آن عبور می‌کنند. هر راه‌حل صفحه‌به‌صفحه یعنی اولین
+    صفحه‌ای که یادمان برود، یک در باز است.
+
+    ⚠️ `/mfa` و روت‌های auth مستثنا هستند وگرنه حلقه‌ی بی‌نهایت
+    می‌شود: کاربر برای رسیدن به صفحه‌ی تأیید باید از گاردی رد شود
+    که خودش او را به همان صفحه می‌فرستد.
+  */
+  if (user && !isPublic && !path.startsWith("/mfa") && path !== "/api/auth/mfa-event") {
+    const aal = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    const needsSecondFactor =
+      aal.data?.nextLevel === "aal2" && aal.data.nextLevel !== aal.data.currentLevel;
+
+    if (needsSecondFactor) {
+      if (path.startsWith("/api/")) {
+        return NextResponse.json({ error: "نیاز به تأیید دومرحله‌ای" }, { status: 401 });
+      }
+      const url = request.nextUrl.clone();
+      url.pathname = "/mfa";
+      /*
+        مقصد اصلی نگه داشته می‌شود تا پس از تأیید، کاربر به همان
+        صفحه‌ای برگردد که می‌خواست — نه همیشه به داشبورد.
+      */
+      url.searchParams.set("next", path);
+      return NextResponse.redirect(url);
+    }
   }
 
   // کاربر وارد شده و در صفحه ورود است → برو به داشبورد

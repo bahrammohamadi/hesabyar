@@ -1,13 +1,14 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { History, KeyRound, MonitorSmartphone, UserCircle } from "lucide-react";
+import { History, KeyRound, MonitorSmartphone, ShieldCheck, UserCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/ui";
 import { Card } from "@/src/shared/ui";
 import { ChangePasswordForm } from "@/components/shared/change-password-form";
 import { ActiveSessions } from "@/components/shared/active-sessions";
 import { LoginHistory } from "@/components/shared/login-history";
+import { MfaSetup } from "@/components/shared/mfa-setup";
 import { ProfileForm } from "@/components/shared/profile-form";
 import { displayUsername, toJalali } from "@/lib/utils/format";
 
@@ -88,6 +89,24 @@ export default function AccountSettingsPage() {
           به‌طور موقت به دستگاه شما دسترسی پیدا کرده است.
         </p>
         <ChangePasswordForm />
+      </Card>
+
+      {/*
+        ورود دومرحله‌ای.
+
+        عمداً *بلافاصله پس از* تغییر رمز می‌آید: کاربری که به فکر
+        امنیت افتاده و رمزش را عوض می‌کند، همان لحظه بهترین زمان
+        پیشنهاد لایه‌ی دوم است.
+      */}
+      <Card className="p-4 sm:p-5">
+        <div className="mb-1 flex items-center gap-2">
+          <ShieldCheck size={18} className="text-primary" aria-hidden />
+          <h2 className="text-sm font-extrabold text-foreground">ورود دومرحله‌ای</h2>
+        </div>
+        <p className="mb-4 text-2xs leading-relaxed text-muted-foreground">
+          یک لایه‌ی امنیتی روی رمز عبور. با اپ احرازکننده کار می‌کند و به اینترنت نیاز ندارد.
+        </p>
+        <MfaSetup />
       </Card>
 
       <Card className="p-4 sm:p-5">
