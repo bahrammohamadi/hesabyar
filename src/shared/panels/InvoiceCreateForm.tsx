@@ -18,6 +18,7 @@ import { useAllVariants } from "@/lib/hooks/useAllVariants";
 import { formatToman, toEnDigits, toFaDigits, rialToToman, tomanToRial } from "@/lib/utils/format";
 import { lineNetRial } from "@/lib/cart-pricing";
 import { tierPriceRial, nextTierHint, creditStatus, type PriceTier } from "@/lib/wholesale";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { logActivity } from "@/lib/utils/activity-log";
 import type { CartItem } from "@/types/db";
 
@@ -60,6 +61,11 @@ export function InvoiceCreateForm({
   insidePanel?: boolean;
 }) {
   const { orgId, branchId } = useOrg();
+  /*
+    واحد پول سازمان. `money()` جای `formatToman` را می‌گیرد و
+    `moneyLabel()` جای برچسب‌های سخت‌کد «(تومان)».
+  */
+  const orgPrefs = useOrgPrefs();
   const lookupBarcode = useBarcodeLookup(orgId);
   const qc = useQueryClient();
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -552,7 +558,7 @@ export function InvoiceCreateForm({
           <Receipt size={30} />
         </div>
         <h3 className="text-lg font-bold text-foreground">فاکتور با موفقیت ثبت شد ✅</h3>
-        <p className="mt-2 text-sm text-muted-foreground">مبلغ کل: {formatToman(total)}</p>
+        <p className="mt-2 text-sm text-muted-foreground">مبلغ کل: {orgPrefs.money(total)}</p>
         <div className="mt-6 grid gap-2 sm:grid-cols-2">
           <Link href={`/sales/${done}`} className="btn-primary" onClick={onClose}>
             مشاهده و چاپ فاکتور
@@ -650,7 +656,7 @@ export function InvoiceCreateForm({
                     </span>
                     <span aria-hidden="true" className="text-muted-foreground">·</span>
                     <span className="shrink-0 tabular-nums text-success-onSoft">
-                      واحدی {formatToman(hint.savingPerUnitRial)} کمتر
+                      واحدی {orgPrefs.money(hint.savingPerUnitRial)} کمتر
                     </span>
                   </button>
                 ))}
@@ -678,13 +684,13 @@ export function InvoiceCreateForm({
                   {creditState.overLimit ? "این مشتری از سقف اعتبارش رد شده" : "این فاکتور از سقف اعتبار مشتری رد می‌شود"}
                 </div>
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                  <span className="tabular-nums">سقف: {formatToman(creditState.creditLimitRial)}</span>
+                  <span className="tabular-nums">سقف: {orgPrefs.money(creditState.creditLimitRial)}</span>
                   <span aria-hidden="true">·</span>
-                  <span className="tabular-nums">بدهی فعلی: {formatToman(creditState.balanceRial)}</span>
+                  <span className="tabular-nums">بدهی فعلی: {orgPrefs.money(creditState.balanceRial)}</span>
                   {credit > 0 && (
                     <>
                       <span aria-hidden="true">·</span>
-                      <span className="tabular-nums">نسیه این فاکتور: {formatToman(credit)}</span>
+                      <span className="tabular-nums">نسیه این فاکتور: {orgPrefs.money(credit)}</span>
                     </>
                   )}
                 </div>
@@ -711,18 +717,18 @@ export function InvoiceCreateForm({
 
             {/* مبالغ دریافتی */}
             <Card className="space-y-3 p-3 sm:p-4">
-              <Field label="دریافت نقدی (تومان)">
+              <Field label={orgPrefs.moneyLabel("دریافت نقدی")}>
                 <input
-                  aria-label="دریافت نقدی به تومان"
+                  aria-label={orgPrefs.moneyLabel("دریافت نقدی")}
                   className="input tabular-nums"
                   inputMode="numeric"
                   value={paidCash}
                   onChange={(e) => setPaidCash(e.target.value)}
                 />
               </Field>
-              <Field label="دریافت کارتی (تومان)">
+              <Field label={orgPrefs.moneyLabel("دریافت کارتی")}>
                 <input
-                  aria-label="دریافت کارتی به تومان"
+                  aria-label={orgPrefs.moneyLabel("دریافت کارتی")}
                   className="input tabular-nums"
                   inputMode="numeric"
                   value={paidCard}
@@ -730,7 +736,7 @@ export function InvoiceCreateForm({
                 />
               </Field>
               {customer && (
-                <Field label="پرداخت از اعتبار مشتری (تومان)" hint={`اعتبار موجود: ${formatToman(walletCredit ?? 0)}`}>
+                <Field label={orgPrefs.moneyLabel("پرداخت از اعتبار مشتری")} hint={`اعتبار موجود: ${orgPrefs.money(walletCredit ?? 0)}`}>
                   <input
                     aria-label="پرداخت از اعتبار مشتری به تومان"
                     className="input tabular-nums"
@@ -796,7 +802,7 @@ export function InvoiceCreateForm({
             <div className="min-w-0">
               <div className="text-2xs text-muted-foreground">مبلغ قابل پرداخت</div>
               <div className="truncate text-lg font-black tabular-nums text-foreground">
-                {formatToman(total, false)} <span className="text-2xs font-normal text-muted-foreground">تومان</span>
+                {orgPrefs.money(total, false)} <span className="text-2xs font-normal text-muted-foreground">تومان</span>
               </div>
             </div>
             <Button onClick={() => setStep("payment")} disabled={cart.length === 0} className="shrink-0">

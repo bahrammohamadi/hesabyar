@@ -6,6 +6,7 @@ import { CheckCircle2, ShieldCheck, ShieldOff, Smartphone } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Badge, Button, Field, Input, useConfirm, useToast } from "@/src/shared/ui";
 import { toFaDigits } from "@/lib/utils/format";
+import { BackupCodes } from "./backup-codes";
 import {
   CLOCK_HINT,
   isWellFormedTotp,
@@ -158,6 +159,19 @@ export function MfaSetup() {
           </div>
           <Badge tone="success">فعال</Badge>
         </div>
+        {/*
+          🔴 کدهای پشتیبان بلافاصله زیر وضعیت فعال می‌آیند.
+
+          کاربری که تازه 2FA را روشن کرده، همان لحظه در معرض
+          بزرگ‌ترین ریسک است: اگر گوشی‌اش گم شود راه بازگشتی ندارد.
+          پنهان‌کردن این بخش پشت یک صفحه‌ی دیگر یعنی اکثر کاربران
+          هرگز کد نمی‌سازند.
+        */}
+        <div className="border-t border-border pt-3">
+          <div className="mb-2 text-xs font-extrabold text-foreground">کدهای پشتیبان</div>
+          <BackupCodes mfaEnabled />
+        </div>
+
         <Button variant="secondary" onClick={disable} disabled={busy} icon={<ShieldOff size={15} />}>
           غیرفعال کردن
         </Button>

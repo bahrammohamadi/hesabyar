@@ -20,7 +20,7 @@ import {
   Building, UserCheck, AlertCircle, PieChart, Activity,
   Briefcase, BookOpen, ShoppingBagIcon, Tags, Barcode,
   ArrowRightLeft, History, PiggyBank, Banknote, Coins, Gift, MessageCircle, Calendar, Target, Bell, UserCircle,
-  LifeBuoy, TicketCheck, FileSpreadsheet, Stethoscope, Server, DatabaseBackup, Store,
+  LifeBuoy, TicketCheck, FileSpreadsheet, Stethoscope, Server, DatabaseBackup, Store, Palette,
 } from "lucide-react";
 
 export const NAV = [
@@ -131,6 +131,7 @@ export const NAV = [
       { href: "/settings/account", label: "حساب کاربری", icon: UserCircle },
       { href: "/settings/users", label: "کاربران و دسترسی‌ها", icon: UserCheck },
       { href: "/settings/accounts", label: "مالی و حساب‌ها", icon: Landmark },
+      { href: "/settings/preferences", label: "نمایش و شخصی‌سازی", icon: Palette },
       { href: "/settings/catalog", label: "کاتالوگ", icon: Layers },
       { href: "/settings/price-lists", label: "لیست قیمت‌ها", icon: Tags },
       { href: "/settings/storefront", label: "صفحه‌ی عمومی فروشگاه", icon: Store },

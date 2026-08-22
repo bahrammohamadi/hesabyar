@@ -17,6 +17,7 @@ import { EntityActionMenu } from "@/components/shared/entity-action-menu";
 import { PhoneLink } from "@/components/shared/phone-link";
 import { formatToman, rialToToman, toEnDigits, toFaDigits } from "@/lib/utils/format";
 import { allowsFraction, formatQty, normalizeQty, unitLabel, type UnitKind } from "@/lib/units";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import type { CartItem } from "@/types/db";
 import {
   discountRialToPercent, lineDiscountRial, lineNetRial,
@@ -152,6 +153,12 @@ export function PosCustomerCard({
   /** در خرید، طرف حساب تأمین‌کننده است نه مشتری. */
   variant?: "sale" | "purchase";
 }) {
+  /*
+    واحد پول سازمان. این کامپوننت مشترک است بین فاکتور فروش و
+    خرید، پس hook در خودش صدا زده می‌شود نه از بالا پاس داده —
+    وگرنه هر مصرف‌کننده باید یادش بماند آن را بفرستد.
+  */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const isPurchase = variant === "purchase";
   return (
     <Card className="p-3 sm:p-4">
@@ -178,7 +185,7 @@ export function PosCustomerCard({
           </div>
           {typeof walletCredit === "number" && walletCredit > 0 && (
             <div className="mt-2 text-xs text-muted-foreground">
-              اعتبار کیف پول: <span className="font-bold tabular-nums text-primary">{formatToman(walletCredit)}</span>
+              اعتبار کیف پول: <span className="font-bold tabular-nums text-primary">{money(walletCredit)}</span>
             </div>
           )}
         </div>
@@ -305,6 +312,8 @@ function PriceInput({
   /** مقدار به **تومان** (رشته) داده می‌شود تا با onPriceChange موجود یکی باشد. */
   onChange: (tomanValue: string) => void;
 }) {
+  /* واحد پول سازمان — «تومان» یا «ریال» روی کلید تعویض. */
+  const { unitLabel: unitWord } = useOrgPrefs();
   const isPercent = mode === "percent";
   const base = item.base_price ?? item.unit_price;
   const [draft, setDraft] = React.useState<string | null>(null);
@@ -327,7 +336,7 @@ function PriceInput({
       <input
         className="input h-10 min-h-10 flex-1 text-left text-sm tabular-nums"
         inputMode="numeric"
-        aria-label={`${label} ${item.product_name}${isPercent ? " به درصد" : " به تومان"}`}
+        aria-label={`${label} ${item.product_name}${isPercent ? " به درصد" : ` به ${unitWord}`}`}
         value={shown}
         onChange={(e) => {
           if (isPercent) setDraft(e.target.value);
@@ -354,11 +363,11 @@ function PriceInput({
           setDraft(null);
           onModeChange(isPercent ? "amount" : "percent");
         }}
-        aria-label={`تغییر واحد ${label} ${item.product_name} — اکنون ${isPercent ? "درصد" : "تومان"}`}
+        aria-label={`تغییر واحد ${label} ${item.product_name} — اکنون ${isPercent ? "درصد" : unitWord}`}
         title={
           isPercent
-            ? "درصد نسبت به قیمت اصلی کالا — برای تغییر به تومان کلیک کنید"
-            : "تومان — برای تغییر به درصد کلیک کنید"
+            ? `درصد نسبت به قیمت اصلی کالا — برای تغییر به ${unitWord} کلیک کنید`
+            : `${unitWord} — برای تغییر به درصد کلیک کنید`
         }
         className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-2xs font-extrabold transition ${
           isPercent
@@ -366,7 +375,7 @@ function PriceInput({
             : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
         }`}
       >
-        {isPercent ? <Percent size={15} aria-hidden /> : "تومان"}
+        {isPercent ? <Percent size={15} aria-hidden /> : unitWord}
       </button>
     </div>
   );
@@ -399,6 +408,8 @@ function LineDiscountInput({
   onModeChange: (mode: LineDiscountMode) => void;
   onChange: (discountRial: number) => void;
 }) {
+  /* واحد پول سازمان — «تومان» یا «ریال» روی کلید تعویض. */
+  const { unitLabel: unitWord } = useOrgPrefs();
   const isPercent = mode === "percent";
 
   /*
@@ -422,7 +433,7 @@ function LineDiscountInput({
       <input
         className="input h-10 min-h-10 flex-1 text-left text-sm tabular-nums"
         inputMode="numeric"
-        aria-label={`تخفیف ${item.product_name} به ${isPercent ? "درصد" : "تومان"}`}
+        aria-label={`تخفیف ${item.product_name} به ${isPercent ? "درصد" : unitWord}`}
         value={String(shown === 0 ? "" : shown)}
         placeholder="۰"
         onChange={(e) => apply(e.target.value)}
@@ -430,15 +441,15 @@ function LineDiscountInput({
       <button
         type="button"
         onClick={() => onModeChange(isPercent ? "amount" : "percent")}
-        aria-label={`تغییر واحد تخفیف ${item.product_name} — اکنون ${isPercent ? "درصد" : "تومان"}`}
-        title={isPercent ? "درصد — برای تغییر به تومان کلیک کنید" : "تومان — برای تغییر به درصد کلیک کنید"}
+        aria-label={`تغییر واحد تخفیف ${item.product_name} — اکنون ${isPercent ? "درصد" : unitWord}`}
+        title={isPercent ? `درصد — برای تغییر به ${unitWord} کلیک کنید` : `${unitWord} — برای تغییر به درصد کلیک کنید`}
         className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-2xs font-extrabold transition ${
           isPercent
             ? "border-primary bg-primary/10 text-primary"
             : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
         }`}
       >
-        {isPercent ? <Percent size={15} aria-hidden /> : "تومان"}
+        {isPercent ? <Percent size={15} aria-hidden /> : unitWord}
       </button>
     </div>
   );
@@ -485,6 +496,12 @@ export function PosCartList({
    */
   onDiscountChange?: (variantId: string, discountRial: number) => void;
 }) {
+  /*
+    واحد پول سازمان. این کامپوننت مشترک است بین فاکتور فروش و
+    خرید، پس hook در خودش صدا زده می‌شود نه از بالا پاس داده —
+    وگرنه هر مصرف‌کننده باید یادش بماند آن را بفرستد.
+  */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const isPurchase = variant === "purchase";
   const showDiscount = Boolean(onDiscountChange);
 
@@ -560,7 +577,7 @@ export function PosCartList({
             <span className="text-center">تعداد</span>
             {!isPurchase && <span>قیمت واحد</span>}
             {showDiscount && <span className="text-center">تخفیف</span>}
-            <span className="text-left">مجموع (تومان)</span>
+            <span className="text-left">مجموع ({unitWord})</span>
             <span />
           </div>
 
@@ -644,7 +661,7 @@ export function PosCartList({
                   )}
 
                   <div className="text-left text-sm font-black tabular-nums text-foreground">
-                    {formatToman(lineNetRial(c.unit_price, c.qty, c.discount), false)}
+                    {money(lineNetRial(c.unit_price, c.qty, c.discount), false)}
                   </div>
 
                   <button
@@ -675,12 +692,12 @@ export function PosCartList({
                       */}
                       {!isPurchase && (c.base_price ?? c.unit_price) !== c.unit_price && (
                         <div className="mt-1 text-2xs text-muted-foreground line-through tabular-nums">
-                          {formatToman(c.base_price ?? c.unit_price, false)} تومان
+                          {money(c.base_price ?? c.unit_price, false)} {unitWord}
                         </div>
                       )}
                       {isPurchase && (
                         <div className="mt-1 text-xs font-bold tabular-nums text-primary">
-                          {formatToman(c.unit_price, false)} تومان
+                          {money(c.unit_price, false)} {unitWord}
                         </div>
                       )}
                     </div>
@@ -768,7 +785,7 @@ export function PosCartList({
                   <div className="mt-2.5 flex items-center justify-between gap-2">
                     <QtyStepper qty={c.qty} onChange={(n) => onQtyChange(c.variant_id, n)} unit={c.unit ?? "count"} label={c.unit && c.unit !== "count" ? unitLabel(c.unit, c.unit_label) : undefined} />
                     <strong className="text-sm font-black tabular-nums text-foreground">
-                      {formatToman(lineNetRial(c.unit_price, c.qty, c.discount), false)}
+                      {money(lineNetRial(c.unit_price, c.qty, c.discount), false)}
                     </strong>
                   </div>
 
@@ -909,23 +926,29 @@ export function PosSummaryCard({
   children?: ReactNode;
   variant?: "sale" | "purchase";
 }) {
+  /*
+    واحد پول سازمان. این کامپوننت‌ها مشترک‌اند بین فاکتور فروش و
+    خرید، پس hook در خودشان صدا زده می‌شود نه از بالا پاس داده —
+    وگرنه هر مصرف‌کننده باید یادش بماند آن را بفرستد.
+  */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const isPurchase = variant === "purchase";
   return (
     <div className="rounded-[1.75rem] bg-primary p-4 text-primary-foreground shadow-sm sm:p-5">
-      <SummaryRow label="جمع کل اقلام:" value={formatToman(subtotal, false)} />
+      <SummaryRow label="جمع کل اقلام:" value={money(subtotal, false)} />
       {discountRial > 0 && (
-        <SummaryRow label="مجموع تخفیف‌ها:" value={`(${formatToman(discountRial, false)}−)`} />
+        <SummaryRow label="مجموع تخفیف‌ها:" value={`(${money(discountRial, false)}−)`} />
       )}
       {paidWalletRial > 0 && (
-        <SummaryRow label="پرداخت از اعتبار:" value={formatToman(paidWalletRial, false)} />
+        <SummaryRow label="پرداخت از اعتبار:" value={money(paidWalletRial, false)} />
       )}
-      {credit > 0 && <SummaryRow label={isPurchase ? "بدهی به تأمین‌کننده:" : "باقیمانده (نسیه):"} value={formatToman(credit, false)} />}
+      {credit > 0 && <SummaryRow label={isPurchase ? "بدهی به تأمین‌کننده:" : "باقیمانده (نسیه):"} value={money(credit, false)} />}
 
       <div className="mt-3 border-t border-primary-foreground/20 pt-3">
         <div className="text-xs text-primary-foreground/90">{isPurchase ? "جمع کل خرید:" : "مبلغ قابل پرداخت:"}</div>
         <div className="mt-1 flex items-baseline gap-1.5">
-          <span className="text-2xl font-black tabular-nums sm:text-3xl">{formatToman(total, false)}</span>
-          <span className="text-xs text-primary-foreground/90">تومان</span>
+          <span className="text-2xl font-black tabular-nums sm:text-3xl">{money(total, false)}</span>
+          <span className="text-xs text-primary-foreground/90">{unitWord}</span>
         </div>
       </div>
 

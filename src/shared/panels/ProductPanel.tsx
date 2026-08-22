@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { UNIT_KINDS, UNIT_META, unitLabel as unitLabelOf, type UnitKind } from "@/lib/units";
+import { OptionCombo } from "@/components/shared/option-combo";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { useEffect, useMemo, useState } from "react";
 import { Package, Plus, Trash2 } from "lucide-react";
 import type { PanelInstance, PanelMode } from "@/src/core/panel-manager/types";
@@ -155,6 +157,11 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { orgId, branchId } = useOrg();
+  /*
+    ترجیحات صنفی: کدام فیلدها نمایش داده شوند و واحد پیش‌فرض
+    کالای تازه چه باشد.
+  */
+  const orgPrefs = useOrgPrefs();
   const { data: categories } = useCategories(orgId);
   const { data: brands } = useBrands(orgId);
   const productId = panel.entityId;
@@ -186,7 +193,18 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
   useEffect(() => {
     if (mode === "create") {
       const initialName = typeof panel.props?.initialName === "string" ? panel.props.initialName : "";
-      setProductForm({ ...emptyProductForm(), name: initialName });
+      /*
+        🔴 واحد پیش‌فرض از صنف می‌آید.
+
+        سوپرمارکت و طلافروشی وزنی‌اند. بدون این، کاربر هر بار باید
+        دستی عوضش کند — و همان یک باری که یادش برود، کالای وزنی
+        شمارشی ثبت می‌شود و دیگر «۱٫۵ کیلو» نمی‌پذیرد.
+      */
+      setProductForm({
+        ...emptyProductForm(),
+        name: initialName,
+        unit: orgPrefs.profile.defaultUnit,
+      });
     }
     else if (product) {
       setProductForm(formFromProduct(product));
@@ -483,8 +501,24 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
             {brands?.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}
           </Select>
         </Field>
-        <Field label="فصل" hint={productHelp.season}><Input value={productForm.season} onChange={(event) => setProductForm((prev) => ({ ...prev, season: event.target.value }))} /></Field>
-        <Field label="جنس" hint={productHelp.material}><Input value={productForm.material} onChange={(event) => setProductForm((prev) => ({ ...prev, material: event.target.value }))} /></Field>
+        {/*
+          فصل و جنس حالا کشویی‌اند و برای صنف‌هایی که به آن‌ها ربطی
+          ندارند (کافه، سوپرمارکت…) اصلاً نمایش داده نمی‌شوند.
+
+          ⚠️ فیلد پنهان‌شده مقدارش را از دست **نمی‌دهد** — فقط
+          نمایش داده نمی‌شود. اگر کالایی از قبل «فصل» داشته باشد،
+          همان می‌ماند.
+        */}
+        {orgPrefs.shows("season") && (
+          <Field label="فصل" hint={productHelp.season}>
+            <OptionCombo kind="season" ariaLabel="فصل" value={productForm.season} onChange={(v) => setProductForm((prev) => ({ ...prev, season: v }))} />
+          </Field>
+        )}
+        {orgPrefs.shows("material") && (
+          <Field label="جنس" hint={productHelp.material}>
+            <OptionCombo kind="material" ariaLabel="جنس" value={productForm.material} onChange={(v) => setProductForm((prev) => ({ ...prev, material: v }))} />
+          </Field>
+        )}
         <Field label="آدرس تصویر" hint={productHelp.imageUrl} className="sm:col-span-2"><Input dir="ltr" className="text-left" value={productForm.imageUrl} onChange={(event) => setProductForm((prev) => ({ ...prev, imageUrl: event.target.value }))} placeholder="https://..." /></Field>
         <Field label="قیمت خرید پایه (تومان)" hint={productHelp.basePurchasePrice}>
           <NumberInput
@@ -646,8 +680,12 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
     <div className="grid gap-3 sm:grid-cols-2">
       <Field label="SKU" hint={productHelp.sku}><Input dir="ltr" className="text-left" value={state.sku} onChange={(e) => setState((p) => ({ ...p, sku: e.target.value }))} /></Field>
       <Field label="بارکد" hint={productHelp.barcode}><Input dir="ltr" className="text-left" value={state.barcode} onChange={(e) => setState((p) => ({ ...p, barcode: e.target.value }))} /></Field>
-      <Field label="رنگ" hint={productHelp.variantColor}><Input value={state.color} onChange={(e) => setState((p) => ({ ...p, color: e.target.value }))} /></Field>
-      <Field label="سایز" hint={productHelp.variantSize}><Input value={state.size} onChange={(e) => setState((p) => ({ ...p, size: e.target.value }))} /></Field>
+      <Field label="رنگ" hint={productHelp.variantColor}>
+        <OptionCombo kind="color" ariaLabel="رنگ" value={state.color} onChange={(v) => setState((p) => ({ ...p, color: v }))} />
+      </Field>
+      <Field label="سایز" hint={productHelp.variantSize}>
+        <OptionCombo kind="size" ariaLabel="سایز" value={state.size} onChange={(v) => setState((p) => ({ ...p, size: v }))} />
+      </Field>
       <Field label="قیمت خرید (تومان)" hint={productHelp.variantPurchasePrice}>
         <NumberInput
           value={state.purchasePriceToman}
@@ -695,8 +733,8 @@ export function ProductPanel({ panel }: { panel: PanelInstance }) {
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <Field label="SKU"><Input dir="ltr" className="text-left" value={row.sku} onChange={(e) => updateBatchVariant(index, (prev) => ({ ...prev, sku: e.target.value }))} /></Field>
               <Field label="بارکد"><Input dir="ltr" className="text-left" value={row.barcode} onChange={(e) => updateBatchVariant(index, (prev) => ({ ...prev, barcode: e.target.value }))} /></Field>
-              <Field label="رنگ"><Input value={row.color} onChange={(e) => updateBatchVariant(index, (prev) => ({ ...prev, color: e.target.value }))} /></Field>
-              <Field label="سایز"><Input value={row.size} onChange={(e) => updateBatchVariant(index, (prev) => ({ ...prev, size: e.target.value }))} /></Field>
+              <Field label="رنگ"><OptionCombo kind="color" ariaLabel="رنگ" value={row.color} onChange={(v) => updateBatchVariant(index, (prev) => ({ ...prev, color: v }))} /></Field>
+              <Field label="سایز"><OptionCombo kind="size" ariaLabel="سایز" value={row.size} onChange={(v) => updateBatchVariant(index, (prev) => ({ ...prev, size: v }))} /></Field>
               <Field label="قیمت خرید (تومان)">
                 <NumberInput
                   value={row.purchasePriceToman}
