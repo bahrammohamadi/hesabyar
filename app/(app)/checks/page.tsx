@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { createClient } from "@/lib/supabase/client";
 import { formatToman, toJalali } from "@/lib/utils/format";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
@@ -38,6 +39,8 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
 };
 
 export default function ChecksPage() {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   /* همان دلیل صفحه‌های سفارش و مرجوعی: alert بومی با برنامه جور نیست. */
   const { toast } = useToast();
   const [checks, setChecks] = useState<Check[]>([]);
@@ -172,10 +175,10 @@ export default function ChecksPage() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-warning-onSoft-onSoft">{formatToman(totalPendingReceived)}</div><div className="text-xs text-muted-foreground">دریافتی در انتظار</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-warning-onSoft-onSoft">{formatToman(totalPendingIssued)}</div><div className="text-xs text-muted-foreground">صادره در انتظار</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-success-onSoft-onSoft">{formatToman(receivedChecks.filter(c => c.status === "cashed").reduce((sum, c) => sum + c.amount, 0))}</div><div className="text-xs text-muted-foreground">وصول شده</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-destructive-text">{formatToman(receivedChecks.filter(c => c.status === "returned").reduce((sum, c) => sum + c.amount, 0))}</div><div className="text-xs text-muted-foreground">برگشتی</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-warning-onSoft-onSoft">{money(totalPendingReceived)}</div><div className="text-xs text-muted-foreground">دریافتی در انتظار</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-warning-onSoft-onSoft">{money(totalPendingIssued)}</div><div className="text-xs text-muted-foreground">صادره در انتظار</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-success-onSoft-onSoft">{money(receivedChecks.filter(c => c.status === "cashed").reduce((sum, c) => sum + c.amount, 0))}</div><div className="text-xs text-muted-foreground">وصول شده</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-destructive-text">{money(receivedChecks.filter(c => c.status === "returned").reduce((sum, c) => sum + c.amount, 0))}</div><div className="text-xs text-muted-foreground">برگشتی</div></div>
       </div>
 
       {/* Tabs */}
@@ -224,7 +227,7 @@ export default function ChecksPage() {
                     <div className="text-xs text-muted-foreground mt-1">صدور: {toJalali(check.issue_date)} • سررسید: {toJalali(check.due_date)}</div>
                   </div>
                   <div className="text-left">
-                    <div className="text-lg font-bold text-foreground">{formatToman(check.amount)}</div>
+                    <div className="text-lg font-bold text-foreground">{money(check.amount)}</div>
                     <div className="text-xs text-muted-foreground">تومان</div>
                   </div>
                 </div>

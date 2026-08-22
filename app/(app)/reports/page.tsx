@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -61,6 +62,8 @@ const COLORS = CHART_SERIES;
 
 // --- فروش ---
 function SalesReport({ orgId }: { orgId: string }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   /* Recharts انیمیشن را در JS اجرا می‌کند؛ CSS سراسری خنثی‌اش نمی‌کند. */
   const animate = useChartAnimation();
   const [period, setPeriod] = useState<"7d" | "30d" | "90d" | "1y">("30d");
@@ -93,10 +96,10 @@ function SalesReport({ orgId }: { orgId: string }) {
     <div className="space-y-4">
       {/* خلاصه آمار */}
       <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4">
-        <ReportKpiCard label="فروش امروز" value={formatToman(summary?.sales_today ?? 0, false)} unit="تومان" icon={TrendingUp} tone="primary" />
-        <ReportKpiCard label="فروش ماه" value={formatToman(summary?.sales_month ?? 0, false)} unit="تومان" icon={Wallet} />
+        <ReportKpiCard label="فروش امروز" value={money(summary?.sales_today ?? 0, false)} unit={unitWord} icon={TrendingUp} tone="primary" />
+        <ReportKpiCard label="فروش ماه" value={money(summary?.sales_month ?? 0, false)} unit={unitWord} icon={Wallet} />
         <ReportKpiCard label="فاکتور امروز" value={toFaDigits(summary?.sales_today_count ?? 0)} unit="فاکتور" icon={Calendar} />
-        <ReportKpiCard label="سود ماه" value={formatToman(summary?.profit_month ?? 0, false)} unit="تومان" icon={TrendingUp} />
+        <ReportKpiCard label="سود ماه" value={money(summary?.profit_month ?? 0, false)} unit={unitWord} icon={TrendingUp} />
       </div>
 
       {/* انتخاب بازه زمانی */}
@@ -136,7 +139,7 @@ function SalesReport({ orgId }: { orgId: string }) {
                   (اندازه‌گیری‌شده روی داده‌ی واقعی پیش از اصلاح.)
                 */}
                 <YAxis {...axisProps} tickFormatter={compactAxisNumber} width={68} />
-                <Tooltip content={<ChartTooltip unit="تومان" />} cursor={chartCursor} />
+                <Tooltip content={<ChartTooltip unit={unitWord} />} cursor={chartCursor} />
                 <Line type="monotone" dataKey="فروش" stroke={CHART_TOKENS.primary} strokeWidth={2.5} dot={false} activeDot={{ r: 5, strokeWidth: 2, stroke: "hsl(var(--card))", fill: CHART_TOKENS.primary }} isAnimationActive={animate} />
               </LineChart>
             </ResponsiveContainer>
@@ -149,6 +152,8 @@ function SalesReport({ orgId }: { orgId: string }) {
 
 // --- محصولات ---
 function ProductsReport({ orgId }: { orgId: string }) {
+  /* واحد پول سازمان — برای برچسب نمودار. */
+  const { unitLabel: unitWord } = useOrgPrefs();
   /* Recharts انیمیشن را در JS اجرا می‌کند؛ CSS سراسری خنثی‌اش نمی‌کند. */
   const animate = useChartAnimation();
   const { data: topProducts, isLoading } = useQuery({
@@ -213,7 +218,7 @@ function ProductsReport({ orgId }: { orgId: string }) {
                 <CartesianGrid strokeDasharray="3 3" stroke={CHART_TOKENS.grid} />
                 <XAxis type="number" {...axisProps} tickFormatter={compactAxisNumber} />
                 <YAxis dataKey="name" type="category" tick={{ fontSize: 12 }} stroke={CHART_TOKENS.axis} width={100} />
-                <Tooltip content={<ChartTooltip unit="تومان" />} cursor={{ fill: "hsl(var(--primary))", fillOpacity: 0.06 }} />
+                <Tooltip content={<ChartTooltip unit={unitWord} />} cursor={{ fill: "hsl(var(--primary))", fillOpacity: 0.06 }} />
                 <Bar dataKey="revenue" name="درآمد" fill={CHART_TOKENS.primary} radius={[0, 6, 6, 0]} maxBarSize={28} isAnimationActive={animate} />
               </BarChart>
             </ResponsiveContainer>
@@ -243,6 +248,8 @@ function ProductsReport({ orgId }: { orgId: string }) {
 
 // --- مالی ---
 function FinancialReport({ orgId }: { orgId: string }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const { data: summary } = useQuery({
     queryKey: ["report-financial-summary", orgId],
     queryFn: async () => {
@@ -276,19 +283,19 @@ function FinancialReport({ orgId }: { orgId: string }) {
       {/* خلاصه مالی */}
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-[1.5rem] border border-border bg-card p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-          <div className="text-2xl font-black tabular-nums text-finance-profit">{formatToman(summary?.cash_total ?? 0)}</div>
+          <div className="text-2xl font-black tabular-nums text-finance-profit">{money(summary?.cash_total ?? 0)}</div>
           <div className="mt-1 text-xs text-muted-foreground">موجودی صندوق و بانک</div>
         </div>
         <div className="rounded-[1.5rem] border border-border bg-card p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-          <div className="text-2xl font-black tabular-nums text-finance-debt">{formatToman(summary?.customers_debt ?? 0)}</div>
+          <div className="text-2xl font-black tabular-nums text-finance-debt">{money(summary?.customers_debt ?? 0)}</div>
           <div className="mt-1 text-xs text-muted-foreground">بدهی مشتریان</div>
         </div>
         <div className="rounded-[1.5rem] border border-border bg-card p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-          <div className="text-2xl font-black tabular-nums text-finance-credit">{formatToman(summary?.suppliers_credit ?? 0)}</div>
+          <div className="text-2xl font-black tabular-nums text-finance-credit">{money(summary?.suppliers_credit ?? 0)}</div>
           <div className="mt-1 text-xs text-muted-foreground">طلب از تأمین‌کنندگان</div>
         </div>
         <div className="rounded-[1.5rem] border border-border bg-card p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-          <div className="text-2xl font-black tabular-nums text-warning-onSoft">{formatToman(summary?.inventory_value ?? 0)}</div>
+          <div className="text-2xl font-black tabular-nums text-warning-onSoft">{money(summary?.inventory_value ?? 0)}</div>
           <div className="mt-1 text-xs text-muted-foreground">ارزش موجودی انبار</div>
         </div>
       </div>
@@ -314,7 +321,7 @@ function FinancialReport({ orgId }: { orgId: string }) {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip content={<ChartTooltip unit="تومان" />} />
+                <Tooltip content={<ChartTooltip unit={unitWord} />} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -326,6 +333,8 @@ function FinancialReport({ orgId }: { orgId: string }) {
 
 // --- اشخاص ---
 function ContactsReport({ orgId }: { orgId: string }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const { data: contactBalances } = useQuery({
     queryKey: ["report-contact-balances", orgId],
     queryFn: async () => {
@@ -369,11 +378,11 @@ function ContactsReport({ orgId }: { orgId: string }) {
           <div className="mt-1 text-xs text-muted-foreground">تأمین‌کنندگان</div>
         </div>
         <div className="rounded-[1.5rem] border border-border bg-card p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-          <div className="text-2xl font-black tabular-nums text-finance-debt">{formatToman(stats.totalDebt)}</div>
+          <div className="text-2xl font-black tabular-nums text-finance-debt">{money(stats.totalDebt)}</div>
           <div className="mt-1 text-xs text-muted-foreground">کل بدهی</div>
         </div>
         <div className="rounded-[1.5rem] border border-border bg-card p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-          <div className="text-2xl font-black tabular-nums text-finance-credit">{formatToman(stats.totalCredit)}</div>
+          <div className="text-2xl font-black tabular-nums text-finance-credit">{money(stats.totalCredit)}</div>
           <div className="mt-1 text-xs text-muted-foreground">کل طلب</div>
         </div>
       </div>
@@ -440,7 +449,7 @@ function ContactsReport({ orgId }: { orgId: string }) {
                 render: (c: any) => (
                   <span className={`font-extrabold tabular-nums ${c.balance > 0 ? "text-finance-debt" : c.balance < 0 ? "text-finance-credit" : "text-muted-foreground"}`}>
                     {c.balance > 0 ? "بدهکار " : c.balance < 0 ? "بستانکار " : ""}
-                    {formatToman(Math.abs(c.balance))}
+                    {money(Math.abs(c.balance))}
                   </span>
                 ),
               },
@@ -456,6 +465,8 @@ function ContactsReport({ orgId }: { orgId: string }) {
 
 // --- سود و زیان ---
 function ProfitReport({ orgId }: { orgId: string }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   /* Recharts انیمیشن را در JS اجرا می‌کند؛ CSS سراسری خنثی‌اش نمی‌کند. */
   const animate = useChartAnimation();
   const { data: topProducts, isLoading } = useQuery({
@@ -548,8 +559,8 @@ function ProfitReport({ orgId }: { orgId: string }) {
                 ),
               },
               { key: "qty", header: "تعداد", align: "center", render: (p: any) => <span className="tabular-nums">{toFaDigits(p.total_sold_qty)}</span> },
-              { key: "sales", header: "فروش", align: "left", render: (p: any) => <span className="font-bold tabular-nums text-foreground">{formatToman(p.total_sales_amount)}</span> },
-              { key: "profit", header: "سود", align: "left", render: (p: any) => <span className="font-bold tabular-nums text-finance-profit">{formatToman(p.total_profit)}</span> },
+              { key: "sales", header: "فروش", align: "left", render: (p: any) => <span className="font-bold tabular-nums text-foreground">{money(p.total_sales_amount)}</span> },
+              { key: "profit", header: "سود", align: "left", render: (p: any) => <span className="font-bold tabular-nums text-finance-profit">{money(p.total_profit)}</span> },
             ]}
           />
         )}

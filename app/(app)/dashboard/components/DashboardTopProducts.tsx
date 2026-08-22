@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { Package, TrendingUp } from "lucide-react";
 import { Card, Spinner } from "@/src/shared/ui";
 import { formatToman, toFaDigits } from "@/lib/utils/format";
@@ -26,6 +27,8 @@ export function DashboardTopProducts({
   isLoading: boolean;
   items: DashboardTopProduct[] | undefined;
 }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const rows = (items ?? []).slice(0, 5);
 
   return (
@@ -79,7 +82,7 @@ export function DashboardTopProducts({
 
               <div className="shrink-0 text-left">
                 <div className="text-sm font-extrabold tabular-nums text-primary">
-                  {formatToman(item.sales_amount, false)}
+                  {money(item.sales_amount, false)}
                 </div>
                 <div className="text-2xs text-muted-foreground">تومان</div>
               </div>

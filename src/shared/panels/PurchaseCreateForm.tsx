@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ShoppingCart, Send } from "lucide-react";
@@ -60,6 +61,8 @@ export function PurchaseCreateForm({
    */
   insidePanel?: boolean;
 }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const { orgId, branchId } = useOrg();
   const lookupBarcode = useBarcodeLookup(orgId);
   const qc = useQueryClient();
@@ -345,7 +348,7 @@ export function PurchaseCreateForm({
           <ShoppingCart size={30} />
         </div>
         <h3 className="text-lg font-bold text-foreground">فاکتور خرید ثبت شد ✅</h3>
-        <p className="mt-2 text-sm text-muted-foreground">مبلغ کل: {formatToman(total)}</p>
+        <p className="mt-2 text-sm text-muted-foreground">مبلغ کل: {money(total)}</p>
         <p className="mt-1 text-xs text-muted-foreground">موجودی کالاها افزایش یافت.</p>
         <div className="mt-6 grid gap-2 sm:grid-cols-2">
           <Link href={`/purchases/${done}`} className="btn-primary" onClick={onClose}>
@@ -578,7 +581,7 @@ export function PurchaseCreateForm({
             <div className="min-w-0">
               <div className="text-2xs text-muted-foreground">جمع کل خرید</div>
               <div className="truncate text-lg font-black tabular-nums text-foreground">
-                {formatToman(total, false)} <span className="text-2xs font-normal text-muted-foreground">تومان</span>
+                {money(total, false)} <span className="text-2xs font-normal text-muted-foreground">تومان</span>
               </div>
             </div>
             <Button onClick={() => setStep("payment")} disabled={cart.length === 0} className="shrink-0">

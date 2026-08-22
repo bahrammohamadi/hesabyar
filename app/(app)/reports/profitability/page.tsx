@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { useQuery } from "@tanstack/react-query";
 import { Download, Printer, TrendingUp } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -16,6 +17,8 @@ type Tab = "products" | "invoices";
 
 
 export default function ProfitabilityReportPage() {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const [from, setFrom] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10));
   const [to, setTo] = useState(new Date().toISOString().slice(0, 10));
   const [tab, setTab] = useState<Tab>("products");
@@ -151,9 +154,9 @@ export default function ProfitabilityReportPage() {
       <div className="card p-4 mb-4 grid grid-cols-1 md:grid-cols-5 gap-3">
         <div><label className="label">از تاریخ</label><DatePicker value={from} onChange={setFrom} /></div>
         <div><label className="label">تا تاریخ</label><DatePicker value={to} onChange={setTo} /></div>
-        <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">فروش</div><div className="font-bold text-foreground mt-1">{formatToman(totals.revenue)}</div></div>
-        <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">بهای تمام‌شده</div><div className="font-bold text-warning-onSoft mt-1">{formatToman(totals.cost)}</div></div>
-        <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">سود ناخالص</div><div className={totals.profit >= 0 ? "font-bold text-success-onSoft mt-1" : "font-bold text-destructive mt-1"}>{formatToman(totals.profit)}</div></div>
+        <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">فروش</div><div className="font-bold text-foreground mt-1">{money(totals.revenue)}</div></div>
+        <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">بهای تمام‌شده</div><div className="font-bold text-warning-onSoft mt-1">{money(totals.cost)}</div></div>
+        <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">سود ناخالص</div><div className={totals.profit >= 0 ? "font-bold text-success-onSoft mt-1" : "font-bold text-destructive mt-1"}>{money(totals.profit)}</div></div>
       </div>
 
       <div className="flex gap-2 mb-4">
@@ -165,7 +168,7 @@ export default function ProfitabilityReportPage() {
         !productRows.length ? <EmptyState icon={TrendingUp} title="داده‌ای برای این بازه نیست" /> : (
           <div className="card overflow-x-auto">
             <table className="table-base"><thead><tr><th>کالا</th><th>تعداد</th><th>فاکتور</th><th>فروش</th><th>بها</th><th>سود</th><th>حاشیه</th><th>عملیات</th></tr></thead><tbody>
-              {productRows.map((row: any) => <tr key={row.product_id ?? row.product_name} className="hover:bg-muted"><td><EntityLink type="product" id={row.product_id}>{row.product_name}</EntityLink><div className="text-xs text-muted-foreground">{row.product_code}</div></td><td>{toFaDigits(row.qty)}</td><td>{toFaDigits(row.invoice_count)}</td><td>{formatToman(row.revenue, false)}</td><td>{formatToman(row.cost, false)}</td><td className={row.profit >= 0 ? "text-success-onSoft font-bold" : "text-destructive font-bold"}>{formatToman(row.profit, false)}</td><td>{toFaDigits(row.margin)}٪</td><td><EntityActionMenu type="product" id={row.product_id} label={row.product_name} /></td></tr>)}
+              {productRows.map((row: any) => <tr key={row.product_id ?? row.product_name} className="hover:bg-muted"><td><EntityLink type="product" id={row.product_id}>{row.product_name}</EntityLink><div className="text-xs text-muted-foreground">{row.product_code}</div></td><td>{toFaDigits(row.qty)}</td><td>{toFaDigits(row.invoice_count)}</td><td>{money(row.revenue, false)}</td><td>{money(row.cost, false)}</td><td className={row.profit >= 0 ? "text-success-onSoft font-bold" : "text-destructive font-bold"}>{money(row.profit, false)}</td><td>{toFaDigits(row.margin)}٪</td><td><EntityActionMenu type="product" id={row.product_id} label={row.product_name} /></td></tr>)}
             </tbody></table>
           </div>
         )
@@ -173,7 +176,7 @@ export default function ProfitabilityReportPage() {
         !invoiceRows.length ? <EmptyState icon={TrendingUp} title="فاکتوری برای این بازه نیست" /> : (
           <div className="card overflow-x-auto">
             <table className="table-base"><thead><tr><th>فاکتور</th><th>تاریخ</th><th>مشتری</th><th>تعداد</th><th>فروش</th><th>بها</th><th>سود</th><th>حاشیه</th></tr></thead><tbody>
-              {invoiceRows.map((row: any) => <tr key={row.sale.id} className="hover:bg-muted"><td><EntityLink type="sale" id={row.sale.id}>{row.sale.invoice_no}</EntityLink></td><td>{toJalali(row.sale.date)}</td><td>{row.sale.customer?.name ?? "مشتری نقدی"}</td><td>{toFaDigits(row.qty)}</td><td>{formatToman(row.revenue, false)}</td><td>{formatToman(row.cost, false)}</td><td className={row.profit >= 0 ? "text-success-onSoft font-bold" : "text-destructive font-bold"}>{formatToman(row.profit, false)}</td><td>{toFaDigits(row.margin)}٪</td></tr>)}
+              {invoiceRows.map((row: any) => <tr key={row.sale.id} className="hover:bg-muted"><td><EntityLink type="sale" id={row.sale.id}>{row.sale.invoice_no}</EntityLink></td><td>{toJalali(row.sale.date)}</td><td>{row.sale.customer?.name ?? "مشتری نقدی"}</td><td>{toFaDigits(row.qty)}</td><td>{money(row.revenue, false)}</td><td>{money(row.cost, false)}</td><td className={row.profit >= 0 ? "text-success-onSoft font-bold" : "text-destructive font-bold"}>{money(row.profit, false)}</td><td>{toFaDigits(row.margin)}٪</td></tr>)}
             </tbody></table>
           </div>
         )

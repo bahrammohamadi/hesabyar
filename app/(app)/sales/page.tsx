@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type MouseEvent } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { useQuery } from "@tanstack/react-query";
 import { DateRangeFilter, EMPTY_RANGE, applyRange, hasRange, type DateRange } from "@/src/shared/ui";
 import { createClient } from "@/lib/supabase/client";
@@ -15,6 +16,8 @@ import { Plus, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 
 export default function SalesPage() {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const { orgId } = useOrg();
   const { openDocument } = usePanelManager();
 
@@ -165,8 +168,8 @@ export default function SalesPage() {
                 </div>
               ) : <span className="text-muted-foreground">مشتری نقدی</span>,
             },
-            { key: "total", header: "مبلغ", align: "left", mobile: "amount", render: (s) => <span className="font-semibold tabular-nums">{formatToman(s.total)}</span> },
-            { key: "credit", header: "نسیه", render: (s) => s.paid_credit > 0 ? <span className="font-bold tabular-nums text-finance-debt">{formatToman(s.paid_credit, false)}</span> : <span className="text-muted-foreground">—</span> },
+            { key: "total", header: "مبلغ", align: "left", mobile: "amount", render: (s) => <span className="font-semibold tabular-nums">{money(s.total)}</span> },
+            { key: "credit", header: "نسیه", render: (s) => s.paid_credit > 0 ? <span className="font-bold tabular-nums text-finance-debt">{money(s.paid_credit, false)}</span> : <span className="text-muted-foreground">—</span> },
             { key: "status", header: "وضعیت", render: (s) => <span className="badge bg-info-soft text-info-text border border-info/20">{s.status === "settled" ? "تسویه‌شده" : s.status === "reversed" ? "برگشت‌خورده" : "ثبت‌شده"}</span> },
           ] satisfies Column<(typeof sales)[number]>[]}
         />

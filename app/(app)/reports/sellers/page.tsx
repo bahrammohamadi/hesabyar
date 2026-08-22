@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { useQuery } from "@tanstack/react-query";
 import { Download, Printer, UserCheck } from "lucide-react";
 import { EmptyState, PageHeader, Spinner } from "@/components/shared/ui";
@@ -12,6 +13,8 @@ import { downloadCsv } from "@/lib/export/download";
 
 
 export default function SellerReportPage() {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const [from, setFrom] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10));
   const [to, setTo] = useState(new Date().toISOString().slice(0, 10));
 
@@ -66,7 +69,7 @@ export default function SellerReportPage() {
       <div className="card p-4 mb-4 grid grid-cols-1 md:grid-cols-4 gap-3">
         <div><label className="label">از تاریخ</label><DatePicker value={from} onChange={setFrom} /></div>
         <div><label className="label">تا تاریخ</label><DatePicker value={to} onChange={setTo} /></div>
-        <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">مجموع فروش</div><div className="font-bold text-success-onSoft mt-1">{formatToman(totals.sales_total)}</div></div>
+        <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">مجموع فروش</div><div className="font-bold text-success-onSoft mt-1">{money(totals.sales_total)}</div></div>
         <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">تعداد فاکتور</div><div className="font-bold text-foreground mt-1">{toFaDigits(totals.invoice_count)}</div></div>
       </div>
 
@@ -78,9 +81,9 @@ export default function SellerReportPage() {
           columns={[
             { key: "seller", header: "فروشنده", render: (seller) => <><div className="font-medium text-foreground">{seller.user?.name ?? "نامشخص"}</div><div className="text-xs text-muted-foreground" dir="ltr">{seller.user?.email ?? ""}</div></> },
             { key: "invoice_count", header: "فاکتور", render: (seller) => toFaDigits(seller.invoice_count) },
-            { key: "sales_total", header: "مبلغ فروش", render: (seller) => <span className="font-bold text-success-onSoft">{formatToman(seller.sales_total, false)}</span> },
-            { key: "credit_total", header: "نسیه", render: (seller) => <span className="text-destructive">{formatToman(seller.credit_total, false)}</span> },
-            { key: "average_invoice", header: "میانگین فاکتور", render: (seller) => formatToman(seller.average_invoice, false) },
+            { key: "sales_total", header: "مبلغ فروش", render: (seller) => <span className="font-bold text-success-onSoft">{money(seller.sales_total, false)}</span> },
+            { key: "credit_total", header: "نسیه", render: (seller) => <span className="text-destructive">{money(seller.credit_total, false)}</span> },
+            { key: "average_invoice", header: "میانگین فاکتور", render: (seller) => money(seller.average_invoice, false) },
             { key: "activity_count", header: "فعالیت‌ها", render: (seller) => toFaDigits(seller.activity_count) },
             { key: "last_sale_at", header: "آخرین فروش", render: (seller) => seller.last_sale_at ? toJalali(seller.last_sale_at) : "—" },
           ]}

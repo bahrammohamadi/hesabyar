@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import Link from "next/link";
 import {
   Area,
@@ -41,6 +42,8 @@ export function DashboardSalesChart({
   isLoading: boolean;
   data: SalesChartPoint[] | undefined;
 }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const animate = useChartAnimation();
 
   /*
@@ -96,7 +99,7 @@ export function DashboardSalesChart({
           <div>
             <span className="text-2xs text-muted-foreground">جمع دوره</span>
             <div className="text-lg font-black tabular-nums text-foreground">
-              {formatToman(total)}
+              {money(total)}
             </div>
           </div>
           {peak && peak.total > 0 && (
@@ -112,7 +115,7 @@ export function DashboardSalesChart({
                 حالا با flex و یک جداکنندهٔ «·» فاصله قطعی است.
               */}
               <div className="flex items-baseline gap-1.5 text-sm font-bold tabular-nums text-success-onSoft">
-                <span>{formatToman(peak.total, false)}</span>
+                <span>{money(peak.total, false)}</span>
                 <span aria-hidden className="text-muted-foreground">·</span>
                 <span className="text-2xs font-medium text-muted-foreground">
                   {toFaDigits(peak.day)}

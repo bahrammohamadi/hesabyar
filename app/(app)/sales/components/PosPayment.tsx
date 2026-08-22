@@ -9,6 +9,7 @@
  */
 
 import { CreditCard, Banknote, FileText } from "lucide-react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { Card, Field, Select } from "@/src/shared/ui";
 import { DatePicker } from "@/components/shared/date-picker";
 import { formatToman } from "@/lib/utils/format";
@@ -107,6 +108,8 @@ export function PosInvoiceFields({
    */
   variant?: "sale" | "purchase";
 }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const isPurchase = variant === "purchase";
   return (
     <Card className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 sm:p-4">
@@ -157,7 +160,7 @@ export function PosInvoiceFields({
         </div>
         {discountRial > 0 && (
           <span className="mt-1 block text-xs text-muted-foreground">
-            معادل تخفیف: {formatToman(discountRial)}
+            معادل تخفیف: {money(discountRial)}
           </span>
         )}
       </Field>

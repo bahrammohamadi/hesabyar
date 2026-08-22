@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { formatToman, toFaDigits, toJalali } from "@/lib/utils/format";
@@ -40,6 +41,8 @@ const STATUS_LABELS: Record<string, { label: string; tone: BadgeTone }> = {
 };
 
 export default function SalesOrdersPage() {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   /*
     🔴 `alert()` جایگزین شد.
 
@@ -310,7 +313,7 @@ export default function SalesOrdersPage() {
         <div className="card p-4 text-center"><div className="text-2xl font-bold text-foreground">{toFaDigits(orders.length)}</div><div className="text-xs text-muted-foreground">کل سفارش‌ها</div></div>
         <div className="card p-4 text-center"><div className="text-2xl font-black tabular-nums text-warning-onSoft">{toFaDigits(orders.filter(o => o.status === "pending").length)}</div><div className="text-xs text-muted-foreground">در انتظار</div></div>
         <div className="card p-4 text-center"><div className="text-2xl font-black tabular-nums text-info">{toFaDigits(orders.filter(o => o.status === "confirmed").length)}</div><div className="text-xs text-muted-foreground">تأیید شده</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-success-onSoft">{formatToman(orders.filter(o => o.status !== "cancelled").reduce((sum, o) => sum + (o.total || 0), 0))}</div><div className="text-xs text-muted-foreground">مجموع</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-success-onSoft">{money(orders.filter(o => o.status !== "cancelled").reduce((sum, o) => sum + (o.total || 0), 0))}</div><div className="text-xs text-muted-foreground">مجموع</div></div>
       </div>
 
       {loading ? <Spinner label="در حال بارگذاری..." /> :
@@ -349,7 +352,7 @@ export default function SalesOrdersPage() {
                     </div>
                   </div>
                   <div className="text-left">
-                    <div className="text-lg font-bold text-foreground">{formatToman(order.total)}</div>
+                    <div className="text-lg font-bold text-foreground">{money(order.total)}</div>
                     <div className="text-xs text-muted-foreground">تومان</div>
                   </div>
                 </div>
@@ -416,7 +419,7 @@ export default function SalesOrdersPage() {
                         <div key={v.id} className="flex items-center justify-between p-2 bg-white rounded-lg">
                           <div className="text-sm"><div className="font-medium">{item.name}</div><div className="text-xs text-muted-foreground">{v.color && `رنگ: ${v.color}`} {v.size && `سایز: ${v.size}`}</div></div>
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">{formatToman(v.sale_price)}</span>
+                            <span className="text-sm font-medium">{money(v.sale_price)}</span>
                             <button type="button" onClick={() => { setItems([...items.filter(i => i.variant_id !== v.id), { ...v, product_id: item.id, product_name: item.name, qty: 1, price: v.sale_price }]); setShowProductSearch(false); setProductSearch(""); }} className="btn-primary py-1 px-2 text-xs"><Plus size={12} /></button>
                           </div>
                         </div>
@@ -437,7 +440,7 @@ export default function SalesOrdersPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <input type="number" min="1" value={item.qty} onChange={e => { const newItems = [...items]; newItems[idx].qty = parseInt(e.target.value) || 1; setItems(newItems); }} className="input w-16 text-center" />
-                      <span className="text-sm">{formatToman(item.price * item.qty)}</span>
+                      <span className="text-sm">{money(item.price * item.qty)}</span>
                       <button type="button" onClick={() => setItems(items.map((i, j) => j === idx ? { ...i, qty: 0 } : i))} className="text-destructive hover:text-destructive"><Trash2 size={14} /></button>
                     </div>
                   </div>
@@ -456,7 +459,7 @@ export default function SalesOrdersPage() {
 
             <div className="flex items-center justify-between p-4 bg-primary/[0.06] rounded-xl">
               <span className="font-medium">جمع کل:</span>
-              <span className="text-xl font-bold text-primary">{formatToman(items.filter(i => i.qty > 0).reduce((sum, i) => sum + (i.qty * i.price), 0) - (parseInt(discount) || 0))}</span>
+              <span className="text-xl font-bold text-primary">{money(items.filter(i => i.qty > 0).reduce((sum, i) => sum + (i.qty * i.price), 0) - (parseInt(discount) || 0))}</span>
             </div>
 
             <div className="flex gap-2">

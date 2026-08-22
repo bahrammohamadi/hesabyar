@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
@@ -34,6 +35,8 @@ const MODE_HINT: Record<FinanceMode, string> = {
 };
 
 export function FinanceOperationPage({ mode }: { mode: FinanceMode }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const { orgId, branchId } = useOrg();
   const qc = useQueryClient();
   const [amount, setAmount] = useState("");
@@ -167,7 +170,7 @@ export function FinanceOperationPage({ mode }: { mode: FinanceMode }) {
           <span>{hasRange(range) ? "موارد بازه‌ی انتخابی" : "آخرین موارد"}</span>
           {!isLoading && (transactions?.length ?? 0) > 0 && (
             <span className="text-xs font-bold text-muted-foreground">
-              {toFaDigits(transactions?.length ?? 0)} مورد • جمع {formatToman(rangeTotal, false)}
+              {toFaDigits(transactions?.length ?? 0)} مورد • جمع {money(rangeTotal, false)}
             </span>
           )}
         </div>
@@ -183,7 +186,7 @@ export function FinanceOperationPage({ mode }: { mode: FinanceMode }) {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {t.contact_id && <EntityActionMenu type="contact" id={t.contact_id} label={t.contact?.name ?? "طرف حساب"} />}
-                  <div className="text-left"><div className="font-bold text-foreground">{formatToman(t.amount, false)}</div><div className="text-xs text-muted-foreground">{toJalali(t.date)}</div></div>
+                  <div className="text-left"><div className="font-bold text-foreground">{money(t.amount, false)}</div><div className="text-xs text-muted-foreground">{toJalali(t.date)}</div></div>
                 </div>
               </div>
             ))}

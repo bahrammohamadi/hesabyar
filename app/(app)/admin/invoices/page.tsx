@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Ban, Building2, FileText, Receipt, Search, ShieldAlert, User, Wallet,
@@ -65,6 +66,8 @@ const STATUS_TONE: Record<string, "success" | "info" | "warning" | "danger" | "n
 };
 
 export default function AdminInvoicesPage() {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const qc = useQueryClient();
   const { toast } = useToast();
 
@@ -138,7 +141,7 @@ export default function AdminInvoicesPage() {
             <Tile
               icon={Wallet}
               label="جمع مبلغ (بدون باطل‌شده)"
-              value={formatToman(s?.totalAmount ?? 0)}
+              value={money(s?.totalAmount ?? 0)}
             />
             <Tile
               icon={Ban}
@@ -240,6 +243,8 @@ function InvoiceRow({
   canModify: boolean;
   onCancel: () => void;
 }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const isCancelled = invoice.status === "cancelled";
 
   return (
@@ -285,11 +290,11 @@ function InvoiceRow({
                 isCancelled ? "text-muted-foreground line-through" : "text-foreground"
               )}
             >
-              {formatToman(invoice.total)}
+              {money(invoice.total)}
             </div>
             {invoice.paid_credit > 0 && !isCancelled && (
               <div className="text-2xs text-warning-onSoft">
-                نسیه: {formatToman(invoice.paid_credit)}
+                نسیه: {money(invoice.paid_credit)}
               </div>
             )}
           </div>
@@ -313,6 +318,8 @@ function CancelModal({
   onClose: () => void;
   onDone: (message: string) => void;
 }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const [reason, setReason] = useState("");
   const valid = isReasonValid(reason);
 
@@ -349,7 +356,7 @@ function CancelModal({
           </div>
           <div>
             <dt className="text-muted-foreground">مبلغ</dt>
-            <dd className="font-bold tabular-nums text-foreground">{formatToman(invoice.total)}</dd>
+            <dd className="font-bold tabular-nums text-foreground">{money(invoice.total)}</dd>
           </div>
           <div>
             <dt className="text-muted-foreground">مشتری</dt>

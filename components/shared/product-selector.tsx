@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { flushSync } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
@@ -75,6 +76,8 @@ export function ProductSelector({
   /** از داخل یک پنل باز شده؛ پنل میزبان نباید بسته شود. */
   ownedByPanel?: boolean;
 }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const { orgId } = useOrg();
   const { openEntityForResult } = usePanelManager();
   const [term, setTerm] = useState("");
@@ -413,7 +416,7 @@ export function ProductSelector({
                     </div>
                   </div>
                   <div className="text-left shrink-0">
-                    <div className="text-sm font-medium text-foreground">{formatToman(price, false)}</div>
+                    <div className="text-sm font-medium text-foreground">{money(price, false)}</div>
                     <div className={`text-xs ${out ? "text-destructive" : "text-success-onSoft"}`}>
                       موجودی {toFaDigits(v.stock_qty)}
                     </div>

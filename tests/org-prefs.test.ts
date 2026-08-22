@@ -340,3 +340,79 @@ describe("🔴 باگی که فقط تست مرورگر گرفت", () => {
     expect(code).toMatch(/isPercent \? <Percent size=\{15\} aria-hidden \/> : unitWord/);
   });
 });
+
+describe("🔴 قواعد hook در مهاجرت خودکار", () => {
+  /*
+    مهاجرت ۳۰ فایل با اسکریپت انجام شد و دو بار hook را جای اشتباه
+    گذاشت:
+
+      • `formatMoney` در src/shared/format — تابع خالص است و از
+        داخل شرط و حلقه صدا زده می‌شود
+      • `describe` در صفحه‌ی فعالیت‌ها — داخل map صدا زده می‌شود
+
+    هیچ‌کدام را tsc نگرفت (از نظر نوع درست‌اند) و هیچ‌کدام را
+    next build نگرفت. فقط بازرسی خودکار پیدایشان کرد.
+
+    این تست همان بازرسی را دائمی می‌کند.
+  */
+  const walk = (dir: string): string[] => {
+    const { readdirSync } = require("node:fs") as typeof import("node:fs");
+    const out: string[] = [];
+    for (const e of readdirSync(join(root, dir), { withFileTypes: true })) {
+      const rel = `${dir}/${e.name}`;
+      if (e.isDirectory()) out.push(...walk(rel));
+      else if (e.name.endsWith(".tsx")) out.push(rel);
+    }
+    return out;
+  };
+
+  it("هر تابعی که money یا unitWord دارد، hook هم دارد", () => {
+    const files = [...walk("app"), ...walk("components"), ...walk("src")];
+    const offenders: string[] = [];
+
+    for (const f of files) {
+      const code = readCode(f);
+      if (!/\bunitWord\b|\bmoney\(/.test(code)) continue;
+
+      const starts = [...code.matchAll(/\n(?:export )?(?:default )?function (\w+)\s*\(/g)].map(
+        (m) => ({ pos: m.index!, name: m[1] })
+      );
+      for (let i = 0; i < starts.length; i++) {
+        const end = i + 1 < starts.length ? starts[i + 1].pos : code.length;
+        const body = code.slice(starts[i].pos, end);
+        if (!/\bunitWord\b|\bmoney\(/.test(body)) continue;
+        if (body.includes("useOrgPrefs()")) continue;
+        /*
+          استثنای عمدی: تابعی که `money` را به‌عنوان **پارامتر**
+          می‌گیرد درست است — همان راه‌حل جایی است که hook ممنوع
+          است.
+        */
+        if (/function \w+\([^)]*money:/s.test(body)) continue;
+        offenders.push(`${f}::${starts[i].name}`);
+      }
+    }
+
+    expect(offenders, `hook ندارند:\n${offenders.join("\n")}`).toHaveLength(0);
+  });
+
+  /*
+    `formatMoney` نباید hook داشته باشد — تابع خالص است.
+  */
+  it("تابع خالص formatMoney hook ندارد", () => {
+    const fmt = readCode("src/shared/format/index.tsx");
+    const fn = fmt.slice(fmt.indexOf("export function formatMoney"));
+    const body = fn.slice(0, fn.indexOf("\nexport function", 10));
+    expect(body).not.toMatch(/useOrgPrefs\(\)/);
+  });
+
+  /*
+    ولی کامپوننت `<Money>` باید داشته باشد — همین باعث می‌شود هر
+    جای برنامه که از آن استفاده می‌کند خودکار واحد سازمان را
+    بگیرد.
+  */
+  it("کامپوننت Money واحد سازمان را می‌گیرد", () => {
+    const fmt = readCode("src/shared/format/index.tsx");
+    const fn = fmt.slice(fmt.indexOf("export function Money"));
+    expect(fn).toMatch(/useOrgPrefs\(\)/);
+  });
+});

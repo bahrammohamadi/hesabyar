@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { createPortal } from "react-dom";
 import { isIOS, isInAppBrowser, permissionHelp } from "@/lib/utils/platform";
 import { Mic, MicOff, X, AlertTriangle, Check, Loader2 } from "lucide-react";
@@ -84,6 +85,8 @@ type Props = {
 type Phase = "idle" | "requesting" | "listening" | "matched" | "nomatch" | "denied" | "error";
 
 export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const recRef = useRef<SpeechRecognitionLike | null>(null);
   /** جلوگیری از دو تلاش هم‌زمان راه‌اندازی. */
   const startingRef = useRef(false);
@@ -723,7 +726,7 @@ export function VoiceOrder({ open, onClose, variants, onConfirm }: Props) {
                         <span className="block truncate text-2xs text-muted-foreground">
                           {[item.color, item.size].filter(Boolean).join(" / ") || "بدون تنوع"}
                           {" · "}
-                          {formatToman(item.sale_price)}
+                          {money(item.sale_price)}
                           {" · موجودی "}
                           {toFaDigits(item.stock_qty)}
                         </span>

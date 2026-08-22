@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -62,6 +63,8 @@ function Stat({ icon: Icon, label, value }: { icon: React.ElementType; label: st
 }
 
 export default function AdminOrgDetailPage({ params }: { params: { id: string } }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const qc = useQueryClient();
   const { toast } = useToast();
   const confirm = useConfirm();
@@ -143,7 +146,7 @@ export default function AdminOrgDetailPage({ params }: { params: { id: string } 
         <Stat icon={ShoppingCart} label="فاکتور" value={toFaDigits(o.sales_count)} />
         <Stat icon={Package} label="کالا" value={toFaDigits(o.products_count)} />
         <Stat icon={Users} label="مخاطب" value={toFaDigits(o.contacts_count)} />
-        <Stat icon={Building2} label="جمع فروش" value={formatToman(o.sales_total)} />
+        <Stat icon={Building2} label="جمع فروش" value={money(o.sales_total)} />
         <Stat
           icon={CalendarClock}
           label="دوره آزمایشی"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { createClient } from "@/lib/supabase/client";
 import { formatToman, toJalali, toFaDigits } from "@/lib/utils/format";
 import { PageHeader, Spinner, EmptyState, Modal } from "@/components/shared/ui";
@@ -17,6 +18,8 @@ type Return = any;
 type Sale = any;
 
 export default function SalesReturnsPage() {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   /* همان دلیل صفحه‌ی سفارش: alert بومی با بقیه‌ی برنامه جور نیست. */
   const { toast } = useToast();
   const [returns, setReturns] = useState<Return[]>([]);
@@ -149,8 +152,8 @@ export default function SalesReturnsPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <div className="card p-4 text-center"><div className="text-2xl font-bold text-foreground">{toFaDigits(returns.length)}</div><div className="text-xs text-muted-foreground">تعداد مرجوعی</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-destructive-text">{formatToman(returns.reduce((sum, r) => sum + (r.total || 0), 0))}</div><div className="text-xs text-muted-foreground">مجموع مرجوعی</div></div>
-        <div className="card p-4 text-center"><div className="text-2xl font-bold text-success-onSoft">{formatToman(returns.filter(r => r.refund_method === "cash").reduce((sum, r) => sum + (r.total || 0), 0))}</div><div className="text-xs text-muted-foreground">برگشت نقدی</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-destructive-text">{money(returns.reduce((sum, r) => sum + (r.total || 0), 0))}</div><div className="text-xs text-muted-foreground">مجموع مرجوعی</div></div>
+        <div className="card p-4 text-center"><div className="text-2xl font-bold text-success-onSoft">{money(returns.filter(r => r.refund_method === "cash").reduce((sum, r) => sum + (r.total || 0), 0))}</div><div className="text-xs text-muted-foreground">برگشت نقدی</div></div>
       </div>
 
       {loading ? <Spinner label="در حال بارگذاری..." /> :
@@ -178,7 +181,7 @@ export default function SalesReturnsPage() {
                   {ret.reason && <div className="text-xs text-muted-foreground mt-1">دلیل: {ret.reason}</div>}
                 </div>
                 <div className="text-left">
-                  <div className="text-lg font-bold text-destructive-text">{formatToman(ret.total)}</div>
+                  <div className="text-lg font-bold text-destructive-text">{money(ret.total)}</div>
                   <div className="text-xs text-muted-foreground">{ret.refund_method === "cash" ? "نقدی" : ret.refund_method === "card" ? "کارت" : "اعتبار"}</div>
                 </div>
               </div>
@@ -196,7 +199,7 @@ export default function SalesReturnsPage() {
             <div>
               <label className="label">فاکتور اصلی</label><select aria-label="فاکتور اصلی" className="input" value={selectedSale} onChange={e => setSelectedSale(e.target.value)}>
                 <option value="">انتخاب فاکتور...</option>
-                {sales.map(s => <option key={s.id} value={s.id}>{s.invoice_no} - {s.customer?.name || "بدون مشتری"} - {formatToman(s.total)}</option>)}
+                {sales.map(s => <option key={s.id} value={s.id}>{s.invoice_no} - {s.customer?.name || "بدون مشتری"} - {money(s.total)}</option>)}
               </select>
             </div>
 
@@ -206,7 +209,7 @@ export default function SalesReturnsPage() {
                 <div className="space-y-2">
                   {returnItems.map((item, idx) => (
                     <div key={idx} className="flex items-center justify-between p-2 bg-white rounded-lg">
-                      <div className="text-sm"><div>سایز: {item.variant?.size || "-"} رنگ: {item.variant?.color || "-"}</div><div className="text-xs text-muted-foreground">تعداد اصلی: {item.qty} • قیمت: {formatToman(item.unit_price)}</div></div>
+                      <div className="text-sm"><div>سایز: {item.variant?.size || "-"} رنگ: {item.variant?.color || "-"}</div><div className="text-xs text-muted-foreground">تعداد اصلی: {item.qty} • قیمت: {money(item.unit_price)}</div></div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs">تعداد:</span>
                         <input type="number" min="1" max={item.qty} value={item.return_qty} onChange={e => { const newItems = [...returnItems]; newItems[idx].return_qty = parseInt(e.target.value) || 0; setReturnItems(newItems); }} className="input w-16 text-center" />
@@ -237,7 +240,7 @@ export default function SalesReturnsPage() {
 
             <div className="flex items-center justify-between p-4 bg-destructive/10 rounded-xl">
               <span className="font-medium text-destructive">جمع مرجوعی:</span>
-              <span className="text-xl font-bold text-destructive-text">{formatToman(returnItems.filter(i => i.return_qty > 0).reduce((sum, i) => sum + (i.return_qty * i.return_price), 0))}</span>
+              <span className="text-xl font-bold text-destructive-text">{money(returnItems.filter(i => i.return_qty > 0).reduce((sum, i) => sum + (i.return_qty * i.return_price), 0))}</span>
             </div>
 
             <div className="flex gap-2">

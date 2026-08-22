@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Activity, BarChart3, Building2, Search } from "lucide-react";
@@ -53,6 +54,8 @@ const HEALTH: Record<
 };
 
 export default function AdminUsagePage() {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const [term, setTerm] = useState("");
   const [filter, setFilter] = useState<"all" | OrgUsage["health"]>("all");
 
@@ -122,7 +125,7 @@ export default function AdminUsagePage() {
             <SummaryTile label="کاربر" value={toFaDigits(totals.users)} />
             <SummaryTile label="کالا" value={toFaDigits(totals.products)} />
             <SummaryTile label="فاکتور" value={toFaDigits(totals.sales)} />
-            <SummaryTile label="فروش ۳۰ روز" value={formatToman(totals.revenue30d, false)} />
+            <SummaryTile label="فروش ۳۰ روز" value={money(totals.revenue30d, false)} />
           </div>
 
           {/* فیلترها */}
@@ -224,6 +227,8 @@ function FilterChip({
 }
 
 function OrgCard({ org }: { org: OrgUsage }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const h = HEALTH[org.health];
   return (
     <Card className="p-3.5">
@@ -265,7 +270,7 @@ function OrgCard({ org }: { org: OrgUsage }) {
         <div className="shrink-0 text-left">
           {org.revenue30d > 0 && (
             <div className="text-sm font-black tabular-nums text-foreground">
-              {formatToman(org.revenue30d, false)}
+              {money(org.revenue30d, false)}
               <span className="mr-1 text-2xs font-normal text-muted-foreground">۳۰ روز</span>
             </div>
           )}

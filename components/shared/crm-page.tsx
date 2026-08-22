@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import dayjs from "dayjs";
 import jalaliday from "jalaliday";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -66,6 +67,8 @@ function daysUntilJalaliBirthday(birthDate?: string | null) {
 }
 
 export function CrmPage({ mode }: { mode: CrmMode }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const { orgId } = useOrg();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
@@ -151,7 +154,7 @@ export function CrmPage({ mode }: { mode: CrmMode }) {
         <CrmKpiCard label="کل مشتریان" value={toFaDigits(rows.length)} icon={Users} tone="primary" />
         <CrmKpiCard label="مشتریان VIP" value={toFaDigits(vipCount)} chip="ویژه" icon={Star} tone="accent" />
         <CrmKpiCard label="غیرفعال" value={toFaDigits(inactiveCount)} chip="بدون خرید" icon={UserMinus} tone="danger" />
-        <CrmKpiCard label="ارزش خرید" value={formatToman(totalValue, false)} icon={Wallet} tone="info" />
+        <CrmKpiCard label="ارزش خرید" value={money(totalValue, false)} icon={Wallet} tone="info" />
       </div>
 
       <div className="relative mb-4">
@@ -185,7 +188,7 @@ export function CrmPage({ mode }: { mode: CrmMode }) {
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <div className="text-left"><div className="font-extrabold tabular-nums text-foreground">{formatToman(row.total, false)}</div><div className="text-xs text-muted-foreground">مجموع خرید</div></div>
+                <div className="text-left"><div className="font-extrabold tabular-nums text-foreground">{money(row.total, false)}</div><div className="text-xs text-muted-foreground">مجموع خرید</div></div>
                 <EntityActionMenu type="contact" id={row.contact.id} label={row.contact.name} phone={row.contact.phone} />
                 <button onClick={() => { setSelectedContact(row.contact); setInteractionOpen(true); }} className="btn-secondary text-sm"><Activity size={14}/> تعامل</button>
               </div>

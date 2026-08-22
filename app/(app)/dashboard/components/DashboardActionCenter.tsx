@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import Link from "next/link";
 import {
   AlertOctagon,
@@ -70,6 +71,8 @@ function Row({
   amount?: number;
   tone?: "danger" | "warning";
 }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   return (
     <Link
       href={href}
@@ -97,7 +100,7 @@ function Row({
       </div>
       {amount !== undefined && (
         <div className="shrink-0 text-2xs font-black tabular-nums text-foreground">
-          {formatToman(amount, false)}
+          {money(amount, false)}
         </div>
       )}
       <ChevronLeft size={14} className="shrink-0 text-muted-foreground" aria-hidden />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { useQuery } from "@tanstack/react-query";
 import { Activity, Filter, History } from "lucide-react";
 import { PageHeader, Spinner, EmptyState } from "@/components/shared/ui";
@@ -59,10 +60,18 @@ function entityTypeForLink(type: string) {
   return null;
 }
 
-function describe(log: ActivityLog) {
+/**
+ * توضیح کوتاه یک رویداد.
+ *
+ * 🔴 `money` به‌صورت پارامتر می‌آید، نه از hook.
+ *   این تابع داخل `map` صدا زده می‌شود و hook آنجا نقض قواعد
+ *   React است. اسکریپت مهاجرت خودکار یک بار اشتباهاً hook را
+ *   اینجا گذاشت و بازرسی خودکار گرفتش.
+ */
+function describe(log: ActivityLog, money: (v: number | null | undefined) => string) {
   const data = log.new_data ?? {};
-  if (typeof data.total === "number") return `مبلغ: ${formatToman(data.total)}`;
-  if (typeof data.amount === "number") return `مبلغ: ${formatToman(data.amount)}`;
+  if (typeof data.total === "number") return `مبلغ: ${money(data.total)}`;
+  if (typeof data.amount === "number") return `مبلغ: ${money(data.amount)}`;
   if (typeof data.qty === "number") return `تعداد: ${toFaDigits(data.qty)}`;
   if (data.note) return String(data.note);
   if (data.reason) return String(data.reason);
@@ -70,6 +79,8 @@ function describe(log: ActivityLog) {
 }
 
 export default function ActivityPage() {
+  /* واحد پول سازمان — به `describe` پاس داده می‌شود. */
+  const { money } = useOrgPrefs();
   const [entityType, setEntityType] = useState("");
   const [action, setAction] = useState("");
   // بازه سمت سرور اعمال می‌شود؛ این فهرست limit 100 دارد و فیلتر
@@ -150,7 +161,7 @@ export default function ActivityPage() {
             {data.map((log, index) => {
               const linkType = entityTypeForLink(log.entity_type) as any;
               const actorName = log.user?.name || log.user?.email || "سیستم";
-              const detailText = describe(log);
+              const detailText = describe(log, money);
               return (
                 <ActivityTimelineItem
                   key={log.id}

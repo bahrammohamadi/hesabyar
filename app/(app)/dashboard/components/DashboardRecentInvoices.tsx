@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import type { KeyboardEvent, MouseEvent } from "react";
 import { Receipt } from "lucide-react";
 import { EntityLink } from "@/components/shared/entity-link";
@@ -31,6 +32,8 @@ export function DashboardRecentInvoices({
   onSaleClick: (event: MouseEvent<HTMLElement>, id: string) => void;
   onSaleAuxClick: (event: MouseEvent<HTMLElement>, id: string) => void;
 }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   return (
     <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-sm sm:p-5">
       {/* هدر */}
@@ -96,7 +99,7 @@ export function DashboardRecentInvoices({
                   </div>
                 </div>
                 <span className="shrink-0 text-sm font-extrabold text-foreground tabular-nums">
-                  {formatToman(sale.total, false)}
+                  {money(sale.total, false)}
                 </span>
               </div>
             );

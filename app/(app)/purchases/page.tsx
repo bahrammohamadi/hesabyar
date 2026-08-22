@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type MouseEvent } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useOrg } from "@/lib/hooks/useOrg";
@@ -16,6 +17,8 @@ import Link from "next/link";
 
 
 export default function PurchasesPage() {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const { orgId } = useOrg();
   const { openDocument } = usePanelManager();
 
@@ -157,8 +160,8 @@ export default function PurchasesPage() {
                 </div>
               ) : <span className="text-muted-foreground">—</span>,
             },
-            { key: "total", header: "مبلغ", align: "left", render: (p) => <span className="font-semibold tabular-nums">{formatToman(p.total)}</span> },
-            { key: "paid", header: "پرداخت‌شده", align: "left", render: (p) => <span className="tabular-nums">{formatToman(p.paid)}</span> },
+            { key: "total", header: "مبلغ", align: "left", render: (p) => <span className="font-semibold tabular-nums">{money(p.total)}</span> },
+            { key: "paid", header: "پرداخت‌شده", align: "left", render: (p) => <span className="tabular-nums">{money(p.paid)}</span> },
           ] satisfies Column<(typeof purchases)[number]>[]}
         />
       )}

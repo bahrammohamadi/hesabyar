@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useOrg } from "@/lib/hooks/useOrg";
@@ -17,6 +18,8 @@ import { Pagination, usePagination } from "@/src/shared/ui";
 
 
 export default function ProductsPage() {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const { orgId } = useOrg();
   const { openEntity } = usePanelManager();
   const searchParams = useSearchParams();
@@ -131,8 +134,8 @@ export default function ProductsPage() {
         />
         <ProductKpiCard
           label="ارزش کل انبار"
-          value={formatToman(kpi.inventoryValue, false)}
-          unit="تومان"
+          value={money(kpi.inventoryValue, false)}
+          unit={unitWord}
           accent="info"
         />
         <ProductKpiCard
@@ -278,9 +281,9 @@ export default function ProductsPage() {
                                 <span className="ml-1 text-2xs text-muted-foreground">از</span>
                               )}
                               <span className="font-bold tabular-nums text-foreground">
-                                {formatToman(displaySalePrice, false)}
+                                {money(displaySalePrice, false)}
                               </span>
-                              <span className="mr-1 text-2xs text-muted-foreground">تومان</span>
+                              <span className="mr-1 text-2xs text-muted-foreground">{unitWord}</span>
                             </div>
                           ) : (
                             <span className="text-muted-foreground">—</span>
@@ -355,7 +358,7 @@ export default function ProductsPage() {
                             {priceMixed && (
                               <span className="ml-1 text-2xs font-normal text-muted-foreground">از</span>
                             )}
-                            {formatToman(displaySalePrice, false)}
+                            {money(displaySalePrice, false)}
                           </span>
                         )}
                         <div onClick={(event) => event.stopPropagation()}>

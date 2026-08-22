@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect, useRef, type MouseEvent } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -25,6 +26,8 @@ const TYPE_LABEL: Record<ContactType, string> = {
 };
 
 export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: { forcedType?: ContactType; forcedFilter?: "debtors" | "creditors"; forcedAction?: "new" }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const { orgId, branchId } = useOrg();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
@@ -198,7 +201,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
       <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4 lg:gap-4">
         <CrmKpiCard label="کل مخاطبین" value={toFaDigits(totalCount)} icon={Users} tone="primary" />
         <CrmKpiCard label="بستانکاران" value={toFaDigits(creditorsCount)} chip="نفر" icon={Star} tone="accent" />
-        <CrmKpiCard label="مجموع بدهی‌ها" value={formatToman(debtorsTotal, false)} chip="بدهکار" icon={Wallet} tone="danger" />
+        <CrmKpiCard label="مجموع بدهی‌ها" value={money(debtorsTotal, false)} chip="بدهکار" icon={Wallet} tone="danger" />
         <CrmKpiCard label="مخاطبین بدهکار" value={toFaDigits(debtorsCount)} chip="مورد" icon={History} tone="info" />
       </div>
 
@@ -266,7 +269,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
                     <th className="px-4 py-3 font-extrabold">مشتری</th>
                     <th className="px-4 py-3 font-extrabold">شماره تماس</th>
                     <th className="px-4 py-3 font-extrabold">سطح کاربری</th>
-                    <th className="px-4 py-3 text-left font-extrabold">مانده بدهی (تومان)</th>
+                    <th className="px-4 py-3 text-left font-extrabold">مانده بدهی ({unitWord})</th>
                     <th className="px-4 py-3 font-extrabold">کد</th>
                     <th className="px-4 py-3 font-extrabold">عملیات</th>
                   </tr>
@@ -319,7 +322,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
                             <span className="tabular-nums text-muted-foreground">۰</span>
                           ) : (
                             <span className={`font-extrabold tabular-nums ${bal > 0 ? "text-finance-debt" : "text-finance-credit"}`}>
-                              {formatToman(Math.abs(bal), false)}
+                              {money(Math.abs(bal), false)}
                             </span>
                           )}
                         </td>
@@ -395,7 +398,7 @@ export function ContactsPageContent({ forcedType, forcedFilter, forcedAction }: 
                     <div className="flex shrink-0 items-center gap-1.5">
                       {bal !== 0 && (
                         <span className={`text-xs font-extrabold tabular-nums ${bal > 0 ? "text-finance-debt" : "text-finance-credit"}`}>
-                          {formatToman(Math.abs(bal), false)}
+                          {money(Math.abs(bal), false)}
                         </span>
                       )}
                       <div onClick={(event) => event.stopPropagation()}>

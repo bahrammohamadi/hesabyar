@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Tags, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -34,6 +35,8 @@ const LIST_TYPE_LABELS: Record<string, string> = {
 };
 
 export default function PriceListsPage() {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const { orgId } = useOrg();
   const qc = useQueryClient();
   const confirm = useConfirm();
@@ -197,7 +200,7 @@ export default function PriceListsPage() {
                 {pendingVariant && (
                   <div className="rounded-2xl bg-muted p-3 mb-4">
                     <div className="font-medium text-foreground">{pendingVariant.product_name}</div>
-                    <div className="text-xs text-muted-foreground mt-1">قیمت فعلی: {formatToman(pendingVariant.sale_price)} • {[pendingVariant.color, pendingVariant.size].filter(Boolean).join(" / ") || "ساده"}</div>
+                    <div className="text-xs text-muted-foreground mt-1">قیمت فعلی: {money(pendingVariant.sale_price)} • {[pendingVariant.color, pendingVariant.size].filter(Boolean).join(" / ") || "ساده"}</div>
                     <div className="flex gap-2 mt-3"><input className="input" inputMode="numeric" placeholder="قیمت اختصاصی (تومان)" value={customPrice} onChange={(e) => setCustomPrice(e.target.value)} /><button onClick={saveItem} className="btn-primary">ذخیره</button><button onClick={() => setPendingVariant(null)} className="btn-secondary">لغو</button></div>
                   </div>
                 )}
@@ -229,7 +232,7 @@ export default function PriceListsPage() {
                             <div className="text-xs text-muted-foreground mt-1">{[variant?.color, variant?.size].filter(Boolean).join(" / ") || variant?.sku || "ساده"}</div>
                           </div>
                           <div className="flex items-center gap-3 shrink-0">
-                            <div className="text-left"><div className="font-bold text-primary">{formatToman(finalPrice, false)}</div><div className="text-xs text-muted-foreground">{item.price ? "قیمت اختصاصی" : "با تخفیف عمومی"}</div></div>
+                            <div className="text-left"><div className="font-bold text-primary">{money(finalPrice, false)}</div><div className="text-xs text-muted-foreground">{item.price ? "قیمت اختصاصی" : "با تخفیف عمومی"}</div></div>
                             <button onClick={() => removeItem(item.id)} className="text-muted-foreground hover:text-destructive"><Trash2 size={16}/></button>
                           </div>
                         </div>

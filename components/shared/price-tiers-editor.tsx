@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, Layers } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -30,6 +31,8 @@ export function PriceTiersEditor({
   orgId: string | null;
   listDiscountPercent: number;
 }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const qc = useQueryClient();
   const { toast } = useToast();
   const confirm = useConfirm();
@@ -218,13 +221,13 @@ export function PriceTiersEditor({
                         رندر می‌شود. (`bdi` و `\u2068FSI` هیچ‌کدام جوابش نداد.)
                       */}
                       {tier.unit_price !== null
-                        ? formatToman(tier.unit_price)
+                        ? money(tier.unit_price)
                         : `تخفیف ${toFaDigits(Number(tier.discount_percent))}٪`}
                     </span>
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground">
                     {productName ?? "همه‌ی کالاهای این لیست"}
-                    {effective !== null && productName ? ` — هر واحد ${formatToman(effective)}` : ""}
+                    {effective !== null && productName ? ` — هر واحد ${money(effective)}` : ""}
                   </div>
                 </div>
                 <button

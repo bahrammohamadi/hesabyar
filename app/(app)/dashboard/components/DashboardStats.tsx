@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -144,13 +145,15 @@ export function DashboardStats({
   onOpenExpense: () => void;
   onOpenReceipt: () => void;
 }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   return (
     <div className="space-y-6">
       {/* ردیف اول — ۴ KPI اصلی */}
       <div className="stagger-in grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4 lg:gap-4">
         <KpiCard
           label="فروش امروز"
-          value={formatToman(summary?.sales_today)}
+          value={money(summary?.sales_today)}
           sub={`${toFaDigits(summary?.sales_today_count ?? 0)} فاکتور`}
           icon={TrendingUp}
           tone="primary"
@@ -159,8 +162,8 @@ export function DashboardStats({
         />
         <KpiCard
           label="فروش این ماه"
-          value={formatToman(summary?.sales_month)}
-          sub={`سود: ${formatToman(summary?.profit_month ?? 0, false)}`}
+          value={money(summary?.sales_month)}
+          sub={`سود: ${money(summary?.profit_month ?? 0, false)}`}
           icon={BarChart2}
           tone="success"
           trend="up"
@@ -168,7 +171,7 @@ export function DashboardStats({
         />
         <KpiCard
           label="موجودی صندوق"
-          value={formatToman(summary?.cash_total)}
+          value={money(summary?.cash_total)}
           icon={Wallet}
           tone="accent"
           trend="neutral"
@@ -176,7 +179,7 @@ export function DashboardStats({
         />
         <KpiCard
           label="ارزش انبار"
-          value={formatToman(summary?.inventory_value)}
+          value={money(summary?.inventory_value)}
           icon={Package}
           tone="info"
           trend="neutral"
@@ -202,7 +205,7 @@ export function DashboardStats({
                 <span className="text-sm font-medium text-foreground/80">طلب از مشتریان</span>
               </div>
               <span className="text-sm font-bold tabular-nums text-finance-debt">
-                {formatToman(summary?.customers_debt ?? 0, false)}
+                {money(summary?.customers_debt ?? 0, false)}
               </span>
             </Link>
             {/* طلب تأمین‌کننده */}
@@ -217,7 +220,7 @@ export function DashboardStats({
                 <span className="text-sm font-medium text-foreground/80">طلب تأمین‌کنندگان</span>
               </div>
               <span className="text-sm font-bold tabular-nums text-finance-credit">
-                {formatToman(summary?.suppliers_credit ?? 0, false)}
+                {money(summary?.suppliers_credit ?? 0, false)}
               </span>
             </Link>
           </div>
@@ -250,7 +253,7 @@ export function DashboardStats({
                 <span className="text-sm font-medium text-foreground/80">ثبت هزینه</span>
               </div>
               <span className="text-xs tabular-nums text-muted-foreground transition group-hover:text-destructive">
-                {formatToman(summary?.expenses_month ?? 0, false)} این ماه
+                {money(summary?.expenses_month ?? 0, false)} این ماه
               </span>
             </button>
           </div>

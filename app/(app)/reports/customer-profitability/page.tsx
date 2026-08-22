@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { useQuery } from "@tanstack/react-query";
 import { Download, Printer, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -14,6 +15,8 @@ import { downloadCsv } from "@/lib/export/download";
 
 
 export default function CustomerProfitabilityReportPage() {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const [from, setFrom] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10));
   const [to, setTo] = useState(new Date().toISOString().slice(0, 10));
   const [onlyWithCustomer, setOnlyWithCustomer] = useState(true);
@@ -128,7 +131,7 @@ export default function CustomerProfitabilityReportPage() {
         <div><label className="label">تا تاریخ</label><DatePicker value={to} onChange={setTo} /></div>
         <label className="flex items-end gap-2 text-sm text-muted-foreground pb-3"><input type="checkbox" checked={onlyWithCustomer} onChange={(e) => setOnlyWithCustomer(e.target.checked)} /> فقط مشتریان ثبت‌شده</label>
         <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">تعداد فاکتور</div><div className="font-bold text-foreground mt-1">{toFaDigits(totals.invoices)}</div></div>
-        <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">سود کل</div><div className={totals.profit >= 0 ? "font-bold text-success-onSoft mt-1" : "font-bold text-destructive mt-1"}>{formatToman(totals.profit)}</div></div>
+        <div className="rounded-xl bg-muted p-3"><div className="text-xs text-muted-foreground">سود کل</div><div className={totals.profit >= 0 ? "font-bold text-success-onSoft mt-1" : "font-bold text-destructive mt-1"}>{money(totals.profit)}</div></div>
       </div>
 
       {isLoading ? <Spinner /> : error ? <div className="rounded-xl bg-destructive/10 text-destructive-text text-sm p-4">{(error as Error).message}</div> : !rows.length ? <EmptyState icon={Users} title="داده‌ای برای این بازه وجود ندارد" /> : (
@@ -141,11 +144,11 @@ export default function CustomerProfitabilityReportPage() {
                   <td>{row.customer_id ? <EntityLink type="contact" id={row.customer_id}>{row.customer_name}</EntityLink> : <span className="text-muted-foreground">مشتری نقدی</span>}<div className="text-xs text-muted-foreground" dir="ltr">{row.phone}</div></td>
                   <td>{toFaDigits(row.invoice_count)}</td>
                   <td>{toFaDigits(row.qty)}</td>
-                  <td>{formatToman(row.revenue, false)}</td>
-                  <td>{formatToman(row.cost, false)}</td>
-                  <td className={row.profit >= 0 ? "text-success-onSoft font-bold" : "text-destructive font-bold"}>{formatToman(row.profit, false)}</td>
+                  <td>{money(row.revenue, false)}</td>
+                  <td>{money(row.cost, false)}</td>
+                  <td className={row.profit >= 0 ? "text-success-onSoft font-bold" : "text-destructive font-bold"}>{money(row.profit, false)}</td>
                   <td>{toFaDigits(row.margin)}٪</td>
-                  <td>{formatToman(row.average_invoice, false)}</td>
+                  <td>{money(row.average_invoice, false)}</td>
                   <td>{row.last_sale_at ? toJalali(row.last_sale_at) : "—"}</td>
                   <td>{row.customer_id && <EntityActionMenu type="contact" id={row.customer_id} label={row.customer_name} phone={row.phone} />}</td>
                 </tr>

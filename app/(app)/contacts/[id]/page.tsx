@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { usePanelManager } from "@/src/core/panel-manager/panel-manager.store";
@@ -23,6 +24,8 @@ import { getActionParam } from "@/lib/entities/action-router";
 const TYPE_LABELS: Record<ContactType, string> = { customer: "مشتری", supplier: "تامین‌کننده", both: "هر دو" };
 
 export default function ContactDetailPage({ params }: { params: { id: string } }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const { id } = params;
   const qc = useQueryClient();
   const { openEntity } = usePanelManager();
@@ -155,7 +158,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
             )}
           </div>
           <div className={`text-left shrink-0 ${isDebtor ? "text-destructive" : isCreditor ? "text-success-onSoft" : "text-muted-foreground"}`}>
-            <div className="text-2xl font-bold">{isDebtor ? "بدهکار" : isCreditor ? "بستانکار" : "—"}{bal !== 0 ? " " + formatToman(Math.abs(bal), false) : ""}</div>
+            <div className="text-2xl font-bold">{isDebtor ? "بدهکار" : isCreditor ? "بستانکار" : "—"}{bal !== 0 ? " " + money(Math.abs(bal), false) : ""}</div>
             <div className="text-xs text-muted-foreground">مانده حساب</div>
           </div>
         </div>
@@ -187,12 +190,14 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
 }
 
 function ContactInfo({ contact, sales, purchases, totalSales, totalPurchases }: any) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const meta = (contact.meta ?? {}) as Record<string, string>;
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-success-onSoft">{formatToman(totalSales, false)}</div><div className="text-xs text-muted-foreground">مجموع خرید</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-primary">{formatToman(totalPurchases, false)}</div><div className="text-xs text-muted-foreground">مجموع خرید از</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-success-onSoft">{money(totalSales, false)}</div><div className="text-xs text-muted-foreground">مجموع خرید</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-primary">{money(totalPurchases, false)}</div><div className="text-xs text-muted-foreground">مجموع خرید از</div></div>
         <div className="card p-4 text-center"><div className="text-xl font-bold text-muted-foreground">{toFaDigits(sales.length)}</div><div className="text-xs text-muted-foreground">فاکتور فروش</div></div>
         <div className="card p-4 text-center"><div className="text-xl font-bold text-muted-foreground">{toFaDigits(purchases.length)}</div><div className="text-xs text-muted-foreground">فاکتور خرید</div></div>
       </div>
@@ -222,13 +227,15 @@ function ContactInfo({ contact, sales, purchases, totalSales, totalPurchases }: 
 }
 
 function ContactSales({ sales }: { sales: any[] }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const total = sales.reduce((s, x) => s + (x.total ?? 0), 0);
   const credit = sales.reduce((s, x) => s + (x.paid_credit ?? 0), 0);
   return (
     <div>
       <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-success-onSoft">{formatToman(total, false)}</div><div className="text-xs text-muted-foreground">مجموع</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-destructive-text">{formatToman(credit, false)}</div><div className="text-xs text-muted-foreground">نسیه</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-success-onSoft">{money(total, false)}</div><div className="text-xs text-muted-foreground">مجموع</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-destructive-text">{money(credit, false)}</div><div className="text-xs text-muted-foreground">نسیه</div></div>
         <div className="card p-4 text-center"><div className="text-xl font-bold text-muted-foreground">{toFaDigits(sales.length)}</div><div className="text-xs text-muted-foreground">فاکتور</div></div>
       </div>
       <div className="card overflow-x-auto">
@@ -240,9 +247,9 @@ function ContactSales({ sales }: { sales: any[] }) {
               <tr key={s.id} className="hover:bg-muted">
                 <td><EntityLink type="sale" id={s.id}>{s.invoice_no}</EntityLink></td>
                 <td className="text-muted-foreground text-sm">{toJalali(s.date)}</td>
-                <td className="font-medium">{formatToman(s.total, false)}</td>
-                <td className="text-muted-foreground">{formatToman((s.paid_cash??0)+(s.paid_card??0), false)}</td>
-                <td>{s.paid_credit > 0 ? <span className="text-destructive font-medium">{formatToman(s.paid_credit, false)}</span> : <span className="text-muted-foreground">—</span>}</td>
+                <td className="font-medium">{money(s.total, false)}</td>
+                <td className="text-muted-foreground">{money((s.paid_cash??0)+(s.paid_card??0), false)}</td>
+                <td>{s.paid_credit > 0 ? <span className="text-destructive font-medium">{money(s.paid_credit, false)}</span> : <span className="text-muted-foreground">—</span>}</td>
               </tr>
             ))}</tbody>
           </table>
@@ -253,14 +260,16 @@ function ContactSales({ sales }: { sales: any[] }) {
 }
 
 function ContactPurchases({ purchases }: { purchases: any[] }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const total = purchases.reduce((s, x) => s + (x.total ?? 0), 0);
   const paid = purchases.reduce((s, x) => s + (x.paid ?? 0), 0);
   return (
     <div>
       <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-success-onSoft">{formatToman(total, false)}</div><div className="text-xs text-muted-foreground">مجموع</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-primary">{formatToman(paid, false)}</div><div className="text-xs text-muted-foreground">پرداخت‌شده</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-destructive-text">{formatToman(total-paid, false)}</div><div className="text-xs text-muted-foreground">باقیمانده</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-success-onSoft">{money(total, false)}</div><div className="text-xs text-muted-foreground">مجموع</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-primary">{money(paid, false)}</div><div className="text-xs text-muted-foreground">پرداخت‌شده</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-destructive-text">{money(total-paid, false)}</div><div className="text-xs text-muted-foreground">باقیمانده</div></div>
       </div>
       <div className="card overflow-x-auto">
         {purchases.length === 0 ? <EmptyState title="خریدی ثبت نشده" />
@@ -273,9 +282,9 @@ function ContactPurchases({ purchases }: { purchases: any[] }) {
                 <tr key={p.id} className="hover:bg-muted">
                   <td className="font-medium text-success-onSoft">{p.invoice_no}</td>
                   <td className="text-muted-foreground text-sm">{toJalali(p.date)}</td>
-                  <td className="font-medium">{formatToman(p.total, false)}</td>
-                  <td className="text-muted-foreground">{formatToman(p.paid, false)}</td>
-                  <td>{rem > 0 ? <span className="text-destructive font-medium">{formatToman(rem, false)}</span> : <span className="text-success-onSoft">✓</span>}</td>
+                  <td className="font-medium">{money(p.total, false)}</td>
+                  <td className="text-muted-foreground">{money(p.paid, false)}</td>
+                  <td>{rem > 0 ? <span className="text-destructive font-medium">{money(rem, false)}</span> : <span className="text-success-onSoft">✓</span>}</td>
                 </tr>
               );
             })}</tbody>
@@ -287,13 +296,15 @@ function ContactPurchases({ purchases }: { purchases: any[] }) {
 }
 
 function ContactTx({ txs }: { txs: any[] }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const recv = txs.filter((t: any) => t.type === "receipt" || t.type === "income").reduce((s: number, t: any) => s + t.amount, 0);
   const pay = txs.filter((t: any) => t.type === "payment" || t.type === "expense").reduce((s: number, t: any) => s + t.amount, 0);
   return (
     <div>
       <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-success-onSoft">{formatToman(recv, false)}</div><div className="text-xs text-muted-foreground">دریافتی</div></div>
-        <div className="card p-4 text-center"><div className="text-xl font-bold text-destructive-text">{formatToman(pay, false)}</div><div className="text-xs text-muted-foreground">پرداختی</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-success-onSoft">{money(recv, false)}</div><div className="text-xs text-muted-foreground">دریافتی</div></div>
+        <div className="card p-4 text-center"><div className="text-xl font-bold text-destructive-text">{money(pay, false)}</div><div className="text-xs text-muted-foreground">پرداختی</div></div>
         <div className="card p-4 text-center"><div className="text-xl font-bold text-muted-foreground">{toFaDigits(txs.length)}</div><div className="text-xs text-muted-foreground">تراکنش</div></div>
       </div>
       <div className="card overflow-x-auto">
@@ -306,7 +317,7 @@ function ContactTx({ txs }: { txs: any[] }) {
               return (
                 <tr key={t.id} className="hover:bg-muted">
                   <td><span className={`badge ${isIn ? "bg-success-soft text-success-onSoft" : "bg-destructive/15 text-destructive-text"}`}>{isIn ? "دریافت" : "پرداخت"}</span></td>
-                  <td className={`font-medium ${isIn ? "text-success-onSoft" : "text-destructive"}`}>{isIn ? "+" : "-"}{formatToman(t.amount, false)}</td>
+                  <td className={`font-medium ${isIn ? "text-success-onSoft" : "text-destructive"}`}>{isIn ? "+" : "-"}{money(t.amount, false)}</td>
                   <td className="text-muted-foreground text-sm">{t.account?.name ?? "—"}</td>
                   <td className="text-muted-foreground text-sm">{toJalali(t.date)}</td>
                   <td className="text-muted-foreground text-sm max-w-[150px] truncate">{t.note ?? "—"}</td>

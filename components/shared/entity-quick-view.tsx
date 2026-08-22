@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { Activity, ArrowDownCircle, Boxes, CalendarClock, CreditCard, Edit, Eye, FileText, Package, Phone, Plus, Receipt, ShoppingCart, User } from "lucide-react";
 import { EmptyState, Modal, Spinner } from "./ui";
 import { PhoneLink } from "./phone-link";
@@ -40,6 +41,8 @@ function TimelineIcon({ item }: { item: EntityTimelineItem }) {
 }
 
 function TimelineList({ items }: { items?: EntityTimelineItem[] }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   if (!items || items.length === 0) {
     return <div className="rounded-xl bg-muted p-4 text-center text-sm text-muted-foreground">تایملاینی برای نمایش وجود ندارد.</div>;
   }
@@ -60,7 +63,7 @@ function TimelineList({ items }: { items?: EntityTimelineItem[] }) {
               {(item.description || item.amount || item.qty) && (
                 <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
                   {item.description && <span className="truncate">{item.description}</span>}
-                  {typeof item.amount === "number" && item.amount !== 0 && <span>{formatToman(item.amount, false)}</span>}
+                  {typeof item.amount === "number" && item.amount !== 0 && <span>{money(item.amount, false)}</span>}
                   {typeof item.qty === "number" && <span>تعداد: {toFaDigits(item.qty)}</span>}
                 </div>
               )}
@@ -97,6 +100,8 @@ function QuickAction({ href, children, tone = "default" }: { href: string; child
 }
 
 function ContactQuickView({ id, open }: { id?: string | null; open: boolean }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const { openDocument } = usePanelManager();
   const summary = useContactSummary(id, { enabled: open });
   const timeline = useEntityTimeline("contact", id, { enabled: open, limit: 12 });
@@ -124,9 +129,9 @@ function ContactQuickView({ id, open }: { id?: string | null; open: boolean }) {
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <SummaryCell label="مانده حساب" value={formatToman(Math.abs(contact.balance), false)} tone={contact.balance > 0 ? "red" : contact.balance < 0 ? "green" : "default"} />
+        <SummaryCell label="مانده حساب" value={money(Math.abs(contact.balance), false)} tone={contact.balance > 0 ? "red" : contact.balance < 0 ? "green" : "default"} />
         <SummaryCell label="تعداد فاکتور" value={toFaDigits(contact.invoiceCount)} tone="blue" />
-        <SummaryCell label="مجموع خرید" value={formatToman(contact.totalSales, false)} tone="green" />
+        <SummaryCell label="مجموع خرید" value={money(contact.totalSales, false)} tone="green" />
         <SummaryCell label="آخرین خرید" value={contact.lastSaleDate ? toJalali(contact.lastSaleDate) : "—"} />
         <SummaryCell label="آخرین پرداخت" value={contact.lastPaymentDate ? toJalali(contact.lastPaymentDate) : "—"} tone="amber" />
         <SummaryCell label="آخرین تعامل CRM" value={contact.lastInteractionTitle ?? "—"} />
@@ -170,6 +175,8 @@ function ContactQuickView({ id, open }: { id?: string | null; open: boolean }) {
 }
 
 function ProductQuickView({ id, open }: { id?: string | null; open: boolean }) {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const summary = useProductSummary(id, { enabled: open });
   const timeline = useEntityTimeline("product", id, { enabled: open, limit: 12 });
 
@@ -196,8 +203,8 @@ function ProductQuickView({ id, open }: { id?: string | null; open: boolean }) {
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <SummaryCell label="قیمت خرید" value={formatToman(product.currentPurchasePrice, false)} />
-        <SummaryCell label="قیمت فروش" value={formatToman(product.currentSalePrice, false)} tone="blue" />
+        <SummaryCell label="قیمت خرید" value={money(product.currentPurchasePrice, false)} />
+        <SummaryCell label="قیمت فروش" value={money(product.currentSalePrice, false)} tone="blue" />
         <SummaryCell label="موجودی" value={toFaDigits(product.stock)} tone={product.stock > 0 ? "green" : "red"} />
         <SummaryCell label="تعداد گردش" value={toFaDigits(product.movementCount)} />
         <SummaryCell label="آخرین فروش" value={product.lastSaleDate ? toJalali(product.lastSaleDate) : "—"} tone="green" />

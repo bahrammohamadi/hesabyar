@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarDays, Download, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -16,6 +17,8 @@ import { downloadCsv } from "@/lib/export/download";
 
 
 export default function InventoryAsOfPage() {
+  /* واحد پول سازمان — تومان یا ریال، از تنظیمات. */
+  const { money, unitLabel: unitWord } = useOrgPrefs();
   const { orgId } = useOrg();
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [search, setSearch] = useState("");
@@ -109,7 +112,7 @@ export default function InventoryAsOfPage() {
 
       <div className="grid grid-cols-3 gap-3 mb-4">
         <div className="card p-4 text-center"><div className="text-xs text-muted-foreground">تعداد کل</div><div className="font-bold text-foreground mt-1">{toFaDigits(totalQty)}</div></div>
-        <div className="card p-4 text-center"><div className="text-xs text-muted-foreground">ارزش خرید</div><div className="font-bold text-success-onSoft mt-1">{formatToman(totalValue)}</div></div>
+        <div className="card p-4 text-center"><div className="text-xs text-muted-foreground">ارزش خرید</div><div className="font-bold text-success-onSoft mt-1">{money(totalValue)}</div></div>
         <div className="card p-4 text-center"><div className="text-xs text-muted-foreground">کم‌موجود</div><div className="font-bold text-warning-onSoft mt-1">{toFaDigits(lowCount)}</div></div>
       </div>
 
@@ -123,8 +126,8 @@ export default function InventoryAsOfPage() {
             { key: "variant", header: "تنوع", render: (row: any) => <span className="text-muted-foreground">{[row.color, row.size].filter(Boolean).join(" / ") || "ساده"}</span> },
             { key: "code", header: "کد/SKU", render: (row: any) => <span className="font-mono text-xs text-muted-foreground">{row.sku || row.product_code || row.barcode || "—"}</span> },
             { key: "stock", header: "موجودی", render: (row: any) => <span className={row.stock_qty <= row.low_stock_threshold ? "font-bold text-warning-onSoft" : "font-bold text-foreground"}>{toFaDigits(row.stock_qty)}</span> },
-            { key: "purchase", header: "قیمت خرید", render: (row: any) => formatToman(row.purchase_price, false) },
-            { key: "value", header: "ارزش", render: (row: any) => formatToman(row.stock_qty * row.purchase_price, false) },
+            { key: "purchase", header: "قیمت خرید", render: (row: any) => money(row.purchase_price, false) },
+            { key: "value", header: "ارزش", render: (row: any) => money(row.stock_qty * row.purchase_price, false) },
             { key: "actions", header: "عملیات", render: (row: any) => <EntityActionMenu type="product" id={row.product_id} label={row.product_name} /> },
           ]}
         />
