@@ -20,7 +20,7 @@ import {
   Building, UserCheck, AlertCircle, PieChart, Activity,
   Briefcase, BookOpen, ShoppingBagIcon, Tags, Barcode,
   ArrowRightLeft, History, PiggyBank, Banknote, Coins, Gift, MessageCircle, Calendar, Target, Bell, UserCircle,
-  LifeBuoy, TicketCheck, FileSpreadsheet, Stethoscope, Server, DatabaseBackup, Store, Palette,
+  LifeBuoy, TicketCheck, FileSpreadsheet, Stethoscope, Server, DatabaseBackup, Store, Palette, CalendarClock,
 } from "lucide-react";
 
 export const NAV = [
@@ -69,6 +69,7 @@ export const NAV = [
       { href: "/inventory/in", label: "ورود کالا", icon: ArrowDownToLine },
       { href: "/inventory/out", label: "خروج کالا", icon: ArrowUpFromLine },
       { href: "/inventory/adjust", label: "انبارگردانی", icon: ArrowLeftRight },
+      { href: "/inventory/expiry", label: "انقضای نزدیک", icon: CalendarClock },
       { href: "/inventory/waste", label: "ضایعات", icon: AlertCircle },
     ],
   },

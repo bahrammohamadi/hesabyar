@@ -198,6 +198,18 @@ export function PurchaseCreateForm({
     setCart((p) => p.map((c) => (c.variant_id === id ? { ...c, discount: discountRial } : c)));
   }
 
+  /**
+   * سری ساخت و تاریخ انقضای یک قلم.
+   *
+   * ⚠️ فقط روی سبد می‌نشیند؛ بچ واقعی هنگام ثبت فاکتور و **داخل
+   * همان تراکنش** ساخته می‌شود. اگر اینجا می‌ساختیم، کاربری که
+   * فاکتور را نیمه‌کاره رها می‌کند یک بچ یتیم بدون حرکت انبار
+   * به‌جا می‌گذاشت.
+   */
+  function updateBatch(id: string, patch: { lot_no?: string; expiry_date?: string }) {
+    setCart((p) => p.map((c) => (c.variant_id === id ? { ...c, ...patch } : c)));
+  }
+
   function updateSalePrice(id: string, tomanValue: string) {
     const rial = tomanToRial(Number(toEnDigits(tomanValue)) || 0);
     setCart((p) => p.map((c) => (c.variant_id === id ? { ...c, sale_price: rial } : c)));
@@ -299,6 +311,12 @@ export function PurchaseCreateForm({
           sale_price: c.sale_price ?? undefined,
           // روش سرشکن روی هر قلم می‌رود تا تابع بتواند سهمش را حساب کند.
           alloc: allocMode,
+          /*
+            سری ساخت و انقضا. تابع خرید اگر یکی از این دو پر باشد،
+            بچ را داخل همان تراکنش می‌سازد یا پیدا می‌کند.
+          */
+          lot_no: c.lot_no ?? undefined,
+          expiry_date: c.expiry_date ?? undefined,
         })),
         p_extra_total: extraRial,
         p_discount: discountType === "percent" ? 0 : discountRial,
@@ -418,6 +436,7 @@ export function PurchaseCreateForm({
               onPriceChange={updatePrice}
               onSalePriceChange={updateSalePrice}
               onDiscountChange={updateLineDiscount}
+              onBatchChange={updateBatch}
               onRemove={(id) => updateQty(id, 0)}
             />
           </div>

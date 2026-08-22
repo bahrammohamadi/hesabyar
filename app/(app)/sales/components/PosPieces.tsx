@@ -18,6 +18,7 @@ import { PhoneLink } from "@/components/shared/phone-link";
 import { formatToman, rialToToman, toEnDigits, toFaDigits } from "@/lib/utils/format";
 import { allowsFraction, formatQty, normalizeQty, unitLabel, type UnitKind } from "@/lib/units";
 import { useOrgPrefs } from "@/lib/hooks/useOrgPrefs";
+import { DatePicker } from "@/components/shared/date-picker";
 import type { CartItem } from "@/types/db";
 import {
   discountRialToPercent, lineDiscountRial, lineNetRial,
@@ -481,6 +482,7 @@ export function PosCartList({
   variant = "sale",
   onSalePriceChange,
   onDiscountChange,
+  onBatchChange,
 }: {
   cart: CartItem[];
   onQtyChange: (variantId: string, qty: number) => void;
@@ -490,6 +492,14 @@ export function PosCartList({
   variant?: "sale" | "purchase";
   /** فقط در حالت خرید لازم است. */
   onSalePriceChange?: (variantId: string, tomanValue: string) => void;
+  /**
+   * سری ساخت و تاریخ انقضا — فقط در خرید.
+   *
+   * ⚠️ اگر داده نشود، ردیف بچ اصلاً رندر نمی‌شود. فروش و مرجوعی
+   * بچ نمی‌گیرند: در فروش بچ باید از موجودی **انتخاب** شود نه
+   * تایپ، و آن یک قابلیت جداست.
+   */
+  onBatchChange?: (variantId: string, patch: { lot_no?: string; expiry_date?: string }) => void;
   /**
    * تخفیف هر قلم (ریال). اگر داده نشود، ستون تخفیف رندر نمی‌شود —
    * سندهایی مثل مرجوعی که تخفیف سطری ندارند دست‌نخورده می‌مانند.
@@ -673,6 +683,34 @@ export function PosCartList({
                     <Trash2 size={16} />
                   </button>
                 </div>
+
+                {/*
+                  🔴 سری ساخت و تاریخ انقضا — فقط در خرید.
+
+                  اینجا و نه در یک پنجره‌ی جدا: کاربری که کارتن
+                  شیر را ثبت می‌کند، تاریخ انقضا روی همان کارتن
+                  جلوی چشمش است. هر کلیک اضافه یعنی احتمال بیشتر
+                  که اصلاً واردش نکند و گزارش انقضا خالی بماند.
+                */}
+                {isPurchase && onBatchChange && (
+                  <div className="flex flex-wrap items-center gap-2 border-t border-dashed border-border px-2 py-2">
+                    <span className="text-2xs text-muted-foreground">سری ساخت</span>
+                    <input
+                      className="input h-9 min-h-9 w-28 text-xs"
+                      placeholder="اختیاری"
+                      aria-label={`سری ساخت ${c.product_name}`}
+                      value={c.lot_no ?? ""}
+                      onChange={(e) => onBatchChange(c.variant_id, { lot_no: e.target.value })}
+                    />
+                    <span className="text-2xs text-muted-foreground">انقضا</span>
+                    <div className="w-36">
+                      <DatePicker
+                        value={c.expiry_date ?? ""}
+                        onChange={(v) => onBatchChange(c.variant_id, { expiry_date: v })}
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {/* موبایل و تبلت — کارت، مطابق مرجع step2 */}
                 <div className={`pos-row-mobile${isPurchase ? " pos-row-purchase" : ""}`}>
