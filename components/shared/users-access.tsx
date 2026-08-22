@@ -2,8 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { createClient } from "@/lib/supabase/client";
+import { useOrg } from "@/lib/hooks/useOrg";
 import {
-  ChevronDown, KeyRound, Loader2, Plus, Search, ShieldCheck, UserCog, Users,
+  ChevronDown, KeyRound, Loader2, Plus, Search, ShieldCheck, ShieldOff, UserCog, Users,
 } from "lucide-react";
 import { Spinner } from "@/components/shared/ui";
 import {
@@ -28,6 +30,7 @@ import { defaultPermissions, ROLE_LABELS, type ManagedUser } from "./users-acces
  */
 export function UsersAccessManager() {
   const qc = useQueryClient();
+  const { orgId } = useOrg();
   const { toast } = useToast();
   const confirm = useConfirm();
 
@@ -35,6 +38,7 @@ export function UsersAccessManager() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [issuingId, setIssuingId] = useState<string | null>(null);
+  const [resettingId, setResettingId] = useState<string | null>(null);
   /* کد فقط یک بار و همین‌جا دیده می‌شود؛ در دیتابیس هش ذخیره شده است. */
   const [issued, setIssued] = useState<{ name: string; code: string; minutes: number } | null>(null);
   const [search, setSearch] = useState("");
@@ -48,6 +52,31 @@ export function UsersAccessManager() {
       return json.users as ManagedUser[];
     },
   });
+
+  /*
+    وضعیت دومرحله‌ای اعضا — فقط بله/خیر.
+
+    ⚠️ کوئری جدا است نه ستون روی `/api/admin/users`: آن روت در
+    پنل پلتفرم هم استفاده می‌شود و افزودن ستون به آن یعنی لمس
+    مسیری که ربطی به این قابلیت ندارد.
+  */
+  const { data: mfaRows } = useQuery({
+    queryKey: ["org-mfa-status", orgId],
+    enabled: !!orgId,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data: rows, error: e } = await supabase.rpc("org_mfa_status", { p_org: orgId });
+      if (e) throw e;
+      return (rows ?? []) as Array<{ user_id: string; has_mfa: boolean }>;
+    },
+  });
+
+  const mfaMap = useMemo(() => {
+    const m: Record<string, boolean> = {};
+    for (const r of mfaRows ?? []) m[r.user_id] = r.has_mfa;
+    return m;
+  }, [mfaRows]);
 
   const users = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -137,6 +166,52 @@ export function UsersAccessManager() {
       toast({ title: "کد ساخته نشد", description: (e as Error).message, tone: "error" });
     } finally {
       setIssuingId(null);
+    }
+  }
+
+  /**
+   * بازنشانی ورود دومرحله‌ای یک کاربر.
+   *
+   * 🔴 آخرین راه بازگشت وقتی کاربر گوشی **و** کدهای پشتیبانش را با
+   * هم گم کرده. تا پیش از این تنها راه دخالت دستی در دیتابیس بود —
+   * برای مغازه‌داری که ساعت ۹ شب گوشی‌اش را گم کرده یعنی تا فردا
+   * از حسابش بیرون است.
+   *
+   * ⚠️ نشست‌های کاربر هم بسته می‌شوند: اگر کسی حساب را دزدیده و
+   * خودش 2FA گذاشته باشد، صرفِ برداشتن عامل دوم بیرونش نمی‌کند.
+   */
+  async function resetMfa(u: ManagedUser) {
+    const ok = await confirm({
+      title: "بازنشانی ورود دومرحله‌ای",
+      description:
+        "عامل دوم، کدهای پشتیبان و همه‌ی نشست‌های این کاربر حذف می‌شوند. او با رمز عبورش وارد می‌شود و باید دوباره ورود دومرحله‌ای را تنظیم کند. فقط وقتی این کار را بکنید که مطمئن باشید خودِ کاربر درخواست داده است.",
+      confirmLabel: "بازنشانی کن",
+      tone: "danger",
+    });
+    if (!ok) return;
+
+    setResettingId(u.user_id);
+    try {
+      const res = await fetch("/api/admin/reset-mfa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: u.user_id }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast({ title: "بازنشانی نشد", description: json.error, tone: "error" });
+        return;
+      }
+      toast({
+        title: "ورود دومرحله‌ای بازنشانی شد",
+        description: "کاربر باید دوباره با رمز عبورش وارد شود.",
+        tone: "success",
+      });
+      qc.invalidateQueries({ queryKey: ["org-mfa-status"] });
+    } catch (e) {
+      toast({ title: "بازنشانی نشد", description: (e as Error).message, tone: "error" });
+    } finally {
+      setResettingId(null);
     }
   }
 
@@ -241,6 +316,23 @@ export function UsersAccessManager() {
                         ثبت کند. با کد یک‌بارمصرف، رمز نهایی را فقط
                         خود کاربر می‌داند.
                       */}
+                      {/*
+                        دکمه فقط برای کاربری که واقعاً 2FA دارد
+                        نمایش داده می‌شود — وگرنه فهرست شلوغ می‌شود
+                        با دکمه‌ای که هیچ کاری نمی‌کند.
+                      */}
+                      {mfaMap[u.user_id] && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => resetMfa(u)}
+                          disabled={resettingId === u.user_id}
+                          icon={<ShieldOff size={15} />}
+                        >
+                          {resettingId === u.user_id ? "..." : "بازنشانی ۲مرحله‌ای"}
+                        </Button>
+                      )}
+
                       <Button
                         size="sm"
                         variant="ghost"

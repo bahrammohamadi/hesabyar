@@ -235,3 +235,103 @@ describe("صفحه‌ی تأیید و فعال‌سازی", () => {
     expect(account).toMatch(/<MfaSetup \/>/);
   });
 });
+
+describe("🔴 بازنشانی دومرحله‌ای توسط مدیر", () => {
+  const sql = readCode("supabase/migrations/0052_admin_mfa_reset.sql");
+  const route = readCode("app/api/admin/reset-mfa/route.ts");
+  const ui = readCode("components/shared/users-access.tsx");
+
+  /*
+    حفره‌ای که می‌بندد: اگر کاربر گوشی **و** کدهای پشتیبانش را با
+    هم گم کند، هیچ راه خودکاری نبود. کد بازیابی رمز هم کمکی
+    نمی‌کرد چون فقط رمز را عوض می‌کند و عامل دوم سر جایش می‌ماند.
+  */
+  it("تابع بازنشانی وجود دارد", () => {
+    expect(sql).toMatch(/create or replace function public\.admin_reset_user_mfa/);
+  });
+
+  /*
+    🔴 مدیر نباید بتواند 2FA خودش را از این مسیر بردارد.
+    وگرنه مدیری که حسابش دزدیده شده، مهاجم با همین دکمه عامل دوم
+    را برمی‌دارد.
+  */
+  it("روی حساب خود مدیر کار نمی‌کند", () => {
+    expect(sql).toMatch(/if v_actor = p_user_id then/);
+    expect(sql).toMatch(/برای حساب خودتان از صفحه‌ی حساب کاربری اقدام کنید/);
+  });
+
+  it("فقط مالک و مدیر همان سازمان", () => {
+    expect(sql).toMatch(/role in \('owner','manager'\)/);
+    expect(sql).toMatch(/این کاربر عضو مجموعه‌ی شما نیست/);
+  });
+
+  /*
+    کدهای پشتیبان هم باید پاک شوند، وگرنه یک مجموعه راز بی‌صاحب
+    روی حسابی می‌ماند که دیگر 2FA ندارد.
+  */
+  it("کدهای پشتیبان هم پاک می‌شوند", () => {
+    expect(sql).toMatch(/delete from public\.mfa_backup_codes where user_id = p_user_id/);
+  });
+
+  /*
+    اگر کسی حساب را دزدیده و خودش 2FA گذاشته باشد، صرفِ برداشتن
+    عامل دوم بیرونش نمی‌کند.
+  */
+  it("نشست‌های کاربر بسته می‌شوند", () => {
+    expect(sql).toMatch(/delete from auth\.sessions where user_id = p_user_id/);
+  });
+
+  it("رویداد در سابقه ثبت می‌شود", () => {
+    expect(sql).toMatch(/insert into public\.login_events/);
+  });
+
+  /*
+    ⚠️ کلاینت درخواست‌محور نه service_role: تابع نقش را با
+    auth.uid() می‌سنجد و با کلید سرویس آن تهی است. یعنی حتی اشتباه
+    در روت هم گارد نقش را دور نمی‌زند.
+  */
+  it("روت از کلاینت کاربر استفاده می‌کند نه کلید سرویس", () => {
+    expect(route).toMatch(/rpc\("admin_reset_user_mfa"/);
+    expect(route).not.toMatch(/serviceClient\(\)/);
+  });
+
+  it("روت محدودیت نرخ سختگیرانه دارد", () => {
+    expect(route).toMatch(/admin-reset-mfa[\s\S]{0,120}limit: 5/);
+  });
+
+  /*
+    دکمه فقط برای کاربری که واقعاً 2FA دارد، وگرنه فهرست پر می‌شود
+    از دکمه‌ای که هیچ کاری نمی‌کند.
+  */
+  it("دکمه فقط برای کاربر دارای دومرحله‌ای نشان داده می‌شود", () => {
+    expect(ui).toMatch(/\{mfaMap\[u\.user_id\] && \(/);
+    expect(ui).toMatch(/rpc\("org_mfa_status"/);
+  });
+
+  it("فایل بازگشت وجود دارد", () => {
+    const down = read("supabase/rollbacks/0052_admin_mfa_reset.down.sql");
+    expect(down).toMatch(/drop function if exists public\.admin_reset_user_mfa/);
+  });
+});
+
+describe("واحد پول در فروشگاه عمومی", () => {
+  const shop = readCode("app/shop/[slug]/page.tsx");
+
+  /*
+    🔴 صفحه‌ی عمومی همیشه «تومان» می‌گفت — حتی برای فروشگاهی که کل
+    پنلش ریالی بود. یعنی مشتری روی سایت عددی می‌دید که با فاکتور
+    نمی‌خواند.
+
+    ⚠️ کامپوننت سروری است و hook نمی‌پذیرد، پس ترجیحات مستقیم از
+    دیتابیس خوانده می‌شوند.
+  */
+  it("فروشگاه دیگر تومان سخت‌کد ندارد", () => {
+    expect(shop).not.toMatch(/\bformatToman\(/);
+  });
+
+  it("واحد از ترجیحات سازمان خوانده می‌شود", () => {
+    expect(shop).toMatch(/key", "org_prefs"/);
+    expect(shop).toMatch(/parsePrefs\(prefRow\?\.value\)\.currency/);
+    expect(shop).toMatch(/formatMoney\(product\.price, currency\)/);
+  });
+});

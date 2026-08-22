@@ -6,7 +6,9 @@ import {
   Clock, Instagram, MapPin, Package, Phone, Receipt, Send, Store,
 } from "lucide-react";
 import { BRAND_NAME } from "@/lib/brand";
-import { formatToman, toFaDigits } from "@/lib/utils/format";
+import { toFaDigits } from "@/lib/utils/format";
+import { formatMoney } from "@/lib/utils/money";
+import { parsePrefs, type CurrencyCode } from "@/lib/org-prefs";
 import { STOREFRONT_PRODUCT_LIMIT } from "@/lib/storefront";
 
 /**
@@ -107,6 +109,27 @@ export default async function ShopPage({ params }: { params: { slug: string } })
     p_limit: STOREFRONT_PRODUCT_LIMIT,
   });
   const products = (productData ?? []) as ShopProduct[];
+
+  /*
+    🔴 واحد پول فروشگاه.
+
+    این صفحه کامپوننت **سروری** است و نمی‌تواند `useOrgPrefs` را صدا
+    بزند، پس ترجیحات مستقیم از دیتابیس خوانده می‌شوند. تا پیش از
+    این، صفحه‌ی عمومی همیشه «تومان» می‌گفت — حتی برای فروشگاهی که
+    کل پنلش ریالی بود. یعنی مشتری روی سایت عددی می‌دید که با فاکتور
+    نمی‌خواند.
+
+    ⚠️ `serviceClient` استفاده می‌شود چون بازدیدکننده وارد نشده و
+    `get_org_prefs` با `user_org_ids()` گارد دارد. اینجا فقط یک
+    ترجیح نمایشی خوانده می‌شود، نه داده‌ی حساس.
+  */
+  const { data: prefRow } = await serviceClient()
+    .from("settings")
+    .select("value")
+    .eq("org_id", shop.org_id)
+    .eq("key", "org_prefs")
+    .maybeSingle();
+  const currency: CurrencyCode = parsePrefs(prefRow?.value).currency;
 
   const contactItems = [
     shop.address && { icon: MapPin, label: "نشانی", value: shop.address },
@@ -264,7 +287,7 @@ export default async function ShopPage({ params }: { params: { slug: string } })
                   */}
                   {shop.show_prices && product.price != null && (
                     <div className="mt-3 text-sm font-black tabular-nums text-primary">
-                      {formatToman(product.price)}
+                      {formatMoney(product.price, currency)}
                     </div>
                   )}
                 </li>

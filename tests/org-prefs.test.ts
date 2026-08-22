@@ -387,7 +387,7 @@ describe("🔴 قواعد hook در مهاجرت خودکار", () => {
           می‌گیرد درست است — همان راه‌حل جایی است که hook ممنوع
           است.
         */
-        if (/function \w+\([^)]*money:/s.test(body)) continue;
+        if (/function \w+\([^)]*money:/.test(body)) continue;
         offenders.push(`${f}::${starts[i].name}`);
       }
     }
